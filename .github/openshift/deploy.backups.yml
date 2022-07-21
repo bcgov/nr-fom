@@ -122,6 +122,7 @@ objects:
     metadata:
       name: ${NAME}-${ZONE}-config
       labels:
+        app: ${NAME}-${ZONE}
         cronjob: ${NAME}-${ZONE}
     data:
       DATABASE_SERVICE_NAME: "${NAME}-${ZONE}-db"
@@ -138,6 +139,7 @@ objects:
     metadata:
       name: ${NAME}-${ZONE}
       labels:
+        app: ${NAME}-${ZONE}
         cronjob: ${NAME}-${ZONE}
     spec:
       schedule: "${SCHEDULE}"
@@ -147,12 +149,14 @@ objects:
       jobTemplate:
         metadata:
           labels:
+            app: ${NAME}-${ZONE}
             cronjob: ${NAME}-${ZONE}
         spec:
           backoffLimit: ${{JOB_BACKOFF_LIMIT}}
           template:
             metadata:
               labels:
+                app: ${NAME}-${ZONE}
                 cronjob: ${NAME}-${ZONE}
             spec:
               containers:
