@@ -1,0 +1,50 @@
+# https://github.com/BCDevOps/backup-container/blob/master/openshift/templates/backup/backup-build.yaml
+kind: Template
+apiVersion: template.openshift.io/v1
+parameters:
+  - name: NAME
+    description: Module name
+    value: fom
+  - name: ZONE
+    description: Deployment zone, e.g. pr-### or prod
+    required: true
+  - name: COMPONENT
+    description: Component name
+    value: backup
+metadata:
+  name: ${NAME}-build-template
+objects:
+  - kind: ImageStream
+    apiVersion: v1
+    metadata:
+      name: ${NAME}-${ZONE}-${COMPONENT}
+      labels:
+        app: ${NAME}-${ZONE}
+  - kind: BuildConfig
+    apiVersion: v1
+    metadata:
+      name: ${NAME}-${ZONE}-${COMPONENT}
+      labels:
+        app: ${NAME}-${ZONE}
+    spec:
+      triggers:
+        - type: ImageChange
+        - type: ConfigChange
+      runPolicy: Serial
+      source:
+        type: Git
+        git:
+          uri: https://github.com/BCDevOps/backup-container.git
+          ref: master
+        contextDir: /docker
+      strategy:
+        type: Docker
+        dockerStrategy:
+          from:
+            kind: DockerImage
+            name: docker.io/centos/postgresql-12-centos7:20200917-804ef01
+          dockerfilePath: Dockerfile
+      output:
+        to:
+          kind: ImageStreamTag
+          name: ${NAME}-${ZONE}-${COMPONENT}:latest
