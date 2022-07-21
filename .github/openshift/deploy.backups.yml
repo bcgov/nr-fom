@@ -1,17 +1,21 @@
 # https://github.com/BCDevOps/backup-container/blob/master/openshift/templates/backup-cronjob/backup-cronjob.yaml
 ---
 kind: "Template"
-apiVersion: "v1"
+apiVersion: template.openshift.io/v1
 metadata:
   name: "{$JOB_NAME}-cronjob-template"
   annotations:
     description: "Scheduled Task to perform a Database Backup"
     tags: "cronjob,backup"
 parameters:
-  - name: "JOB_NAME"
-    displayName: "Job Name"
-    description: "Name of the Scheduled Job to Create."
-    value: "backup-postgres"
+  - name: NAME
+    description: Module name
+    value: fom
+  - name: COMPONENT
+    description: Component name
+    value: api
+  - name: ZONE
+    description: Deployment zone, e.g. pr-### or prod
     required: true
   - name: "JOB_PERSISTENT_STORAGE_NAME"
     displayName: "Backup Persistent Storage Name"
@@ -21,8 +25,7 @@ parameters:
   - name: "SCHEDULE"
     displayName: "Cron Schedule"
     description: "Cron Schedule to Execute the Job (using local cluster system TZ)"
-    # Currently targeting 1:00 AM Daily
-    value: "0 1 * * *"
+    value: "0 8 * * *"
     required: true
   - name: "SOURCE_IMAGE_NAME"
     displayName: "Source Image Name"
@@ -33,51 +36,35 @@ parameters:
     description: "The base OpenShift docker registry"
     displayName: "Docker Image Registry"
     required: true
-    # Set value to "docker-registry.default.svc:5000" if using OCP3
     value: "image-registry.openshift-image-registry.svc:5000"
   - name: "IMAGE_NAMESPACE"
     displayName: "Image Namespace"
     description: "The namespace of the OpenShift project containing the imagestream for the application."
     required: true
-    value: "backup-container"
   - name: "TAG_NAME"
     displayName: "Environment TAG name"
     description: "The TAG name for this environment, e.g., dev, test, prod"
     required: true
-    value: "dev"
-  - name: "DATABASE_SERVICE_NAME"
-    displayName: "Database Service Name"
-    description: "The name of the database service."
-    required: true
-    value: "postgresql"
+    value: latest
   - name: "DATABASE_DEFAULT_PORT"
     displayName: "Database Service Port"
     description: "The configured port for the database service"
-    required: true
     value: "5432"
   - name: "DATABASE_NAME"
     displayName: "Database Name"
     description: "The name of the database."
-    required: true
-    value: "MyDatabase"
-  - name: "DATABASE_DEPLOYMENT_NAME"
-    displayName: "Database Deployment Name"
-    description: "The name associated to the database deployment resources.  In particular, this is used to wire up the credentials associated to the database."
-    required: true
-    value: "postgresql"
+    value: fom
   - name: DATABASE_USER_KEY_NAME
     displayName: Database User Key Name
     description:
       The database user key name stored in database deployment resources specified
-      by DATABASE_DEPLOYMENT_NAME.
-    required: true
+      by DATABASE_SECRET_NAME.
     value: database-user
   - name: DATABASE_PASSWORD_KEY_NAME
     displayName: Database Password Key Name
     description:
       The database password key name stored in database deployment resources
-      specified by DATABASE_DEPLOYMENT_NAME.
-    required: true
+      specified by DATABASE_SECRET_NAME.
     value: database-password
   - name: "BACKUP_STRATEGY"
     displayName: "Backup Strategy"
@@ -133,12 +120,11 @@ objects:
   - kind: ConfigMap
     apiVersion: v1
     metadata:
-      name: "${JOB_NAME}-config"
+      name: ${NAME}-${ZONE}-config
       labels:
-        template: "${JOB_NAME}-config-template"
-        cronjob: "${JOB_NAME}"
+        cronjob: ${NAME}-${ZONE}
     data:
-      DATABASE_SERVICE_NAME: "${DATABASE_SERVICE_NAME}"
+      DATABASE_SERVICE_NAME: "${NAME}-${ZONE}-db"
       DEFAULT_PORT: "${DATABASE_DEFAULT_PORT}"
       POSTGRESQL_DATABASE: "${DATABASE_NAME}"
       # BACKUP_STRATEGY: "daily"
@@ -148,12 +134,11 @@ objects:
       RETENTION.WEEKLY_BACKUPS: "${WEEKLY_BACKUPS}"
       RETENTION.MONTHLY_BACKUPS: "${MONTHLY_BACKUPS}"
   - kind: "CronJob"
-    apiVersion: "batch/v1beta1"
+    apiVersion: "batch/v1"
     metadata:
-      name: "${JOB_NAME}"
+      name: ${NAME}-${ZONE}
       labels:
-        template: "${JOB_NAME}-cronjob"
-        cronjob: "${JOB_NAME}"
+        cronjob: ${NAME}-${ZONE}
     spec:
       schedule: "${SCHEDULE}"
       concurrencyPolicy: "Forbid"
@@ -162,20 +147,17 @@ objects:
       jobTemplate:
         metadata:
           labels:
-            template: "${JOB_NAME}-job"
-            cronjob: "${JOB_NAME}"
+            cronjob: ${NAME}-${ZONE}
         spec:
           backoffLimit: ${{JOB_BACKOFF_LIMIT}}
           template:
             metadata:
               labels:
-                template: "${JOB_NAME}-job"
-                cronjob: "${JOB_NAME}"
+                cronjob: ${NAME}-${ZONE}
             spec:
               containers:
-                - name: "${JOB_NAME}-cronjob"
+                - name: ${NAME}-${ZONE}
                   image: "${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/${SOURCE_IMAGE_NAME}:${TAG_NAME}"
-                  # image: backup
                   command:
                     - "/bin/bash"
                     - "-c"
@@ -189,57 +171,57 @@ objects:
                     - name: BACKUP_STRATEGY
                       valueFrom:
                         configMapKeyRef:
-                          name: "${JOB_NAME}-config"
+                          name: "${NAME}-${ZONE}-config"
                           key: BACKUP_STRATEGY
                     - name: NUM_BACKUPS
                       valueFrom:
                         configMapKeyRef:
-                          name: "${JOB_NAME}-config"
+                          name: "${NAME}-${ZONE}-config"
                           key: RETENTION.NUM_BACKUPS
                           optional: true
                     - name: DAILY_BACKUPS
                       valueFrom:
                         configMapKeyRef:
-                          name: "${JOB_NAME}-config"
+                          name: "${NAME}-${ZONE}-config"
                           key: RETENTION.DAILY_BACKUPS
                           optional: true
                     - name: WEEKLY_BACKUPS
                       valueFrom:
                         configMapKeyRef:
-                          name: "${JOB_NAME}-config"
+                          name: "${NAME}-${ZONE}-config"
                           key: RETENTION.WEEKLY_BACKUPS
                           optional: true
                     - name: MONTHLY_BACKUPS
                       valueFrom:
                         configMapKeyRef:
-                          name: "${JOB_NAME}-config"
+                          name: "${NAME}-${ZONE}-config"
                           key: RETENTION.MONTHLY_BACKUPS
                           optional: true
                     - name: DATABASE_SERVICE_NAME
                       valueFrom:
                         configMapKeyRef:
-                          name: "${JOB_NAME}-config"
+                          name: "${NAME}-${ZONE}-config"
                           key: DATABASE_SERVICE_NAME
                     - name: DEFAULT_PORT
                       valueFrom:
                         configMapKeyRef:
-                          name: "${JOB_NAME}-config"
+                          name: "${NAME}-${ZONE}-config"
                           key: DEFAULT_PORT
                           optional: true
                     - name: POSTGRESQL_DATABASE
                       valueFrom:
                         configMapKeyRef:
-                          name: "${JOB_NAME}-config"
+                          name: "${NAME}-${ZONE}-config"
                           key: POSTGRESQL_DATABASE
                     - name: DATABASE_USER
                       valueFrom:
                         secretKeyRef:
-                          name: "${DATABASE_DEPLOYMENT_NAME}"
+                          name: ${NAME}-${ZONE}-db
                           key: "${DATABASE_USER_KEY_NAME}"
                     - name: DATABASE_PASSWORD
                       valueFrom:
                         secretKeyRef:
-                          name: "${DATABASE_DEPLOYMENT_NAME}"
+                          name: ${NAME}-${ZONE}-db
                           key: "${DATABASE_PASSWORD_KEY_NAME}"
               volumes:
                 - name: backup
