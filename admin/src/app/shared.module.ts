@@ -4,7 +4,6 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { LinkifyPipe } from '../core/pipes/linkify.pipe';
 import { NewlinesPipe } from '../core/pipes/newlines.pipe';
 import { OrderByPipe } from '../core/pipes/order-by.pipe';
 import { PublishedPipe } from '../core/pipes/published.pipe';
@@ -24,7 +23,7 @@ import { FileUploadComponent } from './file-upload/file-upload.component';
 @NgModule({
   imports: [BrowserModule, MatSlideToggleModule, MatSnackBarModule, MatDialogModule, MatProgressBarModule, NgxDropzoneModule, MatIconModule, FontAwesomeModule],//LeafletModule
 
-  declarations: [OrderByPipe, NewlinesPipe, PublishedPipe, LinkifyPipe, FileUploadComponent, DialogComponent, ButtonComponent,
+  declarations: [OrderByPipe, NewlinesPipe, PublishedPipe, FileUploadComponent, DialogComponent, ButtonComponent,
     FileRowComponent, AppFormControlDirective, FormGroupComponent, UploadBoxComponent],
 
   exports: [
@@ -34,7 +33,6 @@ import { FileUploadComponent } from './file-upload/file-upload.component';
     OrderByPipe,
     NewlinesPipe,
     PublishedPipe,
-    LinkifyPipe,
     FileUploadComponent,
     DialogComponent,
     AppFormControlDirective,

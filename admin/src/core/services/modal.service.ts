@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
-import { ComponentType } from '@angular/cdk/portal';
 import { DialogData } from '../models/dialog';
 import { DialogComponent } from '../components/dialog/dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -21,23 +20,6 @@ export class ModalService {
 
   openSnackBar( { message, button }: { message: string, button?: string; } ) {
     return this.snackBar.open( message, button ?? button, { verticalPosition: 'top', panelClass: 'snackbar'} )
-  }
-
-  /**
-   * open custom dialog
-   *
-   * @param dialogComponent  accetps a component Class
-   * @param params
-   */
-  openCustomDialog<T>(dialogComponent: ComponentType<T>, params: MatDialogConfig): MatDialogRef<any> {
-    const { data = null, disableClose = false } = params;
-
-    return this.dialog.open(dialogComponent, {
-      ...params,
-      data,
-      width: '90%',
-      disableClose,
-    });
   }
 
   openDialog(config: { data: DialogData }): MatDialogRef<any> {
