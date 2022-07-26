@@ -10,11 +10,11 @@ RUN cd libs && \
     cd ../public && \
     npm ci && \
     npm run build:public && \
-    rm -rf node_modules && \
-    npm i typescript@~4.1.6 express@^4.17.1 helmet@^4.6.0
+    rm -rf node_modules
 
 # Deployment container
-FROM registry.access.redhat.com/ubi8/ubi-micro
+# FROM registry.access.redhat.com/ubi8/ubi-micro
+FROM caddy:2
 
 # Vars - configured for local development
 ENV FOM_ENV=dev
@@ -32,14 +32,13 @@ COPY --from=builder /usr/lib64/libbrotlicommon.so.1 /usr/lib64/
 
 # Copy over app
 WORKDIR /app
-COPY --from=builder /app/public/node_modules ./node_modules
 COPY --from=builder /app/public/dist ./dist
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/public/server.js .
+COPY --from=builder /app/public/Caddyfile .
 
 # Expose port - mostly a convention, for readability
-EXPOSE 4300
+EXPOSE 4300 2019 80 443
 
 # Start up command
-USER 1001
-ENTRYPOINT ["node", "server.js"]
+USER 1001 
+ENTRYPOINT ["caddy", "run"]

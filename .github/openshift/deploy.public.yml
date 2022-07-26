@@ -141,10 +141,18 @@ objects:
               volumeMounts:
                 - mountPath: /app/dist/${COMPONENT}/assets/env
                   name: env-config
+                - mountPath: /data
+                  name: caddy-data
+                - mountPath: /config
+                  name: caddy-config
           volumes:
             - name: env-config
               configMap:
                 name: ${NAME}-${ZONE}-${COMPONENT}
+            - name: caddy-data
+              emptyDir: {}
+            - name: caddy-config
+              emptyDir: {}
   - apiVersion: v1
     kind: Service
     metadata:

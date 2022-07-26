@@ -1,0 +1,49 @@
+# Caddy's configuration file to serve up frontend. (Require Caddy installed/downloaded in system)
+# Local: Assume local build is ready at './dist/admin'; at root working directory run command "caddy run --watch" at console.
+#        Then access local frontend app: http://localhost:4300/admin/
+
+:4200 {
+    log {
+        level DEBUG
+        format json
+        output stdout
+    }
+
+    # Good practice to compress responses.
+    encode zstd gzip
+
+    root /* ./dist/admin
+
+    header {
+        # allow caching for 5 minutes, for refreshing after deployments.
+        Cache-Control "public, max-age=300"
+        Content-Security-Policy "connect-src 'self' https://*.gov.bc.ca http://*.gov.bc.ca;form-action 'self';img-src 'self' https://server.arcgisonline.com data: https://services.arcgisonline.com data: https://maps.gov.bc.ca;frame-src 'self' https://*.gov.bc.ca;default-src 'self';base-uri 'self';block-all-mixed-content;font-src 'self' https: data:;frame-ancestors 'self';object-src 'none';script-src 'self';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests;"
+        
+        # For connect-src: add "*" if testing locally, will also need to bypass CORS in the API.
+        # For frame-src: gov.bc.ca is for keycloak.
+    }
+
+   # 'handle_path' does the match of the path and stripping the matched prefix out.
+    handle_path /admin/* {
+        try_files {path} {path}/ {file} /index.html
+    }
+
+    file_server
+}
+
+##################
+# Some Notes.
+##################
+
+# If 'root' directive is used, it has to be before other directives such as 'try_files'.
+
+# Below only work for general, it does not work for subfolder files access; e.g., /admin/assets
+# try_files {path} {path}/ {file} /index.html
+
+# This is similar like handle_path above and works as well for try_files subfolders.
+# route /admin/* {
+#      uri strip_prefix /admin
+#      try_files {path} {path}/ {file} /index.html
+# }
+
+# Multi-lines for header's Content-Security-Policy won't work, it has to be enclosed in double quote as one line.

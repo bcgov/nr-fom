@@ -531,5 +531,5 @@ jobs:
           allow-repeats: false
           message: |
             [Dev - api](https://${{ env.NAME }}-${{ github.event.number }}.apps.silver.devops.gov.bc.ca/api) available
-            [Dev - admin](https://${{ env.NAME }}-${{ github.event.number }}.apps.silver.devops.gov.bc.ca/admin) available
-            [Dev - public](https://${{ env.NAME }}-${{ github.event.number }}.apps.silver.devops.gov.bc.ca/public) available
+            [Dev - admin](https://${{ env.NAME }}-${{ github.event.number }}.apps.silver.devops.gov.bc.ca/admin/) available
+            [Dev - public](https://${{ env.NAME }}-${{ github.event.number }}.apps.silver.devops.gov.bc.ca/public/) available
