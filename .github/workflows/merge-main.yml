@@ -3,90 +3,27 @@ name: Merge to Main
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - ".github/ISSUE_TEMPLATE/*"
-      - "**.md"
+    paths-ignore: [".github/ISSUE_TEMPLATE/*", "**.md"]
   workflow_dispatch:
-
-env:
-  NAME: fom
 
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
-  codeql:
-    name: CodeQL Analysis
-    runs-on: ubuntu-22.04
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Initialize
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-
-      # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-      # If this step fails, then you should remove it and run the build manually (see below)
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-
   deploy-test:
     name: TEST Deploys
     environment: test
-    env:
-      ZONE: test
-    runs-on: ubuntu-22.04
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        name: [api, admin, db, init, public]
-        include:
-          - name: api
-            file: api/openshift.deploy.yml
-            overwrite: true
-            parameters:
-              -p OC_NAMESPACE=a4b31c-test
-              -p URL=fom-test.nrs.gov.bc.ca
-              -p FOM_EMAIL_NOTIFY=FLNR.AdminServicesCariboo@gov.bc.ca
-              -p DB_TESTDATA=true
-              -p AWS_USER_POOLS_WEB_CLIENT_ID="k3b9ip1vf85o4tkqvu5g4adgj"
-              -p LOGOUT_CHAIN_URL="https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri="
-          - name: admin
-            file: admin/openshift.deploy.yml
-            overwrite: true
-            parameters: -p URL=fom-test.nrs.gov.bc.ca
-          - name: db
-            file: db/openshift.deploy.yml
-            overwrite: false
-          - name: init
-            file: libs/openshift.init.yml
-            overwrite: false
-          - name: public
-            file: public/openshift.deploy.yml
-            overwrite: true
-            parameters: -p URL=fom-test.nrs.gov.bc.ca
-    steps:
-      - uses: bcgov-nr/action-deployer-openshift@v2.1.0
-        with:
-          file: ${{ matrix.file }}
-          oc_namespace: ${{ vars.OC_NAMESPACE }}
-          oc_server: ${{ vars.OC_SERVER }}
-          oc_token: ${{ secrets.OC_TOKEN }}
-          overwrite: ${{ matrix.overwrite }}
-          penetration_test: false
-          parameters:
-            -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ env.ZONE }}
-            -p ZONE=${{ env.ZONE }} ${{ matrix.parameters }}
+    uses: ./.github/workflows/.deploy.yml
+    secrets: inherit
+    with:
+      aws_id: "k3b9ip1vf85o4tkqvu5g4adgj"
+      batch_secret: "fom-demo-client-app-api"
+      fom_email: "FLNR.AdminServicesCariboo@gov.bc.ca"
+      logout_url: "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri="
+      target: test
+      testdata: true
+      url: fom-test.nrs.gov.bc.ca
 
   certbot-test:
     name: Certbot

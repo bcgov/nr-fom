@@ -1,0 +1,36 @@
+name: .Builds
+
+on:
+  workflow_call:
+    inputs:
+      ### Required
+      tag:
+        description: Build tag for the deployment; usually PR number or demo
+        required: true
+        type: string
+
+      ### Typical / recommended
+      tag_fallback:
+        description: Fallback tag, used if no build is required
+        required: false
+        type: string
+
+jobs:
+  builds:
+    name: Builds
+    runs-on: ubuntu-22.04
+    permissions:
+      packages: write
+    strategy:
+      matrix:
+        package: [admin, api, db, public]
+    steps:
+      - uses: bcgov-nr/action-builder-ghcr@v2.0.2
+        with:
+          package: ${{ matrix.package }}
+          build_context: ./
+          build_file: ${{ matrix.package }}/Dockerfile
+          keep_versions: 100
+          tag: ${{ inputs.tag }}
+          tag_fallback: ${{ inputs.tag_fallback }}
+          triggers: ('${{ matrix.package }}/' 'libs/')

@@ -1,0 +1,107 @@
+name: .Deploys
+
+on:
+  workflow_call:
+    inputs:
+      ### Required
+      tag:
+        description: Build tag for the deployment; usually PR number or demo
+        required: true
+        type: string
+      target:
+        description: Target zone for deploy; usually PR number, test or prod
+        required: true
+        type: string
+      url:
+        description: URL for the deployment set; e.g. fom-123.apps.silver.devops.gov.bc.ca
+        required: true
+        type: string
+
+      ### Typical / recommended
+      aws_id:
+        description: AWS User Pools Web Client ID
+        required: false
+        type: string
+        default: 7hpo4qa7j0hs0rkfl2pm0sto5k
+      batch_secret:
+        description: Batch secret
+        required: false
+        type: string
+        default: fom-client-app-api
+      certbot:
+        description: Use certbot?
+        required: false
+        type: boolean
+        default: false
+      environment:
+        description: GitHub environment; e.g. test, prod
+        required: false
+        type: string
+      fom_email:
+        description: Email for FOM
+        required: false
+        type: string
+        default: SIBIFSAF@victoria1.gov.bc.ca
+      logout_url:
+        description: Logout chain URL
+        required: false
+        type: string
+        default: https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri=
+      replicas:
+        description: Number of replicas to deploy
+        required: false
+        type: string
+        default: 1
+      testdata:
+        description: Use test data for database?
+        required: false
+        type: boolean
+        default: false
+      triggers:
+        description: Paths to trigger a deploy; omit=always; e.g. ('backend/' 'frontend/')
+        required: false
+        type: string
+
+jobs:
+  deploys:
+    name: Deploys
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        dir: [api, admin, db, public]
+        include:
+          - dir: admin
+            parameters:
+              -p CERTBOT=${{ inputs.certbot }}
+              -p REPLICA_COUNT=${{ inputs.replicas }}
+              -p URL=${{ inputs.url }}
+          - dir: api
+            parameters:
+              -p AWS_USER_POOLS_WEB_CLIENT_ID="${{ inputs.aws_id }}"
+              -p BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME="${{ inputs.batch_secret }}"
+              -p CERTBOT=${{ inputs.certbot }}
+              -p DB_TESTDATA=${{ inputs.testdata }}
+              -p FOM_EMAIL_NOTIFY=${{ inputs.fom_email }}
+              -p LOGOUT_CHAIN_URL="${{ inputs.logout_url }}"
+              -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
+              -p REPLICA_COUNT=${{ inputs.replicas }}
+              -p URL=${{ inputs.url }}
+          - dir: db
+            overwrite: false
+          - dir: public
+            parameters:
+              -p CERTBOT=${{ inputs.certbot }}
+              -p REPLICA_COUNT=${{ inputs.replicas }}
+              -p URL=${{ inputs.url }}
+    steps:
+      - uses: bcgov-nr/action-deployer-openshift@v2.0.0
+        with:
+          file: ${{ matrix.dir }}/openshift.deploy.yml
+          oc_namespace: ${{ vars.OC_NAMESPACE }}
+          oc_server: ${{ vars.OC_SERVER }}
+          oc_token: ${{ secrets.OC_TOKEN }}
+          overwrite: ${{ matrix.overwrite }}
+          parameters: -p TAG=${{ inputs.tag }} -p ZONE=${{ inputs.target }} ${{ matrix.parameters }}
+          triggers: ${{ inputs.triggers }}

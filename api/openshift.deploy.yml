@@ -1,11 +1,5 @@
 apiVersion: template.openshift.io/v1
 kind: Template
-metadata:
-  name: ${NAME}
-  annotations:
-    description: "Forest Operations Map"
-    tags: "fom"
-    iconClass: icon-js
 labels:
   app: ${NAME}-${ZONE}
   app.kubernetes.io/part-of: ${NAME}-${ZONE}
@@ -16,6 +10,9 @@ parameters:
   - name: COMPONENT
     description: Component name
     value: api
+  - name: TAG
+    description: Image build tag to import and deploy
+    required: true
   - name: ZONE
     description: Deployment zone, e.g. pr-### or prod
     required: true
@@ -42,12 +39,6 @@ parameters:
     value: 30m
   - name: MEMORY_REQUEST
     value: 150Mi
-  - name: REGISTRY
-    description: Container registry to import from (internal is image-registry.openshift-image-registry.svc:5000)
-    value: ghcr.io
-  - name: PROMOTE
-    description: Image (namespace/name:tag) to promote/import
-    required: true
   - name: CRON_MINUTES
     description: Random number, 0-60, for scheduling cronjobs
     from: "[0-5]{1}[0-9]{1}"
@@ -77,7 +68,7 @@ parameters:
     value: "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri="
     required: true
   - name: BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME
-    description: OP secrete name for CLIENT API Token.
+    description: OP secret name for CLIENT API Token.
     value: "fom-client-app-api"
   - name: OC_NAMESPACE
     description: OpenShift namespace containing imported images
@@ -93,10 +84,10 @@ objects:
       lookupPolicy:
         local: false
       tags:
-        - name: ${ZONE}-api
+        - name: latest
           from:
             kind: DockerImage
-            name: ${REGISTRY}/${PROMOTE}
+            name: ghcr.io/bcgov/nr-fom/${COMPONENT}:${TAG}
           referencePolicy:
             type: Local
   - apiVersion: v1
@@ -149,7 +140,7 @@ objects:
               - ${NAME}
             from:
               kind: ImageStreamTag
-              name: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-api
+              name: ${NAME}-${ZONE}-${COMPONENT}:latest
       selector:
         deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
       template:
@@ -159,7 +150,7 @@ objects:
             deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
         spec:
           containers:
-            - image: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-api
+            - image: ${NAME}-${ZONE}-${COMPONENT}:latest
               imagePullPolicy: Always
               name: ${NAME}
               env:
@@ -323,7 +314,7 @@ objects:
               containers:
                 - name: ${NAME}-batch
                   # Full image name required due to bug https://bugzilla.redhat.com/show_bug.cgi?id=2000216
-                  image: image-registry.apps.silver.devops.gov.bc.ca/${OC_NAMESPACE}/${NAME}-${ZONE}-${COMPONENT}:${ZONE}-api
+                  image: image-registry.apps.silver.devops.gov.bc.ca/${OC_NAMESPACE}/${NAME}-${ZONE}-${COMPONENT}:latest
                   imagePullPolicy: Always
                   args: ["-batchWorkflowStateChange"]
                   env:
@@ -386,7 +377,7 @@ objects:
               containers:
                 - name: ${NAME}-batch
                   # Full image name required due to bug https://bugzilla.redhat.com/show_bug.cgi?id=2000216
-                  image: image-registry.apps.silver.devops.gov.bc.ca/${OC_NAMESPACE}/${NAME}-${ZONE}-${COMPONENT}:${ZONE}-api
+                  image: image-registry.apps.silver.devops.gov.bc.ca/${OC_NAMESPACE}/${NAME}-${ZONE}-${COMPONENT}:latest
                   imagePullPolicy: Always
                   args: ["-batchForestClientDataRefresh"]
                   env:

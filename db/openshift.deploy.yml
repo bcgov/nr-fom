@@ -1,11 +1,5 @@
 apiVersion: template.openshift.io/v1
 kind: Template
-metadata:
-  name: ${NAME}
-  annotations:
-    description: "Forest Operations Map"
-    tags: "fom"
-    iconClass: icon-js
 labels:
   app: ${NAME}-${ZONE}
   app.kubernetes.io/part-of: ${NAME}-${ZONE}
@@ -16,16 +10,16 @@ parameters:
   - name: COMPONENT
     description: Component name
     value: db
+  - name: TAG
+    description: Image build tag to import and deploy
+    required: true
   - name: ZONE
     description: Deployment zone, e.g. pr-### or prod
     required: true
   - description: Volume space available for data, e.g. 512Mi, 2Gi.
-    displayName: Database Volume Capacity
     name: DB_PVC_SIZE
     required: true
     value: 1Gi
-  - name: REGISTRY
-    value: ghcr.io
   - name: CPU_REQUEST
     value: 30m
   - name: MEMORY_REQUEST
@@ -34,11 +28,14 @@ parameters:
     value: 1000m
   - name: MEMORY_LIMIT
     value: 1Gi
-  - name: PROMOTE
-    description: Image (namespace/name:tag) to promote/import
-    required: true
-  - name: URL
-    description: Dummy parameter to make workflows easier
+  - name: POSTGRES_PASSWORD
+    description: Password for the PostgreSQL connection user.
+    from: "[a-zA-Z0-9]{16}"
+    generate: expression
+  - name: DATA_ENCRYPTION_KEY
+    description: Secret key for data encryption within database
+    from: "[a-zA-Z0-9]{16}"
+    generate: expression
   ### Backup-Container starts here ###
   - name: BACKUP_COMPONENT
     description: BACKUP_COMPONENT name
@@ -94,6 +91,24 @@ parameters:
     from: "[0-5]{1}[0-9]{1}"
     generate: expression
 objects:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: ${NAME}-${ZONE}-db
+      labels:
+        app: ${NAME}-${ZONE}
+    stringData:
+      database-db: fom
+      database-password: ${POSTGRES_PASSWORD}
+      database-user: postgres
+  - kind: Secret
+    apiVersion: v1
+    metadata:
+      name: ${NAME}-${ZONE}-api
+      labels:
+        app: ${NAME}-${ZONE}
+    stringData:
+      data-encryption-key: ${DATA_ENCRYPTION_KEY}
   - kind: PersistentVolumeClaim
     apiVersion: v1
     metadata:
@@ -117,10 +132,10 @@ objects:
       lookupPolicy:
         local: false
       tags:
-        - name: ${ZONE}-db
+        - name: latest
           from:
             kind: DockerImage
-            name: ${REGISTRY}/${PROMOTE}
+            name: ghcr.io/bcgov/nr-fom/${COMPONENT}:${TAG}
           referencePolicy:
             type: Local
   - kind: DeploymentConfig
@@ -140,7 +155,7 @@ objects:
               - ${NAME}
             from:
               kind: ImageStreamTag
-              name: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-db
+              name: ${NAME}-${ZONE}-${COMPONENT}:latest
       selector:
         deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
       strategy:
@@ -161,7 +176,7 @@ objects:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}
           containers:
             - name: ${NAME}
-              image: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-db
+              image: ${NAME}-${ZONE}-${COMPONENT}:latest
               ports:
                 - containerPort: 5432
                   protocol: TCP

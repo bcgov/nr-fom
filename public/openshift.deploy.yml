@@ -1,11 +1,5 @@
 apiVersion: template.openshift.io/v1
 kind: Template
-metadata:
-  name: ${NAME}
-  annotations:
-    description: "Forest Operations Map"
-    tags: "fom"
-    iconClass: icon-js
 labels:
   app: ${NAME}-${ZONE}
   app.kubernetes.io/part-of: ${NAME}-${ZONE}
@@ -16,6 +10,9 @@ parameters:
   - name: COMPONENT
     description: Component name
     value: public
+  - name: TAG
+    description: Image build tag to import and deploy
+    required: true
   - name: ZONE
     description: Deployment zone, e.g. pr-### or prod
     required: true
@@ -29,12 +26,6 @@ parameters:
     value: 20m
   - name: MEMORY_REQUEST
     value: 50Mi
-  - name: REGISTRY
-    description: Container registry to import from (internal is image-registry.openshift-image-registry.svc:5000)
-    value: ghcr.io
-  - name: PROMOTE
-    description: Image (namespace/name:tag) to promote/import
-    required: true
   - description: Number of replicas
     displayName: Replica Count
     name: REPLICA_COUNT
@@ -56,10 +47,10 @@ objects:
       lookupPolicy:
         local: false
       tags:
-        - name: ${ZONE}-${COMPONENT}
+        - name: latest
           from:
             kind: DockerImage
-            name: ${REGISTRY}/${PROMOTE}
+            name: ghcr.io/bcgov/nr-fom/${COMPONENT}:${TAG}
           referencePolicy:
             type: Local
   - kind: ConfigMap
@@ -98,7 +89,7 @@ objects:
               - ${NAME}
             from:
               kind: ImageStreamTag
-              name: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-${COMPONENT}
+              name: ${NAME}-${ZONE}-${COMPONENT}:latest
       selector:
         deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
       template:
@@ -108,7 +99,7 @@ objects:
             deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
         spec:
           containers:
-            - image: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-${COMPONENT}
+            - image: ${NAME}-${ZONE}-${COMPONENT}:latest
               securityContext:
                 capabilities:
                   add: ["NET_BIND_SERVICE"]

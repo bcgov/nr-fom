@@ -1,10 +1,12 @@
-name: Unit Tests and Analysis
+name: Analysis
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, ready_for_review]
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
   push:
     branches: [main]
+  schedule:
+    - cron: "30 8 1 * *" # 8:30 UDT = 12:30 PDT, runs monthly
   workflow_dispatch:
 
 concurrency:
@@ -14,7 +16,7 @@ concurrency:
 jobs:
   tests:
     name: Unit Tests
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    if: ${{ ! github.event.pull_request.draft }}
     runs-on: ubuntu-22.04
     steps:
       - uses: bcgov-nr/action-test-and-analyse@v1.1.0
@@ -32,10 +34,24 @@ jobs:
             -Dsonar.projectKey=nr-fom
           sonar_token: ${{ secrets.SONAR_TOKEN }}
 
+  codeql:
+    name: CodeQL
+    if: ${{ ! github.event.pull_request.draft }}
+    needs: [tests]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - uses: github/codeql-action/analyze@v3
+
   # https://github.com/marketplace/actions/aqua-security-trivy
   trivy:
     name: Trivy Security Scan
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    if: ${{ ! github.event.pull_request.draft }}
+    needs: [tests]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4

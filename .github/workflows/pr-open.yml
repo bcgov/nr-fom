@@ -1,4 +1,4 @@
-name: Pull Request Open
+name: PR
 
 on:
   pull_request:
@@ -9,142 +9,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  setup:
-    name: Reset the deployment number
-    runs-on: ubuntu-22.04
-    outputs:
-      zone: ${{ steps.calculate.outputs.zone }}
-    steps:
-      - name: Calculate the deployment number
-        id: calculate
-        run: |
-          echo "zone=$((${{ github.event.number }} % 50))" >> $GITHUB_OUTPUT
-
-  prep:
-    name: Prep
-    permissions:
-      pull-requests: write
-    runs-on: ubuntu-22.04
-    needs: setup
-    env:
-      ZONE: ${{ needs.setup.outputs.zone }}
-    steps:
-      - name: PR Greeting
-        if: github.event.action == 'opened' || github.event.action == 'reopened'
-        env:
-          DOMAIN: apps.silver.devops.gov.bc.ca
-        uses: bcgov-nr/action-pr-description-add@v1.1.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          add_markdown: |
-            ---
-            Thanks for the PR!
-
-            Any successful deployments (not always required) will be available below.
-             - [api](https://fom-${{ env.ZONE }}.${{ env.DOMAIN }}/api)
-             - [admin](https://fom-${{ env.ZONE }}.${{ env.DOMAIN }}/admin)
-             - [public](https://fom-${{ env.ZONE }}.${{ env.DOMAIN }}/public)
-
-            Once merged, code will be promoted and handed off to following workflow run.
-             - [Main Merge Workflow](https://github.com/${{ github.repository }}/actions/workflows/merge-main.yml)
-
-      - name: OpenShift Init
-        uses: bcgov-nr/action-deployer-openshift@v2.1.0
-        with:
-          oc_namespace: ${{ vars.OC_NAMESPACE }}
-          oc_server: ${{ vars.OC_SERVER }}
-          oc_token: ${{ secrets.OC_TOKEN }}
-          file: libs/openshift.init.yml
-          overwrite: false
-          parameters: -p ZONE=${{ env.ZONE }}
-          triggers: ('db/' 'libs/' 'api/' 'admin/' 'public/')  
-
+  # https://github.com/bcgov-nr/action-builder-ghcr
   builds:
     name: Builds
-    runs-on: ubuntu-22.04
-    permissions:
-      packages: write
-    needs: setup
-    env:
-      ZONE: ${{ needs.setup.outputs.zone }}
-    strategy:
-      matrix:
-        package: [admin, api, db, public]
-        include:
-          - package: admin
-            build_context: ./
-            build_file: admin/Dockerfile
-            triggers: ('admin/' 'libs/')
-          - package: api
-            build_context: ./
-            build_file: api/Dockerfile
-            triggers: ('api/' 'libs/')
-          - package: db
-            triggers: ('db')
-          - package: public
-            build_context: ./
-            build_file: public/Dockerfile
-            triggers: ('public/' 'libs/')
-    steps:
-      - uses: actions/checkout@v4
-      - uses: bcgov-nr/action-builder-ghcr@v2.0.1
-        with:
-          package: ${{ matrix.package }}
-          build_context: ${{ matrix.build_context }}
-          build_file: ${{ matrix.build_file }}
-          keep_versions: 100
-          tag: ${{ env.ZONE }}
-          tag_fallback: test
-          token: ${{ secrets.GITHUB_TOKEN }}
-          triggers: ${{ matrix.triggers }}
+    uses: ./.github/workflows/.build.yml
+    with:
+      tag: ${{ github.event.number }}
+      tag_fallback: test
 
   deploys:
     name: Deploys
-    needs: [prep, builds, setup]
-    runs-on: ubuntu-22.04
-    env:
-      ZONE: ${{ needs.setup.outputs.zone }}
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        name: [api, admin, db, public]
-        include:
-          - name: api
-            file: api/openshift.deploy.yml
-            overwrite: true
-            parameters:
-              -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
-              -p CERTBOT=false -p REPLICA_COUNT=1
-              -p FOM_EMAIL_NOTIFY=SIBIFSAF@victoria1.gov.bc.ca
-              -p DB_TESTDATA=true
-              -p AWS_USER_POOLS_WEB_CLIENT_ID="7hpo4qa7j0hs0rkfl2pm0sto5k"
-              -p LOGOUT_CHAIN_URL="https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri="
-            triggers: ('db/' 'libs/' 'api/')
-          - name: admin
-            file: admin/openshift.deploy.yml
-            overwrite: true
-            parameters: -p CERTBOT=false -p REPLICA_COUNT=1
-            triggers: ('db/' 'libs/' 'api/' 'admin/')
-          - name: db
-            file: db/openshift.deploy.yml
-            overwrite: false
-            triggers: ('db/' 'libs/' 'api/' 'admin/' 'public/')
-          - name: public
-            file: public/openshift.deploy.yml
-            overwrite: true
-            parameters: -p CERTBOT=false -p REPLICA_COUNT=1
-            triggers: ('db/' 'libs/' 'api/' 'public/')
-    steps:
-      - uses: bcgov-nr/action-deployer-openshift@v2.1.0
-        with:
-          file: ${{ matrix.file }}
-          oc_namespace: ${{ vars.OC_NAMESPACE }}
-          oc_server: ${{ vars.OC_SERVER }}
-          oc_token: ${{ secrets.OC_TOKEN }}
-          overwrite: ${{ matrix.overwrite }}
-          penetration_test: false
-          parameters:
-            -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ env.ZONE }}
-            -p URL=fom-${{ env.ZONE }}.apps.silver.devops.gov.bc.ca
-            -p ZONE=${{ env.ZONE }} ${{ matrix.parameters }}
-          triggers: ${{ matrix.triggers }}
+    needs: [builds]
+    uses: ./.github/workflows/.deploy.yml
+    secrets: inherit
+    with:
+      tag: ${{ github.event.number }}
+      target: ${{ github.event.number }}
+      triggers: ('db/' 'libs/' 'api/' 'admin/' 'public/')
+      url: "fom-$(( ${{ github.event.number }} % 50 )).apps.silver.devops.gov.bc.ca"
