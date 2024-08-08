@@ -10,9 +10,9 @@
   "dependencies": {
     "@angular/common": "^15.2.9",
     "@angular/core": "^15.2.9",
-    "@nestjs/common": "^9.4.0",
-    "@nestjs/core": "^9.4.0",
-    "@nestjs/testing": "^9.4.0",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/testing": "^10.0.0",
     "leaflet": "~1.9.0",
     "leaflet.markercluster": "~1.5.3",
     "rxjs": "~7.8.0",
