@@ -7,10 +7,10 @@
   "prConcurrentLimit": 3,
   "packageRules": [
     {
-      "matchPackagePatterns": [
+      "automerge": false,
+      "matchPackageNames": [
         "*"
-      ],
-      "automerge": false
+      ]
     }
   ],
   "ignoreDeps": [
