@@ -9,24 +9,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  setup:
-    name: Reset the deployment number
+  init:
+    name: Init
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-22.04
     outputs:
-      zone: ${{ steps.calculate.outputs.zone }}
+      route_number: ${{ steps.calculate.outputs.route_number }}
     steps:
       - name: Calculate the deployment number
         id: calculate
         run: |
-          echo "zone=$((${{ github.event.number }} % 50))" >> $GITHUB_OUTPUT
+          echo "route_number=$((${{ github.event.number }} % 50))" >> $GITHUB_OUTPUT
 
-  prep:
-    name: Prep
-    permissions:
-      pull-requests: write
-    runs-on: ubuntu-22.04
-    needs: setup
-    steps:
       - name: OpenShift Init
         uses: bcgov-nr/action-deployer-openshift@v2.3.0
         with:
@@ -35,7 +30,7 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           file: libs/openshift.init.yml
           overwrite: false
-          parameters: -p ZONE=${{ needs.setup.outputs.zone }}
+          parameters: -p ZONE=${{ github.event.number }}
           triggers: ('db/' 'libs/' 'api/' 'admin/' 'public/')  
 
   builds:
@@ -43,9 +38,6 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       packages: write
-    needs: setup
-    env:
-      ZONE: ${{ needs.setup.outputs.zone }}
     strategy:
       matrix:
         package: [admin, api, db, public]
@@ -72,17 +64,15 @@ jobs:
           build_context: ${{ matrix.build_context }}
           build_file: ${{ matrix.build_file }}
           keep_versions: 100
-          tag: ${{ env.ZONE }}
+          tag: ${{ github.event.number }}
           tag_fallback: test
           token: ${{ secrets.GITHUB_TOKEN }}
           triggers: ${{ matrix.triggers }}
 
   deploys:
     name: Deploys
-    needs: [prep, builds, setup]
+    needs: [builds, init]
     runs-on: ubuntu-22.04
-    env:
-      ZONE: ${{ needs.setup.outputs.zone }}
     timeout-minutes: 10
     strategy:
       matrix:
@@ -92,7 +82,6 @@ jobs:
             file: api/openshift.deploy.yml
             overwrite: true
             parameters:
-              -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
               -p REPLICA_COUNT=1
               -p FOM_EMAIL_NOTIFY=SIBIFSAF@victoria1.gov.bc.ca
               -p DB_TESTDATA=true
@@ -107,7 +96,6 @@ jobs:
           - name: db
             file: db/openshift.deploy.yml
             overwrite: false
-            parameters: -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
             triggers: ('db/' 'libs/' 'api/' 'admin/' 'public/')
           - name: public
             file: public/openshift.deploy.yml
@@ -124,7 +112,6 @@ jobs:
           overwrite: ${{ matrix.overwrite }}
           penetration_test: false
           parameters:
-            -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ env.ZONE }}
-            -p URL=fom-${{ env.ZONE }}.apps.silver.devops.gov.bc.ca
-            -p ZONE=${{ env.ZONE }} ${{ matrix.parameters }}
+            -p URL=fom-${{ needs.init.outputs.route_number }}.apps.silver.devops.gov.bc.ca
+            -p ZONE=${{ github.event.number }} ${{ matrix.parameters }}
           triggers: ${{ matrix.triggers }}

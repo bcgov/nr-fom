@@ -32,7 +32,6 @@ jobs:
             oc_version: "4.13"
             overwrite: true
             parameters:
-              -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
               -p URL=fom-test.nrs.gov.bc.ca
               -p FOM_EMAIL_NOTIFY=FLNR.AdminServicesCariboo@gov.bc.ca
               -p DB_TESTDATA=true
@@ -45,7 +44,6 @@ jobs:
           - name: db
             file: db/openshift.deploy.yml
             overwrite: false
-            parameters: -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
           - name: init
             file: libs/openshift.init.yml
             overwrite: false
@@ -64,13 +62,27 @@ jobs:
           overwrite: ${{ matrix.overwrite }}
           penetration_test: false
           parameters:
-            -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:${{ env.ZONE }}
             -p ZONE=${{ env.ZONE }} ${{ matrix.parameters }}
           post_rollout: ${{ matrix.post_rollout }}
 
+  prod-promotions:
+    name: Promote images to PROD
+    needs: [deploy-test]
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        component: [api, admin, db, public]
+    steps:
+      - uses: shrink/actions-docker-registry-tag@v4
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.component }}
+          target: test
+          tags: prod
+
   deploy-prod:
     name: PROD Deploys
-    needs: [deploy-test]
+    needs: [prod-promotions]
     environment: prod
     env:
       ZONE: prod
@@ -85,7 +97,6 @@ jobs:
             oc_version: "4.13"
             overwrite: true
             parameters:
-              -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
               -p URL=fom.nrs.gov.bc.ca
               -p AWS_USER_POOLS_WEB_CLIENT_ID="4bu2n8at3m32a2fqnvd4t06la1"
               -p LOGOUT_CHAIN_URL="https://logon7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri="
@@ -98,7 +109,6 @@ jobs:
           - name: db
             file: db/openshift.deploy.yml
             overwrite: false
-            parameters: -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
           - name: init
             file: libs/openshift.init.yml
             overwrite: false
@@ -117,21 +127,5 @@ jobs:
           overwrite: ${{ matrix.overwrite }}
           penetration_test: false
           parameters:
-            -p PROMOTE=${{ github.repository }}/${{ matrix.name }}:test
             -p ZONE=${{ env.ZONE }} ${{ matrix.parameters }}
           post_rollout: ${{ matrix.post_rollout }}
-
-  image-promotions:
-    name: Promote images to PROD
-    needs: [deploy-prod]
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        component: [api, admin, db, public]
-    steps:
-      - uses: shrink/actions-docker-registry-tag@v4
-        with:
-          registry: ghcr.io
-          repository: ${{ github.repository }}/${{ matrix.component }}
-          target: test
-          tags: prod

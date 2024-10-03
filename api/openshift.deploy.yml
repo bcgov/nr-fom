@@ -44,9 +44,9 @@ parameters:
   - name: REGISTRY
     description: Container registry to import from (internal is image-registry.openshift-image-registry.svc:5000)
     value: ghcr.io
-  - name: PROMOTE
-    description: Image (namespace/name:tag) to promote/import
-    required: true
+  - name: ORG
+    description: Organization name
+    value: bcgov
   - name: CRON_MINUTES
     description: Random number, 0-60, for scheduling cronjobs
     from: "[0-5]{1}[0-9]{1}"
@@ -78,26 +78,11 @@ parameters:
   - name: BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME
     description: OP secrete name for CLIENT API Token.
     value: "fom-client-app-api"
-  - name: OC_NAMESPACE
-    description: OpenShift namespace containing imported images
-    required: true
+  - name: RANDOM_EXPRESSION
+    description: Random expression to make sure deployments update
+    from: "[a-zA-Z0-9]{32}"
+    generate: expression
 objects:
-  - apiVersion: v1
-    kind: ImageStream
-    metadata:
-      labels:
-        app: ${NAME}-${ZONE}
-      name: ${NAME}-${ZONE}-${COMPONENT}
-    spec:
-      lookupPolicy:
-        local: false
-      tags:
-        - name: ${ZONE}-api
-          from:
-            kind: DockerImage
-            name: ${REGISTRY}/${PROMOTE}
-          referencePolicy:
-            type: Local
   - apiVersion: v1
     kind: ConfigMap
     data:
@@ -120,8 +105,8 @@ objects:
         }
     metadata:
       name: ${NAME}-${ZONE}-${COMPONENT}
-  - apiVersion: v1
-    kind: DeploymentConfig
+  - apiVersion: apps/v1
+    kind: Deployment
     metadata:
       labels:
         app: ${NAME}-${ZONE}
@@ -131,7 +116,7 @@ objects:
       revisionHistoryLimit: 10
       test: false
       strategy:
-        type: Rolling
+        type: RollingUpdate
         rollingParams:
           # Delay pod updates to account for time to run migrations
           updatePeriodSeconds: 30
@@ -139,26 +124,17 @@ objects:
           timeoutSeconds: 600
           maxUnavailable: 25%
           maxSurge: 25%
-      triggers:
-        - type: ConfigChange
-        - type: ImageChange
-          imageChangeParams:
-            automatic: true
-            containerNames:
-              - ${NAME}
-            from:
-              kind: ImageStreamTag
-              name: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-api
       selector:
-        deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
+        matchLabels:
+          deployment: ${NAME}-${ZONE}-${COMPONENT}
       template:
         metadata:
           labels:
             app: ${NAME}-${ZONE}
-            deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
+            deployment: ${NAME}-${ZONE}-${COMPONENT}
         spec:
           containers:
-            - image: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-api
+            - image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${ZONE}
               imagePullPolicy: Always
               name: ${NAME}
               env:
@@ -225,6 +201,8 @@ objects:
                     secretKeyRef:
                       key: api_token
                       name: ${BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME}
+                - name: RANDOM_EXPRESSION
+                  value: ${RANDOM_EXPRESSION}
               ports:
                 - containerPort: ${{PORT}}
                   protocol: TCP
@@ -283,7 +261,7 @@ objects:
           port: 80
           targetPort: ${{PORT}}
       selector:
-        deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
+        deployment: ${NAME}-${ZONE}-${COMPONENT}
   - apiVersion: route.openshift.io/v1
     kind: Route
     metadata:
@@ -325,7 +303,7 @@ objects:
               containers:
                 - name: ${NAME}-batch
                   # Full image name required due to bug https://bugzilla.redhat.com/show_bug.cgi?id=2000216
-                  image: image-registry.apps.silver.devops.gov.bc.ca/${OC_NAMESPACE}/${NAME}-${ZONE}-${COMPONENT}:${ZONE}-api
+                  image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${ZONE}
                   imagePullPolicy: Always
                   args: ["-batchWorkflowStateChange"]
                   env:
@@ -388,7 +366,7 @@ objects:
               containers:
                 - name: ${NAME}-batch
                   # Full image name required due to bug https://bugzilla.redhat.com/show_bug.cgi?id=2000216
-                  image: image-registry.apps.silver.devops.gov.bc.ca/${OC_NAMESPACE}/${NAME}-${ZONE}-${COMPONENT}:${ZONE}-api
+                  image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${ZONE}
                   imagePullPolicy: Always
                   args: ["-batchForestClientDataRefresh"]
                   env:

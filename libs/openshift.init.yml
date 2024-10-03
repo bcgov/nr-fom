@@ -36,8 +36,6 @@ parameters:
     description: Secret key for data encryption within database
     from: "[a-zA-Z0-9]{16}"
     generate: expression
-  - name: PROMOTE
-    description: Dummy parameter to make workflows easier
 objects:
   - apiVersion: v1
     kind: Secret

@@ -55,7 +55,6 @@ jobs:
             file: api/openshift.deploy.yml
             overwrite: true
             parameters:
-              -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
               -p URL=fom-demo.apps.silver.devops.gov.bc.ca
               -p FOM_EMAIL_NOTIFY=FLNR.AdminServicesCariboo@gov.bc.ca
               -p DB_TESTDATA=true
@@ -69,7 +68,6 @@ jobs:
           - name: db
             file: db/openshift.deploy.yml
             overwrite: false
-            parameters: -p OC_NAMESPACE=${{ vars.OC_NAMESPACE }}
           - name: init
             file: libs/openshift.init.yml
             overwrite: false
@@ -87,5 +85,4 @@ jobs:
           overwrite: ${{ matrix.overwrite }}
           penetration_test: false
           parameters:
-            -p PROMOTE=ghcr.io/${{ github.repository }}/${{ matrix.name }}:${{ env.ZONE }}
             -p ZONE=${{ env.ZONE }} ${{ matrix.parameters }}

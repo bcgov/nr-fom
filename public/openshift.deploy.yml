@@ -29,9 +29,9 @@ parameters:
   - name: REGISTRY
     description: Container registry to import from (internal is image-registry.openshift-image-registry.svc:5000)
     value: ghcr.io
-  - name: PROMOTE
-    description: Image (namespace/name:tag) to promote/import
-    required: true
+  - name: ORG
+    description: Organization name
+    value: bcgov
   - description: Number of replicas
     displayName: Replica Count
     name: REPLICA_COUNT
@@ -42,23 +42,11 @@ parameters:
     name: CADDY_DATA_PVC_SIZE
     required: true
     value: 22Mi
+  - name: RANDOM_EXPRESSION
+    description: Random expression to make sure deployments update
+    from: "[a-zA-Z0-9]{32}"
+    generate: expression
 objects:
-  - apiVersion: v1
-    kind: ImageStream
-    metadata:
-      labels:
-        app: ${NAME}-${ZONE}
-      name: ${NAME}-${ZONE}-${COMPONENT}
-    spec:
-      lookupPolicy:
-        local: false
-      tags:
-        - name: ${ZONE}-${COMPONENT}
-          from:
-            kind: DockerImage
-            name: ${REGISTRY}/${PROMOTE}
-          referencePolicy:
-            type: Local
   - kind: ConfigMap
     apiVersion: v1
     data:
@@ -67,8 +55,8 @@ objects:
         window.localStorage.setItem('fom_api_base_url', 'https://${URL}');
     metadata:
       name: ${NAME}-${ZONE}-${COMPONENT}
-  - apiVersion: v1
-    kind: DeploymentConfig
+  - apiVersion: apps/v1
+    kind: Deployment
     metadata:
       labels:
         app: ${NAME}-${ZONE}
@@ -78,7 +66,7 @@ objects:
       revisionHistoryLimit: 10
       test: false
       strategy:
-        type: Rolling
+        type: RollingUpdate
         rollingParams:
           updatePeriodSeconds: 1
           intervalSeconds: 1
@@ -86,26 +74,17 @@ objects:
           maxUnavailable: 25%
           maxSurge: 25%
       activeDeadlineSeconds: 21600
-      triggers:
-        - type: ConfigChange
-        - type: ImageChange
-          imageChangeParams:
-            automatic: true
-            containerNames:
-              - ${NAME}
-            from:
-              kind: ImageStreamTag
-              name: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-${COMPONENT}
       selector:
-        deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
+        matchLabels:
+          deployment: ${NAME}-${ZONE}-${COMPONENT}
       template:
         metadata:
           labels:
             app: ${NAME}-${ZONE}
-            deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
+            deployment: ${NAME}-${ZONE}-${COMPONENT}
         spec:
           containers:
-            - image: ${NAME}-${ZONE}-${COMPONENT}:${ZONE}-${COMPONENT}
+            - image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${ZONE}
               securityContext:
                 capabilities:
                   add: ["NET_BIND_SERVICE"]
@@ -116,6 +95,8 @@ objects:
                   value: fom-${ZONE}-api
                 - name: fom_api_base_url
                   value: fom-${ZONE}-api
+                - name: RANDOM_EXPRESSION
+                  value: ${RANDOM_EXPRESSION}
               ports:
                 - containerPort: 4300
                   protocol: TCP
@@ -170,7 +151,7 @@ objects:
           port: 80
           targetPort: 4300
       selector:
-        deploymentconfig: ${NAME}-${ZONE}-${COMPONENT}
+        deployment: ${NAME}-${ZONE}-${COMPONENT}
   - apiVersion: route.openshift.io/v1
     kind: Route
     metadata:
