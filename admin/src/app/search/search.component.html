@@ -1,6 +1,6 @@
 <form #searchForm="ngForm" (ngSubmit)="onSubmit()">
   <div class="top-container" style="overflow-y: hidden;">
-    <div class="container">
+    <div class="container-fluid">
       <div class="title-container">
         <div class="title-container__title">
           <h1 class="text-muted">Search FOMs</h1>
@@ -23,7 +23,7 @@
   </div>
 
   <div class="bottom-container scroll">
-    <div class="container" style="background: #f7f8fa; padding-bottom: 0;">
+    <div class="container-fluid" style="background: #f7f8fa; padding-bottom: 0;">
       <div class="row">
         <div class="form-group col-md-2">
           <label for="fomNumberInput" style="white-space: nowrap;">
@@ -99,7 +99,7 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="container-fluid">
       <div>
         <h2 *ngIf="searched && !searching && count == 0">
           <strong>No results found.</strong>
@@ -125,7 +125,7 @@
               <td class="disp">
                 <strong>{{project.id }}</strong>
               </td>
-              <td
+              <td class="word-wrap"
                 [innerHTML]="project.name ? project.name : '<em>No FOM name on this File</em>'">
               </td>
               <td>

@@ -33,13 +33,6 @@ h2 {
   grid-auto-rows: minmax(0, auto);
 }
 
-// Search Container
-.search-container {
-  padding-top: 2rem;
-  padding-bottom: 1.5rem;
-  background: #f7f8fa;
-}
-
 .filter-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
