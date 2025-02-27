@@ -211,6 +211,11 @@ hr {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
   }
+
+  .container-fluid {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
 }
 
 .bottom-container {
@@ -220,6 +225,11 @@ hr {
   background: #f7f8fa;
 
   .container {
+    padding-bottom: 1.5rem;
+  }
+
+  .container-fluid {
+    padding-top: 1.5rem;
     padding-bottom: 1.5rem;
   }
 }
@@ -246,4 +256,8 @@ input, textarea {
 
 .spacer-height-1 {
     height: 1rem;
+}
+
+.word-wrap {
+  word-wrap: break-word;
 }

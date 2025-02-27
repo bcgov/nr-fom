@@ -1,6 +1,6 @@
 <form #searchForm="ngForm" (ngSubmit)="onSubmit()">
   <div class="top-container" style="overflow-y: hidden;">
-    <div class="container">
+    <div class="container-fluid">
       <div class="title-container">
         <div class="title-container__title">
           <h1 class="text-muted">Search FOMs</h1>
@@ -23,7 +23,7 @@
   </div>
 
   <div class="bottom-container scroll">
-    <div class="container" style="background: #f7f8fa; padding-bottom: 0;">
+    <div class="container-fluid" style="background: #f7f8fa; padding-bottom: 0;">
       <div class="row">
         <div class="form-group col-md-2">
           <label for="fomNumberInput" style="white-space: nowrap;">
@@ -99,7 +99,7 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="container-fluid">
       <div>
         <h2 *ngIf="searched && !searching && count == 0">
           <strong>No results found.</strong>
@@ -109,23 +109,23 @@
         </h2>
         <table class="table" *ngIf="count > 0" aria-label="Search Results">
           <thead>
-          <tr>
-            <th id="fomId" class="disp">FOM Number</th>
-            <th id="fomName" class="client">FOM Name</th>
-            <th id="projectPlanNumber" class="plan">Plan Number</th>
-            <th id="fomHolder" class="client">FOM Holder Name</th>
-            <th id="district">District</th>
-            <th id="fomStatus" class="status">FOM Status</th>
-            <th id="commentClosed">Commenting Closed Date</th>
-            <th id="actions" class="actions"></th>
-          </tr>
+            <tr>
+                <th id="fomId" class="disp">FOM Number</th>
+                <th id="fomName" class="fom-name">FOM Name</th>
+                <th id="projectPlanNumber" class="plan">Plan Number</th>
+                <th id="fomHolder" class="client">FOM Holder Name</th>
+                <th id="district">District</th>
+                <th id="fomStatus" class="status">FOM Status</th>
+                <th id="commentClosed" class="cc-date">Commenting Closed Date</th>
+                <th id="actions" class="actions"></th>
+            </tr>
           </thead>
           <ng-template ngFor let-project [ngForOf]="projects">
             <tr class="app-details">
               <td class="disp">
                 <strong>{{project.id }}</strong>
               </td>
-              <td
+              <td class="word-wrap"
                 [innerHTML]="project.name ? project.name : '<em>No FOM name on this File</em>'">
               </td>
               <td>
@@ -140,7 +140,7 @@
               <td>
                 {{project.workflowState? project.workflowState.description : 'Unknown'}}
               </td>
-              <td>
+              <td class="cc-date">
                 {{project.commentingClosedDate | date:'mediumDate'}}
               </td>
 

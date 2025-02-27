@@ -33,13 +33,6 @@ h2 {
   grid-auto-rows: minmax(0, auto);
 }
 
-// Search Container
-.search-container {
-  padding-top: 2rem;
-  padding-bottom: 1.5rem;
-  background: #f7f8fa;
-}
-
 .filter-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -169,16 +162,28 @@ $sr-table-row-bg: #f7f8fa;
 }
 
 .disp {
-  min-width: 5rem;
+  width: 7%;
   text-align: center;
 }
 
-.status, .plan {
-  width: 7rem;
+.fom-name {
+  width: 18%;
+}
+
+.cc-date {
+  width: 8%;
+  text-align: right;
+}
+
+.status {
+  width: 11%
+} 
+.plan {
+  width: 10%;
 }
 
 .actions {
-  width: 7rem;
+  width: 6rem;
   text-align: right;
   padding-top: 0;
   padding-bottom: 0;
