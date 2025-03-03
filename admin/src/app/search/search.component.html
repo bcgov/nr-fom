@@ -23,7 +23,7 @@
   </div>
 
   <div class="bottom-container scroll">
-    <div class="container-fluid" style="background: #f7f8fa; padding-bottom: 0;">
+    <div class="container" style="background: #f7f8fa; padding-bottom: 0;">
       <div class="row">
         <div class="form-group col-md-2">
           <label for="fomNumberInput" style="white-space: nowrap;">
@@ -100,7 +100,7 @@
     </div>
 
     <div class="container-fluid">
-      <div>
+      <div class="search-results-container">
         <h2 *ngIf="searched && !searching && count == 0">
           <strong>No results found.</strong>
         </h2>
@@ -110,7 +110,7 @@
         <table class="table" *ngIf="count > 0" aria-label="Search Results">
           <thead>
             <tr>
-                <th id="fomId" class="disp">FOM Number</th>
+                <th id="fomId" class="fom-number">FOM Number</th>
                 <th id="fomName" class="fom-name">FOM Name</th>
                 <th id="projectPlanNumber" class="plan">Plan Number</th>
                 <th id="fomHolder" class="client">FOM Holder Name</th>
@@ -122,7 +122,7 @@
           </thead>
           <ng-template ngFor let-project [ngForOf]="projects">
             <tr class="app-details">
-              <td class="disp">
+              <td class="fom-number">
                 <strong>{{project.id }}</strong>
               </td>
               <td class="word-wrap"

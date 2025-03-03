@@ -161,9 +161,8 @@ $sr-table-row-bg: #f7f8fa;
   }
 }
 
-.disp {
+.fom-number {
   width: 7%;
-  text-align: center;
 }
 
 .fom-name {
@@ -188,7 +187,7 @@ $sr-table-row-bg: #f7f8fa;
   padding-top: 0;
   padding-bottom: 0;
   .btn {
-    width: 6rem;
+    width: 5.4rem;
     border-width: 2px;
     font-weight: 700;
   }
@@ -196,12 +195,16 @@ $sr-table-row-bg: #f7f8fa;
 
 table {
   th,td,strong {
-    padding-left: 0;
+    padding-left: 5px;
   }
 
   .app-details {
     border-top: 4px solid #fff;
   }
+}
+
+.search-results-container {
+    margin: auto 1.3rem;
 }
 
 // A very light background-color seems to be coming from <table> on some of the columns. 
