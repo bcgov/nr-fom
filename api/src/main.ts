@@ -41,6 +41,9 @@ async function bootstrap():Promise<INestApplication> {
     return null;
   }
 
+  // Log heap
+  console.log(v8.getHeapStatistics());
+  
   const app = await createApp();
 
   app.useGlobalPipes(new ValidationPipe({
