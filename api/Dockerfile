@@ -40,4 +40,4 @@ HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:${port} || 
 
 # Start up command
 USER 1001
-ENTRYPOINT ["node", "./dist/api/src/main.js"]
+ENTRYPOINT ["node", "--max-old-space-size=2048", "./dist/api/src/main.js"]
