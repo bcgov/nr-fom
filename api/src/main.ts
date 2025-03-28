@@ -14,6 +14,7 @@ import { ConnectionOptions, createConnection } from 'typeorm';
 import { AppModule } from './app/app.module';
 import * as ormConfigMain from './migrations/ormconfig-migration-main';
 import * as ormConfigTest from './migrations/ormconfig-migration-test';
+import * as v8 from 'v8';
 
 async function dbmigrate(config: ConnectionOptions) {
     const connection = await createConnection(config);
@@ -41,6 +42,9 @@ async function bootstrap():Promise<INestApplication> {
     return null;
   }
 
+  // Log heap
+  console.log(v8.getHeapStatistics());
+  
   const app = await createApp();
 
   app.useGlobalPipes(new ValidationPipe({
