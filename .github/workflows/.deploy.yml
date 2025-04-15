@@ -138,11 +138,9 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           overwrite: ${{ matrix.overwrite }}
 
-          # Note: 'REPLICA_COUNT' setting not used for db and "1" for non-prod.
           parameters: |
             -p ZONE=${{ inputs.target }} 
             -p TAG=${{ needs.init.outputs.tag }}
             -p URL=${{ needs.init.outputs.url }}
-            ${{ inputs.environment != 'prod' && '-p REPLICA_COUNT=1' || '' }}
             ${{ matrix.parameters }}
           triggers: ${{ inputs.triggers }}
