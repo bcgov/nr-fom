@@ -137,8 +137,10 @@ jobs:
           oc_server: ${{ vars.OC_SERVER }}
           oc_token: ${{ secrets.OC_TOKEN }}
           overwrite: ${{ matrix.overwrite }}
+
           parameters:
-            -p ZONE=${{ inputs.target }} -p TAG=${{ needs.init.outputs.tag }}
-            -p URL=${{ needs.init.outputs.url }} -p REPLICA_COUNT=1
+            -p ZONE=${{ inputs.target }} 
+            -p TAG=${{ needs.init.outputs.tag }}
+            -p URL=${{ needs.init.outputs.url }}
             ${{ matrix.parameters }}
           triggers: ${{ inputs.triggers }}
