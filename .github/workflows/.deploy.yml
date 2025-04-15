@@ -138,7 +138,7 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           overwrite: ${{ matrix.overwrite }}
 
-          parameters: |
+          parameters:
             -p ZONE=${{ inputs.target }} 
             -p TAG=${{ needs.init.outputs.tag }}
             -p URL=${{ needs.init.outputs.url }}
