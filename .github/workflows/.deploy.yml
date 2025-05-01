@@ -89,7 +89,7 @@ jobs:
             echo "url=${{ inputs.url }}"
             echo "url=${{ inputs.url }}" >> $GITHUB_OUTPUT
           elif [ -z "${{ inputs.url }}" ] && [ '${{ github.event_name }}' == 'pull_request' ]; then
-            echo "Creating URL from github.event.number mod 50"
+            echo "Creating URL from inputs.target (= github.event.number) mod 50"
             echo "url=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca"
             echo "url=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca" >> $GITHUB_OUTPUT
           elif [ -z "${{ inputs.url }}" ] && [ '${{ github.event_name }}' != 'pull_request' ]; then
