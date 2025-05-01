@@ -99,7 +99,7 @@ jobs:
           fi
 
       - name: OpenShift Init
-        uses: bcgov/action-deployer-openshift@v3.0.1
+        uses: bcgov/action-deployer-openshift@v3.2.0
         with:
           oc_namespace: ${{ vars.OC_NAMESPACE }}
           oc_server: ${{ vars.OC_SERVER }}
@@ -134,7 +134,7 @@ jobs:
           - name: public
             overwrite: true
     steps:
-      - uses: bcgov/action-deployer-openshift@v3.0.1
+      - uses: bcgov/action-deployer-openshift@v3.2.0
         with:
           file: ${{ matrix.name }}/openshift.deploy.yml
           oc_namespace: ${{ vars.OC_NAMESPACE }}
