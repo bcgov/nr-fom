@@ -27,7 +27,6 @@ jobs:
       email_notify: FLNR.AdminServicesCariboo@gov.bc.ca
       logout_chain_url: https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri=
       target: test
-      url: fom-test.nrs.gov.bc.ca
 
   images-promote:
     name: Promote images (TEST)

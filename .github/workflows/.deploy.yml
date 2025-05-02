@@ -84,18 +84,22 @@ jobs:
             echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
           fi
 
-          if [ -z "${{ inputs.url }}" ]; then
-            echo "Creating URL"
-            echo "url=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca"
-            echo "url=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca" >> $GITHUB_OUTPUT
-          else
+          if [ ! -z "${{ inputs.url }}" ]; then
             echo "Using URL parameter"
             echo "url=${{ inputs.url }}"
             echo "url=${{ inputs.url }}" >> $GITHUB_OUTPUT
+          elif [ '${{ github.event_name }}' == 'pull_request' ]; then
+            echo "Creating URL from inputs.target (= github.event.number) mod 50"
+            echo "url=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca"
+            echo "url=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca" >> $GITHUB_OUTPUT
+          else
+            echo "Creating URL from inputs.target"
+            echo "url=fom-${{ inputs.target }}.apps.silver.devops.gov.bc.ca"
+            echo "url=fom-${{ inputs.target }}.apps.silver.devops.gov.bc.ca" >> $GITHUB_OUTPUT
           fi
 
       - name: OpenShift Init
-        uses: bcgov/action-deployer-openshift@v3.0.1
+        uses: bcgov/action-deployer-openshift@v3.2.0
         with:
           oc_namespace: ${{ vars.OC_NAMESPACE }}
           oc_server: ${{ vars.OC_SERVER }}
@@ -130,7 +134,7 @@ jobs:
           - name: public
             overwrite: true
     steps:
-      - uses: bcgov/action-deployer-openshift@v3.0.1
+      - uses: bcgov/action-deployer-openshift@v3.2.0
         with:
           file: ${{ matrix.name }}/openshift.deploy.yml
           oc_namespace: ${{ vars.OC_NAMESPACE }}
