@@ -1,0 +1,42 @@
+name: Database Upgrade (dispatch)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Deployment target; usually PR number, test, or prod
+        type: string
+        required: true
+
+permissions: {}
+
+jobs:
+  db-major-upgrade:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      if: ${{ inputs.target != 'prod' }}
+      uses: actions/checkout@v4
+
+    - name: Build and Push Docker Image (for db upgrade)
+      if: ${{ inputs.target != 'prod' }}
+      uses: bcgov/action-builder-ghcr@v2.3.0
+      with:
+        package: db
+        build_context: ./db
+        build_file: ./db/Dockerfile-V17
+        tag: v17-upgrade
+        tag_fallback: latest
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: OpenShift Init
+      if: ${{ inputs.target != 'prod' }}
+      uses: bcgov/action-deployer-openshift@v3.2.0
+      with:
+        oc_namespace: ${{ vars.OC_NAMESPACE }}
+        oc_server: ${{ vars.OC_SERVER }}
+        oc_token: ${{ secrets.OC_TOKEN }}
+        file: libs/openshift.init.yml
+        overwrite: false
+        parameters: -p ZONE=${{ inputs.target }}
