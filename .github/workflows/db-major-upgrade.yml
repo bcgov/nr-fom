@@ -1,14 +1,12 @@
 name: Database Upgrade (dispatch)
 
 on:
-  # workflow_dispatch:
-  #   inputs:
-  #     target:
-  #       description: Deployment target; usually PR number, test, or prod
-  #       type: string
-  #       required: true
-        
-  pull_request:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Deployment target; usually PR number, test, or prod
+        type: string
+        required: true
 
 permissions: {}
 
@@ -18,11 +16,11 @@ jobs:
 
     steps:
     - name: Checkout
-      if: false
+      if: ${{ inputs.target != 'prod' }}
       uses: actions/checkout@v4
 
     - name: Build and Push Docker Image (for db upgrade)
-      if: false
+      if: ${{ inputs.target != 'prod' }}
       uses: bcgov/action-builder-ghcr@v2.3.0
       with:
         package: db
@@ -33,7 +31,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: OpenShift Init
-      if: false
+      if: ${{ inputs.target != 'prod' }}
       uses: bcgov/action-deployer-openshift@v3.2.0
       with:
         oc_namespace: ${{ vars.OC_NAMESPACE }}
