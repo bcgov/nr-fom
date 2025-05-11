@@ -13,7 +13,9 @@ permissions: {}
 jobs:
   db-major-upgrade:
     runs-on: ubuntu-latest
-
+    permissions:
+      packages: write
+      
     steps:
     - name: Checkout
       if: ${{ inputs.target != 'prod' }}
