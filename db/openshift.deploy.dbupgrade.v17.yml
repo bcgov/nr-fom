@@ -54,6 +54,9 @@ parameters:
     description: "The name of the root backup directory"
     required: true
     value: "/backups/"
+  - name: BACKUP_COMPONENT
+    description: BACKUP_COMPONENT name
+    value: database-backup
 
 objects:
   - kind: PersistentVolumeClaim
