@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-      
+
     steps:
     - name: Checkout
       if: ${{ inputs.target != 'prod' }}
@@ -42,3 +42,16 @@ jobs:
         file: libs/openshift.init.yml
         overwrite: false
         parameters: -p ZONE=${{ inputs.target }}
+
+    - name: OpenShift Deploy
+      if: ${{ inputs.target != 'prod' }}
+      uses: bcgov/action-deployer-openshift@v3.2.0
+      with:
+        oc_namespace: ${{ vars.OC_NAMESPACE }}
+        oc_server: ${{ vars.OC_SERVER }}
+        oc_token: ${{ secrets.OC_TOKEN }}
+        file: db/openshift.deploy.dbupgrade.v17.yml
+        overwrite: true
+        parameters: |
+          -p ZONE=${{ inputs.target }}
+          -p URL=fom-${{ inputs.target }}.apps.silver.devops.gov.bc.ca
