@@ -62,7 +62,7 @@ objects:
   - kind: PersistentVolumeClaim
     apiVersion: v1
     metadata:
-      name: ${NAME}-${ZONE}-${COMPONENT}
+      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
       labels:
         app: ${NAME}-${ZONE}
         db-version: ${DB_VERSION}
@@ -100,9 +100,9 @@ objects:
             db-version: ${DB_VERSION}
         spec:
           volumes:
-            - name: ${NAME}-${ZONE}-${COMPONENT}
+            - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
               persistentVolumeClaim:
-                claimName: ${NAME}-${ZONE}-${COMPONENT}
+                claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
             - name: backup
               persistentVolumeClaim:
                 claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}
@@ -152,7 +152,7 @@ objects:
                   cpu: ${CPU_LIMIT}
                   memory: ${MEMORY_LIMIT}
               volumeMounts:
-                - name: ${NAME}-${ZONE}-${COMPONENT}
+                - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
                   mountPath: /var/lib/postgresql
                 - name: backup
                   mountPath: ${BACKUP_DIR}
