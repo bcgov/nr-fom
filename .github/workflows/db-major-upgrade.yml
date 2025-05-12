@@ -53,7 +53,7 @@ jobs:
         oc_token: ${{ secrets.OC_TOKEN }}
         overwrite: true
 
-        parameters: |
+        parameters:
           -p ZONE=${{ inputs.target }}
           -p URL=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca
           -p TAG=v17-upgrade
