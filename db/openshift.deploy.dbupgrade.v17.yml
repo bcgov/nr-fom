@@ -76,7 +76,7 @@ objects:
   - kind: Deployment
     apiVersion: apps/v1
     metadata:
-      name: ${NAME}-${ZONE}-${COMPONENT}
+      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
       labels:
         app: ${NAME}-${ZONE}
         db-version: ${DB_VERSION}
@@ -84,7 +84,7 @@ objects:
       replicas: 1
       selector:
         matchLabels:
-          deployment: ${NAME}-${ZONE}-${COMPONENT}
+          deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
           db-version: ${DB_VERSION}
       strategy:
         type: Recreate
@@ -93,10 +93,10 @@ objects:
         activeDeadlineSeconds: 21600
       template:
         metadata:
-          name: ${NAME}-${ZONE}-${COMPONENT}
+          name: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
           labels:
             app: ${NAME}-${ZONE}
-            deployment: ${NAME}-${ZONE}-${COMPONENT}
+            deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
             db-version: ${DB_VERSION}
         spec:
           volumes:
@@ -178,7 +178,7 @@ objects:
           protocol: TCP
           targetPort: 5432
       selector:
-        deployment: ${NAME}-${ZONE}-${COMPONENT}
+        deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
         db-version: ${DB_VERSION}
       sessionAffinity: None
       type: ClusterIP
