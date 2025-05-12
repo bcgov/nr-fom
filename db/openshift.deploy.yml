@@ -234,7 +234,7 @@ objects:
         app: ${NAME}-${ZONE}
     spec:
       accessModes:
-        - ReadWriteOnce
+        - ReadWriteMany
       resources:
         requests:
           storage: "${DB_BACKUP_PVC_SIZE}"
