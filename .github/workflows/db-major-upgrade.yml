@@ -43,7 +43,7 @@ jobs:
         overwrite: false
         parameters: -p ZONE=${{ inputs.target }}
 
-    - name: OpenShift Deploy
+    - name: OpenShift Deploy (db upgrade container)
       if: ${{ inputs.target != 'prod' }}
       uses: bcgov/action-deployer-openshift@v3.2.0
       with:
@@ -55,5 +55,5 @@ jobs:
 
         parameters:
           -p ZONE=${{ inputs.target }}
-          -p URL=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca
+        #   -p URL=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca
         triggers: ('db')

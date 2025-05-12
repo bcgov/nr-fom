@@ -41,8 +41,8 @@ parameters:
     value: 1000m
   - name: MEMORY_LIMIT
     value: 1Gi
-  - name: URL
-    description: Dummy parameter to make workflows easier
+  # - name: URL
+  #   description: Dummy parameter to make workflows easier
   - name: RANDOM_EXPRESSION
     description: Random expression to make sure deployments update
     from: "[a-zA-Z0-9]{32}"
