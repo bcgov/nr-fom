@@ -107,6 +107,9 @@ parameters:
     description: Random expression to make sure deployments update
     from: "[a-zA-Z0-9]{32}"
     generate: expression
+  - name: DB_UPGRADE_VERSION
+    description: Database version number for database upgrade
+    value: v17
 objects:
   - kind: PersistentVolumeClaim
     apiVersion: v1
@@ -121,6 +124,23 @@ objects:
         requests:
           storage: "${DB_PVC_SIZE}"
       storageClassName: netapp-file-standard
+
+  ### for db major upgrade PVC only  ###
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
+      labels:
+        app: ${NAME}-${ZONE}
+    spec:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: "${DB_BACKUP_PVC_SIZE}"
+      storageClassName: netapp-file-standard
+
+
   - kind: Deployment
     apiVersion: apps/v1
     metadata:
@@ -150,7 +170,7 @@ objects:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}
             - name: backup
               persistentVolumeClaim:
-                claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}
+                claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
           containers:
             - name: ${NAME}
               image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
@@ -234,7 +254,7 @@ objects:
         app: ${NAME}-${ZONE}
     spec:
       accessModes:
-        - ReadWriteMany
+        - ReadWriteOnce
       resources:
         requests:
           storage: "${DB_BACKUP_PVC_SIZE}"
