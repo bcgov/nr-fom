@@ -56,5 +56,4 @@ jobs:
         parameters:
           -p ZONE=${{ inputs.target }}
           -p URL=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca
-          -p TAG=v17-upgrade
         triggers: ('db')
