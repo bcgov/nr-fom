@@ -54,6 +54,27 @@ jobs:
       id: prepare
       run: echo "::set-output name=current_date::$(date +'%Y-%m-%d-%H-%M')"
 
+    - name: Scale Down API Component
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Scaling down the API component..."
+        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        echo "Waiting for API pods to terminate..."
+        for i in {1..15}; do
+          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-api -o jsonpath='{.items[*].status.phase}' | wc -w)
+          if [ "$POD_COUNT" -eq 0 ]; then
+            echo "All API pods have been terminated."
+            break
+          fi
+          echo "API pods are still terminating. Retrying in 5 seconds..."
+          sleep 10
+        done
+
+        if [ "$POD_COUNT" -ne 0 ]; then
+          echo "Error: API pods did not terminate within the timeout period."
+          exit 1
+        fi
+
     - name: Perform old Database Backup
       if: ${{ env.ZONE != 'prod' }}
       env:
@@ -124,7 +145,7 @@ jobs:
           echo "PostGIS extension is installed. Version: $POSTGIS_VERSION"
         fi
 
-    - name: Restore Database from Backup
+    - name: Restore from Backup into New Database
       if: ${{ env.ZONE != 'prod' }}
       env:
         BACKUP_FILE_NAME: backup-${{ steps.prepare.outputs.current_date }}.dump
@@ -150,6 +171,39 @@ jobs:
           echo "Database restoration verified. Number of tables: $RESTORE_CHECK"
         else
           echo "Error: Database restoration verification failed. No tables found."
+          exit 1
+        fi
+
+    - name: Point API Component to New Database
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Updating API component to point to the new database..."
+        NEW_DB_HOST="${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}"
+        oc set env deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
+        echo "API component updated to use the new database: $NEW_DB_HOST"
+
+    - name: Scale Up API Component
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Scaling up the API component to its original replicas..."
+        ORIGINAL_REPLICAS=$(oc get deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.spec.replicas}')
+        if [ -z "$ORIGINAL_REPLICAS" ]; then
+          echo "Error: Unable to determine the original number of replicas for the API component."
+          exit 1
+        fi
+        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=$ORIGINAL_REPLICAS
+        echo "API component scaled up to $ORIGINAL_REPLICAS replicas."
+
+    - name: Verify API Component is Responding
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Verifying API component is responding..."
+        API_URL="https://${NAME}-${ZONE}.apps.silver.devops.gov.bc.ca/api/awsCognitoConfig"
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
+        if [ "$RESPONSE" -eq 200 ]; then
+          echo "API component is responding successfully."
+        else
+          echo "Error: API component is not responding. HTTP status code: $RESPONSE"
           exit 1
         fi
 
