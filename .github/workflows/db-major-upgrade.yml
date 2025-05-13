@@ -61,7 +61,7 @@ jobs:
       run: |
         echo "Performing database backup..."
         oc exec deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -- \
-            bash -c "pg_dump -U ${POSTGRES_USER} -d ${POSTGRES_DB} > '/backups/${{env.BACKUP_FILE_NAME}}'"
+            bash -c 'pg_dump -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" > "/backups/${{env.BACKUP_FILE_NAME}}"'
 
     - name: Verify Backup File Exists
       if: ${{ env.ZONE != 'prod' }}
