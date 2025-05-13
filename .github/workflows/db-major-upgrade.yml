@@ -25,11 +25,11 @@ jobs:
 
     steps:
     - name: Checkout
-      if: ${{ inputs.target != 'prod' }}
+      if: ${{ env.ZONE != 'prod' }}
       uses: actions/checkout@v4
 
     - name: Build and Push Docker Image (for db upgrade)
-      if: ${{ inputs.target != 'prod' }}
+      if: ${{ env.ZONE != 'prod' }}
       uses: bcgov/action-builder-ghcr@v2.3.0
       with:
         package: ${{ env.COMPONENT }}
@@ -49,6 +49,30 @@ jobs:
         file: libs/openshift.init.yml
         overwrite: false
         parameters: -p ZONE=${{ env.ZONE }}
+
+    - name: Perform old Database Backup
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Performing database backup..."
+        BACKUP_FILE_NAME="backup-$(date +'%Y-%m-%d-%H-%M').sql"
+        oc exec deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -- \
+          pg_dump -U $POSTGRES_USER -d $POSTGRES_DB > /backups/$BACKUP_FILE_NAME
+        echo "Backup file created: $BACKUP_FILE_NAME"
+
+    - name: Verify Backup File Exists
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Verifying backup file exists..."
+        BACKUP_FILE_NAME="backup-$(date +'%Y-%m-%d-%H-%M').sql"
+        BACKUP_FILE_PATH="/backups/$BACKUP_FILE_NAME"
+        oc exec deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -- \
+          test -f $BACKUP_FILE_PATH
+        if [ $? -eq 0 ]; then
+          echo "Backup file verified: $BACKUP_FILE_PATH"
+        else
+          echo "Error: Backup file not found: $BACKUP_FILE_PATH"
+          exit 1
+        fi
 
     - name: OpenShift Deploy (db upgrade container)
       if: ${{ env.ZONE != 'prod' }}
@@ -71,11 +95,27 @@ jobs:
           READY_REPLICAS=$(oc get deployment ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
           if [ "$READY_REPLICAS" == "1" ]; then
             echo "Deployment is ready."
-            exit 0
+            break
           fi
           echo "Deployment not ready yet. Retrying in 5 seconds..."
           sleep 5
         done
-        echo "Error: Deployment did not become ready within the timeout period."
-        exit 1
+
+        if [ "$READY_REPLICAS" != "1" ]; then
+          echo "Error: Deployment did not become ready within the timeout period."
+          exit 1
+        fi
+
+    - name: Verify PostGIS Extension Installation
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Verifying PostGIS extension is installed..."
+        POSTGIS_VERSION=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
+          psql -U $POSTGRES_USER -d $POSTGRES_DB -tAc "SELECT installed_version FROM pg_available_extensions WHERE name = 'postgis';")
+        if [ -z "$POSTGIS_VERSION" ]; then
+          echo "Error: PostGIS extension is not installed."
+          exit 1
+        else
+          echo "PostGIS extension is installed. Version: $POSTGIS_VERSION"
+        fi
 
