@@ -62,7 +62,7 @@ parameters:
   - name: "BACKUP_DIR"
     description: "The name of the root backup directory"
     required: true
-    value: "/backups/"
+    value: "/backups"
   - name: "NUM_BACKUPS"
     description: "The number of backup files to be retained.  Used for the `daily` backup strategy.  Ignored when using the `rolling` backup strategy."
     required: false
