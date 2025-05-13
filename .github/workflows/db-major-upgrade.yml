@@ -57,16 +57,16 @@ jobs:
     - name: Perform old Database Backup
       if: ${{ env.ZONE != 'prod' }}
       env:
-        BACKUP_FILE_NAME: backup-${{ steps.prepare.outputs.current_date }}.sql
+        BACKUP_FILE_NAME: backup-${{ steps.prepare.outputs.current_date }}.dump
       run: |
         echo "Performing database backup..."
         oc exec deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -- \
-            bash -c 'pg_dump -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" > "/backups/${{env.BACKUP_FILE_NAME}}"'
+            bash -c 'pg_dump -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -Fc > "/backups/${{env.BACKUP_FILE_NAME}}"'
 
     - name: Verify Backup File Exists
       if: ${{ env.ZONE != 'prod' }}
       env:
-        BACKUP_FILE_NAME: backup-${{ steps.prepare.outputs.current_date }}.sql
+        BACKUP_FILE_NAME: backup-${{ steps.prepare.outputs.current_date }}.dump
       run: |
         echo "Verifying backup file exists..."
         BACKUP_FILE_PATH="/backups/${{env.BACKUP_FILE_NAME}}"
@@ -92,7 +92,7 @@ jobs:
           -p ZONE=${{ env.ZONE }}
         triggers: ('db')
 
-    - name: Verify upgrade db Deployment Readiness
+    - name: Verify db upgrade container Deployment Readiness
       if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Checking if deployment is ready..."
@@ -111,7 +111,7 @@ jobs:
           exit 1
         fi
 
-    - name: Verify PostGIS Extension Installation
+    - name: Verify PostGIS Extension Installation at db upgrade container
       if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Verifying PostGIS extension is installed..."
@@ -122,5 +122,34 @@ jobs:
           exit 1
         else
           echo "PostGIS extension is installed. Version: $POSTGIS_VERSION"
+        fi
+
+    - name: Restore Database from Backup
+      if: ${{ env.ZONE != 'prod' }}
+      env:
+        BACKUP_FILE_NAME: backup-${{ steps.prepare.outputs.current_date }}.dump
+      run: |
+        echo "Restoring database from backup..."
+        BACKUP_FILE_PATH="/backups/${{env.BACKUP_FILE_NAME}}"
+        oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
+          bash -c 'pg_restore -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" "${BACKUP_FILE_PATH}"'
+        if [ $? -eq 0 ]; then
+          echo "Database restoration completed successfully."
+        else
+          echo "Error: Database restoration failed."
+          exit 1
+        fi
+
+    - name: Verify Database Restoration
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Verifying database restoration..."
+        RESTORE_CHECK=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
+          bash -c 'psql -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -tAc "SELECT COUNT(*) FROM information_schema.tables;"')
+        if [ "$RESTORE_CHECK" -gt 0 ]; then
+          echo "Database restoration verified. Number of tables: $RESTORE_CHECK"
+        else
+          echo "Error: Database restoration verification failed. No tables found."
+          exit 1
         fi
 
