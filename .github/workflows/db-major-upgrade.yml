@@ -194,7 +194,24 @@ jobs:
         oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=$ORIGINAL_REPLICAS
         echo "API component scaled up to $ORIGINAL_REPLICAS replicas."
 
+        echo "Verifying the API component has scaled up..."
+        for i in {1..30}; do
+          READY_REPLICAS=$(oc get deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "$ORIGINAL_REPLICAS" ]; then
+          echo "API component has successfully scaled up to $READY_REPLICAS replicas."
+          break
+          fi
+          echo "API component is not fully scaled up yet. Retrying in 5 seconds..."
+          sleep 5
+        done
+
+        if [ "$READY_REPLICAS" != "$ORIGINAL_REPLICAS" ]; then
+          echo "Error: API component did not scale up to the expected number of replicas within the timeout period."
+          exit 1
+        fi
+
     - name: Verify API Component is Responding
+      # TODO: PROD API_URL will be different.
       if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Verifying API component is responding..."
