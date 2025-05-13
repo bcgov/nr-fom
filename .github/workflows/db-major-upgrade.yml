@@ -116,7 +116,7 @@ jobs:
       run: |
         echo "Verifying PostGIS extension is installed..."
         POSTGIS_VERSION=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
-          psql -U $POSTGRES_USER -d $POSTGRES_DB -tAc "SELECT installed_version FROM pg_available_extensions WHERE name = 'postgis';")
+          bash -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -tAc "SELECT installed_version FROM pg_available_extensions WHERE name = '\''postgis'\'';"')
         if [ -z "$POSTGIS_VERSION" ]; then
           echo "Error: PostGIS extension is not installed."
           exit 1
