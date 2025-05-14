@@ -269,6 +269,17 @@ jobs:
     needs: db-major-upgrade
     if: failure()  # This ensures the rollback job runs only if the db-major-upgrade job fails.
     steps:
+    - name: OpenShift Init
+      if: ${{ env.ZONE != 'prod' }}
+      uses: bcgov/action-deployer-openshift@v3.2.0
+      with:
+        oc_namespace: ${{ vars.OC_NAMESPACE }}
+        oc_server: ${{ vars.OC_SERVER }}
+        oc_token: ${{ secrets.OC_TOKEN }}
+        file: libs/openshift.init.yml
+        overwrite: false
+        parameters: -p ZONE=${{ env.ZONE }}
+
     - name: Scale API Comoponent Down if needed
       if: ${{ env.ZONE != 'prod' }}
       run: |
