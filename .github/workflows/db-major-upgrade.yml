@@ -235,6 +235,7 @@ jobs:
           exit 1
         fi
 
+        sleep 10
         API_URL="https://${API_ROUTE}/api/district"
         echo "Verifying API component is responding with http request: ${API_URL}..."
         RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
@@ -260,3 +261,126 @@ jobs:
         echo "Updating CronJob: fc-client-data-refresh-batch..."
         oc set env cronjob/${NAME}-${ZONE}-fc-client-data-refresh-batch -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
         echo "CronJob fc-client-data-refresh-batch updated to use the new database: $NEW_DB_HOST"
+
+
+## Rollback API component pointing to old database if needed
+  rollback:
+    runs-on: ubuntu-latest
+    needs: db-major-upgrade
+    if: failure()  # This ensures the rollback job runs only if the db-major-upgrade job fails.
+    steps:
+    - name: Scale API Comoponent Down if needed
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Scaling down the API component if needed..."
+        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        echo "Waiting for API pods to terminate..."
+        for i in {1..20}; do
+          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-api -o jsonpath='{.items[*].status.phase}' | wc -w)
+          if [ "$POD_COUNT" -eq 0 ]; then
+            echo "All API pods have been terminated."
+            break
+          fi
+          echo "API pods are still terminating. Retrying in 10 seconds..."
+          sleep 10
+        done
+
+        if [ "$POD_COUNT" -ne 0 ]; then
+          echo "Error: API pods did not terminate within the timeout period."
+          exit 1
+        fi
+
+    - name: Scale Up Old Database Component
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Scaling up the old database component..."
+        oc scale deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} --replicas=1
+        echo "Waiting for old database pods to be ready..."
+        for i in {1..30}; do
+          READY_REPLICAS=$(oc get deployment ${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "1" ]; then
+            echo "Old database component is ready."
+            break
+          fi
+          echo "Old database component not ready yet. Retrying in 5 seconds..."
+          sleep 5
+        done
+        if [ "$READY_REPLICAS" != "1" ]; then
+          echo "Error: Old database component did not become ready within the timeout period."
+          exit 1
+        fi
+
+    - name: Scale Down New Database Component
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Scaling down the new database component..."
+        oc scale deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} --replicas=0
+
+    - name: Rollback API Component to Old Database
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Rolling back API component to point to the old database..."
+        OLD_DB_HOST="${NAME}-${ZONE}-${COMPONENT}"
+        oc set env deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
+        echo "API component rolled back to use the old database: $OLD_DB_HOST"
+
+    - name: Scale Up API Component
+      if: ${{ env.ZONE != 'prod' }}
+      env:
+        REPLICA_COUNT: 3
+      run: |
+        echo "Scaling up the API component to ${{env.REPLICA_COUNT}} replicas..."
+        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=${{env.REPLICA_COUNT}}
+
+        echo "Verifying the API component has scaled up..."
+        for i in {1..50}; do
+          READY_REPLICAS=$(oc get deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "${{env.REPLICA_COUNT}}" ]; then
+            echo "API component has successfully scaled up to $READY_REPLICAS replicas."
+            break
+          fi
+          echo "API component is not fully scaled up yet. Retrying in 5 seconds..."
+          sleep 5
+        done
+
+        if [ "$READY_REPLICAS" != "${{env.REPLICA_COUNT}}" ]; then
+          echo "Error: API component did not scale up to the expected number of replicas within the timeout period."
+          exit 1
+        fi
+        
+    - name: Verify API Component is Responding
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Fetching API route from OpenShift..."
+        API_ROUTE=$(oc get route ${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.spec.host}')
+        if [ -z "$API_ROUTE" ]; then
+          echo "Error: Unable to fetch API route."
+          exit 1
+        fi
+
+        sleep 10
+        API_URL="https://${API_ROUTE}/api/district"
+        echo "Verifying API component is responding with http request: ${API_URL}..."
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
+        if [ "$RESPONSE" -eq 200 ]; then
+          echo "API component is responding successfully."
+        else
+          echo "Error: API component is not responding. HTTP status code: $RESPONSE"
+          exit 1
+        fi
+
+    - name: Update CronJobs to Point to Old Database 
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Updating CronJobs to point to the old database..."
+        OLD_DB_HOST="${NAME}-${ZONE}-${COMPONENT}"
+
+        # Update work-flow-state-change-batch CronJob
+        echo "Updating CronJob: work-flow-state-change-batch..."
+        oc set env cronjob/${NAME}-${ZONE}-work-flow-state-change-batch -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
+        echo "CronJob work-flow-state-change-batch updated to use the old database: $OLD_DB_HOST"
+
+        # Update fc-client-data-refresh-batch CronJob
+        echo "Updating CronJob: fc-client-data-refresh-batch..."
+        oc set env cronjob/${NAME}-${ZONE}-fc-client-data-refresh-batch -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
+        echo "CronJob fc-client-data-refresh-batch updated to use the old database: $OLD_DB_HOST"
