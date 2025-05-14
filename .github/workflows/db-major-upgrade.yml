@@ -152,7 +152,7 @@ jobs:
       run: |
         echo "Restoring database from backup..."
         oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
-          bash -c 'pg_restore --if-exists -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" "${{env.BACKUP_FILE_PATH}}"'
+          bash -c 'pg_restore --if-exists --clean -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" "${{env.BACKUP_FILE_PATH}}"'
         if [ $? -eq 0 ]; then
           echo "Database restoration completed successfully."
         else
