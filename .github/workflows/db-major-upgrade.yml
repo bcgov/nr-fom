@@ -209,7 +209,7 @@ jobs:
       # TODO: PROD API_URL will be different.
       if: ${{ env.ZONE != 'prod' }}
       run: |
-        API_URL="https://${NAME}-${ZONE%50}.apps.silver.devops.gov.bc.ca/api/awsCognitoConfig"
+        API_URL="https://${NAME}-${{env.ZONE%50}}.apps.silver.devops.gov.bc.ca/api/awsCognitoConfig"
         echo "Verifying API component is responding with http request: ${API_URL}..."
         RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
         if [ "$RESPONSE" -eq 200 ]; then
