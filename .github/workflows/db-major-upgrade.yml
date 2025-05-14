@@ -12,6 +12,7 @@ permissions: {}
 
 env:
   NAME: fom
+  ZONE: ${{ inputs.target }}
   COMPONENT: db
   DB_UPGRADE_VERSION: v17
 
@@ -20,9 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-    env:
-      ZONE: ${{ inputs.target }}
-        
+
     steps:
     - name: Checkout
       if: ${{ env.ZONE != 'prod' }}
@@ -173,6 +172,27 @@ jobs:
           exit 1
         fi
 
+    - name: Scale Down Old Database Component
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Scaling down the old database component..."
+        oc scale deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        echo "Waiting for old database pods to terminate..."
+        for i in {1..15}; do
+          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-${COMPONENT} -o jsonpath='{.items[*].status.phase}' | wc -w)
+          if [ "$POD_COUNT" -eq 0 ]; then
+          echo "All old database pods have been terminated."
+          break
+          fi
+          echo "Old database pods are still terminating. Retrying in 10 seconds..."
+          sleep 10
+        done
+
+        if [ "$POD_COUNT" -ne 0 ]; then
+          echo "Error: Old database pods did not terminate within the timeout period."
+          exit 1
+        fi
+
     - name: Point API Component to New Database
       if: ${{ env.ZONE != 'prod' }}
       run: |
@@ -225,3 +245,18 @@ jobs:
           exit 1
         fi
 
+    - name: Update CronJobs to Point to New Database
+      if: ${{ env.ZONE != 'prod' }}
+      run: |
+        echo "Updating CronJobs to point to the new database..."
+        NEW_DB_HOST="${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}"
+
+        # Update work-flow-state-change-batch CronJob
+        echo "Updating CronJob: work-flow-state-change-batch..."
+        oc set env cronjob/${NAME}-${ZONE}-work-flow-state-change-batch -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
+        echo "CronJob work-flow-state-change-batch updated to use the new database: $NEW_DB_HOST"
+
+        # Update fc-client-data-refresh-batch CronJob
+        echo "Updating CronJob: fc-client-data-refresh-batch..."
+        oc set env cronjob/${NAME}-${ZONE}-fc-client-data-refresh-batch -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
+        echo "CronJob fc-client-data-refresh-batch updated to use the new database: $NEW_DB_HOST"
