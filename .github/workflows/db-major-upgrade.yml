@@ -206,10 +206,16 @@ jobs:
         fi
 
     - name: Verify API Component is Responding
-      # TODO: PROD API_URL will be different.
       if: ${{ env.ZONE != 'prod' }}
       run: |
-        API_URL="https://${NAME}-$(( ${{env.ZONE}} % 50 )).apps.silver.devops.gov.bc.ca/api/district"
+        echo "Fetching API route from OpenShift..."
+        API_ROUTE=$(oc get route ${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.spec.host}')
+        if [ -z "$API_ROUTE" ]; then
+          echo "Error: Unable to fetch API route."
+          exit 1
+        fi
+
+        API_URL="https://${API_ROUTE}/api/district"
         echo "Verifying API component is responding with http request: ${API_URL}..."
         RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
         if [ "$RESPONSE" -eq 200 ]; then
