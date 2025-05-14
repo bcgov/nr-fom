@@ -372,7 +372,7 @@ jobs:
         sleep 10
         API_URL="https://${API_ROUTE}/api/district"
         echo "Verifying API component is responding with http request: ${API_URL}..."
-        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $API_URL)
+        RESPONSE=$(curl -o /dev/null -s -w "%{http_code}\n" $API_URL)
         if [ "$RESPONSE" -eq 200 ]; then
           echo "API component is responding successfully."
         else
