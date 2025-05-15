@@ -55,10 +55,10 @@ jobs:
       id: prepare
       run: |
         current_date=$(date +'%Y-%m-%d-%H-%M')
-        echo "::set-output name=backup_file_name::backup-${current_date}.dump"
-        echo "::set-output name=new_db_host::fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}"
-        echo "::set-output name=workflow_state_change_cronjob::${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch"
-        echo "::set-output name=fc_client_data_refresh_cronjob::${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch"
+        echo "backup_file_name=backup-${current_date}.dump" >> $GITHUB_OUTPUT
+        echo "new_db_host=fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
+        echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
+        echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
 
     - name: Scale Down API Component  # stop further user activity
       run: |
@@ -283,9 +283,9 @@ jobs:
       # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
       id: prepare
       run: |
-        echo "::set-output name=old_db_host::fom-${{ inputs.target }}-${{ env.COMPONENT }}"
-        echo "::set-output name=workflow_state_change_cronjob::${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch"
-        echo "::set-output name=fc_client_data_refresh_cronjob::${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch"
+        echo "old_db_host=fom-${{ inputs.target }}-${{ env.COMPONENT }}" >> $GITHUB_OUTPUT
+        echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
+        echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
 
     - name: Scale API Comoponent Down
       run: |
@@ -302,7 +302,7 @@ jobs:
           sleep 10
         done
 
-        if [ "$POD_COUNT" -ne 0 ]; then
+        if [ "$POD_COUNT" -ne 0]; then
           echo "Error: API pods did not terminate within the timeout period."
           exit 1
         fi
