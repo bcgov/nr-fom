@@ -14,21 +14,21 @@ env:
   NAME: fom
   ZONE: ${{ inputs.target }}
   COMPONENT: db
-  DB_UPGRADE_VERSION: v17
+  DB_UPGRADE_VERSION: v17 # major db version to upgrade to
 
 jobs:
   db-major-upgrade:
     runs-on: ubuntu-latest
     permissions:
       packages: write
+    env:
+      API_DEPLOYMENT: deployment/${{ env.NAME }}-${{ env.ZONE }}-api
 
     steps:
     - name: Checkout
-      if: ${{ env.ZONE != 'prod' }}
       uses: actions/checkout@v4
 
     - name: Build and Push new db version Docker Image (for db upgrade)
-      if: ${{ env.ZONE != 'prod' }}
       uses: bcgov/action-builder-ghcr@v2.3.0
       with:
         package: ${{ env.COMPONENT }}
@@ -39,7 +39,6 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: OpenShift Init
-      if: ${{ env.ZONE != 'prod' }}
       uses: bcgov/action-deployer-openshift@v3.2.0
       with:
         oc_namespace: ${{ vars.OC_NAMESPACE }}
@@ -53,11 +52,10 @@ jobs:
       id: prepare
       run: echo "::set-output name=current_date::$(date +'%Y-%m-%d-%H-%M')"
 
-    - name: Scale Down API Component
-      if: ${{ env.ZONE != 'prod' }}
+    - name: Scale Down API Component  # stop further user activity
       run: |
         echo "Scaling down the API component..."
-        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        oc scale ${{ env.API_DEPLOYMENT }} -n ${{ vars.OC_NAMESPACE }} --replicas=0
         echo "Waiting for API pods to terminate..."
         for i in {1..15}; do
           POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-api -o jsonpath='{.items[*].status.phase}' | wc -w)
