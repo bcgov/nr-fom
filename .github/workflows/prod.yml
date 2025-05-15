@@ -24,7 +24,6 @@ jobs:
       aws_user_pools_web_client_id: 4bu2n8at3m32a2fqnvd4t06la1
       batch_client_rfsh_api_tkn_op_secret_name: fom-client-app-api
       environment: prod
-      email_notify: FLNR.AdminServicesCariboo@gov.bc.ca
       logout_chain_url: https://logon7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri=
       tag: ${{ inputs.tag }}
       target: prod
