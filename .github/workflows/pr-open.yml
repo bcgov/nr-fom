@@ -53,6 +53,7 @@ jobs:
     uses: ./.github/workflows/.deploy.yml
     with:
       db_testdata: true
+      email_notify: nonexistent@gov.bc.ca  # lower environment fake email address to send
       triggers: ('db/' 'libs/' 'api/' 'admin/' 'public/')
 
   results:

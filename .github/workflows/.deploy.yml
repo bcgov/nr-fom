@@ -21,7 +21,7 @@ on:
         type: boolean
       email_notify:
         description: Email address for notifications
-        default: SIBIFSAF@victoria1.gov.bc.ca
+        default: "" # prod notifications are sent to the district email address set in db.
         type: string
       environment:
         description: GitHub/OpenShift environment; usually PR number, test or prod
