@@ -246,16 +246,19 @@ jobs:
         NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
         WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
+        BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
 
         # Update work-flow-state-change-batch CronJob
-        echo "Updating CronJob: work-flow-state-change-batch..."
-        oc set env cronjob/$WORKFLOW_STATE_CHANGE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
-        echo "CronJob work-flow-state-change-batch updated to use the new database: $NEW_DB_HOST"
+        echo "Fetching and updating CronJob: work-flow-state-change-batch..."
+        oc get cronjob/$WORKFLOW_STATE_CHANGE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > work-flow-state-change-batch.yaml
+        sed -i "s|name: DB_HOST.*|name: DB_HOST\n          value: ${NEW_DB_HOST}|g" work-flow-state-change-batch.yaml
+        oc apply -f work-flow-state-change-batch.yaml
 
         # Update fc-client-data-refresh-batch CronJob
-        echo "Updating CronJob: fc-client-data-refresh-batch..."
-        oc set env cronjob/$FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
-        echo "CronJob fc-client-data-refresh-batch updated to use the new database: $NEW_DB_HOST"
+        echo "Fetching and updating CronJob: fc-client-data-refresh-batch..."
+        oc get cronjob/FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > fc-client-data-refresh-batch.yaml
+        sed -i "s|name: DB_HOST.*|name: DB_HOST\n          value: ${NEW_DB_HOST}|g" fc-client-data-refresh-batch.yaml
+        oc apply -f fc-client-data-refresh-batch.yaml
 
 
 ## Rollback API component pointing to old database if needed
@@ -386,11 +389,16 @@ jobs:
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
 
         # Update work-flow-state-change-batch CronJob
-        echo "Updating CronJob: work-flow-state-change-batch..."
-        oc set env cronjob/$WORKFLOW_STATE_CHANGE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
+        echo "Fetching and updating CronJob: work-flow-state-change-batch..."
+        oc get cronjob/$WORKFLOW_STATE_CHANGE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > work-flow-state-change-batch.yaml
+        sed -i "s|name: DB_HOST.*|name: DB_HOST\n          value: ${OLD_DB_HOST}|g" work-flow-state-change-batch.yaml
+        oc apply -f work-flow-state-change-batch.yaml
         echo "CronJob work-flow-state-change-batch updated to use the old database: $OLD_DB_HOST"
 
         # Update fc-client-data-refresh-batch CronJob
-        echo "Updating CronJob: fc-client-data-refresh-batch..."
-        oc set env cronjob/$FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
+        echo "Fetching and updating CronJob: fc-client-data-refresh-batch..."
+        oc get cronjob/FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > fc-client-data-refresh-batch.yaml
+        sed -i "s|name: DB_HOST.*|name: DB_HOST\n          value: ${OLD_DB_HOST}|g" fc-client-data-refresh-batch.yaml
+        oc apply -f fc-client-data-refresh-batch.yaml
         echo "CronJob fc-client-data-refresh-batch updated to use the old database: $OLD_DB_HOST"
+
