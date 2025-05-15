@@ -15,14 +15,13 @@ env:
   ZONE: ${{ inputs.target }}
   COMPONENT: db
   DB_UPGRADE_VERSION: v17 # major db version to upgrade to
-
+  DB_UPGRADE_BACKUP_DIR: /db-upgrade-backups
+  
 jobs:
   db-major-upgrade:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-    env:
-      API_DEPLOYMENT: deployment/${{ env.NAME }}-${{ env.ZONE }}-api
 
     steps:
     - name: Checkout
@@ -49,13 +48,22 @@ jobs:
         parameters: -p ZONE=${{ env.ZONE }}
 
     - name: Parameters preparation
+      # Prepare some parameters:
+      # - Backup file name (backup-YYYY-MM-DD-HH-MM.dump)
+      # - New DB host name (fom-[pr#/test/prod]-db-v17)
+      # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
       id: prepare
-      run: echo "::set-output name=current_date::$(date +'%Y-%m-%d-%H-%M')"
+      run: |
+        current_date=$(date +'%Y-%m-%d-%H-%M')
+        echo "::set-output name=backup_file_name::backup-${current_date}.dump"
+        echo "::set-output name=new_db_host::fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}"
+        echo "::set-output name=workflow_state_change_cronjob::${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch"
+        echo "::set-output name=fc_client_data_refresh_cronjob::${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch"
 
     - name: Scale Down API Component  # stop further user activity
       run: |
         echo "Scaling down the API component..."
-        oc scale ${{ env.API_DEPLOYMENT }} -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=0
         echo "Waiting for API pods to terminate..."
         for i in {1..15}; do
           POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-api -o jsonpath='{.items[*].status.phase}' | wc -w)
@@ -63,7 +71,7 @@ jobs:
             echo "All API pods have been terminated."
             break
           fi
-          echo "API pods are still terminating. Retrying in 5 seconds..."
+          echo "API pods are still terminating. Retrying in 10 seconds..."
           sleep 10
         done
 
@@ -73,23 +81,20 @@ jobs:
         fi
 
     - name: Perform old Database Backup
-      if: ${{ env.ZONE != 'prod' }}
       env:
-        BACKUP_FILE_NAME: backup-${{ steps.prepare.outputs.current_date }}.dump
+        BACKUP_FILE_PATH: ${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}
       run: |
         echo "Performing database backup..."
         oc exec deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -- \
-            bash -c 'pg_dump -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -Fc > "/backups/${{env.BACKUP_FILE_NAME}}"'
+            bash -c 'pg_dump -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -Fc > "${{env.BACKUP_FILE_PATH}}"'
 
     - name: Verify Backup File Exists
-      if: ${{ env.ZONE != 'prod' }}
       env:
-        BACKUP_FILE_NAME: backup-${{ steps.prepare.outputs.current_date }}.dump
+        BACKUP_FILE_PATH: ${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}
       run: |
         echo "Verifying backup file exists..."
-        BACKUP_FILE_PATH="/backups/${{env.BACKUP_FILE_NAME}}"
         oc exec deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -- \
-          test -f $BACKUP_FILE_PATH
+          test -f "${{env.BACKUP_FILE_PATH}}"
         if [ $? -eq 0 ]; then
           echo "Backup file verified: $BACKUP_FILE_PATH"
         else
@@ -97,8 +102,7 @@ jobs:
           exit 1
         fi
 
-    - name: OpenShift Deploy (db upgrade container)
-      if: ${{ env.ZONE != 'prod' }}
+    - name: OpenShift Deploy (new version db upgrade container)
       uses: bcgov/action-deployer-openshift@v3.2.0
       with:
         file: db/openshift.deploy.dbupgrade.v17.yml
@@ -110,8 +114,7 @@ jobs:
           -p ZONE=${{ env.ZONE }}
         triggers: ('db')
 
-    - name: Verify db upgrade container Deployment Readiness
-      if: ${{ env.ZONE != 'prod' }}
+    - name: Verify New Version DB Upgrade Container Deployment Readiness
       run: |
         echo "Checking if deployment is ready..."
         for i in {1..30}; do
@@ -129,8 +132,7 @@ jobs:
           exit 1
         fi
 
-    - name: Verify PostGIS Extension Installation at db upgrade container
-      if: ${{ env.ZONE != 'prod' }}
+    - name: Verify PostGIS Extension Installation at DB Upgrade Container
       run: |
         echo "Verifying PostGIS extension is installed..."
         POSTGIS_VERSION=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
@@ -142,10 +144,9 @@ jobs:
           echo "PostGIS extension is installed. Version: $POSTGIS_VERSION"
         fi
 
-    - name: Restore from Backup into New Database
-      if: ${{ env.ZONE != 'prod' }}
+    - name: Restore From Backup Into New Database
       env:
-        BACKUP_FILE_PATH: "/backups/backup-${{ steps.prepare.outputs.current_date }}.dump"
+        BACKUP_FILE_PATH: "${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}"
       run: |
         echo "Restoring database from backup..."
         oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
@@ -158,7 +159,6 @@ jobs:
         fi
 
     - name: Verify Database Restoration
-      if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Verifying database restoration..."
         RESTORE_CHECK=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
@@ -171,7 +171,6 @@ jobs:
         fi
 
     - name: Scale Down Old Database Component
-      if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Scaling down the old database component..."
         oc scale deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} --replicas=0
@@ -192,15 +191,13 @@ jobs:
         fi
 
     - name: Point API Component to New Database
-      if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Updating API component to point to the new database..."
-        NEW_DB_HOST="${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}"
+        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
         oc set env deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
         echo "API component updated to use the new database: $NEW_DB_HOST"
 
-    - name: Scale Up API Component
-      if: ${{ env.ZONE != 'prod' }}
+    - name: Scale Up API Component (Now Pointing To New DB)
       env:
         REPLICA_COUNT: 3
       run: |
@@ -224,7 +221,6 @@ jobs:
         fi
 
     - name: Verify API Component is Responding
-      if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Fetching API route from OpenShift..."
         API_ROUTE=$(oc get route ${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.spec.host}')
@@ -234,9 +230,9 @@ jobs:
         fi
 
         sleep 10
-        API_URL="https://${API_ROUTE}/api/district"
-        echo "Verifying API component is responding with http request: ${API_URL}..."
-        RESPONSE=$(curl -o /dev/null -s -w "%{http_code}\n" $API_URL)
+        SMOKE_API_URL="https://${API_ROUTE}/api/district"
+        echo "Verifying API component is responding with http request: ${SMOKE_API_URL}..."
+        RESPONSE=$(curl -o /dev/null -s -w "%{http_code}\n" $SMOKE_API_URL)
         if [ "$RESPONSE" -eq 200 ]; then
           echo "API component is responding successfully."
         else
@@ -245,19 +241,20 @@ jobs:
         fi
 
     - name: Update CronJobs to Point to New Database
-      if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Updating CronJobs to point to the new database..."
-        NEW_DB_HOST="${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}"
+        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
+        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}
+        FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
 
         # Update work-flow-state-change-batch CronJob
         echo "Updating CronJob: work-flow-state-change-batch..."
-        oc set env cronjob/${NAME}-${ZONE}-work-flow-state-change-batch -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
+        oc set env cronjob/$WORKFLOW_STATE_CHANGE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
         echo "CronJob work-flow-state-change-batch updated to use the new database: $NEW_DB_HOST"
 
         # Update fc-client-data-refresh-batch CronJob
         echo "Updating CronJob: fc-client-data-refresh-batch..."
-        oc set env cronjob/${NAME}-${ZONE}-fc-client-data-refresh-batch -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
+        oc set env cronjob/$FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
         echo "CronJob fc-client-data-refresh-batch updated to use the new database: $NEW_DB_HOST"
 
 
@@ -268,7 +265,6 @@ jobs:
     if: failure()  # This ensures the rollback job runs only if the db-major-upgrade job fails.
     steps:
     - name: OpenShift Init
-      if: ${{ env.ZONE != 'prod' }}
       uses: bcgov/action-deployer-openshift@v3.2.0
       with:
         oc_namespace: ${{ vars.OC_NAMESPACE }}
@@ -278,10 +274,19 @@ jobs:
         overwrite: false
         parameters: -p ZONE=${{ env.ZONE }}
 
-    - name: Scale API Comoponent Down if needed
-      if: ${{ env.ZONE != 'prod' }}
+    - name: Parameters Preparation
+      # Prepare some parameters:
+      # - Old DB host name (fom-[pr#/test/prod]-db)
+      # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
+      id: prepare
       run: |
-        echo "Scaling down the API component if needed..."
+        echo "::set-output name=old_db_host::fom-${{ inputs.target }}-${{ env.COMPONENT }}"
+        echo "::set-output name=workflow_state_change_cronjob::${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch"
+        echo "::set-output name=fc_client_data_refresh_cronjob::${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch"
+
+    - name: Scale API Comoponent Down
+      run: |
+        echo "Scaling down the API component..."
         oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=0
         echo "Waiting for API pods to terminate..."
         for i in {1..20}; do
@@ -299,8 +304,12 @@ jobs:
           exit 1
         fi
 
+    - name: Scale Down New Database Component
+      run: |
+        echo "Scaling down the new database component..."
+        oc scale deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} --replicas=0
+
     - name: Scale Up Old Database Component
-      if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Scaling up the old database component..."
         oc scale deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} --replicas=1
@@ -319,22 +328,14 @@ jobs:
           exit 1
         fi
 
-    - name: Scale Down New Database Component
-      if: ${{ env.ZONE != 'prod' }}
-      run: |
-        echo "Scaling down the new database component..."
-        oc scale deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} --replicas=0
-
     - name: Rollback API Component to Old Database
-      if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Rolling back API component to point to the old database..."
-        OLD_DB_HOST="${NAME}-${ZONE}-${COMPONENT}"
+        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_host }}"
         oc set env deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
         echo "API component rolled back to use the old database: $OLD_DB_HOST"
 
     - name: Scale Up API Component
-      if: ${{ env.ZONE != 'prod' }}
       env:
         REPLICA_COUNT: 3
       run: |
@@ -358,7 +359,6 @@ jobs:
         fi
 
     - name: Verify API Component is Responding
-      if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Fetching API route from OpenShift..."
         API_ROUTE=$(oc get route ${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.spec.host}')
@@ -368,9 +368,9 @@ jobs:
         fi
 
         sleep 10
-        API_URL="https://${API_ROUTE}/api/district"
-        echo "Verifying API component is responding with http request: ${API_URL}..."
-        RESPONSE=$(curl -o /dev/null -s -w "%{http_code}\n" $API_URL)
+        SMOKE_API_URL="https://${API_ROUTE}/api/district"
+        echo "Verifying API component is responding with http request: ${SMOKE_API_URL}..."
+        RESPONSE=$(curl -o /dev/null -s -w "%{http_code}\n" $SMOKE_API_URL)
         if [ "$RESPONSE" -eq 200 ]; then
           echo "API component is responding successfully."
         else
@@ -379,17 +379,18 @@ jobs:
         fi
 
     - name: Update CronJobs to Point to Old Database 
-      if: ${{ env.ZONE != 'prod' }}
       run: |
         echo "Updating CronJobs to point to the old database..."
-        OLD_DB_HOST="${NAME}-${ZONE}-${COMPONENT}"
+        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_host }}"
+        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}
+        FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
 
         # Update work-flow-state-change-batch CronJob
         echo "Updating CronJob: work-flow-state-change-batch..."
-        oc set env cronjob/${NAME}-${ZONE}-work-flow-state-change-batch -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
+        oc set env cronjob/$WORKFLOW_STATE_CHANGE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
         echo "CronJob work-flow-state-change-batch updated to use the old database: $OLD_DB_HOST"
 
         # Update fc-client-data-refresh-batch CronJob
         echo "Updating CronJob: fc-client-data-refresh-batch..."
-        oc set env cronjob/${NAME}-${ZONE}-fc-client-data-refresh-batch -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
+        oc set env cronjob/$FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
         echo "CronJob fc-client-data-refresh-batch updated to use the old database: $OLD_DB_HOST"
