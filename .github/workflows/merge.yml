@@ -24,7 +24,7 @@ jobs:
       batch_client_rfsh_api_tkn_op_secret_name: fom-demo-client-app-api
       db_testdata: true
       environment: test
-      email_notify: FLNR.AdminServicesCariboo@gov.bc.ca
+      email_notify: Heartwood@gov.bc.ca  # TEST environment, set to team inbox.
       logout_chain_url: https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri=
       target: test
 
