@@ -1,5 +1,4 @@
 ## Temporary OpenShift deployment template for database upgrade.
-## TODO: backup volume is mounted for upgrade container, need to mount the backup volume also to the reqular db container.
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
@@ -41,8 +40,6 @@ parameters:
     value: 1000m
   - name: MEMORY_LIMIT
     value: 1Gi
-  # - name: URL
-  #   description: Dummy parameter to make workflows easier
   - name: RANDOM_EXPRESSION
     description: Random expression to make sure deployments update
     from: "[a-zA-Z0-9]{32}"
