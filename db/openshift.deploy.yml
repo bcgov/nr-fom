@@ -300,7 +300,7 @@ objects:
                       name: "backup"
                   env:
                     - name: BACKUP_DIR
-                      value: "${BACKUP_DIR}"
+                      value: "${BACKUP_DIR}/"
                     - name: BACKUP_STRATEGY
                       value: "${BACKUP_STRATEGY}"
                       optional: true
@@ -432,7 +432,7 @@ objects:
                       mountPath: "${BACKUP_DIR}"
                   env:
                     - name: BACKUP_DIR
-                      value: "${BACKUP_DIR}"
+                      value: "${BACKUP_DIR}/"
                     - name: POSTGRES_DB
                       valueFrom:
                         secretKeyRef:
