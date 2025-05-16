@@ -256,7 +256,7 @@ jobs:
 
         # Update fc-client-data-refresh-batch CronJob
         echo "Fetching and updating CronJob: fc-client-data-refresh-batch..."
-        oc get cronjob/FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > fc-client-data-refresh-batch.yaml
+        oc get cronjob/$FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > fc-client-data-refresh-batch.yaml
         sed -i "/name: DB_HOST/{n;s|value:.*|value: ${NEW_DB_HOST}|}" fc-client-data-refresh-batch.yaml
         oc apply -f fc-client-data-refresh-batch.yaml
 
@@ -397,7 +397,7 @@ jobs:
 
         # Update fc-client-data-refresh-batch CronJob
         echo "Fetching and updating CronJob: fc-client-data-refresh-batch..."
-        oc get cronjob/FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > fc-client-data-refresh-batch.yaml
+        oc get cronjob/$FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > fc-client-data-refresh-batch.yaml
         sed -i "/name: DB_HOST/{n;s|value:.*|value: ${OLD_DB_HOST}|}" fc-client-data-refresh-batch.yaml
         oc apply -f fc-client-data-refresh-batch.yaml
         echo "CronJob fc-client-data-refresh-batch updated to use the old database: $OLD_DB_HOST"
