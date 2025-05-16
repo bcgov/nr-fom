@@ -244,7 +244,7 @@ jobs:
       run: |
         echo "Updating CronJobs to point to the new database..."
         NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
-        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}
+        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}"
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
         BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
 
@@ -385,7 +385,7 @@ jobs:
       run: |
         echo "Updating CronJobs to point to the old database..."
         OLD_DB_HOST="${{ steps.prepare.outputs.old_db_host }}"
-        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}
+        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}""
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
 
         # Update work-flow-state-change-batch CronJob
