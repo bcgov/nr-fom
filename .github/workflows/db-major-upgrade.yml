@@ -7,6 +7,14 @@ on:
         description: Deployment target; usually PR number, test, or prod
         type: string
         required: true
+      revert-only:
+        # note: This assumes previous version db has not been "decommissioned" (only stopped) and still available.
+        #       It does not recover from previous latest 'regular db backup', only repoint to the old db.
+        #       Useful to rollback conveniently if for any reason (even after upgrade success) it needs to.
+        description: Skip the upgrade and only execute the rollback job.
+        type: boolean
+        required: false
+        default: false
 
 permissions: {}
 
@@ -19,6 +27,7 @@ env:
   
 jobs:
   db-major-upgrade:
+    if: ${{ inputs.revert-only == false }} # Skip this job if revert-only is true
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -32,7 +41,7 @@ jobs:
       with:
         package: ${{ env.COMPONENT }}
         build_context: ./db
-        build_file: ./db/Dockerfile-V17
+        build_file: ./db/Dockerfile-${{ env.DB_UPGRADE_VERSION }} # New db version and it should come with PostGIS extension binary.
         tag: ${{ env.DB_UPGRADE_VERSION }}-upgrade
         tag_fallback: latest
         token: ${{ secrets.GITHUB_TOKEN }}
@@ -48,7 +57,7 @@ jobs:
         parameters: -p ZONE=${{ env.ZONE }}
 
     - name: Parameters preparation
-      # Prepare some parameters:
+      # Prepare some parameters (outputs) for steps:
       # - Backup file name (backup-YYYY-MM-DD-HH-MM.dump)
       # - New DB host name (fom-[pr#/test/prod]-db-v17)
       # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
@@ -75,12 +84,15 @@ jobs:
           sleep 10
         done
 
-        if [ "$POD_COUNT" -ne 0 ]; then
+        if ["$POD_COUNT" -ne 0]; then
           echo "Error: API pods did not terminate within the timeout period."
           exit 1
         fi
 
-    - name: Perform old Database Backup
+    - name: Perform old Database Backup 
+      # Dump old db with postgreSQL 'pg_dump' utility.
+      # Note: The backup file is stored using different PVC than regular db backup.
+      #     : The format is different than FOM regular db backup.
       env:
         BACKUP_FILE_PATH: ${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}
       run: |
@@ -103,6 +115,7 @@ jobs:
         fi
 
     - name: OpenShift Deploy (new version db upgrade container)
+      # New db pod with new db version and extension installed.
       uses: bcgov/action-deployer-openshift@v3.2.0
       with:
         file: db/openshift.deploy.dbupgrade.v17.yml
@@ -136,7 +149,7 @@ jobs:
       run: |
         echo "Verifying PostGIS extension is installed..."
         POSTGIS_VERSION=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
-          bash -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -tAc "SELECT installed_version FROM pg_available_extensions WHERE name = '\''postgis'\'';"')
+          bash -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -tAc "SELECT extversion FROM pg_extension WHERE extname = '\''postgis'\'';"')
         if [ -z "$POSTGIS_VERSION" ]; then
           echo "Error: PostGIS extension is not installed."
           exit 1
@@ -272,7 +285,7 @@ jobs:
   rollback:
     runs-on: ubuntu-latest
     needs: db-major-upgrade
-    if: failure()  # This ensures the rollback job runs only if the db-major-upgrade job fails.
+    if: ${{ inputs.revert-only == true || failure() }} # Run if revert-only is true or db-major-upgrade fails
     steps:
     - name: OpenShift Init
       uses: bcgov/action-deployer-openshift@v3.2.0
@@ -301,7 +314,7 @@ jobs:
         echo "Waiting for API pods to terminate..."
         for i in {1..20}; do
           POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-api -o jsonpath='{.items[*].status.phase}' | wc -w)
-          if [ "$POD_COUNT" -eq 0 ]; then
+          if ["$POD_COUNT" -eq 0]; then
             echo "All API pods have been terminated."
             break
           fi
@@ -381,7 +394,7 @@ jobs:
         SMOKE_API_URL="https://${API_ROUTE}/api/district"
         echo "Verifying API component is responding with http request: ${SMOKE_API_URL}..."
         RESPONSE=$(curl -o /dev/null -s -w "%{http_code}\n" $SMOKE_API_URL)
-        if [ "$RESPONSE" -eq 200 ]; then
+        if ["$RESPONSE" -eq 200]; then
           echo "API component is responding successfully."
         else
           echo "Error: API component is not responding. HTTP status code: $RESPONSE"
@@ -392,7 +405,7 @@ jobs:
       run: |
         echo "Updating CronJobs to point to the old database..."
         OLD_DB_HOST="${{ steps.prepare.outputs.old_db_host }}"
-        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}""
+        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}"
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
         BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
 
