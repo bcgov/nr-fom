@@ -158,6 +158,7 @@ jobs:
         fi
 
     - name: Restore From Backup Into New Database
+        # Restore previous 'pg_dump' backup dump file into new version db.
       env:
         BACKUP_FILE_PATH: "${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}"
       run: |
@@ -184,6 +185,7 @@ jobs:
         fi
 
     - name: Scale Down Old Database Component
+      # Stop old db component, not deleted, will be decommissioned later.
       run: |
         echo "Scaling down the old database component..."
         oc scale deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} --replicas=0
@@ -204,6 +206,7 @@ jobs:
         fi
 
     - name: Point API Component to New Database
+      # The API deployment's env "DB_HOST" will be set to the new database host name.
       run: |
         echo "Updating API component to point to the new database..."
         NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
@@ -254,6 +257,8 @@ jobs:
         fi
 
     - name: Update CronJobs to Point to New Database
+      # The CronJobs' has no 'env' but the yaml will be search on the "DB_HOST" and 
+      # replaced with the new database host name, then re-applied.
       run: |
         echo "Updating CronJobs to point to the new database..."
         NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
@@ -281,7 +286,7 @@ jobs:
         echo "CronJob database-backup updated to use the new database: $NEW_DB_HOST"
 
 
-## Rollback API component pointing to old database if needed
+## Rollback API component pointing to old database
   rollback:
     runs-on: ubuntu-latest
     needs: db-major-upgrade
