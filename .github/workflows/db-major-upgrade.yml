@@ -260,6 +260,13 @@ jobs:
         sed -i "/name: DB_HOST/{n;s|value:.*|value: ${NEW_DB_HOST}|}" fc-client-data-refresh-batch.yaml
         oc apply -f fc-client-data-refresh-batch.yaml
 
+        # Update database-backup CronJob
+        echo "Fetching and updating CronJob: database-backup..."
+        oc get cronjob/$BACKUP_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > database-backup.yaml
+        sed -i "/name: DATABASE_SERVICE_NAME/{n;s|value:.*|value: ${NEW_DB_HOST}|}" database-backup.yaml
+        oc apply -f database-backup.yaml
+        echo "CronJob database-backup updated to use the new database: $NEW_DB_HOST"
+
 
 ## Rollback API component pointing to old database if needed
   rollback:
@@ -387,6 +394,7 @@ jobs:
         OLD_DB_HOST="${{ steps.prepare.outputs.old_db_host }}"
         WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}""
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
+        BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
 
         # Update work-flow-state-change-batch CronJob
         echo "Fetching and updating CronJob: work-flow-state-change-batch..."
@@ -402,3 +410,9 @@ jobs:
         oc apply -f fc-client-data-refresh-batch.yaml
         echo "CronJob fc-client-data-refresh-batch updated to use the old database: $OLD_DB_HOST"
 
+        # Update database-backup CronJob
+        echo "Fetching and updating CronJob: database-backup..."
+        oc get cronjob/$BACKUP_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > database-backup.yaml
+        sed -i "/name: DATABASE_SERVICE_NAME/{n;s|value:.*|value: ${OLD_DB_HOST}|}" database-backup.yaml
+        oc apply -f database-backup.yaml
+        echo "CronJob database-backup updated to use the old database: $OLD_DB_HOST"
