@@ -84,7 +84,7 @@ jobs:
           sleep 10
         done
 
-        if ["$POD_COUNT" -ne 0]; then
+        if [ "$POD_COUNT" -ne 0 ]; then
           echo "Error: API pods did not terminate within the timeout period."
           exit 1
         fi
@@ -319,7 +319,7 @@ jobs:
         echo "Waiting for API pods to terminate..."
         for i in {1..20}; do
           POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-api -o jsonpath='{.items[*].status.phase}' | wc -w)
-          if ["$POD_COUNT" -eq 0]; then
+          if [ "$POD_COUNT" -eq 0 ]; then
             echo "All API pods have been terminated."
             break
           fi
@@ -327,7 +327,7 @@ jobs:
           sleep 10
         done
 
-        if [ "$POD_COUNT" -ne 0]; then
+        if [ "$POD_COUNT" -ne 0 ]; then
           echo "Error: API pods did not terminate within the timeout period."
           exit 1
         fi
