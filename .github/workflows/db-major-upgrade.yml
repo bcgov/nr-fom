@@ -265,6 +265,7 @@ jobs:
         WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}"
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
         BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
+        RESTORE_CRONJOB_NAME="${NAME}-${ZONE}-${COMPONENT}-restore"
 
         # Update work-flow-state-change-batch CronJob
         echo "Fetching and updating CronJob: work-flow-state-change-batch..."
@@ -285,6 +286,13 @@ jobs:
         oc apply -f database-backup.yaml
         echo "CronJob database-backup updated to use the new database: $NEW_DB_HOST"
 
+        # Update database-restore CronJob
+        echo "Fetching and updating CronJob: database-restore..."
+        oc get cronjob/$RESTORE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > database-restore.yaml
+            ## Replace the database host in all psql -h ... commands in the args section
+        sed -i "s|-h ${NAME}-${ZONE}-${COMPONENT}|-h ${NEW_DB_HOST}|g" database-restore.yaml
+        oc apply -f database-restore.yaml
+        echo "CronJob database-restore updated to use the new database: $NEW_DB_HOST"
 
 ## Rollback API component pointing to old database
   rollback:
@@ -413,7 +421,8 @@ jobs:
         WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}"
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
         BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
-
+        RESTORE_CRONJOB_NAME="${NAME}-${ZONE}-${COMPONENT}-restore"
+        
         # Update work-flow-state-change-batch CronJob
         echo "Fetching and updating CronJob: work-flow-state-change-batch..."
         oc get cronjob/$WORKFLOW_STATE_CHANGE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > work-flow-state-change-batch.yaml
@@ -434,3 +443,11 @@ jobs:
         sed -i "/name: DATABASE_SERVICE_NAME/{n;s|value:.*|value: ${OLD_DB_HOST}|}" database-backup.yaml
         oc apply -f database-backup.yaml
         echo "CronJob database-backup updated to use the old database: $OLD_DB_HOST"
+
+        # Update database-restore CronJob
+        echo "Fetching and updating CronJob: database-restore..."
+        oc get cronjob/$RESTORE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > database-restore.yaml
+            ## Replace the database host in all psql -h ... commands in the args section
+        sed -i "s|-h ${NEW_DB_HOST}|-h ${OLD_DB_HOST}|g" database-restore.yaml
+        oc apply -f database-restore.yaml
+        echo "CronJob database-restore updated to use the new database: $OLD_DB_HOST"
