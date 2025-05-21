@@ -403,7 +403,7 @@ jobs:
           exit 1
         fi
 
-        sleep 10
+        sleep 20
         SMOKE_API_URL="https://${API_ROUTE}/api/district"
         echo "Verifying API component is responding with http request: ${SMOKE_API_URL}..."
         RESPONSE=$(curl -v -o /dev/null -w "%{http_code}\n" $SMOKE_API_URL)
