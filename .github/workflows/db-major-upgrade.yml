@@ -406,7 +406,7 @@ jobs:
         sleep 10
         SMOKE_API_URL="https://${API_ROUTE}/api/district"
         echo "Verifying API component is responding with http request: ${SMOKE_API_URL}..."
-        RESPONSE=$(curl -o /dev/null -s -w "%{http_code}\n" $SMOKE_API_URL)
+        RESPONSE=$(curl -v -o /dev/null -w "%{http_code}\n" $SMOKE_API_URL)
         if [ "$RESPONSE" -eq 200 ]; then
           echo "API component is responding successfully."
         else
