@@ -118,7 +118,7 @@ jobs:
       # New db pod with new db version and extension installed.
       uses: bcgov/action-deployer-openshift@v3.2.0
       with:
-        file: db/openshift.deploy.dbupgrade.v17.yml
+        file: db/openshift.deploy.dbupgrade.${{ env.DB_UPGRADE_VERSION }}.yml
         oc_namespace: ${{ vars.OC_NAMESPACE }}
         oc_server: ${{ vars.OC_SERVER }}
         oc_token: ${{ secrets.OC_TOKEN }}
