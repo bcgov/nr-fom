@@ -1,0 +1,183 @@
+## Temporary OpenShift deployment template for database upgrade.
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: ${NAME}
+  annotations:
+    description: "Forest Operations Map, db upgrade template"
+    tags: "fom"
+    iconClass: icon-js
+labels:
+  app: ${NAME}-${ZONE}
+  db-version: ${DB_UPGRADE_VERSION}
+  app.kubernetes.io/part-of: ${NAME}-${ZONE}
+parameters:
+  - name: NAME
+    description: Product name
+    value: fom
+  - name: COMPONENT
+    description: Component name
+    value: db
+  - name: ZONE
+    description: Deployment zone, e.g. pr-### or prod
+    required: true
+  - description: Volume space available for data, e.g. 512Mi, 2Gi.
+    displayName: Database Volume Capacity
+    name: DB_PVC_SIZE
+    required: true
+    value: 1Gi
+  - name: REGISTRY
+    description: Container registry to import from (internal is image-registry.openshift-image-registry.svc:5000)
+    value: ghcr.io
+  - name: ORG
+    description: Organization name
+    value: bcgov
+  - name: CPU_REQUEST
+    value: 30m
+  - name: MEMORY_REQUEST
+    value: 100Mi
+  - name: CPU_LIMIT
+    value: 1000m
+  - name: MEMORY_LIMIT
+    value: 1Gi
+  - name: RANDOM_EXPRESSION
+    description: Random expression to make sure deployments update
+    from: "[a-zA-Z0-9]{32}"
+    generate: expression
+  - name: DB_UPGRADE_VERSION
+    description: Database version number for database upgrade
+    value: v17
+  - name: "DB_UPGRADE_BACKUP_DIR"
+    description: "backup directory for db upgrade"
+    required: true
+    value: "/db-upgrade-backups"
+  - name: BACKUP_COMPONENT
+    description: BACKUP_COMPONENT name
+    value: database-backup
+
+objects:
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+      labels:
+        app: ${NAME}-${ZONE}
+        db-version: ${DB_UPGRADE_VERSION}
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: "${DB_PVC_SIZE}"
+      storageClassName: netapp-file-standard
+  - kind: Deployment
+    apiVersion: apps/v1
+    metadata:
+      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+      labels:
+        app: ${NAME}-${ZONE}
+        db-version: ${DB_UPGRADE_VERSION}
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+          db-version: ${DB_UPGRADE_VERSION}
+      strategy:
+        type: Recreate
+        recreateParams:
+          timeoutSeconds: 600
+        activeDeadlineSeconds: 21600
+      template:
+        metadata:
+          name: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+          labels:
+            app: ${NAME}-${ZONE}
+            deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+            db-version: ${DB_UPGRADE_VERSION}
+        spec:
+          volumes:
+            - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+              persistentVolumeClaim:
+                claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+            - name: backup
+              persistentVolumeClaim:
+                claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
+          containers:
+            - name: ${NAME}
+              image: ghcr.io/${ORG}/nr-fom/db:v17-upgrade
+              ports:
+                - containerPort: 5432
+                  protocol: TCP
+              livenessProbe:
+                failureThreshold: 5
+                initialDelaySeconds: 30
+                periodSeconds: 15
+                tcpSocket:
+                  port: 5432
+                timeoutSeconds: 1
+              readinessProbe:
+                failureThreshold: 5
+                initialDelaySeconds: 20
+                periodSeconds: 15
+                tcpSocket:
+                  port: 5432
+                timeoutSeconds: 1
+              env:
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${NAME}-${ZONE}-${COMPONENT}
+                      key: database-db
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${NAME}-${ZONE}-${COMPONENT}
+                      key: database-password
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${NAME}-${ZONE}-${COMPONENT}
+                      key: database-user
+                - name: RANDOM_EXPRESSION
+                  value: ${RANDOM_EXPRESSION}
+              resources:
+                requests:
+                  cpu: ${CPU_REQUEST}
+                  memory: ${MEMORY_REQUEST}
+                limits:
+                  cpu: ${CPU_LIMIT}
+                  memory: ${MEMORY_LIMIT}
+              volumeMounts:
+                - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+                  mountPath: /var/lib/postgresql
+                - name: backup
+                  mountPath: ${DB_UPGRADE_BACKUP_DIR}
+              terminationMessagePath: "/dev/termination-log"
+              terminationMessagePolicy: File
+              imagePullPolicy: Always
+          restartPolicy: Always
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+          schedulerName: default-scheduler
+  - kind: Service
+    apiVersion: v1
+    metadata:
+      labels:
+        app: ${NAME}-${ZONE}
+        db-version: ${DB_UPGRADE_VERSION}
+      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+    spec:
+      ports:
+        - name: postgresql
+          nodePort: 0
+          port: 5432
+          protocol: TCP
+          targetPort: 5432
+      selector:
+        deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
+        db-version: ${DB_UPGRADE_VERSION}
+      sessionAffinity: None
+      type: ClusterIP
+
+
