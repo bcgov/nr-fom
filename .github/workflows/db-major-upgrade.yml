@@ -108,8 +108,8 @@ jobs:
             echo "Database pod is ready."
             break
           fi
-          echo "Database pod not ready yet. Retrying in 5 seconds..."
-          sleep 5
+          echo "Database pod not ready yet. Retrying in 10 seconds..."
+          sleep 10
         done
         if [ "$READY_REPLICAS" != "1" ]; then
           echo "Error: Database pod did not become ready within the timeout period."
