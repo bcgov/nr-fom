@@ -89,6 +89,33 @@ jobs:
           exit 1
         fi
 
+    - name: Patch Old Database Deployment to Mount Upgrade Backup PVC
+      # Although the dbupgrade template will create a new PVC for backup, OpenShift cannot 
+      # automatically mount it to the old database deployment at the mount path indicated.
+      run: |
+        echo "Patching old database deployment to mount upgrade backup PVC..."
+        oc set volume deployment/${NAME}-${ZONE}-${COMPONENT} \
+          -n ${{ vars.OC_NAMESPACE }} \
+          --add \
+          --name=db-upgrade-backup \
+          --type=persistentVolumeClaim \
+          --claim-name=${NAME}-${ZONE}-database-backup-${DB_UPGRADE_VERSION} \
+          --mount-path=${{ env.DB_UPGRADE_BACKUP_DIR }}
+        echo "Waiting for pod to restart and become ready..."
+        for i in {1..30}; do
+          READY_REPLICAS=$(oc get deployment ${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "1" ]; then
+            echo "Database pod is ready."
+            break
+          fi
+          echo "Database pod not ready yet. Retrying in 5 seconds..."
+          sleep 5
+        done
+        if [ "$READY_REPLICAS" != "1" ]; then
+          echo "Error: Database pod did not become ready within the timeout period."
+          exit 1
+        fi
+
     - name: Perform old Database Backup 
       # Dump old db with postgreSQL 'pg_dump' utility.
       # Note: The backup file is stored using different PVC than regular db backup.
