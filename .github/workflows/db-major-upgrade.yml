@@ -22,6 +22,7 @@ env:
   NAME: fom
   ZONE: ${{ inputs.target }}
   COMPONENT: db
+  DB_CURRENT_VERSION: "" # current db version
   DB_UPGRADE_VERSION: v17 # major db version to upgrade to
   DB_UPGRADE_BACKUP_DIR: /db-upgrade-backups
   
@@ -59,12 +60,18 @@ jobs:
     - name: Parameters preparation
       # Prepare some parameters (outputs) for steps:
       # - Backup file name (backup-YYYY-MM-DD-HH-MM.dump)
-      # - New DB host name (fom-[pr#/test/prod]-db-v17)
+      # - Old DB host name (fom-[pr#/test/prod]-db-[DB_CURRENT_VERSION])
+      # - New DB host name (fom-[pr#/test/prod]-db-[DB_UPGRADE_VERSION])
       # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
       id: prepare
       run: |
         current_date=$(date +'%Y-%m-%d-%H-%M')
         echo "backup_file_name=backup-${current_date}.dump" >> $GITHUB_OUTPUT
+        if [ -n "${{ env.DB_CURRENT_VERSION }}" ]; then
+          old_db_host="fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_CURRENT_VERSION }}"
+        else
+          old_db_host="fom-${{ inputs.target }}-${{ env.COMPONENT }}"
+        fi
         echo "new_db_host=fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
         echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
         echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
@@ -261,6 +268,7 @@ jobs:
       # replaced with the new database host name, then re-applied.
       run: |
         echo "Updating CronJobs to point to the new database..."
+        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_host }}"
         NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
         WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}"
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
@@ -290,7 +298,7 @@ jobs:
         echo "Fetching and updating CronJob: database-restore..."
         oc get cronjob/$RESTORE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > database-restore.yaml
             ## Replace the database host in all psql -h ... commands in the args section
-        sed -i "s|-h ${NAME}-${ZONE}-${COMPONENT}|-h ${NEW_DB_HOST}|g" database-restore.yaml
+        sed -i "s|-h ${OLD_DB_HOST}|-h ${NEW_DB_HOST}|g" database-restore.yaml
         oc apply -f database-restore.yaml
         echo "CronJob database-restore updated to use the new database: $NEW_DB_HOST"
 
@@ -312,12 +320,16 @@ jobs:
 
     - name: Parameters Preparation
       # Prepare some parameters:
-      # - Old DB host name (fom-[pr#/test/prod]-db)
-      # - New DB host name (fom-[pr#/test/prod]-db-v17)
+      # - Old DB host name (fom-[pr#/test/prod]-db-[DB_CURRENT_VERSION])
+      # - New DB host name (fom-[pr#/test/prod]-db-[DB_UPGRADE_VERSION])
       # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
       id: prepare
       run: |
-        echo "old_db_host=fom-${{ inputs.target }}-${{ env.COMPONENT }}" >> $GITHUB_OUTPUT
+        if [ -n "${{ env.DB_CURRENT_VERSION }}" ]; then
+          old_db_host="fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_CURRENT_VERSION }}"
+        else
+          old_db_host="fom-${{ inputs.target }}-${{ env.COMPONENT }}"
+        fi
         echo "new_db_host=fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
         echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
         echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
