@@ -48,10 +48,10 @@ parameters:
     description: Dummy parameter to make workflows easier
   - name: REPLICA_COUNT
     description: Dummy parameter to make workflows easier
-  - name: "DB_UPGRADE_BACKUP_DIR"
-    description: "backup directory for db upgrade"
-    required: true
-    value: "/db-upgrade-backups"
+  # - name: "DB_UPGRADE_BACKUP_DIR"
+  #   description: "backup directory for db upgrade"
+  #   required: true
+  #   value: "/db-upgrade-backup"
   - name: DB_CURRENT_VERSION
     description: Current database version number
     value: v17
@@ -133,7 +133,7 @@ objects:
           storage: "${DB_PVC_SIZE}"
       storageClassName: netapp-file-standard
 
-  ### for db major upgrade PVC only  ###
+  # ### for db major upgrade PVC only  ###
   # - kind: PersistentVolumeClaim
   #   apiVersion: v1
   #   metadata:
@@ -178,8 +178,7 @@ objects:
           volumes:
             - name: ${NAME}-${ZONE}-${COMPONENT}
               persistentVolumeClaim:
-                claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
-            # commented out; only needed for db upgrade 
+                claimName: ${NAME}-${ZONE}-${COMPONENT}
             # - name: db-upgrade-backup
             #   persistentVolumeClaim:
             #     claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
@@ -231,7 +230,6 @@ objects:
               volumeMounts:
                 - name: ${NAME}-${ZONE}-${COMPONENT}
                   mountPath: /var/lib/postgresql
-                # commented out; only needed for db upgrade 
                 # - name: db-upgrade-backup
                 #   mountPath: ${DB_UPGRADE_BACKUP_DIR}
               terminationMessagePath: "/dev/termination-log"
