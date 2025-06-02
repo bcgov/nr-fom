@@ -324,7 +324,7 @@ objects:
                       value: "${MONTHLY_BACKUPS}"
                       optional: true
                     - name: DATABASE_SERVICE_NAME
-                      value: "${NAME}-${ZONE}-${COMPONENT}"
+                      value: "${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}"
                     - name: DEFAULT_PORT
                       value: ${DATABASE_DEFAULT_PORT}
                     - name: POSTGRESQL_DATABASE
@@ -401,24 +401,24 @@ objects:
 
                     else
                       echo "Found SQL file, rename existing database."
-                      psql -h ${NAME}-${ZONE}-${COMPONENT} -U ${POSTGRES_USER} -c "DROP DATABASE IF EXISTS ${OLD_FOM_DATABASE_NAME};" -c "ALTER DATABASE fom RENAME TO ${OLD_FOM_DATABASE_NAME};"
+                      psql -h ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION} -U ${POSTGRES_USER} -c "DROP DATABASE IF EXISTS ${OLD_FOM_DATABASE_NAME};" -c "ALTER DATABASE fom RENAME TO ${OLD_FOM_DATABASE_NAME};"
                       if [ $? -ne 0 ]; then
                         echo "Error: psql failed while trying to rename existing database."
                         exit 1
                       fi
 
                       echo "Create a new empty database"
-                      psql -h ${NAME}-${ZONE}-${COMPONENT} -U ${POSTGRES_USER} -c "CREATE DATABASE fom;"
+                      psql -h ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION} -U ${POSTGRES_USER} -c "CREATE DATABASE fom;"
                       db_restore_cmd_status=$?
                       if [ $db_restore_cmd_status -eq 0 ]; then
                         echo "Running database restore with backup SQL file: $sql_file"
-                        psql -h ${NAME}-${ZONE}-${COMPONENT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f $sql_file
+                        psql -h ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f $sql_file
                         db_restore_cmd_status=$?
                       fi
 
                       if [ $db_restore_cmd_status -ne 0 ]; then
                         echo "DB restore failed, droping newly crated empty db fom (if exists), rename old(original) db back to fom."
-                        psql -h ${NAME}-${ZONE}-${COMPONENT} -U ${POSTGRES_USER} -c "DROP DATABASE IF EXISTS fom;" -c "ALTER DATABASE ${OLD_FOM_DATABASE_NAME} RENAME TO fom;"
+                        psql -h ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION} -U ${POSTGRES_USER} -c "DROP DATABASE IF EXISTS fom;" -c "ALTER DATABASE ${OLD_FOM_DATABASE_NAME} RENAME TO fom;"
                         db_revert_restore_cmd_status=$?
                         if [ $db_revert_restore_cmd_status -eq 0 ]; then
                           # Successfully revert previous db restore procedure's failure; exit with failed status code from previous failure.
