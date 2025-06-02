@@ -63,10 +63,10 @@ parameters:
     description: "The name of the root backup directory"
     required: true
     value: "/backups"
-  - name: "DB_UPGRADE_BACKUP_DIR"
-    description: "backup directory for db upgrade"
-    required: true
-    value: "/db-upgrade-backups"
+  # - name: "DB_UPGRADE_BACKUP_DIR"
+  #   description: "backup directory for db upgrade"
+  #   required: true
+  #   value: "/db-upgrade-backup"
   - name: "NUM_BACKUPS"
     description: "The number of backup files to be retained.  Used for the `daily` backup strategy.  Ignored when using the `rolling` backup strategy."
     required: false
@@ -129,20 +129,20 @@ objects:
           storage: "${DB_PVC_SIZE}"
       storageClassName: netapp-file-standard
 
-  ### for db major upgrade PVC only  ###
-  - kind: PersistentVolumeClaim
-    apiVersion: v1
-    metadata:
-      name: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
-      labels:
-        app: ${NAME}-${ZONE}
-    spec:
-      accessModes:
-        - ReadWriteMany
-      resources:
-        requests:
-          storage: "${DB_BACKUP_PVC_SIZE}"
-      storageClassName: netapp-file-standard
+  # ### for db major upgrade PVC only  ###
+  # - kind: PersistentVolumeClaim
+  #   apiVersion: v1
+  #   metadata:
+  #     name: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
+  #     labels:
+  #       app: ${NAME}-${ZONE}
+  #   spec:
+  #     accessModes:
+  #       - ReadWriteMany
+  #     resources:
+  #       requests:
+  #         storage: "${DB_BACKUP_PVC_SIZE}"
+  #     storageClassName: netapp-file-standard
 
 
   - kind: Deployment
@@ -172,9 +172,9 @@ objects:
             - name: ${NAME}-${ZONE}-${COMPONENT}
               persistentVolumeClaim:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}
-            - name: db-upgrade-backup
-              persistentVolumeClaim:
-                claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
+            # - name: db-upgrade-backup
+            #   persistentVolumeClaim:
+            #     claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
           containers:
             - name: ${NAME}
               image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
@@ -223,8 +223,8 @@ objects:
               volumeMounts:
                 - name: ${NAME}-${ZONE}-${COMPONENT}
                   mountPath: /var/lib/postgresql
-                - name: db-upgrade-backup
-                  mountPath: ${DB_UPGRADE_BACKUP_DIR}
+                # - name: db-upgrade-backup
+                #   mountPath: ${DB_UPGRADE_BACKUP_DIR}
               terminationMessagePath: "/dev/termination-log"
               terminationMessagePolicy: File
               imagePullPolicy: Always

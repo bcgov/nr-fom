@@ -23,7 +23,7 @@ env:
   ZONE: ${{ inputs.target }}
   COMPONENT: db
   DB_UPGRADE_VERSION: v17 # major db version to upgrade to
-  DB_UPGRADE_BACKUP_DIR: /db-upgrade-backups
+  DB_UPGRADE_BACKUP_DIR: /db-upgrade-backup
   
 jobs:
   db-major-upgrade:
@@ -68,6 +68,35 @@ jobs:
         echo "new_db_host=fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
         echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
         echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
+
+    - name: Patch Old Database Deployment to set new volume to Mount to Upgrade Backup PVC
+      # Note!
+      # Although new PVC for major db version backup is added, OpenShift cannot automatically mount it 
+      # to the current old database running pod (volume is immutable for the running pod). It has to be 
+      # pathed and new pod will be rolled out with the new PVC mounted.
+      run: |
+        echo "Patching old database deployment to mount upgrade backup PVC..."
+        oc set volume deployment/${NAME}-${ZONE}-${COMPONENT} \
+          -n ${{ vars.OC_NAMESPACE }} \
+          --add \
+          --name=db-upgrade-backup \
+          --type=persistentVolumeClaim \
+          --claim-name=${NAME}-${ZONE}-database-backup-${DB_UPGRADE_VERSION} \
+          --mount-path=${{ env.DB_UPGRADE_BACKUP_DIR }}
+        echo "Waiting for pod to restart and become ready..."
+        for i in {1..30}; do
+          READY_REPLICAS=$(oc get deployment ${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "1" ]; then
+            echo "Database pod is ready."
+            break
+          fi
+          echo "Database pod not ready yet. Retrying in 10 seconds..."
+          sleep 10
+        done
+        if [ "$READY_REPLICAS" != "1" ]; then
+          echo "Error: Database pod did not become ready within the timeout period."
+          exit 1
+        fi
 
     - name: Scale Down API Component  # stop further user activity
       run: |
