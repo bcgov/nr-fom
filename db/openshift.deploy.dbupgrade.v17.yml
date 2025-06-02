@@ -1,4 +1,6 @@
 ## Temporary OpenShift deployment template for database upgrade.
+# copy this file and recreate one for the new version (e.g., v18), then adjust the 
+# db target version parameter.
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
@@ -45,7 +47,7 @@ parameters:
     from: "[a-zA-Z0-9]{32}"
     generate: expression
   - name: DB_UPGRADE_VERSION
-    description: Database version number for database upgrade
+    description: Target database version number for database upgrade
     value: v17
   - name: "DB_UPGRADE_BACKUP_DIR"
     description: "backup directory for db upgrade"
@@ -69,21 +71,6 @@ objects:
       resources:
         requests:
           storage: "${DB_PVC_SIZE}"
-      storageClassName: netapp-file-standard
-
-  ### for db major upgrade PVC only  ###
-  - kind: PersistentVolumeClaim
-    apiVersion: v1
-    metadata:
-      name: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
-      labels:
-        app: ${NAME}-${ZONE}
-    spec:
-      accessModes:
-        - ReadWriteMany
-      resources:
-        requests:
-          storage: "${DB_BACKUP_PVC_SIZE}"
       storageClassName: netapp-file-standard
       
   - kind: Deployment
@@ -118,10 +105,11 @@ objects:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
             - name: db-upgrade-backup
               persistentVolumeClaim:
-                claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
+                # This PVC is shared with existing/old db deployment
+                claimName: ${NAME}-${ZONE}-dbupgrade-${DB_UPGRADE_VERSION}
           containers:
             - name: ${NAME}
-              image: ghcr.io/${ORG}/nr-fom/db:v17-upgrade
+              image: ghcr.io/${ORG}/nr-fom/db:${DB_UPGRADE_VERSION}-upgrade
               ports:
                 - containerPort: 5432
                   protocol: TCP
