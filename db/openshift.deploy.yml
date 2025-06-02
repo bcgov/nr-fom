@@ -51,6 +51,10 @@ parameters:
   - name: DB_UPGRADE_VERSION
     description: Database version number for database upgrade
     value: v16
+  - name: DB_CURRENT_VERSION
+    description: Current database version number
+    value: v16
+  
   ### Backup-Container starts here ###
   - name: BACKUP_COMPONENT
     description: BACKUP_COMPONENT name
@@ -66,10 +70,6 @@ parameters:
     description: "The name of the root backup directory"
     required: true
     value: "/backups"
-  # - name: "DB_UPGRADE_BACKUP_DIR"
-  #   description: "backup directory for db upgrade"
-  #   required: true
-  #   value: "/db-upgrade-backup"
   - name: "NUM_BACKUPS"
     description: "The number of backup files to be retained.  Used for the `daily` backup strategy.  Ignored when using the `rolling` backup strategy."
     required: false
@@ -119,9 +119,10 @@ objects:
   - kind: PersistentVolumeClaim
     apiVersion: v1
     metadata:
-      name: ${NAME}-${ZONE}-${COMPONENT}
+      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
       labels:
         app: ${NAME}-${ZONE}
+        db-version: ${DB_CURRENT_VERSION}
     spec:
       accessModes:
         - ReadWriteOnce
@@ -149,14 +150,16 @@ objects:
   - kind: Deployment
     apiVersion: apps/v1
     metadata:
-      name: ${NAME}-${ZONE}-${COMPONENT}
+      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
       labels:
         app: ${NAME}-${ZONE}
+        db-version: ${DB_CURRENT_VERSION}
     spec:
       replicas: 1
       selector:
         matchLabels:
-          deployment: ${NAME}-${ZONE}-${COMPONENT}
+          deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+          db-version: ${DB_CURRENT_VERSION}
       strategy:
         type: Recreate
         recreateParams:
@@ -164,10 +167,11 @@ objects:
         activeDeadlineSeconds: 21600
       template:
         metadata:
-          name: ${NAME}-${ZONE}-${COMPONENT}
+          name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
           labels:
             app: ${NAME}-${ZONE}
-            deployment: ${NAME}-${ZONE}-${COMPONENT}
+            deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+            db-version: ${DB_CURRENT_VERSION}
         spec:
           volumes:
             - name: ${NAME}-${ZONE}-${COMPONENT}
@@ -238,7 +242,8 @@ objects:
     metadata:
       labels:
         app: ${NAME}-${ZONE}
-      name: ${NAME}-${ZONE}-${COMPONENT}
+        db-version: ${DB_CURRENT_VERSION}
+      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
     spec:
       ports:
         - name: postgresql
@@ -247,7 +252,8 @@ objects:
           protocol: TCP
           targetPort: 5432
       selector:
-        deployment: ${NAME}-${ZONE}-${COMPONENT}
+        deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+        db-version: ${DB_CURRENT_VERSION}
       sessionAffinity: None
       type: ClusterIP
   ### Backup-Container starts here ###

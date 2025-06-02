@@ -70,7 +70,7 @@ services:
   db:
     container_name: db
     # Postgis with extensions (postgis_topology, fuzzystrmatch, postgis_tiger_geocoder)
-    image: postgis/postgis:13-master
+    image: postgis/postgis:17-master
     # Add pgcrypto extension (sed) if not present (grep), then start normally (entrypoint)
     entrypoint:
       - sh
