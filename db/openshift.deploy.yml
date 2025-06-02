@@ -52,7 +52,7 @@ parameters:
     # Before running major database upgrade, adjust 'DB_UPGRADE_VERSION' parameter
     # to the new version, e.g. v17, v18, etc.
     description: Database version number for database upgrade
-    value: v16
+    value: v17
   - name: DB_CURRENT_VERSION
     description: Current database version number
     value: v16
