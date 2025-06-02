@@ -22,7 +22,8 @@ env:
   NAME: fom
   ZONE: ${{ inputs.target }}
   COMPONENT: db
-  DB_UPGRADE_VERSION: v17 # major db version to upgrade to
+  DB_UPGRADE_VERSION: v16 # major db version to upgrade to
+#   DB_UPGRADE_VERSION: v17 # major db version to upgrade to
   DB_UPGRADE_BACKUP_DIR: /db-upgrade-backup
   
 jobs:
