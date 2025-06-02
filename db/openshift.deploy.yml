@@ -48,6 +48,11 @@ parameters:
     description: Dummy parameter to make workflows easier
   - name: REPLICA_COUNT
     description: Dummy parameter to make workflows easier
+  - name: DB_UPGRADE_VERSION
+    # Before running major database upgrade, adjust 'DB_UPGRADE_VERSION' parameter
+    # to the new version, e.g. v17, v18, etc.
+    description: Database version number for database upgrade
+    value: v17
   ### Backup-Container starts here ###
   - name: BACKUP_COMPONENT
     description: BACKUP_COMPONENT name
@@ -63,10 +68,6 @@ parameters:
     description: "The name of the root backup directory"
     required: true
     value: "/backups"
-  # - name: "DB_UPGRADE_BACKUP_DIR"
-  #   description: "backup directory for db upgrade"
-  #   required: true
-  #   value: "/db-upgrade-backup"
   - name: "NUM_BACKUPS"
     description: "The number of backup files to be retained.  Used for the `daily` backup strategy.  Ignored when using the `rolling` backup strategy."
     required: false
@@ -111,9 +112,7 @@ parameters:
     description: Random expression to make sure deployments update
     from: "[a-zA-Z0-9]{32}"
     generate: expression
-  - name: DB_UPGRADE_VERSION
-    description: Database version number for database upgrade
-    value: v17
+
 objects:
   - kind: PersistentVolumeClaim
     apiVersion: v1
@@ -129,21 +128,23 @@ objects:
           storage: "${DB_PVC_SIZE}"
       storageClassName: netapp-file-standard
 
-  # ### for db major upgrade PVC only  ###
-  # - kind: PersistentVolumeClaim
-  #   apiVersion: v1
-  #   metadata:
-  #     name: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
-  #     labels:
-  #       app: ${NAME}-${ZONE}
-  #   spec:
-  #     accessModes:
-  #       - ReadWriteMany
-  #     resources:
-  #       requests:
-  #         storage: "${DB_BACKUP_PVC_SIZE}"
-  #     storageClassName: netapp-file-standard
-
+  ### for db major upgrade PVC only  ###
+  # Note, this PVC is used only for database upgrade, and will be manually deleted after the upgrade is done.
+  # There is no need to mount this PVC to the database pod, as changing the volume mount will not be in effect
+  # for the running pod. Pod needs to be patched and restarted. This is done at `db-major-upgrade.yml` action.
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: ${NAME}-${ZONE}-dbupgrade-${DB_UPGRADE_VERSION}
+      labels:
+        app: ${NAME}-${ZONE}
+    spec:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: "${DB_BACKUP_PVC_SIZE}"
+      storageClassName: netapp-file-standard
 
   - kind: Deployment
     apiVersion: apps/v1
@@ -172,9 +173,6 @@ objects:
             - name: ${NAME}-${ZONE}-${COMPONENT}
               persistentVolumeClaim:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}
-            # - name: db-upgrade-backup
-            #   persistentVolumeClaim:
-            #     claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
           containers:
             - name: ${NAME}
               image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
@@ -223,8 +221,6 @@ objects:
               volumeMounts:
                 - name: ${NAME}-${ZONE}-${COMPONENT}
                   mountPath: /var/lib/postgresql
-                # - name: db-upgrade-backup
-                #   mountPath: ${DB_UPGRADE_BACKUP_DIR}
               terminationMessagePath: "/dev/termination-log"
               terminationMessagePolicy: File
               imagePullPolicy: Always
