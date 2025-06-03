@@ -89,6 +89,7 @@ jobs:
         oc set volume deployment/${{env.OLD_DB_NAME}} \
           -n ${{ vars.OC_NAMESPACE }} \
           --add \
+          --overwrite \
           --name=db-upgrade-backup \
           --type=persistentVolumeClaim \
           --claim-name=${NAME}-${ZONE}-database-backup-${DB_UPGRADE_VERSION} \
