@@ -60,29 +60,31 @@ jobs:
     - name: Parameters preparation
       # Prepare some parameters (outputs) for steps:
       # - Backup file name (backup-YYYY-MM-DD-HH-MM.dump)
-      # - Old DB host name (fom-[pr#/test/prod]-db-[DB_CURRENT_VERSION])
-      # - New DB host name (fom-[pr#/test/prod]-db-[DB_UPGRADE_VERSION])
+      # - Old DB name (fom-[pr#/test/prod]-db-[DB_CURRENT_VERSION])
+      # - New DB name (fom-[pr#/test/prod]-db-[DB_UPGRADE_VERSION])
       # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
       id: prepare
       run: |
         current_date=$(date +'%Y-%m-%d-%H-%M')
         echo "backup_file_name=backup-${current_date}.dump" >> $GITHUB_OUTPUT
         if [ -n "${{ env.DB_CURRENT_VERSION }}" ]; then
-          old_db_host="fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_CURRENT_VERSION }}"
+          old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}-${{ env.DB_CURRENT_VERSION }}"
         else
-          old_db_host="fom-${{ inputs.target }}-${{ env.COMPONENT }}"
+          old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}"
         fi
-        echo "new_db_host=fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
+        echo "new_db_name=${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
         echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
         echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
 
     - name: Scale Down API Component  # stop further user activity
+      env:
+        API_NAME: ${NAME}-${ZONE}-api
       run: |
         echo "Scaling down the API component..."
-        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        oc scale deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=0
         echo "Waiting for API pods to terminate..."
         for i in {1..15}; do
-          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-api -o jsonpath='{.items[*].status.phase}' | wc -w)
+          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${{env.API_NAME}} -o jsonpath='{.items[*].status.phase}' | wc -w)
           if [ "$POD_COUNT" -eq 0 ]; then
             echo "All API pods have been terminated."
             break
@@ -102,17 +104,19 @@ jobs:
       #     : The format is different than FOM regular db backup.
       env:
         BACKUP_FILE_PATH: ${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}
+        OLD_DB_DEPLOYMENT: deployment/${{ steps.prepare.outputs.old_db_name }}
       run: |
         echo "Performing database backup..."
-        oc exec deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -- \
+        oc exec ${{env.OLD_DB_DEPLOYMENT}} -n ${{ vars.OC_NAMESPACE }} -- \
             bash -c 'pg_dump -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -Fc > "${{env.BACKUP_FILE_PATH}}"'
 
     - name: Verify Backup File Exists
       env:
         BACKUP_FILE_PATH: ${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}
+        OLD_DB_DEPLOYMENT: deployment/${{ steps.prepare.outputs.old_db_name }}
       run: |
         echo "Verifying backup file exists..."
-        oc exec deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -- \
+        oc exec ${{env.OLD_DB_DEPLOYMENT}} -n ${{ vars.OC_NAMESPACE }} -- \
           test -f "${{env.BACKUP_FILE_PATH}}"
         if [ $? -eq 0 ]; then
           echo "Backup file verified: $BACKUP_FILE_PATH"
@@ -167,7 +171,7 @@ jobs:
     - name: Restore From Backup Into New Database
         # Restore previous 'pg_dump' backup dump file into new version db.
       env:
-        BACKUP_FILE_PATH: "${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}"
+        BACKUP_FILE_PATH: ${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}
       run: |
         echo "Restoring database from backup..."
         oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
@@ -193,12 +197,14 @@ jobs:
 
     - name: Scale Down Old Database Component
       # Stop old db component, not deleted, will be decommissioned later.
+      env:
+        OLD_DB_NAME: ${{ steps.prepare.outputs.old_db_name }}
       run: |
         echo "Scaling down the old database component..."
-        oc scale deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        oc scale deployment/${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=0
         echo "Waiting for old database pods to terminate..."
         for i in {1..15}; do
-          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-${COMPONENT} -o jsonpath='{.items[*].status.phase}' | wc -w)
+          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${{env.OLD_DB_NAME}} -o jsonpath='{.items[*].status.phase}' | wc -w)
           if [ "$POD_COUNT" -eq 0 ]; then
           echo "All old database pods have been terminated."
           break
@@ -216,20 +222,21 @@ jobs:
       # The API deployment's env "DB_HOST" will be set to the new database host name.
       run: |
         echo "Updating API component to point to the new database..."
-        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
+        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_name }}"
         oc set env deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
         echo "API component updated to use the new database: $NEW_DB_HOST"
 
     - name: Scale Up API Component (Now Pointing To New DB)
       env:
         REPLICA_COUNT: 3
+        API_NAME: ${NAME}-${ZONE}-api
       run: |
         echo "Scaling up the API component to ${{env.REPLICA_COUNT}} replicas..."
-        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=${{env.REPLICA_COUNT}}
+        oc scale deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=${{env.REPLICA_COUNT}}
 
         echo "Verifying the API component has scaled up..."
         for i in {1..50}; do
-          READY_REPLICAS=$(oc get deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          READY_REPLICAS=$(oc get deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
           if [ "$READY_REPLICAS" == "${{env.REPLICA_COUNT}}" ]; then
           echo "API component has successfully scaled up to $READY_REPLICAS replicas."
           break
@@ -268,8 +275,8 @@ jobs:
       # replaced with the new database host name, then re-applied.
       run: |
         echo "Updating CronJobs to point to the new database..."
-        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_host }}"
-        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
+        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_name }}"
+        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_name }}"
         WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}"
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
         BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
@@ -320,27 +327,29 @@ jobs:
 
     - name: Parameters Preparation
       # Prepare some parameters:
-      # - Old DB host name (fom-[pr#/test/prod]-db-[DB_CURRENT_VERSION])
-      # - New DB host name (fom-[pr#/test/prod]-db-[DB_UPGRADE_VERSION])
+      # - Old DB name (fom-[pr#/test/prod]-db-[DB_CURRENT_VERSION])
+      # - New DB name (fom-[pr#/test/prod]-db-[DB_UPGRADE_VERSION])
       # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
       id: prepare
       run: |
         if [ -n "${{ env.DB_CURRENT_VERSION }}" ]; then
-          old_db_host="fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_CURRENT_VERSION }}"
+          old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}-${{ env.DB_CURRENT_VERSION }}"
         else
-          old_db_host="fom-${{ inputs.target }}-${{ env.COMPONENT }}"
+          old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}"
         fi
-        echo "new_db_host=fom-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
+        echo "new_db_name=${{ env.NAME }}-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
         echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
         echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
 
     - name: Scale API Comoponent Down
+      env:
+        API_NAME: ${NAME}-${ZONE}-api
       run: |
         echo "Scaling down the API component..."
-        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        oc scale deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=0
         echo "Waiting for API pods to terminate..."
         for i in {1..20}; do
-          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${NAME}-${ZONE}-api -o jsonpath='{.items[*].status.phase}' | wc -w)
+          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${{env.API_NAME}} -o jsonpath='{.items[*].status.phase}' | wc -w)
           if [ "$POD_COUNT" -eq 0 ]; then
             echo "All API pods have been terminated."
             break
@@ -360,12 +369,14 @@ jobs:
         oc scale deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} --replicas=0
 
     - name: Scale Up Old Database Component
+      env:
+        OLD_DB_NAME: ${{ steps.prepare.outputs.old_db_name }}
       run: |
         echo "Scaling up the old database component..."
-        oc scale deployment/${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} --replicas=1
+        oc scale deployment/${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=1
         echo "Waiting for old database pods to be ready..."
         for i in {1..30}; do
-          READY_REPLICAS=$(oc get deployment ${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          READY_REPLICAS=$(oc get deployment ${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
           if [ "$READY_REPLICAS" == "1" ]; then
             echo "Old database component is ready."
             break
@@ -379,22 +390,25 @@ jobs:
         fi
 
     - name: Rollback API Component to Old Database
+      env:
+        API_NAME: ${NAME}-${ZONE}-api
       run: |
         echo "Rolling back API component to point to the old database..."
-        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_host }}"
-        oc set env deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
+        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_name }}"
+        oc set env deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
         echo "API component rolled back to use the old database: $OLD_DB_HOST"
 
     - name: Scale Up API Component
       env:
         REPLICA_COUNT: 3
+        API_NAME: ${NAME}-${ZONE}-api
       run: |
         echo "Scaling up the API component to ${{env.REPLICA_COUNT}} replicas..."
-        oc scale deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} --replicas=${{env.REPLICA_COUNT}}
+        oc scale deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=${{env.REPLICA_COUNT}}
 
         echo "Verifying the API component has scaled up..."
         for i in {1..50}; do
-          READY_REPLICAS=$(oc get deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          READY_REPLICAS=$(oc get deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
           if [ "$READY_REPLICAS" == "${{env.REPLICA_COUNT}}" ]; then
             echo "API component has successfully scaled up to $READY_REPLICAS replicas."
             break
@@ -409,9 +423,11 @@ jobs:
         fi
 
     - name: Verify API Component is Responding
+      env:
+        API_NAME: ${NAME}-${ZONE}-api
       run: |
         echo "Fetching API route from OpenShift..."
-        API_ROUTE=$(oc get route ${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.spec.host}')
+        API_ROUTE=$(oc get route ${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.spec.host}')
         if [ -z "$API_ROUTE" ]; then
           echo "Error: Unable to fetch API route."
           exit 1
@@ -431,8 +447,8 @@ jobs:
     - name: Update CronJobs to Point to Old Database 
       run: |
         echo "Updating CronJobs to point to the old database..."
-        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_host }}"
-        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_host }}"
+        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_name }}"
+        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_name }}"
         WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}"
         FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
         BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
