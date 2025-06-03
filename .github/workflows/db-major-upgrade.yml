@@ -81,9 +81,11 @@ jobs:
       # Although new PVC for major db version backup is added, OpenShift cannot automatically mount it 
       # to the current old database running pod (volume is immutable for the running pod). It has to be 
       # pathed and new pod will be rolled out with the new PVC mounted.
+      env:
+        OLD_DB_NAME: ${{ steps.prepare.outputs.old_db_name }}
       run: |
         echo "Patching old database deployment to mount upgrade backup PVC..."
-        oc set volume deployment/${NAME}-${ZONE}-${COMPONENT} \
+        oc set volume deployment/${{env.OLD_DB_NAME}} \
           -n ${{ vars.OC_NAMESPACE }} \
           --add \
           --name=db-upgrade-backup \
@@ -92,7 +94,7 @@ jobs:
           --mount-path=${{ env.DB_UPGRADE_BACKUP_DIR }}
         echo "Waiting for pod to restart and become ready..."
         for i in {1..30}; do
-          READY_REPLICAS=$(oc get deployment ${NAME}-${ZONE}-${COMPONENT} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          READY_REPLICAS=$(oc get deployment ${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
           if [ "$READY_REPLICAS" == "1" ]; then
             echo "Database pod is ready."
             break
