@@ -133,20 +133,20 @@ objects:
           storage: "${DB_PVC_SIZE}"
       storageClassName: netapp-file-standard
 
-  # ### for db major upgrade PVC only  ###
-  # - kind: PersistentVolumeClaim
-  #   apiVersion: v1
-  #   metadata:
-  #     name: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
-  #     labels:
-  #       app: ${NAME}-${ZONE}
-  #   spec:
-  #     accessModes:
-  #       - ReadWriteMany
-  #     resources:
-  #       requests:
-  #         storage: "${DB_BACKUP_PVC_SIZE}"
-  #     storageClassName: netapp-file-standard
+  ### for db major upgrade PVC only  ###
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: ${NAME}-${ZONE}-dbupgrade-${DB_UPGRADE_VERSION}
+      labels:
+        app: ${NAME}-${ZONE}
+    spec:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: "${DB_BACKUP_PVC_SIZE}"
+      storageClassName: netapp-file-standard
 
 
   - kind: Deployment

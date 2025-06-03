@@ -116,12 +116,12 @@ objects:
             - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
               persistentVolumeClaim:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
-            - name: db-upgrade-backup
+            - name: dbupgrade
               persistentVolumeClaim:
-                claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
+                claimName: ${NAME}-${ZONE}-dbupgrade-${DB_UPGRADE_VERSION}
           containers:
             - name: ${NAME}
-              image: ghcr.io/${ORG}/nr-fom/db:v17-upgrade
+              image: ghcr.io/${ORG}/nr-fom/db:${DB_UPGRADE_VERSION}-upgrade
               ports:
                 - containerPort: 5432
                   protocol: TCP
@@ -167,7 +167,7 @@ objects:
               volumeMounts:
                 - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
                   mountPath: /var/lib/postgresql
-                - name: db-upgrade-backup
+                - name: dbupgrade
                   mountPath: ${DB_UPGRADE_BACKUP_DIR}
               terminationMessagePath: "/dev/termination-log"
               terminationMessagePolicy: File
