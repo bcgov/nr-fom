@@ -105,7 +105,7 @@ objects:
                 claimName: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
           containers:
             - name: ${NAME}
-              image: ghcr.io/${ORG}/nr-fom/db:v17-upgrade
+              image: ghcr.io/${ORG}/nr-fom/db:${DB_UPGRADE_VERSION}-upgrade
               ports:
                 - containerPort: 5432
                   protocol: TCP
