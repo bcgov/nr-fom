@@ -133,7 +133,7 @@ objects:
   - kind: PersistentVolumeClaim
     apiVersion: v1
     metadata:
-      name: ${NAME}-${ZONE}-${BACKUP_COMPONENT}-${DB_UPGRADE_VERSION}
+      name: ${NAME}-${ZONE}-dbupgrade-${DB_UPGRADE_VERSION}
       labels:
         app: ${NAME}-${ZONE}
     spec:
