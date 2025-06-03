@@ -72,6 +72,7 @@ jobs:
         else
           old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}"
         fi
+        echo "old_db_name=${old_db_name}" >> $GITHUB_OUTPUT
         echo "new_db_name=${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
         echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
         echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
@@ -368,6 +369,7 @@ jobs:
         else
           old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}"
         fi
+        echo "old_db_name=${old_db_name}" >> $GITHUB_OUTPUT
         echo "new_db_name=${{ env.NAME }}-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
         echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
         echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
