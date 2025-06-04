@@ -94,7 +94,7 @@ jobs:
           --name=${{env.VOLUME_NAME}} \
           --type=persistentVolumeClaim \
           --claim-name=${{env.UPGRADE_PVC_NAME}} \
-          --mount-path=${{ env.DB_UPGRADE_BACKUP_DIR }} \
+          --mount-path=${{ env.DB_UPGRADE_BACKUP_DIR }}/${{ env.DB_UPGRADE_VERSION }} \
           --overwrite
         echo "Waiting for pod to restart and become ready..."
         for i in {1..30}; do
