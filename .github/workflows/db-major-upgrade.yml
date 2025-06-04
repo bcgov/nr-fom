@@ -91,11 +91,11 @@ jobs:
         oc set volume deployment/${{env.OLD_DB_NAME}} \
           -n ${{ vars.OC_NAMESPACE }} \
           --add \
-          --overwrite \
           --name=${{env.VOLUME_NAME}} \
           --type=persistentVolumeClaim \
           --claim-name=${{env.UPGRADE_PVC_NAME}} \
-          --mount-path=${{ env.DB_UPGRADE_BACKUP_DIR }}
+          --mount-path=${{ env.DB_UPGRADE_BACKUP_DIR }} \
+          --overwrite
         echo "Waiting for pod to restart and become ready..."
         for i in {1..30}; do
           READY_REPLICAS=$(oc get deployment ${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
