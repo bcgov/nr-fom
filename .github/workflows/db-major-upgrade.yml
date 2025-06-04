@@ -90,6 +90,11 @@ jobs:
         UPGRADE_PVC_NAME: ${{ env.NAME }}-${{ env.ZONE }}-dbupgrade-${{ env.DB_UPGRADE_VERSION }}
         DB_UPGRADE_BACKUP_MOUNT_PATH: ${{ steps.prepare.outputs.db_upgrade_backup_mount_path }} # directory to mount the upgrade backup shared PVC.
       run: |
+        echo "Removing existing db upgrade volume mount (if any)..."
+        oc set volume deployment/${{env.OLD_DB_NAME}} \
+          -n ${{ vars.OC_NAMESPACE }} \
+          --remove --mount-path=${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }} || true
+
         echo "Patching old database deployment to mount upgrade backup PVC..."
         oc set volume deployment/${{env.OLD_DB_NAME}} \
           -n ${{ vars.OC_NAMESPACE }} \
