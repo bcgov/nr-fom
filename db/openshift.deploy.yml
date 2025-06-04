@@ -53,7 +53,7 @@ parameters:
     value: v16
   - name: DB_UPGRADE_VERSION
     description: Database version number for database upgrade
-    value: v16
+    value: v17
   ### Backup-Container starts here ###
   - name: BACKUP_COMPONENT
     description: BACKUP_COMPONENT name
