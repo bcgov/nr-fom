@@ -92,7 +92,7 @@ jobs:
       run: |
         echo "Checking if volume mount '${{env.VOLUME_NAME}}' with mount path '${{env.DB_UPGRADE_BACKUP_MOUNT_PATH}}' already exists..."
         VOLUME_MOUNT_EXISTS=$(oc get deployment/${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} \
-          -o jsonpath="{.spec.template.spec.containers[*].volumeMounts[?(@.name=='${{env.VOLUME_NAME}}' && @.mountPath=='${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }}')].name}")
+          -o jsonpath="{.spec.template.spec.containers[*].volumeMounts[?(@.name=='${{env.VOLUME_NAME}}' and @.mountPath=='${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }}')].name}")
         if [ -z "$VOLUME_MOUNT_EXISTS" ]; then
           echo "Patching old database deployment to mount upgrade backup PVC..."
           oc set volume deployment/${{env.OLD_DB_NAME}} \
