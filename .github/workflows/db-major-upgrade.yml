@@ -84,7 +84,7 @@ jobs:
       # pathed and new pod will be rolled out with the new PVC mounted.
       env:
         OLD_DB_NAME: ${{ steps.prepare.outputs.old_db_name }}
-        VOLUME_NAME: db-upgrade-backup  # name of the volume exists on current old db deployment.
+        VOLUME_NAME: db-upgrade-backup-${{ env.DB_UPGRADE_VERSION }}  # name of the volume exists on current old db deployment.
         UPGRADE_PVC_NAME: ${{ env.NAME }}-${{ env.ZONE }}-dbupgrade-${{ env.DB_UPGRADE_VERSION }}  # make sure same name as in the db/openshift.deploy.yml template.
       run: |
         echo "Patching old database deployment to mount upgrade backup PVC..."
