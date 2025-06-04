@@ -24,7 +24,7 @@ env:
   COMPONENT: db
   DB_CURRENT_VERSION: "" # current db version
   DB_UPGRADE_VERSION: v17 # major db version to upgrade to
-  DB_UPGRADE_BACKUP_DIR: /db-upgrade-backups
+  DB_UPGRADE_BACKUP_DIR: /db-upgrade-backups # parent directory to store db upgrade backup files
   
 jobs:
   db-major-upgrade:
@@ -59,14 +59,16 @@ jobs:
 
     - name: Parameters preparation
       # Prepare some parameters (outputs) for steps:
+      # - DB upgrade backup mount path (db-upgrade-backups/${DB_UPGRADE_VERSION})
       # - Backup file name (backup-YYYY-MM-DD-HH-MM.dump)
       # - Old DB name (fom-[pr#/test/prod]-db-[DB_CURRENT_VERSION])
       # - New DB name (fom-[pr#/test/prod]-db-[DB_UPGRADE_VERSION])
       # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
       id: prepare
       run: |
+        echo "db_upgrade_backup_mount_path=${{ env.DB_UPGRADE_BACKUP_DIR }}/${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
         current_date=$(date +'%Y-%m-%d-%H-%M')
-        echo "backup_file_name=backup-${current_date}.dump" >> $GITHUB_OUTPUT
+        echo "backup_file_name=backup-${current_date}.dump" >> $GITHUB_OUTPUT     
         if [ -n "${{ env.DB_CURRENT_VERSION }}" ]; then
           old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}-${{ env.DB_CURRENT_VERSION }}"
         else
@@ -85,7 +87,8 @@ jobs:
       env:
         OLD_DB_NAME: ${{ steps.prepare.outputs.old_db_name }}
         VOLUME_NAME: db-upgrade-backup  # name of the volume exists on current old db deployment.
-        UPGRADE_PVC_NAME: ${{ env.NAME }}-${{ env.ZONE }}-dbupgrade-${{ env.DB_UPGRADE_VERSION }}  # make sure same name as in the db/openshift.deploy.yml template.
+        UPGRADE_PVC_NAME: ${{ env.NAME }}-${{ env.ZONE }}-dbupgrade-${{ env.DB_UPGRADE_VERSION }}
+        DB_UPGRADE_BACKUP_MOUNT_PATH: ${{ steps.prepare.outputs.db_upgrade_backup_mount_path }} # directory to mount the upgrade backup shared PVC.
       run: |
         echo "Patching old database deployment to mount upgrade backup PVC..."
         oc set volume deployment/${{env.OLD_DB_NAME}} \
@@ -95,7 +98,9 @@ jobs:
           --name=${{env.VOLUME_NAME}} \
           --type=persistentVolumeClaim \
           --claim-name=${{env.UPGRADE_PVC_NAME}} \
-          --mount-path=${{ env.DB_UPGRADE_BACKUP_DIR }}
+          --mount-path=${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }} \
+          --overwrite
+
         echo "Waiting for pod to restart and become ready..."
         for i in {1..30}; do
           READY_REPLICAS=$(oc get deployment ${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
@@ -138,7 +143,7 @@ jobs:
       # Note: The backup file is stored using different PVC than regular db backup.
       #     : The format is different than FOM regular db backup.
       env:
-        BACKUP_FILE_PATH: ${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}
+        BACKUP_FILE_PATH: ${{steps.prepare.outputs.db_upgrade_backup_mount_path}}/${{steps.prepare.outputs.backup_file_name}}
         OLD_DB_DEPLOYMENT: deployment/${{ steps.prepare.outputs.old_db_name }}
       run: |
         echo "Performing database backup..."
@@ -147,7 +152,7 @@ jobs:
 
     - name: Verify Backup File Exists
       env:
-        BACKUP_FILE_PATH: ${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}
+        BACKUP_FILE_PATH: ${{steps.prepare.outputs.db_upgrade_backup_mount_path}}/${{steps.prepare.outputs.backup_file_name}}
         OLD_DB_DEPLOYMENT: deployment/${{ steps.prepare.outputs.old_db_name }}
       run: |
         echo "Verifying backup file exists..."
@@ -206,7 +211,7 @@ jobs:
     - name: Restore From Backup Into New Database
         # Restore previous 'pg_dump' backup dump file into new version db.
       env:
-        BACKUP_FILE_PATH: ${{env.DB_UPGRADE_BACKUP_DIR}}/${{steps.prepare.outputs.backup_file_name}}
+        BACKUP_FILE_PATH: ${{steps.prepare.outputs.db_upgrade_backup_mount_path}}/${{steps.prepare.outputs.backup_file_name}}
       run: |
         echo "Restoring database from backup..."
         oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
