@@ -90,9 +90,9 @@ jobs:
         UPGRADE_PVC_NAME: ${{ env.NAME }}-${{ env.ZONE }}-dbupgrade-${{ env.DB_UPGRADE_VERSION }}
         DB_UPGRADE_BACKUP_MOUNT_PATH: ${{ steps.prepare.outputs.db_upgrade_backup_mount_path }} # directory to mount the upgrade backup shared PVC.
       run: |
-        echo "Checking if volume mount '${VOLUME_NAME}' with mount path '${DB_UPGRADE_BACKUP_MOUNT_PATH}' already exists..."
+        echo "Checking if volume mount '${{env.VOLUME_NAME}}' with mount path '${{env.DB_UPGRADE_BACKUP_MOUNT_PATH}}' already exists..."
         VOLUME_MOUNT_EXISTS=$(oc get deployment/${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} \
-          -o jsonpath="{.spec.template.spec.containers[*].volumeMounts[?(@.name=='${VOLUME_NAME}' && @.mountPath=='${DB_UPGRADE_BACKUP_MOUNT_PATH}')].name}")
+          -o jsonpath="{.spec.template.spec.containers[*].volumeMounts[?(@.name=='${{env.VOLUME_NAME}}' && @.mountPath=='${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }}')].name}")
         if [ -z "$VOLUME_MOUNT_EXISTS" ]; then
           echo "Patching old database deployment to mount upgrade backup PVC..."
           oc set volume deployment/${{env.OLD_DB_NAME}} \
@@ -104,7 +104,7 @@ jobs:
             --mount-path=${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }} \
             --overwrite
         else
-          echo "Volume mount '${VOLUME_NAME}' with mount path '${DB_UPGRADE_BACKUP_MOUNT_PATH}' already exists. Skipping patch."
+          echo "Volume mount '${{env.VOLUME_NAME}}' with mount path '${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }}' already exists. Skipping patch."
         fi
 
         echo "Waiting for pod to restart and become ready..."
