@@ -48,10 +48,6 @@ parameters:
     description: Dummy parameter to make workflows easier
   - name: REPLICA_COUNT
     description: Dummy parameter to make workflows easier
-  # - name: "DB_UPGRADE_BACKUP_DIR"
-  #   description: "backup directory for db upgrade"
-  #   required: true
-  #   value: "/db-upgrade-backup"
   - name: DB_CURRENT_VERSION
     description: Current database version number
     value: v17
@@ -176,9 +172,9 @@ objects:
             db-version: ${DB_CURRENT_VERSION}
         spec:
           volumes:
-            - name: ${NAME}-${ZONE}-${COMPONENT}
+            - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
               persistentVolumeClaim:
-                claimName: ${NAME}-${ZONE}-${COMPONENT}
+                claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
           containers:
             - name: ${NAME}
               image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
@@ -225,7 +221,7 @@ objects:
                   cpu: ${CPU_LIMIT}
                   memory: ${MEMORY_LIMIT}
               volumeMounts:
-                - name: ${NAME}-${ZONE}-${COMPONENT}
+                - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
                   mountPath: /var/lib/postgresql
               terminationMessagePath: "/dev/termination-log"
               terminationMessagePolicy: File
