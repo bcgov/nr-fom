@@ -90,26 +90,6 @@ jobs:
         UPGRADE_PVC_NAME: ${{ env.NAME }}-${{ env.ZONE }}-dbupgrade-${{ env.DB_UPGRADE_VERSION }}
         DB_UPGRADE_BACKUP_MOUNT_PATH: ${{ steps.prepare.outputs.db_upgrade_backup_mount_path }} # directory to mount the upgrade backup shared PVC.
       run: |
-        echo "Removing existing db upgrade volume mount (if any)..."
-        oc set volume deployment/${{env.OLD_DB_NAME}} \
-          -n ${{ vars.OC_NAMESPACE }} \
-          --remove --mount-path=${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }} || true
- 
-        echo "Waiting for pod to restart and become ready..."
-        for i in {1..30}; do
-          READY_REPLICAS=$(oc get deployment ${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
-          if [ "$READY_REPLICAS" == "1" ]; then
-            echo "Database pod is ready."
-            break
-          fi
-          echo "Database pod not ready yet. Retrying in 10 seconds..."
-          sleep 10
-        done
-        if [ "$READY_REPLICAS" != "1" ]; then
-          echo "Error: Database pod did not become ready within the timeout period."
-          exit 1
-        fi
-
         echo "Patching old database deployment to mount upgrade backup PVC..."
         oc set volume deployment/${{env.OLD_DB_NAME}} \
           -n ${{ vars.OC_NAMESPACE }} \
