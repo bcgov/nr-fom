@@ -50,7 +50,7 @@ parameters:
   - name: "DB_UPGRADE_BACKUP_DIR" # parent directory to store db upgrade backup files
     description: "backup directory for db upgrade"
     required: true
-    value: "/db-upgrade-backup"
+    value: "/db-upgrade-backups"
   - name: BACKUP_COMPONENT
     description: BACKUP_COMPONENT name
     value: database-backup
@@ -152,7 +152,7 @@ objects:
               volumeMounts:
                 - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION}
                   mountPath: /var/lib/postgresql
-                - name: dbupgrade
+                - name: db-upgrade-backup
                   mountPath: ${DB_UPGRADE_BACKUP_DIR}/${DB_UPGRADE_VERSION}
               terminationMessagePath: "/dev/termination-log"
               terminationMessagePolicy: File
