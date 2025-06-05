@@ -1,4 +1,4 @@
-FROM postgis/postgis:16-master
+FROM postgis/postgis:17-master
 
 # Enable pgcrypto extension on startup
 RUN sed -i '/EXISTS postgis_tiger_geocoder;*/a CREATE EXTENSION IF NOT EXISTS pgcrypto;' \
