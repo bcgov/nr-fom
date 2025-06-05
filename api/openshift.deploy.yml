@@ -85,6 +85,9 @@ parameters:
     description: Random expression to make sure deployments update
     from: "[a-zA-Z0-9]{32}"
     generate: expression
+  - name: DB_CURRENT_VERSION
+    description: Current database version number
+    value: v17
 objects:
   - apiVersion: v1
     kind: ConfigMap
@@ -144,7 +147,7 @@ objects:
                 - name: BYPASS_CORS
                   value: "false"
                 - name: DB_HOST
-                  value: ${NAME}-${ZONE}-db
+                  value: ${NAME}-${ZONE}-db-${DB_CURRENT_VERSION}
                 - name: DB_TESTDATA
                   value: ${DB_TESTDATA}
                 - name: DB_NAME
@@ -311,7 +314,7 @@ objects:
                   args: ["-batchWorkflowStateChange"]
                   env:
                     - name: DB_HOST
-                      value: ${NAME}-${ZONE}-db
+                      value: ${NAME}-${ZONE}-db-${DB_CURRENT_VERSION}
                     - name: DB_NAME
                       valueFrom:
                         secretKeyRef:
@@ -374,7 +377,7 @@ objects:
                   args: ["-batchForestClientDataRefresh"]
                   env:
                     - name: DB_HOST
-                      value: ${NAME}-${ZONE}-db
+                      value: ${NAME}-${ZONE}-db-${DB_CURRENT_VERSION}
                     - name: DB_NAME
                       valueFrom:
                         secretKeyRef:
