@@ -46,7 +46,7 @@ parameters:
     generate: expression
   - name: DB_UPGRADE_VERSION
     description: Database version number for database upgrade
-    value: v16
+    value: v17
   - name: "DB_UPGRADE_BACKUP_DIR" # parent directory to store db upgrade backup files
     description: "backup directory for db upgrade"
     required: true
