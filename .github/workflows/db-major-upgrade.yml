@@ -38,12 +38,12 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Build and Push new db version Docker Image (for db upgrade)
-      uses: bcgov/action-builder-ghcr@v2.3.0
+      uses: bcgov/action-builder-ghcr@v3.0.1
       with:
         package: ${{ env.COMPONENT }}
         build_context: ./db
         build_file: ./db/Dockerfile-${{ env.DB_UPGRADE_VERSION }} # New db version and it should come with PostGIS extension binary.
-        tag: ${{ env.DB_UPGRADE_VERSION }}-upgrade
+        tags: ${{ env.DB_UPGRADE_VERSION }}-upgrade
         tag_fallback: latest
         token: ${{ secrets.GITHUB_TOKEN }}
 
