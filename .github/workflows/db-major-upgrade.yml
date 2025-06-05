@@ -86,7 +86,7 @@ jobs:
       # pathed and new pod will be rolled out with the new PVC mounted.
       env:
         OLD_DB_NAME: ${{ steps.prepare.outputs.old_db_name }}
-        VOLUME_NAME: db-upgrade-backup  # name of the volume exists on current old db deployment.
+        VOLUME_NAME: db-upgrade-backups
         UPGRADE_PVC_NAME: ${{ env.NAME }}-${{ env.ZONE }}-dbupgrade-${{ env.DB_UPGRADE_VERSION }}
         DB_UPGRADE_BACKUP_MOUNT_PATH: ${{ steps.prepare.outputs.db_upgrade_backup_mount_path }} # directory to mount the upgrade backup shared PVC.
       run: |
