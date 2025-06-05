@@ -48,9 +48,6 @@ parameters:
     description: Dummy parameter to make workflows easier
   - name: REPLICA_COUNT
     description: Dummy parameter to make workflows easier
-  - name: DB_CURRENT_VERSION
-    description: Current database version number
-    value: v16
   - name: DB_UPGRADE_VERSION
     description: Database version number for database upgrade
     value: v17
@@ -117,10 +114,9 @@ objects:
   - kind: PersistentVolumeClaim
     apiVersion: v1
     metadata:
-      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+      name: ${NAME}-${ZONE}-${COMPONENT}
       labels:
         app: ${NAME}-${ZONE}
-        db-version: ${DB_CURRENT_VERSION}
     spec:
       accessModes:
         - ReadWriteOnce
@@ -148,16 +144,14 @@ objects:
   - kind: Deployment
     apiVersion: apps/v1
     metadata:
-      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+      name: ${NAME}-${ZONE}-${COMPONENT}
       labels:
         app: ${NAME}-${ZONE}
-        db-version: ${DB_CURRENT_VERSION}
     spec:
       replicas: 1
       selector:
         matchLabels:
-          deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
-          db-version: ${DB_CURRENT_VERSION}
+          deployment: ${NAME}-${ZONE}-${COMPONENT}
       strategy:
         type: Recreate
         recreateParams:
@@ -165,16 +159,15 @@ objects:
         activeDeadlineSeconds: 21600
       template:
         metadata:
-          name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+          name: ${NAME}-${ZONE}-${COMPONENT}
           labels:
             app: ${NAME}-${ZONE}
-            deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
-            db-version: ${DB_CURRENT_VERSION}
+            deployment: ${NAME}-${ZONE}-${COMPONENT}
         spec:
           volumes:
-            - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+            - name: ${NAME}-${ZONE}-${COMPONENT}
               persistentVolumeClaim:
-                claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+                claimName: ${NAME}-${ZONE}-${COMPONENT}
           containers:
             - name: ${NAME}
               image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
@@ -221,7 +214,7 @@ objects:
                   cpu: ${CPU_LIMIT}
                   memory: ${MEMORY_LIMIT}
               volumeMounts:
-                - name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+                - name: ${NAME}-${ZONE}-${COMPONENT}
                   mountPath: /var/lib/postgresql
               terminationMessagePath: "/dev/termination-log"
               terminationMessagePolicy: File
@@ -235,8 +228,7 @@ objects:
     metadata:
       labels:
         app: ${NAME}-${ZONE}
-        db-version: ${DB_CURRENT_VERSION}
-      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
+      name: ${NAME}-${ZONE}-${COMPONENT}
     spec:
       ports:
         - name: postgresql
@@ -245,8 +237,7 @@ objects:
           protocol: TCP
           targetPort: 5432
       selector:
-        deployment: ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}
-        db-version: ${DB_CURRENT_VERSION}
+        deployment: ${NAME}-${ZONE}-${COMPONENT}
       sessionAffinity: None
       type: ClusterIP
   ### Backup-Container starts here ###
@@ -317,7 +308,7 @@ objects:
                       value: "${MONTHLY_BACKUPS}"
                       optional: true
                     - name: DATABASE_SERVICE_NAME
-                      value: "${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION}"
+                      value: "${NAME}-${ZONE}-${COMPONENT}"
                     - name: DEFAULT_PORT
                       value: ${DATABASE_DEFAULT_PORT}
                     - name: POSTGRESQL_DATABASE
@@ -394,24 +385,24 @@ objects:
 
                     else
                       echo "Found SQL file, rename existing database."
-                      psql -h ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION} -U ${POSTGRES_USER} -c "DROP DATABASE IF EXISTS ${OLD_FOM_DATABASE_NAME};" -c "ALTER DATABASE fom RENAME TO ${OLD_FOM_DATABASE_NAME};"
+                      psql -h ${NAME}-${ZONE}-${COMPONENT} -U ${POSTGRES_USER} -c "DROP DATABASE IF EXISTS ${OLD_FOM_DATABASE_NAME};" -c "ALTER DATABASE fom RENAME TO ${OLD_FOM_DATABASE_NAME};"
                       if [ $? -ne 0 ]; then
                         echo "Error: psql failed while trying to rename existing database."
                         exit 1
                       fi
 
                       echo "Create a new empty database"
-                      psql -h ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION} -U ${POSTGRES_USER} -c "CREATE DATABASE fom;"
+                      psql -h ${NAME}-${ZONE}-${COMPONENT} -U ${POSTGRES_USER} -c "CREATE DATABASE fom;"
                       db_restore_cmd_status=$?
                       if [ $db_restore_cmd_status -eq 0 ]; then
                         echo "Running database restore with backup SQL file: $sql_file"
-                        psql -h ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f $sql_file
+                        psql -h ${NAME}-${ZONE}-${COMPONENT} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -f $sql_file
                         db_restore_cmd_status=$?
                       fi
 
                       if [ $db_restore_cmd_status -ne 0 ]; then
                         echo "DB restore failed, droping newly crated empty db fom (if exists), rename old(original) db back to fom."
-                        psql -h ${NAME}-${ZONE}-${COMPONENT}-${DB_CURRENT_VERSION} -U ${POSTGRES_USER} -c "DROP DATABASE IF EXISTS fom;" -c "ALTER DATABASE ${OLD_FOM_DATABASE_NAME} RENAME TO fom;"
+                        psql -h ${NAME}-${ZONE}-${COMPONENT} -U ${POSTGRES_USER} -c "DROP DATABASE IF EXISTS fom;" -c "ALTER DATABASE ${OLD_FOM_DATABASE_NAME} RENAME TO fom;"
                         db_revert_restore_cmd_status=$?
                         if [ $db_revert_restore_cmd_status -eq 0 ]; then
                           # Successfully revert previous db restore procedure's failure; exit with failed status code from previous failure.
