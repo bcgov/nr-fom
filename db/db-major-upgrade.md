@@ -49,16 +49,44 @@ This template is slightly modified to prepare existing db pod with different **P
      - `api/openshift.deploy.yml`: 
        * `DB_CURRENT_VERSION`: update this to the current targeted version. **Note!** - the very first run, this parameter needs to be added; and the `DB_HOST` for api deployment/cronJob will need to be adjusted accrodingly. 
 
-  - Use the `Database Upgrade (dispatch)` action, provide the `target` (pr#), select the branch and optional parameters to trigger database upgrade at OpenShift `dev` deployments. 
+  3. **(important, Optional)** Create a testing branch to test database upgrade from PR branch in DEV environment in all steps. 
+    
+     Before upgrading database in `test` and `prod` enviornment, it is better to do a testing at OpenShift `dev` pull-request environment to confirm script is working.
+
+     - Create a branch based on main branch as a testing branch and create a draft pull request. This will have a fresh prod-like deployment in dev OpenShift environment.
+     - Merge previous **'prep'** branch to this testing branch.
+     - test app is running and add a new FOM with geospatial submission just for testing.
+     - Locally at your command line console, you can execute `Database Upgrade (dispatch)` workflow adjusted and committed for that testing branch. **Note! This requires GH CLI authentication setup in place.**
+       
+       You can execute the workflow run with following example command (with your testing pr number, and reference branch):
+       ```
+       gh workflow run db-major-upgrade.yml -f target=<pr#> --ref <target-branch>
+
+       For example: gh workflow run db-major-upgrade.yml -f target=802 --ref fix/742--testing
+       ```
+
+       Wait for script to run successfully. If it succeeds, You will see old database is stopped and new [versioned] database pod is up and running. 
+    
+     - test the app is running by looking into the new FOM created previously. Also review cronJobs are pointing to the new database.
+
+     - (**Don't forget**) Then merge previous prepared **`post`** branch into the testing branch. This will update the current upgraded deployments. The pods will rollout again. Test the app is still running fine.
+
+     - (**Important!!**) Do not merge this testing branch into `main` or other `prep`, `post` branches. After testing, can simply close the testing pull request and it will delete OpenShift deployment.
+
+
+  4. Merge `prep` pull request to main and let the `test` deployment rollout finish.
+
+  5. Trigger the `Database Upgrade (dispatch)` action workflow, provide the `target` (`test`). Wait for the workflow to run successfully and test a few to confirm application is working as expect for new database upgrade.
+
+  6. When `test` is success and verified, promote current main branch to `PROD` environment. Wait for the rollout is successful.
   
-    Make sure it runs successfully and test a few to confirm application is working as expect for new database upgrade.
+  7. Trigger the `Database Upgrade (dispatch)` action workflow, provide the `target` (`prod`). Wait for the workflow to run successfully and test a few to confirm application is working as expect for new database upgrade on production.
 
-    If triggering from GH CLI (console command line, requires ), can use following commands:
-    ```
-    gh workflow run db-major-upgrade.yml -f target=<pr#> --ref <target-branch>
+  8. After `test` and `prod` are upgraded to the new database version, review the `post` pr then merge to main. The `test` environment will be rollout again. Verify application is running fine; and this `post` merge will bring reqular deployment procss back to normal.
 
-    gh workflow run db-major-upgrade.yml -f target=<pr#> -f revert-only=true --ref <target-branch>
-    ```
-  - Merge to main, deploy to test environment. Do some testing before database upgrade. Then trigger the `Database Upgrade (dispatch)` action to upgrade the database at the test environment. Test and confirm again after database upgrade that application is working as expect.
+  9. Then promote another `prod` release from the current main branch.
 
-  5. Clean up
+  ## Clean up ## 
+  After database upgrade is done for all environments and `post` upgrade is also applied and verified the old deployment can be removed. This includes:
+  - old database pod/deployment
+  - old database upgrade PVC
