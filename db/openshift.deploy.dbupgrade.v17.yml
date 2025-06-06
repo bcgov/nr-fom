@@ -1,10 +1,12 @@
 ## Temporary OpenShift deployment template for database upgrade.
+# !! Important !! Please read the readme at db/db-major-upgrade.md. Review and adjust this template before database upgrade.
+# Keep this template for reference for the next database upgrade.
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
   name: ${NAME}
   annotations:
-    description: "Forest Operations Map, db upgrade template"
+    description: "Forest Operations Map, db major version upgrade template"
     tags: "fom"
     iconClass: icon-js
 labels:
@@ -106,7 +108,7 @@ objects:
                 claimName: ${NAME}-${ZONE}-dbupgrade-${DB_UPGRADE_VERSION}
           containers:
             - name: ${NAME}
-              image: ghcr.io/${ORG}/nr-fom/db:${DB_UPGRADE_VERSION}-upgrade
+              image: ghcr.io/${ORG}/nr-fom/db:${DB_UPGRADE_VERSION}-upgrade # image tag matches for what's built from `db-major-upgrade`
               ports:
                 - containerPort: 5432
                   protocol: TCP
