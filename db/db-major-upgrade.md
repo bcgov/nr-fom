@@ -21,24 +21,33 @@ With current major db upgrade setup, there are **two PRs (prep, post) and 1 Gith
 
 - `db/openshift.deploy.yml`: This is the existing regular OpenShift deployment template for database.
 This template is slightly modified to prepare existing db pod with different **PVC** designated for **pg_dump** backup during the upgrade process. 
-  - Adjust `DB_UPGRADE_VERSION` - Target version for database upgrade
+  - Adjust `DB_UPGRADE_VERSION`: target version for database upgrade
 
 - `.github/workflows/db-major-upgrade.yml`: This is a Github Action Workflow responsible for a sequence of steps for database major version migration triggered on `workflow_dispatch` using previously prepared templates.
   
   One job (`db-major-upgrade`) to perform major db version uprade, and the other job (`rollback`) to revert application to point back to previous database in case if needed. This option isn't critically needed but is convenient during testing. Without this `rollback` job, developer can still manually follow the revert steps on the OpenShift.
 
   Developer will review this action workflow and adjust:
-  * `DB_CURRENT_VERSION` - make sure current database version. The very firest run initially is `""` empty string (due to initial template has no db version annotated).
-  * `DB_UPGRADE_VERSION` to the target major db version 
-  * `DB_UPGRADE_BACKUP_DIR` and confirm directory is correct.
+  * `DB_CURRENT_VERSION`: make sure current database version. The very firest run initially is `""` empty string (due to initial template has no db version annotated).
+  * `DB_UPGRADE_VERSION`: to the target major db version 
+  * `DB_UPGRADE_BACKUP_DIR`: and confirm directory is correct.
 
   ## Begin PostgreSQL database major upgrade
   1. Create a preparation pull request (**prep**)
      - Prepare the version changes mentioned above for the database upgrade and create pull request to main branch(prep pr).
 
-
   2. Create a post upgrade pull request (**post**)
-     - Based on **prep* pull request, create a **post** branch and pull request.
+     - Based on **prep* pull request branch, create a **post** branch and pull request after prepration.
+     - `db/Dockerfile`: update image database version to the targeted version.
+     - `db/Dockerfile-[upgrade_version]`: remove this versioned Dockerfile.
+     - `.db/openshift.deploy.dbupgrade.[upgrade_version].yml`: leave this for the reference next time.
+     - `db/openshift.deploy.yml`:
+       * `name: DB_CURRENT_VERSION`: update this parameter to the current targeted version. **Note!** - the very first run, this parameter needs to be added; and the names/labels for PVC/deployment/volume/cronJob will need to be adjusted accrodingly. 
+     - `.github/workflows/db-major-upgrade.yml`:
+       * `DB_CURRENT_VERSION`: update this env to the current targeted version.
+       * leave this file for the next time.
+     - `api/openshift.deploy.yml`: 
+       * `DB_CURRENT_VERSION`: update this to the current targeted version. **Note!** - the very first run, this parameter needs to be added; and the `DB_HOST` for api deployment/cronJob will need to be adjusted accrodingly. 
 
   - Use the `Database Upgrade (dispatch)` action, provide the `target` (pr#), select the branch and optional parameters to trigger database upgrade at OpenShift `dev` deployments. 
   
