@@ -87,7 +87,7 @@ parameters:
     generate: expression
   - name: DB_CURRENT_VERSION
     description: Current database version number
-    value: v16
+    value: v17
 objects:
   - apiVersion: v1
     kind: ConfigMap
