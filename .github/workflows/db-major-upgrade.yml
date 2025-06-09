@@ -26,7 +26,7 @@ env:
   ZONE: ${{ inputs.target }}
   COMPONENT: db
   DB_CURRENT_VERSION: "" # current db version (initial run is empty, subsequent runs should set this to the current db version)
-  DB_UPGRADE_VERSION: v17 # major db version to upgrade to
+  DB_UPGRADE_VERSION: v16 # major db version to upgrade to
   DB_UPGRADE_BACKUP_DIR: /db-upgrade-backups # 'parent directory' to store db upgrade backup files
   
 jobs:
