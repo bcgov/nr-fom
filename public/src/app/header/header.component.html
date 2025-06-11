@@ -4,7 +4,14 @@
     <a class="navbar-brand" title="Forest Operations Map" routerLink="/home/true">
       <span class="navbar-brand__title">Forest Operations Map</span>
     </a>
-    <span class="navbar-environment" *ngIf="environmentDisplay">{{environmentDisplay}}</span>
+
+    <div class="header-notice">
+        <span class="navbar-environment" *ngIf="environmentDisplay">{{environmentDisplay}}</span>
+        <div class="downtime-notice">
+            <span>Scheduled Maintenance on June 19th, 2025, 5:00–6:00 PM PST. <br/></span>
+            <span>The app will be temporarily unavailable. Thank you for your understanding and patience.</span>
+        </div>
+    </div>
 
     <button class="navbar-toggler" type="button" title="Toggle Main Navigation"
       aria-controls="navbarText" 
