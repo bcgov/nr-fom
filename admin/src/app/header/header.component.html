@@ -5,7 +5,15 @@
         Forest Operations Map - Admin 
       </span>
     </a>
-    <span class="navbar-environment" *ngIf="environmentDisplay">{{environmentDisplay}}</span>
+
+    <div class="header-notice">
+        <span class="navbar-environment" *ngIf="environmentDisplay">{{environmentDisplay}}</span>
+        <div class="downtime-notice">
+            <span>Scheduled Maintenance on June 19th, 2025, 5:00–6:00 PM PST. <br/></span>
+            <span>The app will be temporarily unavailable. Thank you for your understanding and patience.</span>
+        </div>
+    </div>
+
     <button class="navbar-toggler" type="button" title="Toggle Main Navigation"
             aria-controls="navbarText"
             aria-expanded="false"
