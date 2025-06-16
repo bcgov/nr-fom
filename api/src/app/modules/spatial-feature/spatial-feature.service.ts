@@ -1,12 +1,12 @@
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { PinoLogger } from 'nestjs-pino';
-import { SpatialFeatureBcgwResponse, SpatialFeaturePublicResponse } from './spatial-feature.dto';
+import { Repository } from 'typeorm';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
+import { FeatureTypeCode } from './feature-type-code';
+import { SpatialFeatureBcgwResponse, SpatialFeaturePublicResponse } from './spatial-feature.dto';
 import { SpatialFeature } from './spatial-feature.entity';
 import dayjs = require('dayjs');
-import { FeatureTypeCode } from './feature-type-code';
 
 @Injectable()
 export class SpatialFeatureService {
@@ -87,7 +87,8 @@ async findByProjectId(projectId: number): Promise<SpatialFeaturePublicResponse[]
     response.fspHolderName = entity.forestClient.name;
     response.geometry = JSON.parse(entity.geometry);
     response.lifecycleStatus = entity.submissionType.description;
-
+    response.name = entity.name || '';
+    response.fom_name = entity.fom_name || '';
     if (entity.plannedAreaHa) {
       response.plannedAreaHa = entity.plannedAreaHa;
     }

@@ -39,11 +39,17 @@ export class SpatialFeatureBcgwResponse {
     @ApiProperty()
     fomId: number;
   
+    @ApiProperty({ description: 'FOM name', example: 'West Fraser Mills Ltd FOM' })
+    fom_name: string;
+
     @ApiProperty({ enum: ['cut_block', 'road_section', 'retention_area']})
     featureType: string;
 
     @ApiProperty()
     featureId: number;
+
+    @ApiProperty({ description: 'Feature object name', example: 'My cut block 2311' })
+    name: string;
 
     @ApiProperty({ description: 'Maximum length is expected to be <= 100'})
     fspHolderName: string;
@@ -66,5 +72,4 @@ export class SpatialFeatureBcgwResponse {
   
     @ApiProperty({ example: '1.2345'})
     plannedLengthKm: number;
-  
 }
