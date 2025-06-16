@@ -38,9 +38,6 @@ export class SpatialFeatureBcgwResponse {
 
     @ApiProperty()
     fomId: number;
-  
-    @ApiProperty({ description: 'FOM name', example: 'West Fraser Mills Ltd FOM' })
-    fom_name: string;
 
     @ApiProperty({ enum: ['cut_block', 'road_section', 'retention_area']})
     featureType: string;

@@ -49,7 +49,4 @@ export class SpatialFeature {
 
   @ViewColumn({name: 'project_id'})
   projectId: number;
-
-  @ViewColumn({name: 'fom_name'})
-  fom_name: string;
 }

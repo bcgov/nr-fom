@@ -88,7 +88,6 @@ async findByProjectId(projectId: number): Promise<SpatialFeaturePublicResponse[]
     response.geometry = JSON.parse(entity.geometry);
     response.lifecycleStatus = entity.submissionType.description;
     response.name = entity.name || '';
-    response.fom_name = entity.fom_name || '';
     if (entity.plannedAreaHa) {
       response.plannedAreaHa = entity.plannedAreaHa;
     }
