@@ -1,6 +1,6 @@
-import { ViewEntity, JoinColumn, ManyToOne, ViewColumn } from 'typeorm';
-import { SubmissionTypeCode } from '../submission/submission-type-code.entity';
+import { JoinColumn, ManyToOne, ViewColumn, ViewEntity } from 'typeorm';
 import { ForestClient } from '../forest-client/forest-client.entity';
+import { SubmissionTypeCode } from '../submission/submission-type-code.entity';
 
 // This entity represents all the shapes (cut blocks, road sections, retention areas) for FOM projects
 // denormalized and converted for easy rendering in leaflet and exporting to BCGW.
@@ -49,5 +49,4 @@ export class SpatialFeature {
 
   @ViewColumn({name: 'project_id'})
   projectId: number;
-
 }
