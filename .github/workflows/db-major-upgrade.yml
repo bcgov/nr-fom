@@ -1,0 +1,534 @@
+name: Database Upgrade (dispatch)
+# This workflow is used to perform a major database upgrade in OpenShift.
+# !! Important !! Please read the readme at db/db-major-upgrade.md before using this workflow; some files needs to be
+# prepared before executing this workflow, and run with caution.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Deployment target; usually PR number, test, or prod
+        type: string
+        required: true
+      revert-only:
+        # note: This assumes previous version db has not been "decommissioned" (only stopped) and still available.
+        #       It does not recover from previous latest 'regular db backup', only repoint to the old db.
+        #       Useful to rollback conveniently if for any reason (even after upgrade success) it needs to.
+        description: Skip the upgrade and only execute the rollback job.
+        type: boolean
+        required: false
+        default: false
+
+permissions: {}
+
+env:
+  NAME: fom
+  ZONE: ${{ inputs.target }}
+  COMPONENT: db
+  DB_CURRENT_VERSION: "" # current db version (initial run is empty, subsequent runs should set this to the current db version)
+  DB_UPGRADE_VERSION: v17 # major db version to upgrade to
+  DB_UPGRADE_BACKUP_DIR: /db-upgrade-backups # 'parent directory' to store db upgrade backup files
+  
+jobs:
+  db-major-upgrade:
+    if: ${{ inputs.revert-only == false }} # Skip this job if revert-only is true
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Build and Push new db version Docker Image (for db upgrade)
+      uses: bcgov/action-builder-ghcr@v3.0.1
+      with:
+        package: ${{ env.COMPONENT }}
+        build_context: ./db
+        build_file: ./db/Dockerfile-${{ env.DB_UPGRADE_VERSION }} # New db version Dockerfile and it should come with PostGIS extension binary.
+        tags: ${{ env.DB_UPGRADE_VERSION }}-upgrade
+        tag_fallback: latest
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: OpenShift Init
+      uses: bcgov/action-deployer-openshift@v3.2.0
+      with:
+        oc_namespace: ${{ vars.OC_NAMESPACE }}
+        oc_server: ${{ vars.OC_SERVER }}
+        oc_token: ${{ secrets.OC_TOKEN }}
+        file: libs/openshift.init.yml
+        overwrite: false
+        parameters: -p ZONE=${{ env.ZONE }}
+
+    - name: Parameters preparation
+      # Prepare some parameters (outputs) for steps:
+      # - DB upgrade backup mount path (db-upgrade-backups/${DB_UPGRADE_VERSION})
+      # - Backup file name (backup-YYYY-MM-DD-HH-MM.dump)
+      # - Old DB name (fom-[pr#/test/prod]-db-[DB_CURRENT_VERSION])
+      # - New DB name (fom-[pr#/test/prod]-db-[DB_UPGRADE_VERSION])
+      # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
+      id: prepare
+      run: |
+        echo "db_upgrade_backup_mount_path=${{ env.DB_UPGRADE_BACKUP_DIR }}/${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
+        current_date=$(date +'%Y-%m-%d-%H-%M')
+        echo "backup_file_name=backup-${current_date}.dump" >> $GITHUB_OUTPUT     
+        if [ -n "${{ env.DB_CURRENT_VERSION }}" ]; then
+          old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}-${{ env.DB_CURRENT_VERSION }}"
+        else
+          old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}"
+        fi
+        echo "old_db_name=${old_db_name}" >> $GITHUB_OUTPUT
+        echo "new_db_name=${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
+        echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
+        echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
+
+    - name: Patch Old Database Deployment to set new volume to Mount to Upgrade Backup PVC with mount path in container
+      # Note!!
+      # Although new PVC for major db version backup is added, OpenShift cannot automatically mount it 
+      # to the current old database running pod (volume is immutable for the running pod). It has to be 
+      # pathed and new pod will be rolled out with the new PVC mounted.
+      env:
+        OLD_DB_NAME: ${{ steps.prepare.outputs.old_db_name }} # old database deployment name.
+        VOLUME_NAME: db-upgrade-backups
+        UPGRADE_PVC_NAME: ${{ env.NAME }}-${{ env.ZONE }}-dbupgrade-${{ env.DB_UPGRADE_VERSION }}
+        DB_UPGRADE_BACKUP_MOUNT_PATH: ${{ steps.prepare.outputs.db_upgrade_backup_mount_path }} # directory to mount the upgrade backup shared PVC.
+      run: |
+        echo "Checking if mount path '${{env.DB_UPGRADE_BACKUP_MOUNT_PATH}}' already exists in deployment '${{env.OLD_DB_NAME}}'..."
+        MOUNT_PATH_EXISTS=$(oc get deployment/${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} \
+          -o jsonpath="{.spec.template.spec.containers[*].volumeMounts[?(@.mountPath=='${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }}')].mountPath}")
+        if [ -z "$MOUNT_PATH_EXISTS" ]; then
+          echo "Patching old database deployment to mount upgrade backup PVC..."
+          oc set volume deployment/${{env.OLD_DB_NAME}} \
+            -n ${{ vars.OC_NAMESPACE }} \
+            --add \
+            --name=${{env.VOLUME_NAME}} \
+            --type=persistentVolumeClaim \
+            --claim-name=${{env.UPGRADE_PVC_NAME}} \
+            --mount-path=${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }} \
+            --overwrite
+        else
+          echo "Volume mount with mount path '${{ env.DB_UPGRADE_BACKUP_MOUNT_PATH }}' already exists. Skipping patch."
+        fi
+
+        echo "Waiting for pod to restart and become ready..."
+        for i in {1..30}; do
+          READY_REPLICAS=$(oc get deployment ${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "1" ]; then
+            echo "Database pod is ready."
+            break
+          fi
+          echo "Database pod not ready yet. Retrying in 10 seconds..."
+          sleep 10
+        done
+        if [ "$READY_REPLICAS" != "1" ]; then
+          echo "Error: Database pod did not become ready within the timeout period."
+          exit 1
+        fi
+
+    - name: Scale Down API Component  # stop further user activity
+      env:
+        API_NAME: ${NAME}-${ZONE}-api
+      run: |
+        echo "Scaling down the API component..."
+        oc scale deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        echo "Waiting for API pods to terminate..."
+        for i in {1..15}; do
+          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${{env.API_NAME}} -o jsonpath='{.items[*].status.phase}' | wc -w)
+          if [ "$POD_COUNT" -eq 0 ]; then
+            echo "All API pods have been terminated."
+            break
+          fi
+          echo "API pods are still terminating. Retrying in 10 seconds..."
+          sleep 10
+        done
+
+        if [ "$POD_COUNT" -ne 0 ]; then
+          echo "Error: API pods did not terminate within the timeout period."
+          exit 1
+        fi
+
+    - name: Perform old Database Backup 
+      # Dump old db with postgreSQL 'pg_dump' utility.
+      # Note: The backup file is stored using different PVC than regular db backup.
+      #     : The format is different than FOM regular db backup.
+      env:
+        BACKUP_FILE_PATH: ${{steps.prepare.outputs.db_upgrade_backup_mount_path}}/${{steps.prepare.outputs.backup_file_name}}
+        OLD_DB_DEPLOYMENT: deployment/${{ steps.prepare.outputs.old_db_name }}
+      run: |
+        echo "Performing database backup..."
+        oc exec ${{env.OLD_DB_DEPLOYMENT}} -n ${{ vars.OC_NAMESPACE }} -- \
+            bash -c 'pg_dump -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -Fc > "${{env.BACKUP_FILE_PATH}}"'
+
+    - name: Verify Backup File Exists
+      env:
+        BACKUP_FILE_PATH: ${{steps.prepare.outputs.db_upgrade_backup_mount_path}}/${{steps.prepare.outputs.backup_file_name}}
+        OLD_DB_DEPLOYMENT: deployment/${{ steps.prepare.outputs.old_db_name }}
+      run: |
+        echo "Verifying backup file exists..."
+        oc exec ${{env.OLD_DB_DEPLOYMENT}} -n ${{ vars.OC_NAMESPACE }} -- \
+          test -f "${{env.BACKUP_FILE_PATH}}"
+        if [ $? -eq 0 ]; then
+          echo "Backup file verified: $BACKUP_FILE_PATH"
+        else
+          echo "Error: Backup file not found: $BACKUP_FILE_PATH"
+          exit 1
+        fi
+
+    - name: OpenShift Deploy (new version db upgrade container)
+      # New db pod with new db version and extension installed.
+      uses: bcgov/action-deployer-openshift@v3.2.0
+      with:
+        file: db/openshift.deploy.dbupgrade.${{ env.DB_UPGRADE_VERSION }}.yml
+        oc_namespace: ${{ vars.OC_NAMESPACE }}
+        oc_server: ${{ vars.OC_SERVER }}
+        oc_token: ${{ secrets.OC_TOKEN }}
+        overwrite: true
+        parameters:
+          -p ZONE=${{ env.ZONE }}
+        triggers: ('db')
+
+    - name: Verify New Version DB Upgrade Container Deployment Readiness
+      run: |
+        echo "Checking if deployment is ready..."
+        for i in {1..30}; do
+          READY_REPLICAS=$(oc get deployment ${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "1" ]; then
+            echo "Deployment is ready."
+            break
+          fi
+          echo "Deployment not ready yet. Retrying in 5 seconds..."
+          sleep 5
+        done
+
+        if [ "$READY_REPLICAS" != "1" ]; then
+          echo "Error: Deployment did not become ready within the timeout period."
+          exit 1
+        fi
+
+    - name: Restore From Backup Into New Database
+        # Restore previous 'pg_dump' backup dump file into new version db.
+      env:
+        BACKUP_FILE_PATH: ${{steps.prepare.outputs.db_upgrade_backup_mount_path}}/${{steps.prepare.outputs.backup_file_name}}
+      run: |
+        echo "Restoring database from backup..."
+        oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
+          bash -c 'pg_restore --if-exists --clean -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" "${{env.BACKUP_FILE_PATH}}"'
+        if [ $? -eq 0 ]; then
+          echo "Database restoration completed successfully."
+        else
+          echo "Error: Database restoration failed."
+          exit 1
+        fi
+
+    - name: Verify Database Restoration
+      run: |
+        echo "Verifying database restoration..."
+        RESTORE_CHECK=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
+          bash -c 'psql -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -tAc "SELECT COUNT(*) FROM information_schema.tables;"')
+        if [ "$RESTORE_CHECK" -gt 0 ]; then
+          echo "Database restoration verified. Number of tables: $RESTORE_CHECK"
+        else
+          echo "Error: Database restoration verification failed. No tables found."
+          exit 1
+        fi
+
+    - name: Verify PostGIS Extension Installation at DB Upgrade Container
+      run: |
+        echo "Verifying PostGIS extension is installed..."
+        POSTGIS_VERSION=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
+          bash -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -tAc "SELECT extversion FROM pg_extension WHERE extname = '\''postgis'\'';"')
+        if [ -z "$POSTGIS_VERSION" ]; then
+          echo "Error: PostGIS extension is not installed."
+          exit 1
+        else
+          echo "PostGIS extension is installed. Version: $POSTGIS_VERSION"
+        fi
+
+    - name: Scale Down Old Database Component
+      # Stop old db component, not deleted, will be decommissioned later.
+      env:
+        OLD_DB_NAME: ${{ steps.prepare.outputs.old_db_name }}
+      run: |
+        echo "Scaling down the old database component..."
+        oc scale deployment/${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        echo "Waiting for old database pods to terminate..."
+        for i in {1..15}; do
+          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${{env.OLD_DB_NAME}} -o jsonpath='{.items[*].status.phase}' | wc -w)
+          if [ "$POD_COUNT" -eq 0 ]; then
+          echo "All old database pods have been terminated."
+          break
+          fi
+          echo "Old database pods are still terminating. Retrying in 10 seconds..."
+          sleep 10
+        done
+
+        if [ "$POD_COUNT" -ne 0 ]; then
+          echo "Error: Old database pods did not terminate within the timeout period."
+          exit 1
+        fi
+
+    - name: Point API Component to New Database
+      # The API deployment's env "DB_HOST" will be set to the new database host name.
+      run: |
+        echo "Updating API component to point to the new database..."
+        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_name }}"
+        oc set env deployment/${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} DB_HOST=$NEW_DB_HOST
+        echo "API component updated to use the new database: $NEW_DB_HOST"
+
+    - name: Scale Up API Component (Now Pointing To New DB)
+      env:
+        REPLICA_COUNT: 3
+        API_NAME: ${NAME}-${ZONE}-api
+      run: |
+        echo "Scaling up the API component to ${{env.REPLICA_COUNT}} replicas..."
+        oc scale deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=${{env.REPLICA_COUNT}}
+
+        echo "Verifying the API component has scaled up..."
+        for i in {1..50}; do
+          READY_REPLICAS=$(oc get deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "${{env.REPLICA_COUNT}}" ]; then
+          echo "API component has successfully scaled up to $READY_REPLICAS replicas."
+          break
+          fi
+          echo "API component is not fully scaled up yet. Retrying in 5 seconds..."
+          sleep 5
+        done
+
+        if [ "$READY_REPLICAS" != "${{env.REPLICA_COUNT}}" ]; then
+          echo "Error: API component did not scale up to the expected number of replicas within the timeout period."
+          exit 1
+        fi
+
+    - name: Verify API Component is Responding
+      run: |
+        echo "Fetching API route from OpenShift..."
+        API_ROUTE=$(oc get route ${NAME}-${ZONE}-api -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.spec.host}')
+        if [ -z "$API_ROUTE" ]; then
+          echo "Error: Unable to fetch API route."
+          exit 1
+        fi
+
+        sleep 20
+        SMOKE_API_URL="https://${API_ROUTE}/api/district"
+        echo "Verifying API component is responding with http request: ${SMOKE_API_URL}..."
+        RESPONSE=$(curl -v -o /dev/null -w "%{http_code}\n" $SMOKE_API_URL)
+        if [ "$RESPONSE" -eq 200 ]; then
+          echo "API component is responding successfully."
+        else
+          echo "Error: API component is not responding. HTTP status code: $RESPONSE"
+          exit 1
+        fi
+
+    - name: Update CronJobs to Point to New Database
+      # The CronJobs' has no 'env' but the yaml will be search on the "DB_HOST" and 
+      # replaced with the new database host name, then re-applied.
+      run: |
+        echo "Updating CronJobs to point to the new database..."
+        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_name }}"
+        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_name }}"
+        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}"
+        FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
+        BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
+        RESTORE_CRONJOB_NAME="${NAME}-${ZONE}-${COMPONENT}-restore"
+
+        # Update work-flow-state-change-batch CronJob
+        echo "Fetching and updating CronJob: work-flow-state-change-batch..."
+        oc get cronjob/$WORKFLOW_STATE_CHANGE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > work-flow-state-change-batch.yaml
+        sed -i "/name: DB_HOST/{n;s|value:.*|value: ${NEW_DB_HOST}|}" work-flow-state-change-batch.yaml
+        oc apply -f work-flow-state-change-batch.yaml
+
+        # Update fc-client-data-refresh-batch CronJob
+        echo "Fetching and updating CronJob: fc-client-data-refresh-batch..."
+        oc get cronjob/$FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > fc-client-data-refresh-batch.yaml
+        sed -i "/name: DB_HOST/{n;s|value:.*|value: ${NEW_DB_HOST}|}" fc-client-data-refresh-batch.yaml
+        oc apply -f fc-client-data-refresh-batch.yaml
+
+        # Update database-backup CronJob
+        echo "Fetching and updating CronJob: database-backup..."
+        oc get cronjob/$BACKUP_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > database-backup.yaml
+        sed -i "/name: DATABASE_SERVICE_NAME/{n;s|value:.*|value: ${NEW_DB_HOST}|}" database-backup.yaml
+        oc apply -f database-backup.yaml
+        echo "CronJob database-backup updated to use the new database: $NEW_DB_HOST"
+
+        # Update database-restore CronJob
+        echo "Fetching and updating CronJob: database-restore..."
+        oc get cronjob/$RESTORE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > database-restore.yaml
+            ## Replace the database host in all psql -h ... commands in the args section
+        sed -i "s|-h ${OLD_DB_HOST}|-h ${NEW_DB_HOST}|g" database-restore.yaml
+        oc apply -f database-restore.yaml
+        echo "CronJob database-restore updated to use the new database: $NEW_DB_HOST"
+
+## Rollback API component pointing to old database
+  rollback:
+    runs-on: ubuntu-latest
+    needs: db-major-upgrade
+    if: ${{ inputs.revert-only == true || failure() }} # Run if revert-only is true or db-major-upgrade fails
+    steps:
+    - name: OpenShift Init
+      uses: bcgov/action-deployer-openshift@v3.2.0
+      with:
+        oc_namespace: ${{ vars.OC_NAMESPACE }}
+        oc_server: ${{ vars.OC_SERVER }}
+        oc_token: ${{ secrets.OC_TOKEN }}
+        file: libs/openshift.init.yml
+        overwrite: false
+        parameters: -p ZONE=${{ env.ZONE }}
+
+    - name: Parameters Preparation
+      # Prepare some parameters:
+      # - Old DB name (fom-[pr#/test/prod]-db-[DB_CURRENT_VERSION])
+      # - New DB name (fom-[pr#/test/prod]-db-[DB_UPGRADE_VERSION])
+      # - CronJob names (fom-[pr#/test/prod]-work-flow-state-change-batch, fom-[pr#/test/prod]-fc-client-data-refresh-batch)
+      id: prepare
+      run: |
+        if [ -n "${{ env.DB_CURRENT_VERSION }}" ]; then
+          old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}-${{ env.DB_CURRENT_VERSION }}"
+        else
+          old_db_name="${{ env.NAME }}-${{ env.ZONE }}-${{ env.COMPONENT }}"
+        fi
+        echo "old_db_name=${old_db_name}" >> $GITHUB_OUTPUT
+        echo "new_db_name=${{ env.NAME }}-${{ inputs.target }}-${{ env.COMPONENT }}-${{ env.DB_UPGRADE_VERSION }}" >> $GITHUB_OUTPUT
+        echo "workflow_state_change_cronjob=${{ env.NAME }}-${{ env.ZONE }}-work-flow-state-change-batch" >> $GITHUB_OUTPUT
+        echo "fc_client_data_refresh_cronjob=${{ env.NAME }}-${{ env.ZONE }}-fc-client-data-refresh-batch" >> $GITHUB_OUTPUT
+
+    - name: Scale API Comoponent Down
+      env:
+        API_NAME: ${NAME}-${ZONE}-api
+      run: |
+        echo "Scaling down the API component..."
+        oc scale deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=0
+        echo "Waiting for API pods to terminate..."
+        for i in {1..20}; do
+          POD_COUNT=$(oc get pods -n ${{ vars.OC_NAMESPACE }} -l deployment=${{env.API_NAME}} -o jsonpath='{.items[*].status.phase}' | wc -w)
+          if [ "$POD_COUNT" -eq 0 ]; then
+            echo "All API pods have been terminated."
+            break
+          fi
+          echo "API pods are still terminating. Retrying in 10 seconds..."
+          sleep 10
+        done
+
+        if [ "$POD_COUNT" -ne 0 ]; then
+          echo "Error: API pods did not terminate within the timeout period."
+          exit 1
+        fi
+
+    - name: Scale Down New Database Component
+      run: |
+        echo "Scaling down the new database component..."
+        oc scale deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} --replicas=0
+
+    - name: Scale Up Old Database Component
+      env:
+        OLD_DB_NAME: ${{ steps.prepare.outputs.old_db_name }}
+      run: |
+        echo "Scaling up the old database component..."
+        oc scale deployment/${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=1
+        echo "Waiting for old database pods to be ready..."
+        for i in {1..30}; do
+          READY_REPLICAS=$(oc get deployment ${{env.OLD_DB_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "1" ]; then
+            echo "Old database component is ready."
+            break
+          fi
+          echo "Old database component not ready yet. Retrying in 5 seconds..."
+          sleep 5
+        done
+        if [ "$READY_REPLICAS" != "1" ]; then
+          echo "Error: Old database component did not become ready within the timeout period."
+          exit 1
+        fi
+
+    - name: Rollback API Component to Old Database
+      env:
+        API_NAME: ${NAME}-${ZONE}-api
+      run: |
+        echo "Rolling back API component to point to the old database..."
+        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_name }}"
+        oc set env deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} DB_HOST=$OLD_DB_HOST
+        echo "API component rolled back to use the old database: $OLD_DB_HOST"
+
+    - name: Scale Up API Component
+      env:
+        REPLICA_COUNT: 3
+        API_NAME: ${NAME}-${ZONE}-api
+      run: |
+        echo "Scaling up the API component to ${{env.REPLICA_COUNT}} replicas..."
+        oc scale deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} --replicas=${{env.REPLICA_COUNT}}
+
+        echo "Verifying the API component has scaled up..."
+        for i in {1..50}; do
+          READY_REPLICAS=$(oc get deployment/${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.status.readyReplicas}' || echo "0")
+          if [ "$READY_REPLICAS" == "${{env.REPLICA_COUNT}}" ]; then
+            echo "API component has successfully scaled up to $READY_REPLICAS replicas."
+            break
+          fi
+          echo "API component is not fully scaled up yet. Retrying in 5 seconds..."
+          sleep 5
+        done
+
+        if [ "$READY_REPLICAS" != "${{env.REPLICA_COUNT}}" ]; then
+          echo "Error: API component did not scale up to the expected number of replicas within the timeout period."
+          exit 1
+        fi
+
+    - name: Verify API Component is Responding
+      env:
+        API_NAME: ${NAME}-${ZONE}-api
+      run: |
+        echo "Fetching API route from OpenShift..."
+        API_ROUTE=$(oc get route ${{env.API_NAME}} -n ${{ vars.OC_NAMESPACE }} -o jsonpath='{.spec.host}')
+        if [ -z "$API_ROUTE" ]; then
+          echo "Error: Unable to fetch API route."
+          exit 1
+        fi
+
+        sleep 20
+        SMOKE_API_URL="https://${API_ROUTE}/api/district"
+        echo "Verifying API component is responding with http request: ${SMOKE_API_URL}..."
+        RESPONSE=$(curl -v -o /dev/null -w "%{http_code}\n" $SMOKE_API_URL)
+        if [ "$RESPONSE" -eq 200 ]; then
+          echo "API component is responding successfully."
+        else
+          echo "Error: API component is not responding. HTTP status code: $RESPONSE"
+          exit 1
+        fi
+
+    - name: Update CronJobs to Point to Old Database 
+      run: |
+        echo "Updating CronJobs to point to the old database..."
+        OLD_DB_HOST="${{ steps.prepare.outputs.old_db_name }}"
+        NEW_DB_HOST="${{ steps.prepare.outputs.new_db_name }}"
+        WORKFLOW_STATE_CHANGE_CRONJOB_NAME="${{steps.prepare.outputs.workflow_state_change_cronjob}}"
+        FC_CLIENT_DATA_REFRESH_CRONJOB_NAME="${{steps.prepare.outputs.fc_client_data_refresh_cronjob}}"
+        BACKUP_CRONJOB_NAME="${NAME}-${ZONE}-database-backup"
+        RESTORE_CRONJOB_NAME="${NAME}-${ZONE}-${COMPONENT}-restore"
+        
+        # Update work-flow-state-change-batch CronJob
+        echo "Fetching and updating CronJob: work-flow-state-change-batch..."
+        oc get cronjob/$WORKFLOW_STATE_CHANGE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > work-flow-state-change-batch.yaml
+        sed -i "/name: DB_HOST/{n;s|value:.*|value: ${OLD_DB_HOST}|}" work-flow-state-change-batch.yaml
+        oc apply -f work-flow-state-change-batch.yaml
+        echo "CronJob work-flow-state-change-batch updated to use the old database: $OLD_DB_HOST"
+
+        # Update fc-client-data-refresh-batch CronJob
+        echo "Fetching and updating CronJob: fc-client-data-refresh-batch..."
+        oc get cronjob/$FC_CLIENT_DATA_REFRESH_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > fc-client-data-refresh-batch.yaml
+        sed -i "/name: DB_HOST/{n;s|value:.*|value: ${OLD_DB_HOST}|}" fc-client-data-refresh-batch.yaml
+        oc apply -f fc-client-data-refresh-batch.yaml
+        echo "CronJob fc-client-data-refresh-batch updated to use the old database: $OLD_DB_HOST"
+
+        # Update database-backup CronJob
+        echo "Fetching and updating CronJob: database-backup..."
+        oc get cronjob/$BACKUP_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > database-backup.yaml
+        sed -i "/name: DATABASE_SERVICE_NAME/{n;s|value:.*|value: ${OLD_DB_HOST}|}" database-backup.yaml
+        oc apply -f database-backup.yaml
+        echo "CronJob database-backup updated to use the old database: $OLD_DB_HOST"
+
+        # Update database-restore CronJob
+        echo "Fetching and updating CronJob: database-restore..."
+        oc get cronjob/$RESTORE_CRONJOB_NAME -n ${{ vars.OC_NAMESPACE }} -o yaml > database-restore.yaml
+            ## Replace the database host in all psql -h ... commands in the args section
+        sed -i "s|-h ${NEW_DB_HOST}|-h ${OLD_DB_HOST}|g" database-restore.yaml
+        oc apply -f database-restore.yaml
+        echo "CronJob database-restore updated to use the new database: $OLD_DB_HOST"
