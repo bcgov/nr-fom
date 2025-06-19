@@ -291,3 +291,15 @@ div.v-bar {
     border-right: 2px solid grey;
   }
 }
+
+.header-notice {
+  display: flex;
+  flex-direction: column;
+  .navbar-environment {
+    align-self: center;
+  }
+  .downtime-notice {
+    color: $gold;
+    font-size: smaller;
+  }
+}
