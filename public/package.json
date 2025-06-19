@@ -37,7 +37,7 @@
     "remeda": "^2.19.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.5.0",
-    "zone.js": "^0.14.10"
+    "zone.js": "^0.15.0"
   },
   "devDependencies": {
     "@angular-devkit/architect": "^0.1703.11",
