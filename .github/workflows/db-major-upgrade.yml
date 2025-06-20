@@ -30,8 +30,11 @@ env:
   DB_UPGRADE_BACKUP_DIR: /db-upgrade-backups # 'parent directory' to store db upgrade backup files
   
 jobs:
+
   db-major-upgrade:
+
     if: ${{ inputs.revert-only == false }} # Skip this job if revert-only is true
+    environment: ${{ (inputs.target == 'test' || inputs.target == 'prod') && inputs.target || '' }}
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -205,18 +208,6 @@ jobs:
           exit 1
         fi
 
-    - name: Verify PostGIS Extension Installation at DB Upgrade Container
-      run: |
-        echo "Verifying PostGIS extension is installed..."
-        POSTGIS_VERSION=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
-          bash -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -tAc "SELECT extversion FROM pg_extension WHERE extname = '\''postgis'\'';"')
-        if [ -z "$POSTGIS_VERSION" ]; then
-          echo "Error: PostGIS extension is not installed."
-          exit 1
-        else
-          echo "PostGIS extension is installed. Version: $POSTGIS_VERSION"
-        fi
-
     - name: Restore From Backup Into New Database
         # Restore previous 'pg_dump' backup dump file into new version db.
       env:
@@ -242,6 +233,18 @@ jobs:
         else
           echo "Error: Database restoration verification failed. No tables found."
           exit 1
+        fi
+
+    - name: Verify PostGIS Extension Installation at DB Upgrade Container
+      run: |
+        echo "Verifying PostGIS extension is installed..."
+        POSTGIS_VERSION=$(oc exec deployment/${NAME}-${ZONE}-${COMPONENT}-${DB_UPGRADE_VERSION} -n ${{ vars.OC_NAMESPACE }} -- \
+          bash -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -tAc "SELECT extversion FROM pg_extension WHERE extname = '\''postgis'\'';"')
+        if [ -z "$POSTGIS_VERSION" ]; then
+          echo "Error: PostGIS extension is not installed."
+          exit 1
+        else
+          echo "PostGIS extension is installed. Version: $POSTGIS_VERSION"
         fi
 
     - name: Scale Down Old Database Component
@@ -360,6 +363,7 @@ jobs:
 
 ## Rollback API component pointing to old database
   rollback:
+    environment: ${{ (inputs.target == 'test' || inputs.target == 'prod') && inputs.target || '' }}
     runs-on: ubuntu-latest
     needs: db-major-upgrade
     if: ${{ inputs.revert-only == true || failure() }} # Run if revert-only is true or db-major-upgrade fails
