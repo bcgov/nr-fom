@@ -234,6 +234,17 @@ export class ProjectCommentingClosedDateChangeRequest {
   revisionCount: number;
 }
 
+export class FOMCountByDistrictDto {
+  @ApiProperty()
+  districtId: number;
+
+  @ApiProperty()
+  districtName: string;
+
+  @ApiProperty()
+  fomCount: number;
+}
+
 /**
 * Custom validation decorator: @IsGreaterOrEqualTo - check number_1 >= number_2
 */
