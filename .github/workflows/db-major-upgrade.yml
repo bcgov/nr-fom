@@ -188,7 +188,6 @@ jobs:
         overwrite: true
         parameters:
           -p ZONE=${{ env.ZONE }}
-        triggers: ('db')
 
     - name: Verify New Version DB Upgrade Container Deployment Readiness
       run: |
