@@ -5,8 +5,8 @@ import { DateRangeRequest } from '@api-modules/analytics-dashboard/analytics-das
 import { ProjectCountByDistrictResponse } from '@api-modules/project/project.dto';
 import { PublicCommentCountByDistrictResponse } from '@api-modules/public-comment/public-comment.dto';
 
-@ApiTags('dashboard')
-@Controller('dashboard')
+@ApiTags('analytics-dashboard')
+@Controller('analytics-dashboard')
 export class AnalyticsDashboardController {
   constructor(private readonly dashboardService: AnalyticsDashboardService) {}
 
@@ -16,7 +16,7 @@ export class AnalyticsDashboardController {
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
    * @returns Number of FOM projects in the date range
    */
-  @Get('total-fom-count')
+  @Get('project/total-count')
   @ApiOperation({
     summary: 'Get total number of FOMs submitted within a date range',
   })
@@ -25,7 +25,7 @@ export class AnalyticsDashboardController {
     description: 'Total number of FOMs',
     type: Number,
   })
-  async getTotalFoms(@Query() query: DateRangeRequest): Promise<number> {
+  async getTotalProjects(@Query() query: DateRangeRequest): Promise<number> {
     return this.dashboardService.getProjectCountByDate(
       query.startDate,
       query.endDate
@@ -38,7 +38,7 @@ export class AnalyticsDashboardController {
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
    * @returns An array of objects containing districtId, districtName, and projectCount.
    */
-  @Get('fom-count-by-district')
+  @Get('project/count-by-district')
   @ApiOperation({
     summary: 'Get total number of FOMs grouped by district within a date range',
   })
@@ -48,7 +48,7 @@ export class AnalyticsDashboardController {
     type: ProjectCountByDistrictResponse,
     isArray: true,
   })
-  async getFomCountByDistrict(
+  async getProjectCountByDistrict(
     @Query() query: DateRangeRequest
   ): Promise<ProjectCountByDistrictResponse[]> {
     return this.dashboardService.getProjectCountByDistrict(
@@ -63,14 +63,14 @@ export class AnalyticsDashboardController {
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
    * @returns An array of objects containing district ID, district name, and publicCommentCount.
    */
-  @Get('comment-count-by-district')
+  @Get('comment/count-by-district')
   @ApiOperation({
     summary:
       'Get total number of public comments grouped by district within a date range',
   })
   @ApiResponse({
     status: 200,
-    description: 'List of comment counts by district',
+    description: 'List of comment count s by district',
     type: [PublicCommentCountByDistrictResponse],
     isArray: true,
   })
