@@ -790,7 +790,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    * 
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
-   * @returns Number of projects matching the criteria
+   * @returns Promise resolving to the count of projects matching the criteria
    */
   async getProjectCountByDate(startDate: string, endDate: string): Promise<number> {
     return await this.repository
@@ -829,6 +829,26 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
       .orderBy('"projectCount"', 'DESC')
       .getRawMany();
   }
+
+  /**
+   * Returns the total number of unique forest clients that have submitted FOMs.
+   * Excludes records where forest_client_number is null. Used by analytics dashboard module.
+   *
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to the count of distinct forest client numbers
+   */
+  async getUniqueForestClientCount(startDate: string, endDate: string): Promise<number> {
+    return await this.repository
+      .createQueryBuilder()
+      .select('COUNT(DISTINCT forest_client_number)', 'count')
+      .where('forest_client_number IS NOT NULL')
+      .andWhere('commenting_open_date >= :startDate', { startDate })
+      .andWhere('commenting_open_date <= :endDate', { endDate })
+      .getRawOne()
+      .then(result => Number(result.count));
+  }
+
 
   /**
    * Find FOM Ids by 'workflowStateCode' and 'commentingOpenDate'/'commenting_closed_date' equal or before the 'date' passed for search.

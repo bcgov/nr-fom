@@ -22,7 +22,7 @@ export class AnalyticsDashboardController {
    */
   @Get('project/count')
   @ApiOperation({
-    summary: 'Get total number of FOMs submitted within a date range',
+    summary: 'Get total number of FOMs submitted in a date range',
   })
   @ApiResponse({
     status: 200,
@@ -45,7 +45,7 @@ export class AnalyticsDashboardController {
    */
   @Get('project/count-by-district')
   @ApiOperation({
-    summary: 'Get total number of FOMs grouped by district within a date range',
+    summary: 'Get total number of FOMs grouped by district in a date range',
   })
   @ApiResponse({
     status: 200,
@@ -63,6 +63,29 @@ export class AnalyticsDashboardController {
   }
 
   /**
+   * Returns the total number of unique forest clients who submitted FOMs
+   * within the specified date range. Excludes records with null forest client numbers.
+   *
+   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @returns Number of distinct forest client numbers
+   */
+  @Get('project/forest-client/count')
+  @ApiOperation({
+    summary: 'Get the number of unique forest clients who submitted FOMs in a date range',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Total unique forest client count for submitted FOMs',
+    type: Number,
+  })
+  async getUniqueForestClientCount(@Query() query: DateRangeRequest): Promise<number> {
+    return this.dashboardService.getUniqueForestClientCount(
+      query.startDate,
+      query.endDate
+    );
+  }
+ 
+  /**
    * Returns the number of public comments grouped by district within the specified date range.
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
@@ -71,7 +94,7 @@ export class AnalyticsDashboardController {
   @Get('public-comment/count-by-district')
   @ApiOperation({
     summary:
-      'Get total number of public comments grouped by district within a date range',
+      'Get total number of public comments grouped by district in a date range',
   })
   @ApiResponse({
     status: 200,
@@ -98,7 +121,7 @@ export class AnalyticsDashboardController {
   @Get('public-comment/count-by-responsecode')
   @ApiOperation({
     summary:
-      'Get total number of public comments grouped by response code within a date range',
+      'Get total number of public comments grouped by response code in a date range',
   })
   @ApiResponse({
     status: 200,

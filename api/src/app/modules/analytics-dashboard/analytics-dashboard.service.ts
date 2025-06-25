@@ -28,6 +28,13 @@ export class AnalyticsDashboardService {
     return this.projectService.getProjectCountByDistrict(startDate, endDate);
   }
 
+  async getUniqueForestClientCount(
+    startDate: string,
+    endDate: string
+  ): Promise<number> {
+    return this.projectService.getUniqueForestClientCount(startDate, endDate);
+  }
+
   async getCommentCountByDistrict(
     startDate: string,
     endDate: string
