@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ProjectCountByDistrictResponse } from '@api-modules/project/project.dto';
 import { ProjectService } from '@api-modules/project/project.service';
-import { PublicCommentCountByDistrictResponse } from '@api-modules/public-comment/public-comment.dto';
+import {
+  PublicCommentCountByDistrictResponse,
+  PublicCommentCountByCategoryResponse,
+} from '@api-modules/public-comment/public-comment.dto';
 import { PublicCommentService } from '@api-modules/public-comment/public-comment.service';
 
 @Injectable()
@@ -30,6 +33,16 @@ export class AnalyticsDashboardService {
     endDate: string
   ): Promise<PublicCommentCountByDistrictResponse[]> {
     return this.publicCommentService.getCommentCountByDistrict(
+      startDate,
+      endDate
+    );
+  }
+
+  async getCommentCountByResponseCode(
+    startDate: string,
+    endDate: string
+  ): Promise<PublicCommentCountByCategoryResponse[]> {
+    return this.publicCommentService.getCommentCountByResponseCode(
       startDate,
       endDate
     );

@@ -787,8 +787,9 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
   /**
    * Counts the number of projects where commentingOpenDate falls between startDate and endDate. 
    * Used by analytics dashboard module.
-   * @param startDate - Start date string YYYY-MM-DD
-   * @param endDate - End date string YYYY-MM-DD
+   * 
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
    * @returns Number of projects matching the criteria
    */
   async getProjectCountByDate(startDate: string, endDate: string): Promise<number> {
@@ -807,8 +808,8 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    * Retrieves the count of FOM projects grouped by district.
    * Used by analytics dashboard module.
    *
-   * @param startDate - Start date string YYYY-MM-DD
-   * @param endDate - End date string YYYY-MM-DD
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
    * @returns Promise resolving to an array of FOMCountByDistrictDto
    */
   async getProjectCountByDistrict(startDate: string, endDate: string): Promise<ProjectCountByDistrictResponse[]> {

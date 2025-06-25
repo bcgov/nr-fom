@@ -12,7 +12,8 @@ import {
   PublicCommentAdminResponse, 
   PublicCommentAdminUpdateRequest, 
   PublicCommentCreateRequest,
-  PublicCommentCountByDistrictResponse 
+  PublicCommentCountByDistrictResponse,
+  PublicCommentCountByCategoryResponse
 } from './public-comment.dto';
 import { PublicComment } from './public-comment.entity';
 
@@ -179,15 +180,35 @@ export class PublicCommentService extends DataService<PublicComment, Repository<
       .where('c.createTimestamp >= :startDate', { startDate })
       .andWhere('c.createTimestamp <= :endDate', { endDate })
       .innerJoin('c.project', 'p')
-      .andWhere('p.workflowStateCode != :workflowStateCode', {
-        workflowStateCode: WorkflowStateEnum.INITIAL,
-      })
       .innerJoin('p.district', 'd')
       .select('p.district_id', 'districtId')
       .addSelect('d.name', 'districtName')
       .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')
       .groupBy('p.district_id')
       .addGroupBy('d.name')
+      .orderBy('"publicCommentCount"', 'DESC')
+      .getRawMany();
+  }
+
+  /**
+   * Retrieves the total number of public comments grouped by response code (category).
+   * Used by analytics dashboard module.
+   *
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to an array of PublicCommentCountByCategoryResponse
+   */
+  async getCommentCountByResponseCode(
+    startDate: string,
+    endDate: string
+  ): Promise<PublicCommentCountByCategoryResponse[]> {
+    return await this.repository
+      .createQueryBuilder()
+      .where('create_timestamp >= :startDate', { startDate })
+      .andWhere('create_timestamp <= :endDate', { endDate })
+      .select('response_code', 'responseCode')
+      .addSelect('COUNT(public_comment_id)', 'publicCommentCount')
+      .groupBy('response_code')
       .orderBy('"publicCommentCount"', 'DESC')
       .getRawMany();
   }

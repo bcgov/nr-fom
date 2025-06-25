@@ -94,5 +94,16 @@ export class PublicCommentCountByDistrictResponse {
   districtName: string;
 
   @ApiProperty()
+  @IsNumber()
+  publicCommentCount: number;
+}
+
+export class PublicCommentCountByCategoryResponse {
+  @ApiProperty({ enum: ResponseCodeEnum, enumName: 'ResponseCodeEnum'})
+  @IsEnum(ResponseCodeEnum)
+  responseCode: string;
+
+  @ApiProperty()
+  @IsNumber()
   publicCommentCount: number;
 }

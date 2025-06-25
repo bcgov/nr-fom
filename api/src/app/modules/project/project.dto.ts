@@ -242,6 +242,7 @@ export class ProjectCountByDistrictResponse {
   districtName: string;
 
   @ApiProperty()
+  @IsNumber()
   projectCount: number;
 }
 
