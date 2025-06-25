@@ -85,3 +85,14 @@ export class PublicCommentAdminResponse extends OmitType(PublicCommentCreateRequ
   @ApiProperty()
   scopeFeatureName?: string; //cutBlock.name or roadSection.name
 }
+
+export class PublicCommentCountByDistrictResponse {
+  @ApiProperty()
+  districtId: number;
+
+  @ApiProperty()
+  districtName: string;
+
+  @ApiProperty()
+  publicCommentCount: number;
+}

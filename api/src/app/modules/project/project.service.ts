@@ -22,7 +22,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import {
     ProjectCommentClassificationMandatoryChangeRequest, ProjectCommentingClosedDateChangeRequest, ProjectCreateRequest, ProjectMetricsResponse, ProjectPublicSummaryResponse, ProjectResponse, ProjectUpdateRequest,
-    ProjectWorkflowStateChangeRequest, FOMCountByDistrictDto
+    ProjectWorkflowStateChangeRequest, ProjectCountByDistrictResponse
 } from './project.dto';
 import { Project } from './project.entity';
 import { WorkflowStateEnum } from './workflow-state-code.entity';
@@ -786,12 +786,12 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 
   /**
    * Counts the number of projects where commentingOpenDate falls between startDate and endDate. 
-   * Used by dashboard module.
+   * Used by analytics dashboard module.
    * @param startDate - Start date string YYYY-MM-DD
    * @param endDate - End date string YYYY-MM-DD
    * @returns Number of projects matching the criteria
    */
-  async getFomCountByDate(startDate: string, endDate: string): Promise<number> {
+  async getProjectCountByDate(startDate: string, endDate: string): Promise<number> {
     return await this.repository
       .createQueryBuilder()
       .where('commenting_open_date >= :startDate', { startDate })
@@ -805,13 +805,13 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 
   /**
    * Retrieves the count of FOM projects grouped by district.
-   * Used by dashboard module.
+   * Used by analytics dashboard module.
    *
    * @param startDate - Start date string YYYY-MM-DD
    * @param endDate - End date string YYYY-MM-DD
    * @returns Promise resolving to an array of FOMCountByDistrictDto
    */
-  async getFomCountByDistrict(startDate: string, endDate: string): Promise<FOMCountByDistrictDto[]> {
+  async getProjectCountByDistrict(startDate: string, endDate: string): Promise<ProjectCountByDistrictResponse[]> {
     return await this.repository
       .createQueryBuilder('p')
       .select('p.district_id', 'districtId')
@@ -821,10 +821,11 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
         workflowStateCode: WorkflowStateEnum.INITIAL 
       })
       .innerJoin('p.district', 'd')
-      .addSelect('COUNT(p.project_id)', 'fomCount')
+      .addSelect('COUNT(p.project_id)', 'projectCount')
       .addSelect('d.name', 'districtName')
       .groupBy('p.district_id')
       .addGroupBy('d.name')
+      .orderBy('"projectCount"', 'DESC')
       .getRawMany();
   }
 

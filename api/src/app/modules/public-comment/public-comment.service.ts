@@ -8,7 +8,12 @@ import { PinoLogger } from 'nestjs-pino';
 import { FindOneOptions, Repository, UpdateResult } from 'typeorm';
 import { ProjectAuthService } from '../project/project-auth.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
-import { PublicCommentAdminResponse, PublicCommentAdminUpdateRequest, PublicCommentCreateRequest } from './public-comment.dto';
+import { 
+  PublicCommentAdminResponse, 
+  PublicCommentAdminUpdateRequest, 
+  PublicCommentCreateRequest,
+  PublicCommentCountByDistrictResponse 
+} from './public-comment.dto';
 import { PublicComment } from './public-comment.entity';
 
 @Injectable()
@@ -155,5 +160,35 @@ export class PublicCommentService extends DataService<PublicComment, Repository<
       Object.assign(r, decryptedPartial);
       return this.convertEntity(r);
     });
+  }
+
+  /**
+   * Returns the total number of public comments grouped by district.
+   * Used by analytics dashboard module.
+   *
+   * @param startDate - Start of date range (YYYY-MM-DD)
+   * @param endDate - End of date range (YYYY-MM-DD)
+   * @returns Promise resolving to an array of PublicCommentCountByDistrictResponse
+   */
+  async getCommentCountByDistrict(
+    startDate: string,
+    endDate: string
+  ): Promise<PublicCommentCountByDistrictResponse[]> {
+    return await this.repository
+      .createQueryBuilder('c')
+      .where('c.createTimestamp >= :startDate', { startDate })
+      .andWhere('c.createTimestamp <= :endDate', { endDate })
+      .innerJoin('c.project', 'p')
+      .andWhere('p.workflowStateCode != :workflowStateCode', {
+        workflowStateCode: WorkflowStateEnum.INITIAL,
+      })
+      .innerJoin('p.district', 'd')
+      .select('p.district_id', 'districtId')
+      .addSelect('d.name', 'districtName')
+      .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')
+      .groupBy('p.district_id')
+      .addGroupBy('d.name')
+      .orderBy('"publicCommentCount"', 'DESC')
+      .getRawMany();
   }
 }

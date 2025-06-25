@@ -234,7 +234,7 @@ export class ProjectCommentingClosedDateChangeRequest {
   revisionCount: number;
 }
 
-export class FOMCountByDistrictDto {
+export class ProjectCountByDistrictResponse {
   @ApiProperty()
   districtId: number;
 
@@ -242,7 +242,7 @@ export class FOMCountByDistrictDto {
   districtName: string;
 
   @ApiProperty()
-  fomCount: number;
+  projectCount: number;
 }
 
 /**
