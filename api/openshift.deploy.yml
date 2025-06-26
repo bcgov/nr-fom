@@ -16,6 +16,9 @@ parameters:
   - name: COMPONENT
     description: Component name
     value: api
+  - name: DATABASE_COMPONENT
+    description: Component name
+    value: db-17
   - name: ZONE
     description: Deployment zone, e.g. pr-### or prod
     required: true
@@ -144,24 +147,24 @@ objects:
                 - name: BYPASS_CORS
                   value: "false"
                 - name: DB_HOST
-                  value: ${NAME}-${ZONE}-db
+                  value: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                 - name: DB_TESTDATA
                   value: ${DB_TESTDATA}
                 - name: DB_NAME
                   valueFrom:
                     secretKeyRef:
                       key: database-db
-                      name: ${NAME}-${ZONE}-db
+                      name: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                 - name: DB_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       key: database-password
-                      name: ${NAME}-${ZONE}-db
+                      name: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                 - name: DB_USERNAME
                   valueFrom:
                     secretKeyRef:
                       key: database-user
-                      name: ${NAME}-${ZONE}-db
+                      name: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                 - name: FOM_EMAIL_NOTIFY
                   value: ${FOM_EMAIL_NOTIFY}
                 - name: HOSTNAME
@@ -311,22 +314,22 @@ objects:
                   args: ["-batchWorkflowStateChange"]
                   env:
                     - name: DB_HOST
-                      value: ${NAME}-${ZONE}-db
+                      value: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                     - name: DB_NAME
                       valueFrom:
                         secretKeyRef:
                           key: database-db
-                          name: ${NAME}-${ZONE}-db
+                          name: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                     - name: DB_PASSWORD
                       valueFrom:
                         secretKeyRef:
                           key: database-password
-                          name: ${NAME}-${ZONE}-db
+                          name: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                     - name: DB_USERNAME
                       valueFrom:
                         secretKeyRef:
                           key: database-user
-                          name: ${NAME}-${ZONE}-db
+                          name: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                     - name: OBJECT_STORAGE_ACCESS_ID
                       valueFrom:
                         secretKeyRef:
@@ -374,22 +377,22 @@ objects:
                   args: ["-batchForestClientDataRefresh"]
                   env:
                     - name: DB_HOST
-                      value: ${NAME}-${ZONE}-db
+                      value: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                     - name: DB_NAME
                       valueFrom:
                         secretKeyRef:
                           key: database-db
-                          name: ${NAME}-${ZONE}-db
+                          name: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                     - name: DB_PASSWORD
                       valueFrom:
                         secretKeyRef:
                           key: database-password
-                          name: ${NAME}-${ZONE}-db
+                          name: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                     - name: DB_USERNAME
                       valueFrom:
                         secretKeyRef:
                           key: database-user
-                          name: ${NAME}-${ZONE}-db
+                          name: ${NAME}-${ZONE}-${DATABASE_COMPONENT}
                     - name: OBJECT_STORAGE_ACCESS_ID
                       valueFrom:
                         secretKeyRef:

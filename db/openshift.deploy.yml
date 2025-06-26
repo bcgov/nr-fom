@@ -15,7 +15,7 @@ parameters:
     value: fom
   - name: COMPONENT
     description: Component name
-    value: db
+    value: db-17
   - name: ZONE
     description: Deployment zone, e.g. pr-### or prod
     required: true
