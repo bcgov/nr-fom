@@ -170,7 +170,7 @@ objects:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}
           containers:
             - name: ${NAME}
-              image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
+              image: ${REGISTRY}/${ORG}/nr-fom/db:${TAG}
               ports:
                 - containerPort: 5432
                   protocol: TCP
