@@ -246,6 +246,19 @@ export class ProjectCountByDistrictResponse {
   projectCount: number;
 }
 
+export class ProjectCountByForestClientResponse {
+  @ApiProperty()
+  @IsNumberString()
+  forestClientNumber: string;
+
+  @ApiProperty()
+  forestClientName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  projectCount: number;
+}
+
 /**
 * Custom validation decorator: @IsGreaterOrEqualTo - check number_1 >= number_2
 */

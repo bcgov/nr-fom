@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ProjectCountByDistrictResponse } from '@api-modules/project/project.dto';
+import {
+  ProjectCountByDistrictResponse,
+  ProjectCountByForestClientResponse,
+} from '@api-modules/project/project.dto';
 import { ProjectService } from '@api-modules/project/project.service';
 import {
   PublicCommentCountByDistrictResponse,
@@ -33,6 +36,16 @@ export class AnalyticsDashboardService {
     endDate: string
   ): Promise<number> {
     return this.projectService.getUniqueForestClientCount(startDate, endDate);
+  }
+
+  async getProjectCountByForestClient(
+    startDate: string,
+    endDate: string
+  ): Promise<ProjectCountByForestClientResponse[]> {
+    return this.projectService.getProjectCountByForestClient(
+      startDate,
+      endDate
+    );
   }
 
   async getCommentCountByDistrict(
