@@ -15,7 +15,7 @@ parameters:
     value: fom
   - name: COMPONENT
     description: Component name
-    value: db
+    value: db-17
   - name: ZONE
     description: Deployment zone, e.g. pr-### or prod
     required: true
@@ -170,7 +170,7 @@ objects:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}
           containers:
             - name: ${NAME}
-              image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
+              image: ${REGISTRY}/${ORG}/nr-fom/db:${TAG}
               ports:
                 - containerPort: 5432
                   protocol: TCP
