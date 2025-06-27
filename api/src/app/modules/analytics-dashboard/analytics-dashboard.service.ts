@@ -7,6 +7,7 @@ import { ProjectService } from '@api-modules/project/project.service';
 import {
   PublicCommentCountByDistrictResponse,
   PublicCommentCountByCategoryResponse,
+  PublicCommentCountByProjectResponse,
 } from '@api-modules/public-comment/public-comment.dto';
 import { PublicCommentService } from '@api-modules/public-comment/public-comment.service';
 
@@ -65,6 +66,18 @@ export class AnalyticsDashboardService {
     return this.publicCommentService.getCommentCountByResponseCode(
       startDate,
       endDate
+    );
+  }
+
+  async getTopCommentedProjects(
+    startDate: string,
+    endDate: string,
+    limit: number
+  ): Promise<PublicCommentCountByProjectResponse[]> {
+    return this.publicCommentService.getCommentCountByProject(
+      startDate,
+      endDate,
+      limit
     );
   }
 }

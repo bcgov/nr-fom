@@ -1,5 +1,11 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { AnalyticsDashboardService } from '@api-modules/analytics-dashboard/analytics-dashboard.service';
 import { DateRangeRequest } from '@api-modules/analytics-dashboard/analytics-dashboard.dto';
 import {
@@ -9,6 +15,7 @@ import {
 import {
   PublicCommentCountByDistrictResponse,
   PublicCommentCountByCategoryResponse,
+  PublicCommentCountByProjectResponse,
 } from '@api-modules/public-comment/public-comment.dto';
 
 @ApiTags('analytics-dashboard')
@@ -137,7 +144,7 @@ export class AnalyticsDashboardController {
   @ApiResponse({
     status: 200,
     description: 'List of comment counts by district',
-    type: [PublicCommentCountByDistrictResponse],
+    type: PublicCommentCountByDistrictResponse,
     isArray: true,
   })
   async getCommentCountByDistrict(
@@ -164,7 +171,7 @@ export class AnalyticsDashboardController {
   @ApiResponse({
     status: 200,
     description: 'List of comment counts by response code',
-    type: [PublicCommentCountByCategoryResponse],
+    type: PublicCommentCountByCategoryResponse,
     isArray: true,
   })
   async getCommentCountByResponseCode(
@@ -173,6 +180,38 @@ export class AnalyticsDashboardController {
     return this.dashboardService.getCommentCountByResponseCode(
       query.startDate,
       query.endDate
+    );
+  }
+
+  /**
+   * Returns the top N most commented projects (FOMs) within the specified date range.
+   *
+   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @param limit - Maximum number of projects to return
+   * @returns An array of objects containing projectId, projectName, and publicCommentCount
+   */
+  @Get('public-comment/count-by-project')
+  @ApiOperation({ summary: 'Get the top N most commented projects (FOMs)' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of comment counts by project',
+    type: PublicCommentCountByProjectResponse,
+    isArray: true,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Maximum number of projects to return (default: 15)',
+  })
+  async getTopCommentedProjects(
+    @Query() query: DateRangeRequest,
+    @Query('limit', new DefaultValuePipe(15), ParseIntPipe) limit: number
+  ): Promise<PublicCommentCountByProjectResponse[]> {
+    return this.dashboardService.getTopCommentedProjects(
+      query.startDate,
+      query.endDate,
+      limit
     );
   }
 }

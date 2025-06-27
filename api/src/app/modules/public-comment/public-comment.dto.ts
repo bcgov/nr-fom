@@ -107,3 +107,16 @@ export class PublicCommentCountByCategoryResponse {
   @IsNumber()
   publicCommentCount: number;
 }
+
+export class PublicCommentCountByProjectResponse {
+  @ApiProperty()
+  projectId: string;
+
+  @ApiProperty()
+  projectName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  publicCommentCount: number;
+}
+
