@@ -85,3 +85,38 @@ export class PublicCommentAdminResponse extends OmitType(PublicCommentCreateRequ
   @ApiProperty()
   scopeFeatureName?: string; //cutBlock.name or roadSection.name
 }
+
+export class PublicCommentCountByDistrictResponse {
+  @ApiProperty()
+  districtId: number;
+
+  @ApiProperty()
+  districtName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  publicCommentCount: number;
+}
+
+export class PublicCommentCountByCategoryResponse {
+  @ApiProperty({ enum: ResponseCodeEnum, enumName: 'ResponseCodeEnum'})
+  @IsEnum(ResponseCodeEnum)
+  responseCode: string;
+
+  @ApiProperty()
+  @IsNumber()
+  publicCommentCount: number;
+}
+
+export class PublicCommentCountByProjectResponse {
+  @ApiProperty()
+  projectId: string;
+
+  @ApiProperty()
+  projectName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  publicCommentCount: number;
+}
+

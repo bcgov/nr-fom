@@ -22,7 +22,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import {
     ProjectCommentClassificationMandatoryChangeRequest, ProjectCommentingClosedDateChangeRequest, ProjectCreateRequest, ProjectMetricsResponse, ProjectPublicSummaryResponse, ProjectResponse, ProjectUpdateRequest,
-    ProjectWorkflowStateChangeRequest
+    ProjectWorkflowStateChangeRequest, ProjectCountByDistrictResponse, ProjectCountByForestClientResponse
 } from './project.dto';
 import { Project } from './project.entity';
 import { WorkflowStateEnum } from './workflow-state-code.entity';
@@ -785,6 +785,105 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
   }
 
   /**
+   * Counts the number of projects where commentingOpenDate falls between startDate and endDate. 
+   * Used by analytics dashboard module.
+   * 
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to the count of projects matching the criteria
+   */
+  async getProjectCountByDate(startDate: string, endDate: string): Promise<number> {
+    return await this.repository
+      .createQueryBuilder()
+      .where('commenting_open_date >= :startDate', { startDate })
+      .andWhere('commenting_open_date <= :endDate', { endDate })
+      .andWhere('workflow_state_code != :workflowStateCode', { 
+        workflowStateCode: WorkflowStateEnum.INITIAL 
+      })
+      .getCount();
+  }
+
+
+  /**
+   * Retrieves the count of FOM projects grouped by district.
+   * Used by analytics dashboard module.
+   *
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to an array of FOMCountByDistrictDto
+   */
+  async getProjectCountByDistrict(startDate: string, endDate: string): Promise<ProjectCountByDistrictResponse[]> {
+    return await this.repository
+      .createQueryBuilder('p')
+      .select('p.district_id', 'districtId')
+      .where('p.commenting_open_date >= :startDate', { startDate })
+      .andWhere('p.commenting_open_date <= :endDate', { endDate })
+      .andWhere('p.workflow_state_code != :workflowStateCode', { 
+        workflowStateCode: WorkflowStateEnum.INITIAL 
+      })
+      .innerJoin('p.district', 'd')
+      .addSelect('COUNT(p.project_id)', 'projectCount')
+      .addSelect('d.name', 'districtName')
+      .groupBy('p.district_id')
+      .addGroupBy('d.name')
+      .orderBy('"projectCount"', 'DESC')
+      .getRawMany();
+  }
+
+  /**
+   * Returns the total number of unique forest clients that have submitted FOMs.
+   * Excludes records where forest_client_number is null. Used by analytics dashboard module.
+   *
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to the count of distinct forest client numbers
+   */
+  async getUniqueForestClientCount(startDate: string, endDate: string): Promise<number> {
+    return await this.repository
+      .createQueryBuilder()
+      .select('COUNT(DISTINCT forest_client_number)', 'count')
+      .where('forest_client_number IS NOT NULL')
+      .andWhere('commenting_open_date >= :startDate', { startDate })
+      .andWhere('commenting_open_date <= :endDate', { endDate })
+      .andWhere('workflow_state_code != :workflowStateCode', { 
+        workflowStateCode: WorkflowStateEnum.INITIAL 
+      })
+      .getRawOne()
+      .then(result => Number(result.count));
+  }
+
+  /**
+   * Retrieves the count of FOM projects submitted by each forest client.
+   * Used by analytics dashboard module.
+   *
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to an array of ProjectCountByForestClientResponse
+   */
+  async getProjectCountByForestClient(
+    startDate: string,
+    endDate: string
+  ): Promise<ProjectCountByForestClientResponse[]> {
+    return await this.repository
+      .createQueryBuilder('p')
+      .innerJoin('p.forestClient', 'fc')
+      .select('p.forest_client_number', 'forestClientNumber')
+      .addSelect('fc.name', 'forestClientName')
+      .addSelect('COUNT(p.project_id)', 'projectCount')
+      .where('p.forest_client_number IS NOT NULL')
+      .andWhere('p.commenting_open_date >= :startDate', { startDate })
+      .andWhere('p.commenting_open_date <= :endDate', { endDate })
+      .andWhere('p.workflow_state_code != :workflowStateCode', {
+        workflowStateCode: WorkflowStateEnum.INITIAL,
+      })
+      .groupBy('p.forest_client_number')
+      .addGroupBy('fc.name')
+      .orderBy('"projectCount"', 'DESC')
+      .getRawMany();
+  }
+
+  
+  /**
    * Find FOM Ids by 'workflowStateCode' and 'commentingOpenDate'/'commenting_closed_date' equal or before the 'date' passed for search.
    * @param workflowStateCode 
    * @param date a date string as 'YYYY-MM-DD' for query.
@@ -867,5 +966,5 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 					post_date set to ${projectEntity.commentingOpenDate}`);
 			}
 		}
-  }	
+  }
 }
