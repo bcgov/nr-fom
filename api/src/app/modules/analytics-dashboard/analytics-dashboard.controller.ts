@@ -21,7 +21,7 @@ import {
 @ApiTags('analytics-dashboard')
 @Controller('analytics-dashboard')
 export class AnalyticsDashboardController {
-  constructor(private readonly dashboardService: AnalyticsDashboardService) {}
+  constructor(private readonly analyticsDashboardService: AnalyticsDashboardService) {}
 
   /**
    * Returns the total number of FOM projects submitted
@@ -41,7 +41,7 @@ export class AnalyticsDashboardController {
     type: Number,
   })
   async getProjectCount(@Query() query: DateRangeRequest): Promise<number> {
-    return this.dashboardService.getProjectCountByDate(
+    return this.analyticsDashboardService.getProjectCountByDate(
       query.startDate,
       query.endDate
     );
@@ -68,7 +68,7 @@ export class AnalyticsDashboardController {
   async getProjectCountByDistrict(
     @Query() query: DateRangeRequest
   ): Promise<ProjectCountByDistrictResponse[]> {
-    return this.dashboardService.getProjectCountByDistrict(
+    return this.analyticsDashboardService.getProjectCountByDistrict(
       query.startDate,
       query.endDate
     );
@@ -83,7 +83,7 @@ export class AnalyticsDashboardController {
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
    * @returns Number of distinct forest client numbers
    */
-  @Get('project/forest-client/count')
+  @Get('project/count-forest-client')
   @ApiOperation({
     summary:
       'Get the number of unique forest clients who submitted FOMs in a date range',
@@ -96,7 +96,7 @@ export class AnalyticsDashboardController {
   async getUniqueForestClientCount(
     @Query() query: DateRangeRequest
   ): Promise<number> {
-    return this.dashboardService.getUniqueForestClientCount(
+    return this.analyticsDashboardService.getUniqueForestClientCount(
       query.startDate,
       query.endDate
     );
@@ -124,7 +124,7 @@ export class AnalyticsDashboardController {
   async getProjectCountByForestClient(
     @Query() query: DateRangeRequest
   ): Promise<ProjectCountByForestClientResponse[]> {
-    return this.dashboardService.getProjectCountByForestClient(
+    return this.analyticsDashboardService.getProjectCountByForestClient(
       query.startDate,
       query.endDate
     );
@@ -150,7 +150,7 @@ export class AnalyticsDashboardController {
   async getCommentCountByDistrict(
     @Query() query: DateRangeRequest
   ): Promise<PublicCommentCountByDistrictResponse[]> {
-    return this.dashboardService.getCommentCountByDistrict(
+    return this.analyticsDashboardService.getCommentCountByDistrict(
       query.startDate,
       query.endDate
     );
@@ -177,7 +177,7 @@ export class AnalyticsDashboardController {
   async getCommentCountByResponseCode(
     @Query() query: DateRangeRequest
   ): Promise<PublicCommentCountByCategoryResponse[]> {
-    return this.dashboardService.getCommentCountByResponseCode(
+    return this.analyticsDashboardService.getCommentCountByResponseCode(
       query.startDate,
       query.endDate
     );
@@ -208,7 +208,7 @@ export class AnalyticsDashboardController {
     @Query() query: DateRangeRequest,
     @Query('limit', new DefaultValuePipe(15), ParseIntPipe) limit: number
   ): Promise<PublicCommentCountByProjectResponse[]> {
-    return this.dashboardService.getTopCommentedProjects(
+    return this.analyticsDashboardService.getTopCommentedProjects(
       query.startDate,
       query.endDate,
       limit
