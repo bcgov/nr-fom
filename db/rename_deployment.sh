@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Usage:
 #   ./rename_deployment.sh <old-deployment-name> [new-deployment-name]
 #
