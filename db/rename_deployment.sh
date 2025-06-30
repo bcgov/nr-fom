@@ -46,5 +46,5 @@ oc apply -f "${MANIFEST}"
 rm -f "${MANIFEST}"
 
 # Output deployment names
-echo -e "/nMatching deployments after renaming:"
-oc get deployments -o name | grep -iE "^${OLD_DEPLOYMENT}$|^${NEW_DEPLOYMENT}$"
+echo -e "\nMatching deployments after renaming:"
+oc get deployments -o name | grep -iE "^deployment\.apps/(${OLD_DEPLOYMENT}|${NEW_DEPLOYMENT})$"
