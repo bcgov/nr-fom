@@ -12,7 +12,7 @@ set -euxo pipefail
 rename_deployment() {
   local old_deployment="$1"
   local new_deployment="$2"
-  local manifest="${old_deployment}.json"
+  local manifest="/tmp/${old_deployment}_$(date +%Y%m%d).json"  # Save in /tmp
 
   # Check if the old deployment exists
   if ! oc get deployment "${old_deployment}" &>/dev/null; then
