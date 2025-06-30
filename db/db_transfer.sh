@@ -28,8 +28,18 @@ fi
 # Vars
 OLD_DEPLOYMENT=${1}
 NEW_DEPLOYMENT=${2}
-DUMP_FILE_PATH=/tmp/backup.dump
+
+# Verify before proceeding
+if ! oc get po -l deployment=${OLD_DEPLOYMENT} | grep -q '^'; then
+  echo "No pods found for deployment '${OLD_DEPLOYMENT}'."
+  exit 2
+fi
+if ! oc get po -l deployment=${NEW_DEPLOYMENT} | grep -q '^'; then
+  echo "No pods found for deployment '${NEW_DEPLOYMENT}'."
+  exit 2
+fi
 
 # Stream dump directly from old deployment to new deployment (no file copy needed)
+echo "Database transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' complete."
 oc exec -i deployment/${OLD_DEPLOYMENT} -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc" \
   | oc exec -i deployment/${NEW_DEPLOYMENT} -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
