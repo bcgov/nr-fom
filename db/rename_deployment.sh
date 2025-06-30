@@ -44,3 +44,7 @@ oc apply -f "${MANIFEST}"
 
 # Clean up the temporary manifest file
 rm -f "${MANIFEST}"
+
+# Output deployment names
+echo -e "/nMatching deployments after renaming:"
+oc get deployments -o name | grep -iE "^${OLD_DEPLOYMENT}$|^${NEW_DEPLOYMENT}$"
