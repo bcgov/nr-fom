@@ -24,7 +24,7 @@ parameters:
     required: true
   - name: DB_VERSION
     description: Database version number, e.g. v17
-    value: 17
+    value: "17"
   - name: CRONJOB_RESTORE_TAG
     description: Image tag for database restore cronjob; e.g. PR number, latest or prod
     value: prod
