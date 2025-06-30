@@ -23,13 +23,10 @@ OLD_DEPLOYMENT=${1}
 NEW_DEPLOYMENT=${2}
 DUMP_FILE_PATH=/tmp/backup.dump
 
-# Create and copy dump from the old deployment
+# Create dump from the old deployment and save locally
 OLD_POD=$(oc get po -l deployment=${OLD_DEPLOYMENT} -o name | head -n 1 | sed 's|pod/||')
-oc exec -it deployment/${OLD_DEPLOYMENT} -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc -f ${DUMP_FILE_PATH} && ls -lh ${DUMP_FILE_PATH}"
-oc cp ${OLD_POD}:${DUMP_FILE_PATH} ${DUMP_FILE_PATH}
+oc exec -i deployment/${OLD_DEPLOYMENT} -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc" > ${DUMP_FILE_PATH}
 ls -lh ${DUMP_FILE_PATH}
 
-# Copy and restore dump to the new deployment
-NEW_POD=$(oc get po -l deployment=${NEW_DEPLOYMENT} -o name | head -n 1 | sed 's|pod/||')
-oc cp ${DUMP_FILE_PATH} ${NEW_POD}:${DUMP_FILE_PATH} -c fom
-oc exec -it deployment/${NEW_DEPLOYMENT} -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_FILE_PATH}"
+# Stream dump into pg_restore in the new deployment (no file copy needed)
+oc exec -i deployment/${NEW_DEPLOYMENT} -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc" < ${DUMP_FILE_PATH}
