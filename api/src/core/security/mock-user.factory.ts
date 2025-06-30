@@ -5,6 +5,7 @@ export function createFakeMinistryUser(): User {
     user.userName = 'fakeMinstryUser';
     user.displayName = 'Ministry User';
     user.isMinistry = true;
+    user.isAdmin = false;
     user.isForestClient = false;
     return user;
   }
@@ -14,6 +15,7 @@ export function createFakeForestryUser(): User {
     user.userName = 'fakeForestryUser';
     user.displayName = 'Forestry User';
     user.isMinistry = false;
+    user.isAdmin = false;
     user.isForestClient = true;
     user.clientIds.push(TEST_CLIENT_ID);
     return user;

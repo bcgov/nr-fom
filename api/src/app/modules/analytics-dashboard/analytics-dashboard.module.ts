@@ -3,9 +3,10 @@ import { AnalyticsDashboardController } from '@api-modules/analytics-dashboard/a
 import { AnalyticsDashboardService } from '@api-modules/analytics-dashboard/analytics-dashboard.service';
 import { ProjectModule } from '@api-modules/project/project.module';
 import { PublicCommentModule } from '@api-modules/public-comment/public-comment.module';
+import { SecurityModule } from '@api-core/security/security.module';
 
 @Module({
-  imports: [ProjectModule, PublicCommentModule],
+  imports: [ProjectModule, PublicCommentModule, SecurityModule],
   controllers: [AnalyticsDashboardController],
   providers: [AnalyticsDashboardService],
 })

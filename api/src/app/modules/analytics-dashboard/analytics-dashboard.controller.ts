@@ -4,8 +4,9 @@ import {
   Query,
   DefaultValuePipe,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { AnalyticsDashboardService } from '@api-modules/analytics-dashboard/analytics-dashboard.service';
 import { DateRangeRequest } from '@api-modules/analytics-dashboard/analytics-dashboard.dto';
 import {
@@ -17,11 +18,17 @@ import {
   PublicCommentCountByCategoryResponse,
   PublicCommentCountByProjectResponse,
 } from '@api-modules/public-comment/public-comment.dto';
+import { AuthGuard } from '@api-core/security/auth.guard';
+import { AdminOperationGuard } from '@api-core/security/admin.guard';
 
 @ApiTags('analytics-dashboard')
+@UseGuards(AuthGuard, AdminOperationGuard)
 @Controller('analytics-dashboard')
+@ApiBearerAuth()
 export class AnalyticsDashboardController {
-  constructor(private readonly analyticsDashboardService: AnalyticsDashboardService) {}
+  constructor(
+    private readonly analyticsDashboardService: AnalyticsDashboardService
+  ) {}
 
   /**
    * Returns the total number of FOM projects submitted

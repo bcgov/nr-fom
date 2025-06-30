@@ -4,8 +4,13 @@ export class User {
     displayName: string;
     isMinistry: boolean = false;
     isForestClient: boolean = false;
+    isAdmin: boolean = false;
     clientIds: string[] = [];
   
+    isAuthorizedForAdminOperation():boolean {
+      return this.isAdmin;
+    }
+
     isAuthorizedForAdminSite():boolean {
       return this.isMinistry || this.isForestClient;
     }
@@ -60,9 +65,13 @@ export class User {
         if (roles) {
             const FOM_REVIEWER_ROLE = 'FOM_REVIEWER';
             const FOM_SUBMITTER_ROLE = 'FOM_SUBMITTER';
+            const FOM_ADMIN_ROLE = 'FOM_ADMIN';
             roles.forEach(role => {
                 if (role == FOM_REVIEWER_ROLE) {
                     user.isMinistry = true;
+                }
+                if (role == FOM_ADMIN_ROLE) {
+                    user.isAdmin = true;
                 }
                 if (role.startsWith(FOM_SUBMITTER_ROLE)) {
                     user.isForestClient = true;
