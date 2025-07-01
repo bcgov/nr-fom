@@ -14,6 +14,12 @@ if [[ $# -lt 1 ]]; then
   exit 1
 fi
 
+# Fail if new deployment already exists
+if oc get deployment "${NEW_DEPLOYMENT}" &>/dev/null; then
+  echo "Deployment '${NEW_DEPLOYMENT}' already exists. Aborting to avoid overwrite."
+  exit 2
+fi
+
 # Vars
 OLD_DEPLOYMENT=${1}
 NEW_DEPLOYMENT=${2:-${OLD_DEPLOYMENT}-prev}
