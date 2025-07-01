@@ -17,7 +17,7 @@
 #   the output for unexpected or
 
 # Strict mode with verbose output
-set -euxo pipefail
+set -euo pipefail
 
 # Usage
 if [[ $# -lt 2 ]]; then
