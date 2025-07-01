@@ -23,7 +23,7 @@ fi
 # Vars
 OLD_DEPLOYMENT=${1}
 NEW_DEPLOYMENT=${2:-${OLD_DEPLOYMENT}-prev}
-MANIFEST="/tmp/${OLD_DEPLOYMENT}_$(date +%Y%m%d).json"
+MANIFEST=$(mktemp "/tmp/${OLD_DEPLOYMENT}_$(date +%Y%m%d)_XXXXXX.json")
 
 # Check if the old deployment exists
 if ! oc get deployment "${OLD_DEPLOYMENT}" &>/dev/null; then
