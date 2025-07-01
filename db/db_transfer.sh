@@ -29,7 +29,7 @@ fi
 OLD_DEPLOYMENT=${1}
 NEW_DEPLOYMENT=${2}
 
-# Verify before proceeding
+# Verify pods before proceeding
 if ! oc get po -l deployment=${OLD_DEPLOYMENT} | grep -q '^'; then
   echo "No pods found for deployment '${OLD_DEPLOYMENT}'."
   exit 2
@@ -43,3 +43,7 @@ fi
 echo "Database transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' complete."
 oc exec -i deployment/${OLD_DEPLOYMENT} -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc" \
   | oc exec -i deployment/${NEW_DEPLOYMENT} -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
+
+# Results
+echo -e "\nDatabase transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' complete."
+echo "Note: If you saw errors like 'schema ... already exists', these are expected if the target DB is not empty."
