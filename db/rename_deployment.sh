@@ -25,7 +25,7 @@ if ! oc get deployment "${OLD_DEPLOYMENT}" &>/dev/null; then
   exit 0
 fi
 
-# Export the existing deployment to JSON, update name, and clean metadata
+# Export the existing deployment, pare down and update name (metadata, labels)
 oc get deployment "${OLD_DEPLOYMENT}" -o json \
   | jq 'del(
       .metadata.uid,
