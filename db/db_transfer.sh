@@ -28,6 +28,7 @@ fi
 # Vars
 OLD_DEPLOYMENT=${1}
 NEW_DEPLOYMENT=${2}
+DUMP_PARAMETERS="${DUMP_PARAMETERS:---exclude-schema=tiger --exclude-schema=tiger_data --exclude-schema=topology}"
 
 # Verify pods before proceeding
 if ! oc get po -l deployment=${OLD_DEPLOYMENT} | grep -q '^'; then
@@ -41,9 +42,8 @@ fi
 
 # Stream dump directly from old deployment to new deployment (no file copy needed)
 echo "Database transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' complete."
-oc exec -i deployment/${OLD_DEPLOYMENT} -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc --exclude-schema=tiger --exclude-schema=tiger_data --exclude-schema=topology" \
+oc exec -i deployment/${OLD_DEPLOYMENT} -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_PARAMETERS}" \
   | oc exec -i deployment/${NEW_DEPLOYMENT} -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
 
 # Results
 echo -e "\nDatabase transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' complete."
-echo "Note: If you saw errors like 'schema ... already exists', these are expected if the target DB is not empty."
