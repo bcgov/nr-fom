@@ -35,7 +35,10 @@ oc get deployment "${OLD_DEPLOYMENT}" -o json \
       .metadata.generation,
       .metadata.managedFields,
       .status
-    ) | .metadata.name = "'${NEW_DEPLOYMENT}'"' \
+    )
+    | .metadata.name = "'"${NEW_DEPLOYMENT}"'"
+    | .spec.selector.matchLabels.deployment = "'"${NEW_DEPLOYMENT}"'"
+    | .spec.template.metadata.labels.deployment = "'"${NEW_DEPLOYMENT}"'"' \
   > "${MANIFEST}"
 
 # Delete the old deployment
