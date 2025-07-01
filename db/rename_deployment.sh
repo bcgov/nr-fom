@@ -4,26 +4,28 @@
 #   ./rename_deployment.sh <old-deployment-name> [new-deployment-name]
 #
 # If [new-deployment-name] is not provided, defaults to <old-deployment-name>-prev
+#
+# This script renames an OpenShift deployment by exporting its manifest, updating the name,
+# deleting the old deployment, and applying the new one.
 
-# Strict mode with verbose output
+# Strict mode: exit on error, unset vars, or failed pipes
 set -euo pipefail
 
-# Usage
+# Show usage from header if not enough arguments
 if [[ $# -lt 1 ]]; then
   grep -v '^#!' "$0" | awk '/^#/ { sub(/^# ?/, ""); print; next } NF==0 { exit }'
   exit 1
 fi
 
-# Fail if new deployment already exists
+OLD_DEPLOYMENT="${1}"
+NEW_DEPLOYMENT="${2:-${OLD_DEPLOYMENT}-prev}"
+MANIFEST=$(mktemp "/tmp/${OLD_DEPLOYMENT}_$(date +%Y%m%d)_XXXXXX.json")
+
+# Fail fast if the new deployment already exists
 if oc get deployment "${NEW_DEPLOYMENT}" &>/dev/null; then
   echo "Deployment '${NEW_DEPLOYMENT}' already exists. Aborting to avoid overwrite."
   exit 2
 fi
-
-# Vars
-OLD_DEPLOYMENT=${1}
-NEW_DEPLOYMENT=${2:-${OLD_DEPLOYMENT}-prev}
-MANIFEST=$(mktemp "/tmp/${OLD_DEPLOYMENT}_$(date +%Y%m%d)_XXXXXX.json")
 
 # Check if the old deployment exists
 if ! oc get deployment "${OLD_DEPLOYMENT}" &>/dev/null; then
@@ -31,7 +33,7 @@ if ! oc get deployment "${OLD_DEPLOYMENT}" &>/dev/null; then
   exit 0
 fi
 
-# Export the existing deployment, pare down and update name (metadata, labels)
+# Export, clean, and update deployment manifest
 oc get deployment "${OLD_DEPLOYMENT}" -o json \
   | jq 'del(
       .metadata.uid,
@@ -47,15 +49,13 @@ oc get deployment "${OLD_DEPLOYMENT}" -o json \
     | .spec.template.metadata.labels.deployment = "'"${NEW_DEPLOYMENT}"'"' \
   > "${MANIFEST}"
 
-# Delete the old deployment
+# Delete the old deployment and apply the new one
 oc delete deployment "${OLD_DEPLOYMENT}"
-
-# Apply the new deployment
 oc apply -f "${MANIFEST}"
 
-# Clean up the temporary manifest file
+# Clean up
 rm -f "${MANIFEST}"
 
-# Output deployment names
+# Show matching deployments for confirmation
 echo -e "\nMatching deployments after renaming:"
 oc get deployments -o name | grep -iE "^deployment\.apps/(${OLD_DEPLOYMENT}|${NEW_DEPLOYMENT})$"
