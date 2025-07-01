@@ -16,7 +16,7 @@
 #   These are expected if objects already exist and can usually be ignored, but always review
 #   the output for unexpected or
 
-# Strict mode with verbose output
+# Strict mode: exit on error, unset vars, or failed pipes
 set -euo pipefail
 
 # Usage
@@ -25,12 +25,11 @@ if [[ $# -lt 2 ]]; then
   exit 1
 fi
 
-# Vars
 OLD_DEPLOYMENT=${1}
 NEW_DEPLOYMENT=${2}
 DUMP_PARAMETERS="${DUMP_PARAMETERS:---exclude-schema=tiger --exclude-schema=tiger_data --exclude-schema=topology}"
 
-# Verify pods before proceeding
+# Fail fast if pods aren't found
 if ! oc get po -l deployment=${OLD_DEPLOYMENT} | grep -q '^'; then
   echo "No pods found for deployment '${OLD_DEPLOYMENT}'."
   exit 2
@@ -40,7 +39,7 @@ if ! oc get po -l deployment=${NEW_DEPLOYMENT} | grep -q '^'; then
   exit 2
 fi
 
-# Stream dump directly from old deployment to new deployment (no file copy needed)
+# Stream dump directly from old deployment to new deployment
 echo "Database transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' complete."
 oc exec -i deployment/${OLD_DEPLOYMENT} -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_PARAMETERS}" \
   | oc exec -i deployment/${NEW_DEPLOYMENT} -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
