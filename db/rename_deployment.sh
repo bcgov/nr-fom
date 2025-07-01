@@ -56,6 +56,13 @@ oc apply -f "${MANIFEST}"
 # Clean up
 rm -f "${MANIFEST}"
 
+# Wait for the new deployment to become available
+echo "Waiting for deployment '${NEW_DEPLOYMENT}' to become available..."
+if ! oc rollout status deployment/"${NEW_DEPLOYMENT}" --timeout=120s; then
+  echo "Error: Deployment '${NEW_DEPLOYMENT}' did not become available in time."
+  exit 3
+fi
+
 # Show matching deployments for confirmation
 echo -e "\nMatching deployments after renaming:"
 oc get deployments -o name | grep -iE "^deployment\.apps/(${OLD_DEPLOYMENT}|${NEW_DEPLOYMENT})$"
