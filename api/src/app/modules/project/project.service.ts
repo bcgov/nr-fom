@@ -1113,8 +1113,8 @@ export class ProjectService extends DataService<
     startDate: string,
     endDate: string
   ): Promise<number> {
-    const qb = this.repository.createQueryBuilder();
-    applyFomDateAndStateFilters(qb, startDate, endDate);
+    const qb = this.repository.createQueryBuilder('p');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
     return await qb.getCount();
   }
 
@@ -1133,8 +1133,8 @@ export class ProjectService extends DataService<
     const qb = this.repository.createQueryBuilder('p');
     applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
     return await qb
-      .select('p.district_id', 'districtId')
       .innerJoin('p.district', 'd')
+      .select('p.district_id', 'districtId')
       .addSelect('COUNT(p.project_id)', 'projectCount')
       .addSelect('d.name', 'districtName')
       .groupBy('p.district_id')
@@ -1155,8 +1155,8 @@ export class ProjectService extends DataService<
     startDate: string,
     endDate: string
   ): Promise<number> {
-    const qb = this.repository.createQueryBuilder();
-    applyFomDateAndStateFilters(qb, startDate, endDate);
+    const qb = this.repository.createQueryBuilder('p');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
     return await qb
       .select('COUNT(DISTINCT forest_client_number)', 'count')
       .getRawOne()

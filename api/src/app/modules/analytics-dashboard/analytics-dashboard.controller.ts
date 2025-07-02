@@ -138,7 +138,7 @@ export class AnalyticsDashboardController {
     status: 200,
     description:
       'List of non-initial FOM project counts by forest client numbers',
-    type: ProjectCountByDistrictResponse,
+    type: ProjectCountByForestClientResponse,
     isArray: true,
   })
   async getNonInitialPublishedProjectCountByForestClient(

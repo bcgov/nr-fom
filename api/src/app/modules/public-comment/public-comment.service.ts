@@ -258,8 +258,8 @@ export class PublicCommentService extends DataService<
     startDate: string,
     endDate: string
   ): Promise<PublicCommentCountByCategoryResponse[]> {
-    const qb = this.repository.createQueryBuilder();
-    applyCommentCreateDateFilter(qb, startDate, endDate);
+    const qb = this.repository.createQueryBuilder('c');
+    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
     return await qb
       .select('response_code', 'responseCode')
       .addSelect('COUNT(public_comment_id)', 'publicCommentCount')

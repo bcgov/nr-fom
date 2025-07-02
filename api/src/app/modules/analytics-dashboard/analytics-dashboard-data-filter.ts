@@ -5,7 +5,7 @@ export function applyFomDateAndStateFilters<T>(
   qb: SelectQueryBuilder<T>,
   startDate: string,
   endDate: string,
-  alias: string = 'p'
+  alias: string
 ): SelectQueryBuilder<T> {
   return qb
     .where(`${alias}.commenting_open_date >= :startDate`, { startDate })
@@ -19,7 +19,7 @@ export function applyCommentCreateDateFilter<T>(
   qb: SelectQueryBuilder<T>,
   startDate: string,
   endDate: string,
-  alias: string = 'c'
+  alias: string
 ): SelectQueryBuilder<T> {
   return qb
     .where(`${alias}.create_timestamp >= :startDate`, { startDate })
