@@ -17,6 +17,7 @@ import {
   PublicCommentCountByProjectResponse,
 } from './public-comment.dto';
 import { PublicComment } from './public-comment.entity';
+import { applyCommentCreateDateFilter } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
 
 @Injectable()
 export class PublicCommentService extends DataService<
@@ -231,10 +232,9 @@ export class PublicCommentService extends DataService<
     startDate: string,
     endDate: string
   ): Promise<PublicCommentCountByDistrictResponse[]> {
-    return await this.repository
-      .createQueryBuilder('c')
-      .where('c.createTimestamp >= :startDate', { startDate })
-      .andWhere('c.createTimestamp <= :endDate', { endDate })
+    const qb = this.repository.createQueryBuilder('c');
+    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
+    return await qb
       .innerJoin('c.project', 'p')
       .innerJoin('p.district', 'd')
       .select('p.district_id', 'districtId')
@@ -258,10 +258,9 @@ export class PublicCommentService extends DataService<
     startDate: string,
     endDate: string
   ): Promise<PublicCommentCountByCategoryResponse[]> {
-    return await this.repository
-      .createQueryBuilder()
-      .where('create_timestamp >= :startDate', { startDate })
-      .andWhere('create_timestamp <= :endDate', { endDate })
+    const qb = this.repository.createQueryBuilder();
+    applyCommentCreateDateFilter(qb, startDate, endDate);
+    return await qb
       .select('response_code', 'responseCode')
       .addSelect('COUNT(public_comment_id)', 'publicCommentCount')
       .groupBy('response_code')
@@ -284,11 +283,10 @@ export class PublicCommentService extends DataService<
     endDate: string,
     limit: number
   ): Promise<PublicCommentCountByProjectResponse[]> {
-    return this.repository
-      .createQueryBuilder('c')
+    const qb = this.repository.createQueryBuilder('c');
+    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
+    return qb
       .innerJoin('c.project', 'p')
-      .where('c.createTimestamp >= :startDate', { startDate })
-      .andWhere('c.createTimestamp <= :endDate', { endDate })
       .select('p.project_id', 'projectId')
       .addSelect('p.name', 'projectName')
       .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')

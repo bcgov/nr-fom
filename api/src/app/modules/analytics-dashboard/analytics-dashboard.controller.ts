@@ -6,8 +6,15 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
-import { AnalyticsDashboardService } from '@api-modules/analytics-dashboard/analytics-dashboard.service';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { ProjectService } from '@api-modules/project/project.service';
+import { PublicCommentService } from '@api-modules/public-comment/public-comment.service';
 import { DateRangeRequest } from '@api-modules/analytics-dashboard/analytics-dashboard.dto';
 import {
   ProjectCountByDistrictResponse,
@@ -27,11 +34,12 @@ import { AdminOperationGuard } from '@api-core/security/admin.guard';
 @ApiBearerAuth()
 export class AnalyticsDashboardController {
   constructor(
-    private readonly analyticsDashboardService: AnalyticsDashboardService
+    private readonly projectService: ProjectService,
+    private readonly publicCommentService: PublicCommentService
   ) {}
 
   /**
-   * Returns the total number of FOM projects, 
+   * Returns the total number of FOM projects,
    * with a commenting open date within the specified date range,
    * excluding those with an INITIAL workflow status.
    *
@@ -40,15 +48,19 @@ export class AnalyticsDashboardController {
    */
   @Get('project/count')
   @ApiOperation({
-    summary: 'Get total number of non-initial FOMs published in a user selected date range',
+    summary:
+      'Get total number of non-initial FOMs published in a user selected date range',
   })
   @ApiResponse({
     status: 200,
-    description: 'Total number of non-initial FOMs published in a user selected date range',
+    description:
+      'Total number of non-initial FOMs published in a user selected date range',
     type: Number,
   })
-  async getNonInitialProjectCount(@Query() query: DateRangeRequest): Promise<number> {
-    return this.analyticsDashboardService.getNonInitialProjectCountByDate(
+  async getNonInitialPublishedProjectCount(
+    @Query() query: DateRangeRequest
+  ): Promise<number> {
+    return this.projectService.getNonInitialPublishedProjectCount(
       query.startDate,
       query.endDate
     );
@@ -64,7 +76,8 @@ export class AnalyticsDashboardController {
    */
   @Get('project/count-by-district')
   @ApiOperation({
-    summary: 'Get number of non-initial FOMs published in a user selected date range by district',
+    summary:
+      'Get number of non-initial FOMs published in a user selected date range, grouped by district',
   })
   @ApiResponse({
     status: 200,
@@ -72,20 +85,19 @@ export class AnalyticsDashboardController {
     type: ProjectCountByDistrictResponse,
     isArray: true,
   })
-  async getNonInitialrojectCountByDistrict(
+  async getNonInitialPublishedProjectCountByDistrict(
     @Query() query: DateRangeRequest
   ): Promise<ProjectCountByDistrictResponse[]> {
-    return this.analyticsDashboardService.getNonInitialProjectCountByDistrict(
+    return this.projectService.getNonInitialPublishedProjectCountByDistrict(
       query.startDate,
       query.endDate
     );
   }
 
   /**
-   * Returns the total number of unique forest clients who published FOMs 
-   * with a commenting open date within the specified range, 
-   * excluding those with an INITIAL workflow status,
-   * or a null forest client number.
+   * Returns the total number of unique forest clients who published FOMs
+   * with a commenting open date within the specified range,
+   * excluding those with an INITIAL workflow status.
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
    * @returns Number of distinct forest client numbers
@@ -93,24 +105,24 @@ export class AnalyticsDashboardController {
   @Get('project/count-forest-client')
   @ApiOperation({
     summary:
-      'Get the number of unique forest clients who submitted FOMs in a date range',
+      'Get total number of unique forest clients who published FOMs in a user selected date range',
   })
   @ApiResponse({
     status: 200,
-    description: 'Total unique forest client count for submitted FOMs',
+    description: 'Total unique forest client count for published FOMs',
     type: Number,
   })
   async getUniqueForestClientCount(
     @Query() query: DateRangeRequest
   ): Promise<number> {
-    return this.analyticsDashboardService.getUniqueForestClientCount(
+    return this.projectService.getUniqueForestClientCount(
       query.startDate,
       query.endDate
     );
   }
 
   /**
-   * Returns the number of FOM projects by each forest client
+   * Returns the number of FOM projects grouped by forest client
    * with a commenting open date within the specified date range,
    * excluding those with an INITIAL workflow status.
    *
@@ -120,25 +132,27 @@ export class AnalyticsDashboardController {
   @Get('project/count-by-forest-client')
   @ApiOperation({
     summary:
-      'Get total number of FOMs grouped by forest client numbers in a date range',
+      'Get number of non-initial FOMs published in a user selected date range, grouped by forest client numbers',
   })
   @ApiResponse({
     status: 200,
-    description: 'List of FOM project counts by forest client numbers',
+    description:
+      'List of non-initial FOM project counts by forest client numbers',
     type: ProjectCountByDistrictResponse,
     isArray: true,
   })
-  async getNonInitialProjectCountByForestClient(
+  async getNonInitialPublishedProjectCountByForestClient(
     @Query() query: DateRangeRequest
   ): Promise<ProjectCountByForestClientResponse[]> {
-    return this.analyticsDashboardService.getNonInitialProjectCountByForestClient(
+    return this.projectService.getNonInitialPublishedProjectCountByForestClient(
       query.startDate,
       query.endDate
     );
   }
 
   /**
-   * Returns the number of public comments grouped by district within the specified date range.
+   * Returns the number of public comments grouped by district
+   * with a create timestamp within the specified date range.
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
    * @returns An array of objects containing districtId, districtName, and publicCommentCount
@@ -146,7 +160,7 @@ export class AnalyticsDashboardController {
   @Get('public-comment/count-by-district')
   @ApiOperation({
     summary:
-      'Get total number of public comments grouped by district in a date range',
+      'Get number of public comments created in a user selected date range, grouped by district',
   })
   @ApiResponse({
     status: 200,
@@ -157,7 +171,7 @@ export class AnalyticsDashboardController {
   async getCommentCountByDistrict(
     @Query() query: DateRangeRequest
   ): Promise<PublicCommentCountByDistrictResponse[]> {
-    return this.analyticsDashboardService.getCommentCountByDistrict(
+    return this.publicCommentService.getCommentCountByDistrict(
       query.startDate,
       query.endDate
     );
@@ -165,7 +179,7 @@ export class AnalyticsDashboardController {
 
   /**
    * Returns the number of public comments grouped by response code (category)
-   * within the specified date range.
+   * with a create timestamp within the specified date range.
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
    * @returns An array of objects containing responseCode and publicCommentCount
@@ -173,7 +187,7 @@ export class AnalyticsDashboardController {
   @Get('public-comment/count-by-responsecode')
   @ApiOperation({
     summary:
-      'Get total number of public comments grouped by response code in a date range',
+      'Get number of public comments created in a user selected date range, grouped by response code',
   })
   @ApiResponse({
     status: 200,
@@ -184,14 +198,15 @@ export class AnalyticsDashboardController {
   async getCommentCountByResponseCode(
     @Query() query: DateRangeRequest
   ): Promise<PublicCommentCountByCategoryResponse[]> {
-    return this.analyticsDashboardService.getCommentCountByResponseCode(
+    return this.publicCommentService.getCommentCountByResponseCode(
       query.startDate,
       query.endDate
     );
   }
 
   /**
-   * Returns the top N most commented projects (FOMs) within the specified date range.
+   * Returns the top N most commented projects (FOMs)
+   * with a comment create timestamp within the specified date range
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
    * @param limit - Maximum number of projects to return
@@ -215,7 +230,7 @@ export class AnalyticsDashboardController {
     @Query() query: DateRangeRequest,
     @Query('limit', new DefaultValuePipe(15), ParseIntPipe) limit: number
   ): Promise<PublicCommentCountByProjectResponse[]> {
-    return this.analyticsDashboardService.getTopCommentedProjects(
+    return this.publicCommentService.getCommentCountByProject(
       query.startDate,
       query.endDate,
       limit
