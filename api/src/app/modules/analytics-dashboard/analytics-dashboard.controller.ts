@@ -31,32 +31,32 @@ export class AnalyticsDashboardController {
   ) {}
 
   /**
-   * Returns the total number of FOM projects submitted
-   * within the specified commenting open date range,
+   * Returns the total number of FOM projects, 
+   * with a commenting open date within the specified date range,
    * excluding those with an INITIAL workflow status.
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
-   * @returns Number of FOM projects in the date range
+   * @returns Number of non-Initial FOMs projects published in the date range
    */
   @Get('project/count')
   @ApiOperation({
-    summary: 'Get total number of FOMs submitted in a date range',
+    summary: 'Get total number of non-initial FOMs published in a user selected date range',
   })
   @ApiResponse({
     status: 200,
-    description: 'Total number of FOMs',
+    description: 'Total number of non-initial FOMs published in a user selected date range',
     type: Number,
   })
-  async getProjectCount(@Query() query: DateRangeRequest): Promise<number> {
-    return this.analyticsDashboardService.getProjectCountByDate(
+  async getNonInitialProjectCount(@Query() query: DateRangeRequest): Promise<number> {
+    return this.analyticsDashboardService.getNonInitialProjectCountByDate(
       query.startDate,
       query.endDate
     );
   }
 
   /**
-   * Returns the number of FOM projects grouped by district
-   * within the specified commenting open date range,
+   * Returns the number of FOM projects grouped by district,
+   * with a commenting open date within the specified date range,
    * excluding those with an INITIAL workflow status.
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
@@ -64,28 +64,28 @@ export class AnalyticsDashboardController {
    */
   @Get('project/count-by-district')
   @ApiOperation({
-    summary: 'Get total number of FOMs grouped by district in a date range',
+    summary: 'Get number of non-initial FOMs published in a user selected date range by district',
   })
   @ApiResponse({
     status: 200,
-    description: 'List of FOM project counts by district',
+    description: 'List of non-initial FOM project counts by district',
     type: ProjectCountByDistrictResponse,
     isArray: true,
   })
-  async getProjectCountByDistrict(
+  async getNonInitialrojectCountByDistrict(
     @Query() query: DateRangeRequest
   ): Promise<ProjectCountByDistrictResponse[]> {
-    return this.analyticsDashboardService.getProjectCountByDistrict(
+    return this.analyticsDashboardService.getNonInitialProjectCountByDistrict(
       query.startDate,
       query.endDate
     );
   }
 
   /**
-   * Returns the total number of unique forest clients who submitted FOMs
-   * within the specified commenting open date range,
+   * Returns the total number of unique forest clients who published FOMs 
+   * with a commenting open date within the specified range, 
    * excluding those with an INITIAL workflow status,
-   * and those with null forest client numbers.
+   * or a null forest client number.
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
    * @returns Number of distinct forest client numbers
@@ -110,8 +110,8 @@ export class AnalyticsDashboardController {
   }
 
   /**
-   * Returns the number of FOM projects submitted by each forest client
-   * within the specified commenting open date range,
+   * Returns the number of FOM projects by each forest client
+   * with a commenting open date within the specified date range,
    * excluding those with an INITIAL workflow status.
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
@@ -128,10 +128,10 @@ export class AnalyticsDashboardController {
     type: ProjectCountByDistrictResponse,
     isArray: true,
   })
-  async getProjectCountByForestClient(
+  async getNonInitialProjectCountByForestClient(
     @Query() query: DateRangeRequest
   ): Promise<ProjectCountByForestClientResponse[]> {
-    return this.analyticsDashboardService.getProjectCountByForestClient(
+    return this.analyticsDashboardService.getNonInitialProjectCountByForestClient(
       query.startDate,
       query.endDate
     );

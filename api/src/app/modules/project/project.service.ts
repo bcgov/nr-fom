@@ -792,7 +792,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
    * @returns Promise resolving to the count of projects matching the criteria
    */
-  async getProjectCountByDate(startDate: string, endDate: string): Promise<number> {
+  async getNonInitialProjectCountByDate(startDate: string, endDate: string): Promise<number> {
     return await this.repository
       .createQueryBuilder()
       .where('commenting_open_date >= :startDate', { startDate })
@@ -812,7 +812,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
    * @returns Promise resolving to an array of FOMCountByDistrictDto
    */
-  async getProjectCountByDistrict(startDate: string, endDate: string): Promise<ProjectCountByDistrictResponse[]> {
+  async getNonInitialProjectCountByDistrict(startDate: string, endDate: string): Promise<ProjectCountByDistrictResponse[]> {
     return await this.repository
       .createQueryBuilder('p')
       .select('p.district_id', 'districtId')
@@ -860,7 +860,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
    * @returns Promise resolving to an array of ProjectCountByForestClientResponse
    */
-  async getProjectCountByForestClient(
+  async getNonInitialProjectCountByForestClient(
     startDate: string,
     endDate: string
   ): Promise<ProjectCountByForestClientResponse[]> {

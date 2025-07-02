@@ -18,18 +18,18 @@ export class AnalyticsDashboardService {
     private readonly publicCommentService: PublicCommentService
   ) {}
 
-  async getProjectCountByDate(
+  async getNonInitialProjectCountByDate(
     startDate: string,
     endDate: string
   ): Promise<number> {
-    return this.projectService.getProjectCountByDate(startDate, endDate);
+    return this.projectService.getNonInitialProjectCountByDate(startDate, endDate);
   }
 
-  async getProjectCountByDistrict(
+  async getNonInitialProjectCountByDistrict(
     startDate: string,
     endDate: string
   ): Promise<ProjectCountByDistrictResponse[]> {
-    return this.projectService.getProjectCountByDistrict(startDate, endDate);
+    return this.projectService.getNonInitialProjectCountByDistrict(startDate, endDate);
   }
 
   async getUniqueForestClientCount(
@@ -39,11 +39,11 @@ export class AnalyticsDashboardService {
     return this.projectService.getUniqueForestClientCount(startDate, endDate);
   }
 
-  async getProjectCountByForestClient(
+  async getNonInitialProjectCountByForestClient(
     startDate: string,
     endDate: string
   ): Promise<ProjectCountByForestClientResponse[]> {
-    return this.projectService.getProjectCountByForestClient(
+    return this.projectService.getNonInitialProjectCountByForestClient(
       startDate,
       endDate
     );
