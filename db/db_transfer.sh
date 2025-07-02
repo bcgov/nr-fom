@@ -30,18 +30,18 @@ NEW_DEPLOYMENT="${2}"
 DUMP_PARAMETERS="${DUMP_PARAMETERS:---exclude-schema=tiger --exclude-schema=tiger_data --exclude-schema=topology}"
 
 # Fail fast if pods aren't found
-if ! oc get po -l deployment="${OLD_DEPLOYMENT}" | grep -q '^'; then
+if ! oc get po -l deployment="${OLD_DEPLOYMENT}" | grep -q .; then
   echo "No pods found for deployment '${OLD_DEPLOYMENT}'."
   exit 2
 fi
-if ! oc get po -l deployment="${NEW_DEPLOYMENT}" | grep -q '^'; then
+if ! oc get po -l deployment="${NEW_DEPLOYMENT}" | grep -q .; then
   echo "No pods found for deployment '${NEW_DEPLOYMENT}'."
   exit 2
 fi
 
 # Stream dump directly from old deployment to new deployment
 echo "Database transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' beginning."
-oc exec -i deployment/"${OLD_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_PARAMETERS}" \
+oc exec -i deployment/"${OLD_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc \"${DUMP_PARAMETERS}\"" \
   | oc exec -i deployment/"${NEW_DEPLOYMENT}" -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
 
 # Results
