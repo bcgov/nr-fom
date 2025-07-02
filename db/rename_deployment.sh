@@ -20,6 +20,7 @@ fi
 OLD_DEPLOYMENT="${1}"
 NEW_DEPLOYMENT="${2:-${OLD_DEPLOYMENT}-prev}"
 MANIFEST=$(mktemp "/tmp/${OLD_DEPLOYMENT}_$(date +%Y%m%d)_XXXXXX.json")
+trap 'rm -f "$MANIFEST"' EXIT
 
 # Fail fast if the new deployment already exists
 if oc get deployment "${NEW_DEPLOYMENT}" &>/dev/null; then
