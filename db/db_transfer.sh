@@ -41,7 +41,7 @@ fi
 
 # Stream dump directly from old deployment to new deployment
 echo "Database transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' beginning."
-oc exec -i deployment/"${OLD_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc \"${DUMP_PARAMETERS}\"" \
+oc exec -i deployment/"${OLD_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_PARAMETERS[@]}" \
   | oc exec -i deployment/"${NEW_DEPLOYMENT}" -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
 
 # Results
