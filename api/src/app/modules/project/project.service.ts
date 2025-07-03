@@ -1119,7 +1119,7 @@ export class ProjectService extends DataService<
   }
 
   /**
-   * Returns the number of non-initial published Fom projects by district. 
+   * Returns the number of non-initial published FOM projects by district. 
    * Used by analytics dashboard module.
    *
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
@@ -1144,7 +1144,7 @@ export class ProjectService extends DataService<
   }
 
   /**
-   * Returns the number of unique forest clients that have published FOMs.
+   * Returns the number of unique forest clients that have published FOM projects.
    * Used by analytics dashboard module.
    *
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
@@ -1164,7 +1164,7 @@ export class ProjectService extends DataService<
   }
 
   /**
-   * Returns the number of non-initial published Fom projects by each forest client.
+   * Returns the number of non-initial published FOM projects by each forest client.
    * Used by analytics dashboard module.
    *
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)

@@ -54,7 +54,7 @@ export class AnalyticsDashboardController {
   @ApiResponse({
     status: 200,
     description:
-      'Total number of non-initial FOMs published in a user selected date range',
+      'Number of non-Initial FOMs projects published in the date range',
     type: Number,
   })
   async getNonInitialPublishedProjectCount(
@@ -212,7 +212,7 @@ export class AnalyticsDashboardController {
    * @param limit - Maximum number of projects to return
    * @returns An array of objects containing projectId, projectName, and publicCommentCount
    */
-  @Get('public-comment/count-by-project')
+  @Get('public-comment/most-commented-projects')
   @ApiOperation({ summary: 'Get the top N most commented projects (FOMs)' })
   @ApiResponse({
     status: 200,
