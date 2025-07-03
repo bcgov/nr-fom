@@ -2,9 +2,9 @@
 #
 # Database Transfer Script for OpenShift
 # Usage:
-#   ./db_transfer.sh <old-deployment-name> <new-deployment-name>
+#   ./db_transfer.sh <source-deployment-name> <target-deployment-name>
 #
-# This script takes a PostgreSQL database dump from the OLD_DEPLOYMENT and restores it into the NEW_DEPLOYMENT.
+# This script takes a PostgreSQL database dump from the <source-deployment-name> and restores it into the <target-deployment-name>.
 # Requirements:
 # - Both deployments must have running pods managed by the given deployment names.
 # - The database template should use a PersistentVolumeClaim with a different name for the new deployment.
@@ -25,32 +25,32 @@ if [[ $# -lt 2 ]]; then
   exit 1
 fi
 
-OLD_DEPLOYMENT="${1}"
-NEW_DEPLOYMENT="${2}"
+SOURCE_DEPLOYMENT="${1}"
+TARGET_DEPLOYMENT="${2}"
 DUMP_PARAMETERS="${DUMP_PARAMETERS:---exclude-schema=tiger --exclude-schema=tiger_data --exclude-schema=topology}"
 
 # Fail fast if pods aren't found
-if ! oc get po -l deployment="${OLD_DEPLOYMENT}" | grep -q .; then
-  echo "No pods found for deployment '${OLD_DEPLOYMENT}'."
+if ! oc get po -l deployment="${SOURCE_DEPLOYMENT}" | grep -q .; then
+  echo "No pods found for deployment '${SOURCE_DEPLOYMENT}'."
   exit 2
 fi
-if ! oc get po -l deployment="${NEW_DEPLOYMENT}" | grep -q .; then
-  echo "No pods found for deployment '${NEW_DEPLOYMENT}'."
+if ! oc get po -l deployment="${TARGET_DEPLOYMENT}" | grep -q .; then
+  echo "No pods found for deployment '${TARGET_DEPLOYMENT}'."
   exit 2
 fi
 
 # Safety check: compare PVC ages to prevent accidental reverse transfers
-OLD_PVC=$(oc get deployment "${OLD_DEPLOYMENT}" -o jsonpath='{.spec.template.spec.volumes[?(@.persistentVolumeClaim)].persistentVolumeClaim.claimName}')
-NEW_PVC=$(oc get deployment "${NEW_DEPLOYMENT}" -o jsonpath='{.spec.template.spec.volumes[?(@.persistentVolumeClaim)].persistentVolumeClaim.claimName}')
+SOURCE_PVC=$(oc get deployment "${SOURCE_DEPLOYMENT}" -o jsonpath='{.spec.template.spec.volumes[?(@.persistentVolumeClaim)].persistentVolumeClaim.claimName}')
+TARGET_PVC=$(oc get deployment "${TARGET_DEPLOYMENT}" -o jsonpath='{.spec.template.spec.volumes[?(@.persistentVolumeClaim)].persistentVolumeClaim.claimName}')
 
-if [[ -n "${OLD_PVC}" && -n "${NEW_PVC}" ]]; then
-  OLD_PVC_CREATION_TIME=$(oc get pvc "${OLD_PVC}" -o jsonpath='{.metadata.creationTimestamp}')
-  NEW_PVC_CREATION_TIME=$(oc get pvc "${NEW_PVC}" -o jsonpath='{.metadata.creationTimestamp}')
-  OLD_PVC_EPOCH=$(date -d "${OLD_PVC_CREATION_TIME}" +%s)
-  NEW_PVC_EPOCH=$(date -d "${NEW_PVC_CREATION_TIME}" +%s)
+if [[ -n "${SOURCE_PVC}" && -n "${TARGET_PVC}" ]]; then
+  SOURCE_PVC_CREATION_TIME=$(oc get pvc "${SOURCE_PVC}" -o jsonpath='{.metadata.creationTimestamp}')
+  TARGET_PVC_CREATION_TIME=$(oc get pvc "${TARGET_PVC}" -o jsonpath='{.metadata.creationTimestamp}')
+  SOURCE_PVC_EPOCH=$(date -d "${SOURCE_PVC_CREATION_TIME}" +%s)
+  TARGET_PVC_EPOCH=$(date -d "${TARGET_PVC_CREATION_TIME}" +%s)
 
-  if [[ ${OLD_PVC_EPOCH} -gt ${NEW_PVC_EPOCH} ]]; then
-    echo "WARNING: Source PVC '${OLD_PVC}' ($(date -d "${OLD_PVC_CREATION_TIME}" '+%Y-%m-%d %H:%M')) is NEWER than target PVC '${NEW_PVC}' ($(date -d "${NEW_PVC_CREATION_TIME}" '+%Y-%m-%d %H:%M'))."
+  if [[ ${SOURCE_PVC_EPOCH} -gt ${TARGET_PVC_EPOCH} ]]; then
+    echo "WARNING: Source PVC '${SOURCE_PVC}' ($(date -d "${SOURCE_PVC_CREATION_TIME}" '+%Y-%m-%d %H:%M')) is NEWER than target PVC '${TARGET_PVC}' ($(date -d "${TARGET_PVC_CREATION_TIME}" '+%Y-%m-%d %H:%M'))."
     echo "This may be a reverse transfer that could overwrite newer data with older data."
     echo -n "Are you sure you want to continue? (yes/no): "
     read -r CONFIRM
@@ -66,9 +66,9 @@ else
 fi
 
 # Stream dump directly from old deployment to new deployment
-echo -e "\nDatabase transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' beginning."
-oc exec -i deployment/"${OLD_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_PARAMETERS[@]}" \
-  | oc exec -i deployment/"${NEW_DEPLOYMENT}" -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
+echo -e "\nDatabase transfer from '${SOURCE_DEPLOYMENT}' to '${TARGET_DEPLOYMENT}' beginning."
+oc exec -i deployment/"${SOURCE_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_PARAMETERS[@]}" \
+  | oc exec -i deployment/"${TARGET_DEPLOYMENT}" -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
 
 # Results
-echo -e "\nDatabase transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' complete."
+echo -e "\nDatabase transfer from '${SOURCE_DEPLOYMENT}' to '${TARGET_DEPLOYMENT}' complete."
