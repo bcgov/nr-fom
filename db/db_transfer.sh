@@ -39,8 +39,34 @@ if ! oc get po -l deployment="${NEW_DEPLOYMENT}" | grep -q .; then
   exit 2
 fi
 
+# Safety check: compare PVC ages to prevent accidental reverse transfers
+OLD_PVC=$(oc get deployment "${OLD_DEPLOYMENT}" -o jsonpath='{.spec.template.spec.volumes[?(@.persistentVolumeClaim)].persistentVolumeClaim.claimName}')
+NEW_PVC=$(oc get deployment "${NEW_DEPLOYMENT}" -o jsonpath='{.spec.template.spec.volumes[?(@.persistentVolumeClaim)].persistentVolumeClaim.claimName}')
+
+if [[ -n "${OLD_PVC}" && -n "${NEW_PVC}" ]]; then
+  OLD_PVC_CREATION_TIME=$(oc get pvc "${OLD_PVC}" -o jsonpath='{.metadata.creationTimestamp}')
+  NEW_PVC_CREATION_TIME=$(oc get pvc "${NEW_PVC}" -o jsonpath='{.metadata.creationTimestamp}')
+  OLD_PVC_EPOCH=$(date -d "${OLD_PVC_CREATION_TIME}" +%s)
+  NEW_PVC_EPOCH=$(date -d "${NEW_PVC_CREATION_TIME}" +%s)
+
+  if [[ ${OLD_PVC_EPOCH} -gt ${NEW_PVC_EPOCH} ]]; then
+    echo "WARNING: Source PVC '${OLD_PVC}' ($(date -d "${OLD_PVC_CREATION_TIME}" '+%Y-%m-%d %H:%M')) is NEWER than target PVC '${NEW_PVC}' ($(date -d "${NEW_PVC_CREATION_TIME}" '+%Y-%m-%d %H:%M'))."
+    echo "This may be a reverse transfer that could overwrite newer data with older data."
+    echo -n "Are you sure you want to continue? (yes/no): "
+    read -r CONFIRM
+    if [[ "${CONFIRM}" != "yes" ]]; then
+      echo "Transfer cancelled by user."
+      exit 2
+    fi
+  else
+    echo "Safety check passed: Source PVC is older than target PVC."
+  fi
+else
+  echo "Warning: Could not find PVCs for comparison. Proceeding without age check."
+fi
+
 # Stream dump directly from old deployment to new deployment
-echo "Database transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' beginning."
+echo -e "\nDatabase transfer from '${OLD_DEPLOYMENT}' to '${NEW_DEPLOYMENT}' beginning."
 oc exec -i deployment/"${OLD_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_PARAMETERS[@]}" \
   | oc exec -i deployment/"${NEW_DEPLOYMENT}" -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
 
