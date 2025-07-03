@@ -13,14 +13,14 @@ set -euo pipefail
 
 # Show usage from header if not enough arguments
 if [[ $# -lt 1 ]]; then
-  grep -v '^#!' "$0" | awk '/^#/ { sub(/^# ?/, ""); print; next } NF==0 { exit }'
+  grep -v '^#!' "${0}" | awk '/^#/ { sub(/^# ?/, ""); print; next } NF==0 { exit }'
   exit 1
 fi
 
 OLD_DEPLOYMENT="${1}"
 NEW_DEPLOYMENT="${2:-${OLD_DEPLOYMENT}-prev}"
 MANIFEST=$(mktemp "/tmp/${OLD_DEPLOYMENT}_$(date +%Y%m%d)_XXXXXX.json")
-trap 'rm -f "$MANIFEST"' EXIT
+trap 'rm -f "${MANIFEST}"' EXIT
 
 # Fail fast if the new deployment already exists
 if oc get deployment "${NEW_DEPLOYMENT}" &>/dev/null; then
