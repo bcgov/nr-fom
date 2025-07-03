@@ -1,7 +1,17 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { ResponseCode, ResponseCodeEnum } from './response-code.entity';
-import { CommentScopeCode, CommentScopeCodeEnum } from './comment-scope-code.entity';
-import { IsEmail, IsEnum, IsNumber, IsOptional, MaxLength, MinLength } from 'class-validator';
+import {
+  CommentScopeCode,
+  CommentScopeCodeEnum,
+} from './comment-scope-code.entity';
+import {
+  IsEmail,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class PublicCommentCreateRequest {
   @ApiProperty()
@@ -22,7 +32,7 @@ export class PublicCommentCreateRequest {
 
   @ApiProperty()
   @MaxLength(4000) // Confirmed by business
-  @MinLength(1) 
+  @MinLength(1)
   feedback: string;
 
   @ApiProperty()
@@ -48,12 +58,11 @@ export class PublicCommentCreateRequest {
 }
 
 export class PublicCommentAdminUpdateRequest {
-
   @ApiProperty()
   @IsNumber()
   revisionCount: number;
 
-  @ApiProperty({ enum: ResponseCodeEnum, enumName: 'ResponseCodeEnum'})
+  @ApiProperty({ enum: ResponseCodeEnum, enumName: 'ResponseCodeEnum' })
   @IsEnum(ResponseCodeEnum)
   responseCode: string;
 
@@ -63,14 +72,17 @@ export class PublicCommentAdminUpdateRequest {
   responseDetails?: string;
 }
 
-export class PublicCommentAdminResponse extends OmitType(PublicCommentCreateRequest, ['commentScopeCode']) {
+export class PublicCommentAdminResponse extends OmitType(
+  PublicCommentCreateRequest,
+  ['commentScopeCode']
+) {
   @ApiProperty()
   id: number;
 
   @ApiProperty()
   revisionCount: number;
 
-  @ApiProperty({ description: 'ISO-formatted timestamp'})
+  @ApiProperty({ description: 'ISO-formatted timestamp' })
   createTimestamp: string;
 
   @ApiProperty()
@@ -78,7 +90,7 @@ export class PublicCommentAdminResponse extends OmitType(PublicCommentCreateRequ
 
   @ApiProperty()
   response?: ResponseCode;
-  
+
   @ApiProperty()
   responseDetails?: string;
 
@@ -99,8 +111,12 @@ export class PublicCommentCountByDistrictResponse {
 }
 
 export class PublicCommentCountByCategoryResponse {
-  @ApiProperty({ enum: ResponseCodeEnum, enumName: 'ResponseCodeEnum'})
-  @IsEnum(ResponseCodeEnum)
+  @ApiProperty({
+    oneOf: [
+      { type: 'string', enum: Object.values(ResponseCodeEnum) },
+      { type: 'string', enum: ['Not Categorized'] },
+    ],
+  })
   responseCode: string;
 
   @ApiProperty()
@@ -119,4 +135,3 @@ export class PublicCommentCountByProjectResponse {
   @IsNumber()
   publicCommentCount: number;
 }
-

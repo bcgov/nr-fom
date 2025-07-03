@@ -260,12 +260,17 @@ export class PublicCommentService extends DataService<
   ): Promise<PublicCommentCountByCategoryResponse[]> {
     const qb = this.repository.createQueryBuilder('c');
     applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
-    return await qb
+    const result = await qb
       .select('response_code', 'responseCode')
       .addSelect('COUNT(public_comment_id)', 'publicCommentCount')
       .groupBy('response_code')
       .orderBy('"publicCommentCount"', 'DESC')
       .getRawMany();
+
+    return result.map((row) => ({
+      responseCode: row.responseCode ?? 'Not Categorized',
+      publicCommentCount: row.publicCommentCount,
+    }));
   }
 
   /**
