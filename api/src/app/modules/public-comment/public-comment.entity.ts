@@ -11,6 +11,7 @@ import { ResponseCode } from './response-code.entity';
 import { CommentScopeCode } from './comment-scope-code.entity';
 import { CutBlock } from '../submission/cut-block.entity';
 import { RoadSection } from '../submission/road-section.entity';
+import { Project } from '../project/project.entity';
 
 @Entity('public_comment', { schema: 'app_fom' })
 export class PublicComment extends ApiBaseEntity<PublicComment> {
@@ -38,6 +39,10 @@ export class PublicComment extends ApiBaseEntity<PublicComment> {
 
   @Column({ name: 'response_details'})
   responseDetails: string;
+
+  @ManyToOne(() => Project)
+  @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })
+  project: Project;
 
   @Column({ name: 'project_id'})
   projectId: number;
