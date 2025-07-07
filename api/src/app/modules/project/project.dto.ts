@@ -234,6 +234,31 @@ export class ProjectCommentingClosedDateChangeRequest {
   revisionCount: number;
 }
 
+export class ProjectCountByDistrictResponse {
+  @ApiProperty()
+  districtId: number;
+
+  @ApiProperty()
+  districtName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  projectCount: number;
+}
+
+export class ProjectCountByForestClientResponse {
+  @ApiProperty()
+  @IsNumberString()
+  forestClientNumber: string;
+
+  @ApiProperty()
+  forestClientName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  projectCount: number;
+}
+
 /**
 * Custom validation decorator: @IsGreaterOrEqualTo - check number_1 >= number_2
 */

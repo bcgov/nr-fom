@@ -22,10 +22,11 @@ import { PinoLogger } from 'nestjs-pino';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import {
     ProjectCommentClassificationMandatoryChangeRequest, ProjectCommentingClosedDateChangeRequest, ProjectCreateRequest, ProjectMetricsResponse, ProjectPublicSummaryResponse, ProjectResponse, ProjectUpdateRequest,
-    ProjectWorkflowStateChangeRequest
+    ProjectWorkflowStateChangeRequest, ProjectCountByDistrictResponse, ProjectCountByForestClientResponse,
 } from './project.dto';
 import { Project } from './project.entity';
 import { WorkflowStateEnum } from './workflow-state-code.entity';
+import { applyFomDateAndStateFilters } from '@src/app/modules/analytics-dashboard/analytics-dashboard-data-filter';
 import NodeCache = require('node-cache');
 import _ = require('lodash');
 export class ProjectFindCriteria {
@@ -867,5 +868,93 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 					post_date set to ${projectEntity.commentingOpenDate}`);
 			}
 		}
-  }	
+  }
+  
+  /**
+   * Returns the number of non-initial published FOM projects. 
+   * Used by analytics dashboard module.
+   * 
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to the count of projects matching the criteria
+   */
+  async getNonInitialPublishedProjectCount(
+    startDate: string,
+    endDate: string
+  ): Promise<number> {
+    const qb = this.repository.createQueryBuilder('p');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    return await qb.getCount();
+  }
+
+  /**
+   * Returns the number of non-initial published Fom projects by district. 
+   * Used by analytics dashboard module.
+   *
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to an array of ProjectCountByDistrictResponse
+   */
+  async getNonInitialPublishedProjectCountByDistrict(
+    startDate: string,
+    endDate: string
+  ): Promise<ProjectCountByDistrictResponse[]> {
+    const qb = this.repository.createQueryBuilder('p');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    return await qb
+      .innerJoin('p.district', 'd')
+      .select('p.district_id', 'districtId')
+      .addSelect('COUNT(p.project_id)', 'projectCount')
+      .addSelect('d.name', 'districtName')
+      .groupBy('p.district_id')
+      .addGroupBy('d.name')
+      .orderBy('"projectCount"', 'DESC')
+      .getRawMany();
+  }
+
+  /**
+   * Returns the number of unique forest clients that have published FOMs.
+   * Used by analytics dashboard module.
+   *
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to the count of distinct forest client numbers
+   */
+  async getUniqueForestClientCount(
+    startDate: string,
+    endDate: string
+  ): Promise<number> {
+    const qb = this.repository.createQueryBuilder('p');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    return await qb
+      .select('COUNT(DISTINCT forest_client_number)', 'count')
+      .getRawOne()
+      .then((result) => Number(result.count));
+  }
+
+  /**
+   * Returns the number of non-initial published Fom projects by each forest client.
+   * Used by analytics dashboard module.
+   *
+   * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
+   * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @returns Promise resolving to an array of ProjectCountByForestClientResponse
+   */
+  async getNonInitialPublishedProjectCountByForestClient(
+    startDate: string,
+    endDate: string
+  ): Promise<ProjectCountByForestClientResponse[]> {
+    const qb = this.repository.createQueryBuilder('p');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    return await qb
+      .innerJoin('p.forestClient', 'fc')
+      .select('p.forest_client_number', 'forestClientNumber')
+      .addSelect('fc.name', 'forestClientName')
+      .addSelect('COUNT(p.project_id)', 'projectCount')
+      .groupBy('p.forest_client_number')
+      .addGroupBy('fc.name')
+      .orderBy('"projectCount"', 'DESC')
+      .getRawMany();
+  }
+
 }

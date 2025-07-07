@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Core Modules
 import { AttachmentModule } from './modules/attachment/attachment.module';
+import { AnalyticsDashboardModule } from './modules/analytics-dashboard/analytics-dashboard.module';
 import { DistrictModule } from './modules/district/district.module';
 import { ForestClientModule } from './modules/forest-client/forest-client.module';
 import { InteractionModule } from './modules/interaction/interaction.module';
@@ -60,6 +61,7 @@ function getLogLevel():string {
     // Core Modules
     AttachmentModule,
     InteractionModule,
+    AnalyticsDashboardModule,
     DistrictModule,
     ForestClientModule,
     ProjectModule,
