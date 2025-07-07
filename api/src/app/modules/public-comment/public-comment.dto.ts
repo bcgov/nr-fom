@@ -114,7 +114,7 @@ export class PublicCommentCountByCategoryResponse {
   @ApiProperty({
     oneOf: [
       { type: 'string', enum: Object.values(ResponseCodeEnum) },
-      { type: 'string', enum: ['Not Categorized'] },
+      { type: 'string', enum: ['NOT_CATEGORIZED'] },
     ],
   })
   responseCode: string;

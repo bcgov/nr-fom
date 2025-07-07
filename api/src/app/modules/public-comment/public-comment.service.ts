@@ -268,7 +268,7 @@ export class PublicCommentService extends DataService<
       .getRawMany();
 
     return result.map((row) => ({
-      responseCode: row.responseCode ?? 'Not Categorized',
+      responseCode: row.responseCode ?? 'NOT_CATEGORIZED',
       publicCommentCount: row.publicCommentCount,
     }));
   }
