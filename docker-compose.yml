@@ -58,7 +58,7 @@ services:
       retries: 3
       start_period: 60s
       timeout: 5s
-    image: node:18
+    image: node:18  # need update to node 20
     ports:
       - 3333:3333
     links:
