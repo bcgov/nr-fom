@@ -1,6 +1,15 @@
-# PostgreSQL Database Migration Steps
+# PostgreSQL Database Major Version Upgrade Steps
 
 This guide outlines the steps to migrate a database to PostgreSQL v17 in an OpenShift environment. It can be reused for upgrading to other versions.
+
+## Pre-request
+- Create a pr branch before upgrading, update the db/openshift.deployment.yml for DB_VERSION to next version (e.g., 18)
+- Check out the pr branch in local and use the branch terminal for execution steps
+
+## Notes
+**Whenever we need to do a database migration, run the scripts first before merge the upgradation pr, as it will use the new PVC name for the new database.**
+
+## Steps
 
 ### 1. Set the Target Environment
 
@@ -70,7 +79,7 @@ In non-prod environments, add a new FOM and verify project counts again.
 oc scale deployment fom-${TARGET}-api --replicas=3
 ```
 
-# Rollback Procedure
+## Rollback Procedure
 
 1. Scale down the API:
 
@@ -98,9 +107,6 @@ oc scale deployment fom-${TARGET}-api --replicas=3
     oc scale deployment fom-${TARGET}-api --replicas=3
     ```
 
----
 
-## Notes
-Whenever we need to do a database migration, run the scripts first before merge the upgradation pr, as it will use the new PVC name for the new database.
 
 
