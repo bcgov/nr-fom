@@ -23,6 +23,8 @@
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@ng-bootstrap/ng-bootstrap": "^16.0.0",
+    "@ngx-dropzone/cdk": "^17.3.0",
+    "@ngx-dropzone/material": "^17.3.0",
     "@rxweb/reactive-form-validators": "~13.0.0",
     "@types/file-saver-es": "^2.0.3",
     "@types/luxon": "^3.4.2",
