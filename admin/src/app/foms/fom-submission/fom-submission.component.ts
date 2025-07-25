@@ -159,7 +159,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     this.files.push(newFiles);
   }
 
-  getContentFileFromUpload(fileContent: string) {
+  getContentFileFromUpload(fileContent: any) {
     this.contentFile = fileContent;
     try {
       this.originalSubmissionRequest.jsonSpatialSubmission = JSON.parse(this.contentFile);

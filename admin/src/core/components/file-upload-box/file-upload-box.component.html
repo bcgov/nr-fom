@@ -1,0 +1,24 @@
+<div class="upload-group">
+    <mat-form-field appearance="outline">
+        <mat-label style="margin-top: 8px;">{{ multipleFiles ? dragMultipleFileMessage : dragSingleFileMessage }} or  <a href="javascript:void(0)">Browse</a> </mat-label>
+        <ngx-mat-dropzone>
+            <input type="file"
+                [formControl]="filesCtrl"
+                fileInput
+                [multiple]="multipleFiles"/>
+
+            @for (file of uploadedFiles; track file.name) {
+            <mat-chip-row (removed)="remove(file)">
+                {{ file.name }}
+                <button matChipRemove>
+                    <mat-icon>cancel</mat-icon>
+                </button>
+            </mat-chip-row>
+            }
+        </ngx-mat-dropzone>
+        <mat-icon matSuffix *ngIf="!uploadedFiles?.length">cloud_upload</mat-icon>
+    </mat-form-field>
+    <ng-container *ngIf="invalidTypeText">
+        <span class="invalid-type-msg">{{ invalidTypeText }}</span>
+    </ng-container>
+</div>
