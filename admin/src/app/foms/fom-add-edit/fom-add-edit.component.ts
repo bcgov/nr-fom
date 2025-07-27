@@ -15,12 +15,12 @@ import { AttachmentUploadService } from "@admin-core/utils/attachmentUploadServi
 import { DEFAULT_ISO_DATE_FORMAT, MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import {
-  AttachmentResponse, DistrictResponse, ForestClientResponse,
-  ForestClientService,
-  ProjectCreateRequest,
-  ProjectPlanCodeEnum,
-  ProjectResponse,
-  ProjectService, WorkflowStateEnum
+    AttachmentResponse, DistrictResponse, ForestClientResponse,
+    ForestClientService,
+    ProjectCreateRequest,
+    ProjectPlanCodeEnum,
+    ProjectResponse,
+    ProjectService, WorkflowStateEnum
 } from '@api-client';
 import { RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
@@ -209,11 +209,11 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 }
 
   addNewFileInitialPublic(newFiles: any[]) {
-    this.initialPublicDocument.push(newFiles);
+    this.initialPublicDocument = [newFiles];
   }
 
   addNewFileSupporting(newFiles: any[]) {
-    this.supportingDocuments.push(newFiles);
+    this.supportingDocuments = [newFiles];
   }
 
   getContentFileFromUpload(fileContent: any) {

@@ -113,18 +113,9 @@ export class UploadBoxComponent implements OnInit {
   private subscribeToFilesSelected() {
     this.filesCtrl.valueChanges.subscribe((value: File | File[]) => {
       if (value) {
-        const files = Array.isArray(value) ? value : [value];
-        this.files = files;
+        this.files = Array.isArray(value) ? value : [value];
         this.fileUploaded.emit(this.files);
-        if (files.length > 0) {
-          if (this.isBlob) {
-            Promise.all(files.map(file => this.readFileContentAsBlobPromise(file)))
-              .then(contents => this.outputFileContent.emit(contents));
-          } else {
-            Promise.all(files.map(file => this.readFileContentPromise(file)))
-              .then(contents => this.outputFileContent.emit(contents));
-          }
-        }
+        this.emitFilesContent(this.files);
       }
     });
   }
@@ -145,6 +136,20 @@ export class UploadBoxComponent implements OnInit {
     });
   }
 
+  private emitFilesContent(files: File[]) {
+    if (files.length > 0) {
+      if (this.isBlob) {
+        Promise.all(files.map(file => this.readFileContentAsBlobPromise(file)))
+          .then(contents => this.outputFileContent.emit(contents));
+      } else {
+        Promise.all(files.map(file => this.readFileContentPromise(file)))
+          .then(contents => this.outputFileContent.emit(contents));
+      }
+    } else {
+      this.outputFileContent.emit(null);
+    }
+  }
+
   get uploadedFiles() {
     const _files = this.filesCtrl.value;
 
@@ -158,6 +163,8 @@ export class UploadBoxComponent implements OnInit {
       return;
     }
     this.filesCtrl.setValue(null);
+    this.fileUploaded.emit(this.files);
+    this.emitFilesContent(this.files);
   }
 
 }
