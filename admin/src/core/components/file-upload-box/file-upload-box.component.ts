@@ -164,7 +164,6 @@ export class UploadBoxComponent implements OnInit {
     }
     this.filesCtrl.setValue(null);
     this.fileUploaded.emit(this.files);
-    this.emitFilesContent(this.files);
   }
 
 }
