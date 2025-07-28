@@ -39,7 +39,7 @@ export class InteractionDetailComponent {
 
   interactionFormGroup: IFormGroup<InteractionRequest>;
   
-  files: any[] = []; // Array type, but only 1 attachment for Interaction.
+  file: File = null; // only 1 attachment for Interaction.
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
   fileContent: any;
   /*
@@ -72,20 +72,20 @@ export class InteractionDetailComponent {
                                  : this.attachment = null;
   }
   
-  addNewFile(newFiles: any[]) {
-    this.files = newFiles;
-    if (!this.files || this.files.length == 0) {
+  addNewFile(newFile: File) {
+    this.file = newFile;
+    if (!this.file) {
       this.interactionFormGroup.get('filename').setValue(null);
     }
     else {
-      this.interactionFormGroup.get('filename').setValue(newFiles[0].name);
+      this.interactionFormGroup.get('filename').setValue(this.file .name);
     }
   }
 
   getFileContent(fileContent: any) {
     this.fileContent = fileContent;
     // Convert to proper Blob type for adding attachment to FormData.
-    const fileContentAsBlob = new Blob([this.fileContent], {type: this.files[0].type});
+    const fileContentAsBlob = new Blob([this.fileContent], {type: this.file.type});
     this.interactionFormGroup.get('fileContent').setValue(fileContentAsBlob);
   }
 

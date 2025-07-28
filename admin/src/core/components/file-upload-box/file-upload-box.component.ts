@@ -39,11 +39,10 @@ export class UploadBoxComponent implements OnInit {
     ]
     return imageTypes.includes(type)
   }
-  @Input() multipleFiles = false;
   @Input() maxFileSizeMB: number;
   @Input() isBlob: boolean = false;
-  @Output() fileUploaded = new EventEmitter<File[]>(); // File descriptor/meta information.
-  @Output() outputFileContent = new EventEmitter<string | ArrayBuffer | (string | ArrayBuffer)[]>(); // File content
+  @Output() fileUploaded = new EventEmitter<File>(); // File descriptor/meta information.
+  @Output() outputFileContent = new EventEmitter<string | ArrayBuffer>(); // File content
   @Input() fileTypes: string[] = [
     'image/png',
     'image/jpeg',
@@ -59,17 +58,10 @@ export class UploadBoxComponent implements OnInit {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
   ];
-
-  @Input() files: File[] = [];
-
-  // limit for file types (set from global config)
-  allowedFileTypes: string;
-  // bytes - default to max 10mb (set from global config)
-  maxFileSize = 0;
+  allowedFileTypes: string; // limit for file types
+  maxFileSize = 0; // bytes - default to max 10mb (set from global config)
   invalidTypeText: string;
-  dragMultipleFileMessage: string ='Drag files to upload';
-  dragSingleFileMessage: string = 'Drag file to upload';
-  filesCtrl: any;
+  fileCtrl: any;
   
   constructor() { 
     // Deliberately empty
@@ -83,19 +75,19 @@ export class UploadBoxComponent implements OnInit {
       FileInputValidators.accept(this.allowedFileTypes),
       FileInputValidators.maxSize(this.maxFileSize)
     ];
-    this.filesCtrl = new FormControl<FileInputValue>(null, validators);
+    this.fileCtrl = new FormControl<FileInputValue>(null, validators);
 
     // Watch for validation errors
     this.subscribeToFormStatusChange();
 
     // Emit files when selected
-    this.subscribeToFilesSelected();
+    this.subscribeToFileSelected();
 
   }
 
   private subscribeToFormStatusChange() {
-    this.filesCtrl.statusChanges.subscribe(() => {
-      const errors = this.filesCtrl.errors;
+    this.fileCtrl.statusChanges.subscribe(() => {
+      const errors = this.fileCtrl.errors;
       if (errors?.accept) {
         this.invalidTypeText = 'The file type is not accepted';
       } else if (errors?.maxSize) {
@@ -103,19 +95,14 @@ export class UploadBoxComponent implements OnInit {
       } else {
         this.invalidTypeText = null;
       }
-      if (this.files.length > 1 && !this.multipleFiles){
-        this.invalidTypeText = 'Only one document is allowed';
-        this.remove(this.filesCtrl.value[0]);
-      }
     });
   }
   
-  private subscribeToFilesSelected() {
-    this.filesCtrl.valueChanges.subscribe((value: File | File[]) => {
-      if (value) {
-        this.files = Array.isArray(value) ? value : [value];
-        this.fileUploaded.emit(this.files);
-        this.emitFilesContent(this.files);
+  private subscribeToFileSelected() {
+    this.fileCtrl.valueChanges.subscribe((file: File) => {
+      if (file) {
+        this.fileUploaded.emit(file);
+        this.emitFilesContent(file);
       }
     });
   }
@@ -136,13 +123,13 @@ export class UploadBoxComponent implements OnInit {
     });
   }
 
-  private emitFilesContent(files: File[]) {
-    if (files.length > 0) {
+  private emitFilesContent(file: File) {
+    if (file) {
       if (this.isBlob) {
-        Promise.all(files.map(file => this.readFileContentAsBlobPromise(file)))
+        this.readFileContentAsBlobPromise(file)
           .then(contents => this.outputFileContent.emit(contents));
       } else {
-        Promise.all(files.map(file => this.readFileContentPromise(file)))
+        this.readFileContentPromise(file)
           .then(contents => this.outputFileContent.emit(contents));
       }
     } else {
@@ -150,20 +137,13 @@ export class UploadBoxComponent implements OnInit {
     }
   }
 
-  get uploadedFiles() {
-    const _files = this.filesCtrl.value;
-
-    if (!_files) return [];
-    return Array.isArray(_files) ? _files : [_files];
+  get uploadedFile() {
+    return this.fileCtrl.value;
   }
 
-  remove(file: File) {
-    if (Array.isArray(this.filesCtrl.value)) {
-      this.filesCtrl.setValue(this.filesCtrl.value.filter((i) => i !== file));
-      return;
-    }
-    this.filesCtrl.setValue(null);
-    this.fileUploaded.emit(this.files);
+  remove() {
+    this.fileCtrl.setValue(null);
+    this.fileUploaded.emit(null);
   }
 
 }

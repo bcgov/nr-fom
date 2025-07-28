@@ -45,7 +45,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   public originalSubmissionRequest:  SubmissionRequest;
   public applicationFiles: File[] = [];
   public fileTypesParent: string[] = ['text/plain', 'application/json']
-  public files: any[] = [];
+  public file: File = null;
   public geoTypeValues: string[] = [];
   public contentFile: string;
   public maxSpatialFileSize: number = MAX_FILEUPLOAD_SIZE.SPATIAL;
@@ -155,8 +155,8 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     this.ngUnsubscribe.complete();
   }
 
-  addNewFiles(newFiles: any[]) {
-    this.files.push(newFiles);
+  addNewFile(newFile: File) {
+    this.file = newFile;
   }
 
   getContentFileFromUpload(fileContent: any) {

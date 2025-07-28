@@ -65,8 +65,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     {"code": this.projectPlanCodeEnum.Woodlot, "description": "Woodlot Licence Plan"}
   ];
   forestClients: ForestClientResponse[] = [];
-  public supportingDocuments: any[] = [];
-  public initialPublicDocument: any[] = [];
+  public supportingDocument: File = null;
+  public initialPublicDocument: File = null;
   public districtIdSelect: any = null;
   public forestClientSelect: any = null;
   public isInitialState: boolean = true;
@@ -208,12 +208,12 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
    return this.forestSvc.forestClientControllerFind().toPromise()
 }
 
-  addNewFileInitialPublic(newFiles: any[]) {
-    this.initialPublicDocument = [newFiles];
+  addNewFileInitialPublic(newFile: File) {
+    this.initialPublicDocument = newFile;
   }
 
-  addNewFileSupporting(newFiles: any[]) {
-    this.supportingDocuments = [newFiles];
+  addNewFileSupporting(newFile: File) {
+    this.supportingDocument = newFile;
   }
 
   getContentFileFromUpload(fileContent: any) {
@@ -300,19 +300,19 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       let file: any = null;
       let fileContent: any = null;
 
-      if(this.initialPublicDocument.length > 0){
-        file = this.initialPublicDocument[0];
+      if(this.initialPublicDocument){
+        file = this.initialPublicDocument;
         fileContent = new Blob([this.publicNoticeContent], {type: file.type});
-
         await this.attachmentUploadSvc
           .attachmentCreate(file, fileContent, id,
             AttachmentTypeEnum.PUBLIC_NOTICE).pipe(tap(obs => console.log(obs))).toPromise();
 
       }
 
-      if (this.supportingDocuments.length > 0){
-        file = this.supportingDocuments[0];
+      if (this.supportingDocument){
+        file = this.supportingDocument;
         fileContent = new Blob([this.supportingDocContent], {type: file.type});
+        console.log('supportingDocument: ', fileContent);
         await this.attachmentUploadSvc
           .attachmentCreate(file, fileContent, id,
             AttachmentTypeEnum.SUPPORTING_DOC).pipe(tap(obs => console.log(obs))).toPromise();

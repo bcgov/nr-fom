@@ -484,8 +484,7 @@
         </div>
         <div class="row">
           <div class="form-group col-md-6" >
-            <app-upload-box [multipleFiles]="false" [files]="initialPublicDocument"
-                            [isBlob]="true"
+            <app-upload-box [isBlob]="true"
                             [fileTypes]="fileTypesParentInitial"
                             (fileUploaded)="addNewFileInitialPublic($event)"
                             (outputFileContent)="getContentFileFromUpload($event)"
@@ -537,8 +536,7 @@
         </div>
           <div class="row">
             <div class="form-group col-md-6">
-              <app-upload-box [multipleFiles]="false" [files]="supportingDocuments"
-                              [isBlob]="true"
+              <app-upload-box [isBlob]="true"
                               [fileTypes]="fileTypesParentSupporting"
                               (fileUploaded)="addNewFileSupporting($event)"
                               (outputFileContent)="getContentFileSupportingDoc($event)"
