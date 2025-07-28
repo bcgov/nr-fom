@@ -320,7 +320,6 @@ async loadForestClients (): Promise<ForestClientResponse[]> {
       if (this.supportingDocument){
         file = this.supportingDocument;
         fileContent = new Blob([this.supportingDocContent], {type: file.type});
-        console.log('supportingDocument: ', fileContent);
         await lastValueFrom(this.attachmentUploadSvc
           .attachmentCreate(file, fileContent, id,
             AttachmentTypeEnum.SUPPORTING_DOC).pipe(tap(obs => console.log(obs))));
