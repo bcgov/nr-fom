@@ -42,8 +42,8 @@ export class UploadBoxComponent implements OnInit {
   @Input() multipleFiles = false;
   @Input() maxFileSizeMB: number;
   @Input() isBlob: boolean = false;
-  @Output() fileUploaded = new EventEmitter<File[]>();
-  @Output() outputFileContent = new EventEmitter<string | ArrayBuffer | (string | ArrayBuffer)[]>();
+  @Output() fileUploaded = new EventEmitter<File[]>(); // File descriptor/meta information.
+  @Output() outputFileContent = new EventEmitter<string | ArrayBuffer | (string | ArrayBuffer)[]>(); // File content
   @Input() fileTypes: string[] = [
     'image/png',
     'image/jpeg',
