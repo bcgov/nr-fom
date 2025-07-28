@@ -3,8 +3,8 @@ import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DateTime } from "luxon";
-import { Observable, Subject, of } from 'rxjs';
-import { switchMap, takeUntil, tap } from 'rxjs/operators';
+import { Observable, Subject, lastValueFrom, of } from 'rxjs';
+import { catchError, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { AttachmentTypeEnum } from "@admin-core/models/attachmentTypeEnum";
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
@@ -15,12 +15,12 @@ import { AttachmentUploadService } from "@admin-core/utils/attachmentUploadServi
 import { DEFAULT_ISO_DATE_FORMAT, MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import {
-    AttachmentResponse, DistrictResponse, ForestClientResponse,
-    ForestClientService,
-    ProjectCreateRequest,
-    ProjectPlanCodeEnum,
-    ProjectResponse,
-    ProjectService, WorkflowStateEnum
+  AttachmentResponse, DistrictResponse, ForestClientResponse,
+  ForestClientService,
+  ProjectCreateRequest,
+  ProjectPlanCodeEnum,
+  ProjectResponse,
+  ProjectService, WorkflowStateEnum
 } from '@api-client';
 import { RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
@@ -65,18 +65,17 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     {"code": this.projectPlanCodeEnum.Woodlot, "description": "Woodlot Licence Plan"}
   ];
   forestClients: ForestClientResponse[] = [];
+  public publicNotice: File = null;
+  publicNoticeContent: any;
   public supportingDocument: File = null;
-  public initialPublicDocument: File = null;
+  supportingDocContent: any;
   public districtIdSelect: any = null;
   public forestClientSelect: any = null;
   public isInitialState: boolean = true;
   public isCommentingOpenState: boolean = false;
   public isCommentingClosedState: boolean = false;
   public isPublishState: boolean = false;
-  files: any[] = [];
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
-  publicNoticeContent: any;
-  supportingDocContent: any;
   public isSubmitSaveClicked = false;
   public descriptionValue: string = null;
   public user: User;
@@ -204,23 +203,25 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  async loadForestClients (): Promise<ForestClientResponse[]> {
-   return this.forestSvc.forestClientControllerFind().toPromise()
+async loadForestClients (): Promise<ForestClientResponse[]> {
+  return await lastValueFrom(
+    this.forestSvc.forestClientControllerFind()
+  );
 }
 
-  addNewFileInitialPublic(newFile: File) {
-    this.initialPublicDocument = newFile;
+  addPublicNotice(newFile: File) {
+    this.publicNotice = newFile;
   }
 
-  addNewFileSupporting(newFile: File) {
+  addSupportingDocument(newFile: File) {
     this.supportingDocument = newFile;
   }
 
-  getContentFileFromUpload(fileContent: any) {
+  loadPublicNoticeFileContent(fileContent: any) {
     this.publicNoticeContent = fileContent;
   }
 
-  getContentFileSupportingDoc(fileContent: any) {
+  loadSupportingDocFileContent(fileContent: any) {
     this.supportingDocContent = fileContent;
   }
 
@@ -268,11 +269,18 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     projectCreate.commentingClosedDate = cmcDateIsoVal? cmcDateIsoVal: null;
     projectCreate.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
     projectCreate.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
-
-    this.projectSvc.projectControllerCreate(projectCreate)
-        .toPromise()
-        .then(result => this.onSuccess(result.id))
-        .catch(err => console.error(err));
+        
+    // lastValueFrom(
+      this.projectSvc.projectControllerCreate(projectCreate).pipe(
+        tap((result) => {
+          this.onSuccess(result.id);
+        }),
+        catchError((error) => {
+          console.error(error);
+          return of(null);
+        })
+      )
+    // );
   }
 
   onSuccess(id: number) {
@@ -295,17 +303,17 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       projectUpdateRequest.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
       projectUpdateRequest.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
 
-      await this.projectSvc.projectControllerUpdate(id, projectUpdateRequest).toPromise();
+      await lastValueFrom(this.projectSvc.projectControllerUpdate(id, projectUpdateRequest));
 
       let file: any = null;
       let fileContent: any = null;
 
-      if(this.initialPublicDocument){
-        file = this.initialPublicDocument;
+      if(this.publicNotice){
+        file = this.publicNotice;
         fileContent = new Blob([this.publicNoticeContent], {type: file.type});
-        await this.attachmentUploadSvc
+        await lastValueFrom(this.attachmentUploadSvc
           .attachmentCreate(file, fileContent, id,
-            AttachmentTypeEnum.PUBLIC_NOTICE).pipe(tap(obs => console.log(obs))).toPromise();
+            AttachmentTypeEnum.PUBLIC_NOTICE).pipe(tap(obs => console.log(obs))));
 
       }
 
@@ -313,9 +321,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
         file = this.supportingDocument;
         fileContent = new Blob([this.supportingDocContent], {type: file.type});
         console.log('supportingDocument: ', fileContent);
-        await this.attachmentUploadSvc
+        await lastValueFrom(this.attachmentUploadSvc
           .attachmentCreate(file, fileContent, id,
-            AttachmentTypeEnum.SUPPORTING_DOC).pipe(tap(obs => console.log(obs))).toPromise();
+            AttachmentTypeEnum.SUPPORTING_DOC).pipe(tap(obs => console.log(obs))));
       }
 
       return this.onSuccess(id);
