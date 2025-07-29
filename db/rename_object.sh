@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Usage:
-#   ./rename_object.sh <resource-type> <source-object-name> [target-object-name]
+#   ./oc_rename.sh <resource-type> <source-object-name> [target-object-name]
 #
 # If [target-object-name] is not provided, defaults to <source-object-name>-prev
 #
@@ -16,8 +16,6 @@ if [[ $# -lt 1 ]]; then
   grep -v '^#!' "${0}" | awk '/^#/ { sub(/^# ?/, ""); print; next } NF==0 { exit }'
   exit 1
 fi
-
-set -x
 
 OBJECT_TYPE="${1}"
 OBJECT_SOURCE="${2}"
@@ -55,13 +53,15 @@ oc get "${OBJECT_TYPE}" "${OBJECT_SOURCE}" -o json \
 
 # Delete the old object and apply the new one
 oc delete "${OBJECT_TYPE}" "${OBJECT_SOURCE}"
-oc apply -f "${MANIFEST}" --dry-run=client
+oc apply -f "${MANIFEST}"
 
 # Wait for the new object to become available
-echo "Waiting for ${OBJECT_TYPE^} '${OBJECT_TARGET}' to become available..."
-if ! oc rollout status "${OBJECT_TYPE}"/"${OBJECT_TARGET}" --timeout=120s; then
-  echo "Error: ${OBJECT_TYPE^} '${OBJECT_TARGET}' did not become available in time."
-  exit 3
+if [[ "${OBJECT_TYPE}" == "deployment" ]]; then
+  echo "Waiting for ${OBJECT_TYPE^} '${OBJECT_TARGET}' to become available..."
+  if ! oc rollout status "${OBJECT_TYPE}"/"${OBJECT_TARGET}" --timeout=120s; then
+    echo "Error: ${OBJECT_TYPE^} '${OBJECT_TARGET}' did not become available in time."
+    exit 3
+  fi
 fi
 
 # Show matching objects for confirmation
