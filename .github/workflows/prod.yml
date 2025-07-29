@@ -27,7 +27,6 @@ jobs:
       logout_chain_url: https://logon7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri=
       tag: ${{ inputs.tag }}
       target: prod
-      url: fom.nrs.gov.bc.ca
 
   images-backup:
     name: Backup images (PROD)
