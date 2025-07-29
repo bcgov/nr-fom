@@ -54,8 +54,6 @@ oc get deployment "${SOURCE_DEPLOYMENT}" -o json \
 oc delete deployment "${SOURCE_DEPLOYMENT}"
 oc apply -f "${MANIFEST}"
 
-# Clean up
-
 # Wait for the new deployment to become available
 echo "Waiting for deployment '${TARGET_DEPLOYMENT}' to become available..."
 if ! oc rollout status deployment/"${TARGET_DEPLOYMENT}" --timeout=120s; then
