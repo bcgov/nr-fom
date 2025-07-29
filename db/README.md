@@ -2,7 +2,7 @@
 
 This guide outlines the steps to migrate a database to PostgreSQL v17 in an OpenShift environment. It can be reused for upgrading to other versions.
 
-## Pre-request
+## Prerequisites
 - Create a pr branch before upgrading, update the db/openshift.deployment.yml for DB_VERSION to next version (e.g., 18)
 - Check out the pr branch in local and use the branch terminal for execution steps
 
