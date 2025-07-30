@@ -93,11 +93,9 @@
 
         <div class="form-group mb-0">
 
-          <app-upload-box [multipleFiles]="false" 
-                          [files]="applicationFiles" 
-                          [fileTypes]="fileTypesParent"
+          <app-upload-box [fileTypes]="fileTypesParent"
                           [maxFileSizeMB]="maxSpatialFileSize"
-                          (fileUploaded)="addNewFiles($event)"
+                          (fileUploaded)="addNewFile($event)"
                           (outputFileContent)="getContentFileFromUpload($event)">
           </app-upload-box>
           <div class="fileTypes"><em>Acceptable File Types: json, txt</em></div>

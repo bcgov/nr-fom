@@ -1,78 +1,48 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
-
 import { NgFor, NgIf } from '@angular/common';
-import { NgxDropzoneModule } from 'ngx-dropzone';
-import * as R from 'remeda';
-
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { DropzoneCdkModule, FileInputValidators, FileInputValue } from '@ngx-dropzone/cdk';
+import { DropzoneMaterialModule } from '@ngx-dropzone/material';
 @Component({
     standalone: true,
-    imports: [NgxDropzoneModule, NgFor, NgIf],
+    imports: [
+        ReactiveFormsModule,
+        DropzoneCdkModule, 
+        DropzoneMaterialModule, 
+        MatFormFieldModule,
+        MatInputModule,
+        MatChipsModule,
+        MatIconModule,
+        MatFormField,
+        MatLabel,
+        MatIcon,
+        NgFor, 
+        NgIf],
     selector: 'app-upload-box',
-    template: `
-    <div class="upload-group">
-      <div class="upload-control">
-        <ngx-dropzone
-          (change)="onSelect($event)"
-          #uploader
-          [multiple]="multipleFiles"
-          [accept]="allowedFileTypes"
-          [maxFileSize]="maxFileSize"
-          [class.no-files-border]="noFiles"
-        >
-          <ngx-dropzone-label>
-            <span class="material-icons">
-              cloud_upload
-            </span>
-            <div>{{ multipleFiles ? dragMultipleFileMessage : dragSingleFileMessage }} or  <a href="javascript:void(0)">Browse</a> </div>
-          </ngx-dropzone-label>
-          <ng-container *ngFor="let f of files">
-            <ngx-dropzone-image-preview ngx-dropzone-image-preview   ngProjectAs="ngx-dropzone-preview"   [removable]="true" (removed)="onRemove(f)" [file]="f" *ngIf="isImageType(f.type)">
-              <ngx-dropzone-label>{{ f.name }}</ngx-dropzone-label>
-            </ngx-dropzone-image-preview>
-            <ngx-dropzone-preview *ngIf="!isImageType(f.type)" (removed)="onRemove(f)" [removable]="true" >
-              <ngx-dropzone-label>{{ f.name }}</ngx-dropzone-label>
-            </ngx-dropzone-preview>
-          </ng-container>
-        </ngx-dropzone>
-        <ng-container *ngIf="invalidTypeText">
-          <span class="invalid-type-msg">{{ invalidTypeText }}</span>
-        </ng-container>
-      </div>
-    </div>
-  `,
+    templateUrl:'./file-upload-box.component.html', 
     styleUrls: ['./file-upload-box.component.scss']
 })
 export class UploadBoxComponent implements OnInit {
   isImageType( type: string ) {
     const imageTypes = [
       'image/png',
-    'image/jpeg',
-    'image/tiff',
-    'image/x-tiff',
-    'image/bmp',
-    'image/x-windows-bmp',
-    'image/gif',
-
+      'image/jpeg',
+      'image/tiff',
+      'image/x-tiff',
+      'image/bmp',
+      'image/x-windows-bmp',
+      'image/gif',
     ]
     return imageTypes.includes(type)
   }
-  @Input() multipleFiles = false;
-  @Input() title = 'No client set';
-  @Input() noFiles = false;
-  @Input() fileType: string;
-  @Input() fileDate: string;
-  @Input() date: string;
   @Input() maxFileSizeMB: number;
   @Input() isBlob: boolean = false;
-  dragMultipleFileMessage: string ='Drag files to upload';
-  dragSingleFileMessage: string = 'Drag file to upload';
-
-  @Output() fileUploaded = new EventEmitter<File[]>();
-  @Output() outputFileContent = new EventEmitter<string>();
-  monthVal = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  faLock = faLock;
-
+  @Output() fileUploaded = new EventEmitter<File>(); // File descriptor/meta information.
+  @Output() outputFileContent = new EventEmitter<string | ArrayBuffer>(); // File content
   @Input() fileTypes: string[] = [
     'image/png',
     'image/jpeg',
@@ -81,95 +51,99 @@ export class UploadBoxComponent implements OnInit {
     'image/bmp',
     'image/x-windows-bmp',
     'image/gif',
-
     'text/plain',
-
     'application/pdf',
-
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/msword',
-
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
   ];
-
-  // browse Link opens the file prompt
-  @Input() files: File[] = [];
-
-  @Input() publicNoticeDocument: File = null;
-
-  // limit for file types (set from global config)
-  allowedFileTypes: string;
-
-  // bytes - default to max 10mb (set from global config)
-  maxFileSize = 0;
+  allowedFileTypes: string; // limit for file types
+  maxFileSize = 0; // bytes - default to max 10mb (set from global config)
   invalidTypeText: string;
-  fileContent: string;
-  fileContentArrayBuffer: any;
-
+  fileCtrl: any;
+  
   constructor() { 
     // Deliberately empty
   }
   
   ngOnInit(): void {
-
     /* file size multiplied by 1024 for conversion */
     this.maxFileSize = (this.maxFileSizeMB ? this.maxFileSizeMB : 10) * 1048576;
     this.allowedFileTypes = this.fileTypes.join(', ');
+    const validators = [
+      FileInputValidators.accept(this.allowedFileTypes),
+      FileInputValidators.maxSize(this.maxFileSize)
+    ];
+    this.fileCtrl = new FormControl<FileInputValue>(null, validators);
+
+    // Watch for validation errors
+    this.subscribeToFormStatusChange();
+
+    // Emit files when selected
+    this.subscribeToFileSelected();
+
   }
 
-  onSelect(event) {
-    this.files = R.concat(event.addedFiles, this.files);
-    this.invalidTypeText = null;
-
-    //This will be logged if you attempt to upload multiple files at a time
-    if (event.rejectedFiles.some((r) => r.reason === 'type')) {
-      this.invalidTypeText = 'The file type is not accepted';
-    } else if (event.rejectedFiles.some((r) => r.reason === 'size')) {
-      this.invalidTypeText = 'The file size cannot exceed ' + this.maxFileSize / 1048576 + ' MB.';
-    } else if (event.rejectedFiles.some((r) => r.reason === 'no_multiple')) {
-      this.invalidTypeText = 'Only one file can be uploaded';
-    }
-
-    if (this.files.length > 1 && !this.multipleFiles){
-      this.invalidTypeText = 'Only one document is allowed';
-      this.onRemove(event.addedFiles[0]);
-    }
-
-    if (event.addedFiles.length > 0 ) {
-      if( this.isBlob){
-        this.readFileContentAsBlob(this.files[0])
+  private subscribeToFormStatusChange() {
+    this.fileCtrl.statusChanges.subscribe(() => {
+      const errors = this.fileCtrl.errors;
+      if (errors?.accept) {
+        this.invalidTypeText = 'The file type is not accepted';
+      } else if (errors?.maxSize) {
+        this.invalidTypeText = 'The file size cannot exceed ' + this.maxFileSize / 1048576 + ' MB.';
       } else {
-        this.readFileContent(this.files[0]);
+        this.invalidTypeText = null;
       }
+    });
+  }
+  
+  private subscribeToFileSelected() {
+    this.fileCtrl.valueChanges.subscribe((file: File) => {
+      if (file) {
+        this.fileUploaded.emit(file);
+        this.emitFilesContent(file);
+      }
+    });
+  }
+
+  private readFileContentPromise(file: File): Promise<string> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => resolve(event.target.result.toString());
+      reader.readAsText(file);
+    });
+  }
+
+  private readFileContentAsBlobPromise(file: Blob): Promise<ArrayBuffer> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => resolve(event.target.result as ArrayBuffer);
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  private emitFilesContent(file: File) {
+    if (file) {
+      if (this.isBlob) {
+        this.readFileContentAsBlobPromise(file)
+          .then(contents => this.outputFileContent.emit(contents));
+      } else {
+        this.readFileContentPromise(file)
+          .then(contents => this.outputFileContent.emit(contents));
+      }
+    } else {
+      this.outputFileContent.emit(null);
     }
   }
 
-  readFileContent(file: File) {
-    let reader = new FileReader();
-    reader.addEventListener('load', (event) => {
-      this.fileContent = event.target.result.toString();
-      this.fileUploaded.emit(this.files);
-      this.outputFileContent.emit(this.fileContent);
-    })
-    reader.readAsText(file);
+  get uploadedFile() {
+    return this.fileCtrl.value;
   }
 
-  readFileContentAsBlob(file: Blob) {
-    let reader = new FileReader();
-    reader.addEventListener('load', (event) => {
-      this.fileContentArrayBuffer = event.target.result;
-      this.fileUploaded.emit(this.files);
-      this.outputFileContent.emit(this.fileContentArrayBuffer);
-    })
-    reader.readAsArrayBuffer(file);
+  remove() {
+    this.fileCtrl.setValue(null);
+    this.fileUploaded.emit(null);
   }
 
-  onRemove(event) {
-    this.files.splice(this.files.indexOf(event), 1);
-    if (this.files.length == 0) {
-      this.invalidTypeText = null;
-    }
-    this.fileUploaded.emit(this.files);
-  }
 }

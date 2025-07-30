@@ -1,0 +1,21 @@
+<div class="upload-group">
+    <mat-form-field appearance="outline">
+        <mat-label style="margin-top: 8px;">Drag file to upload or  <a href="javascript:void(0)">Browse</a> </mat-label>
+        <ngx-mat-dropzone>
+            <input type="file"
+                [formControl]="fileCtrl"
+                fileInput/>
+
+            <mat-chip-row (removed)="remove()" *ngIf="uploadedFile">
+                {{ uploadedFile.name }}
+                <button matChipRemove>
+                    <mat-icon>cancel</mat-icon>
+                </button>
+            </mat-chip-row>
+        </ngx-mat-dropzone>
+        <mat-icon matSuffix *ngIf="!uploadedFile">cloud_upload</mat-icon>
+    </mat-form-field>
+    <ng-container *ngIf="invalidTypeText">
+        <span class="invalid-type-msg">{{ invalidTypeText }}</span>
+    </ng-container>
+</div>

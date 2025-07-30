@@ -3,8 +3,8 @@ import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DateTime } from "luxon";
-import { Observable, Subject, of } from 'rxjs';
-import { switchMap, takeUntil, tap } from 'rxjs/operators';
+import { Observable, Subject, lastValueFrom, of } from 'rxjs';
+import { catchError, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { AttachmentTypeEnum } from "@admin-core/models/attachmentTypeEnum";
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
@@ -65,18 +65,17 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     {"code": this.projectPlanCodeEnum.Woodlot, "description": "Woodlot Licence Plan"}
   ];
   forestClients: ForestClientResponse[] = [];
-  public supportingDocuments: any[] = [];
-  public initialPublicDocument: any[] = [];
+  public publicNotice: File = null;
+  publicNoticeContent: any;
+  public supportingDocument: File = null;
+  supportingDocContent: any;
   public districtIdSelect: any = null;
   public forestClientSelect: any = null;
   public isInitialState: boolean = true;
   public isCommentingOpenState: boolean = false;
   public isCommentingClosedState: boolean = false;
   public isPublishState: boolean = false;
-  files: any[] = [];
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
-  publicNoticeContent: any;
-  supportingDocContent: any;
   public isSubmitSaveClicked = false;
   public descriptionValue: string = null;
   public user: User;
@@ -205,22 +204,24 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async loadForestClients (): Promise<ForestClientResponse[]> {
-   return this.forestSvc.forestClientControllerFind().toPromise()
-}
-
-  addNewFileInitialPublic(newFiles: any[]) {
-    this.initialPublicDocument.push(newFiles);
+    return await lastValueFrom(
+      this.forestSvc.forestClientControllerFind()
+    );
   }
 
-  addNewFileSupporting(newFiles: any[]) {
-    this.supportingDocuments.push(newFiles);
+  addPublicNotice(newFile: File) {
+    this.publicNotice = newFile;
   }
 
-  getContentFileFromUpload(fileContent: any) {
+  addSupportingDocument(newFile: File) {
+    this.supportingDocument = newFile;
+  }
+
+  loadPublicNoticeFileContent(fileContent: any) {
     this.publicNoticeContent = fileContent;
   }
 
-  getContentFileSupportingDoc(fileContent: any) {
+  loadSupportingDocFileContent(fileContent: any) {
     this.supportingDocContent = fileContent;
   }
 
@@ -268,11 +269,18 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     projectCreate.commentingClosedDate = cmcDateIsoVal? cmcDateIsoVal: null;
     projectCreate.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
     projectCreate.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
-
-    this.projectSvc.projectControllerCreate(projectCreate)
-        .toPromise()
-        .then(result => this.onSuccess(result.id))
-        .catch(err => console.error(err));
+        
+    // lastValueFrom(
+      this.projectSvc.projectControllerCreate(projectCreate).pipe(
+        tap((result) => {
+          this.onSuccess(result.id);
+        }),
+        catchError((error) => {
+          console.error(error);
+          return of(null);
+        })
+      )
+    // );
   }
 
   onSuccess(id: number) {
@@ -295,27 +303,26 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       projectUpdateRequest.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
       projectUpdateRequest.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
 
-      await this.projectSvc.projectControllerUpdate(id, projectUpdateRequest).toPromise();
+      await lastValueFrom(this.projectSvc.projectControllerUpdate(id, projectUpdateRequest));
 
       let file: any = null;
       let fileContent: any = null;
 
-      if(this.initialPublicDocument.length > 0){
-        file = this.initialPublicDocument[0];
+      if(this.publicNotice){
+        file = this.publicNotice;
         fileContent = new Blob([this.publicNoticeContent], {type: file.type});
-
-        await this.attachmentUploadSvc
+        await lastValueFrom(this.attachmentUploadSvc
           .attachmentCreate(file, fileContent, id,
-            AttachmentTypeEnum.PUBLIC_NOTICE).pipe(tap(obs => console.log(obs))).toPromise();
+            AttachmentTypeEnum.PUBLIC_NOTICE).pipe(tap(obs => console.log(obs))));
 
       }
 
-      if (this.supportingDocuments.length > 0){
-        file = this.supportingDocuments[0];
+      if (this.supportingDocument){
+        file = this.supportingDocument;
         fileContent = new Blob([this.supportingDocContent], {type: file.type});
-        await this.attachmentUploadSvc
+        await lastValueFrom(this.attachmentUploadSvc
           .attachmentCreate(file, fileContent, id,
-            AttachmentTypeEnum.SUPPORTING_DOC).pipe(tap(obs => console.log(obs))).toPromise();
+            AttachmentTypeEnum.SUPPORTING_DOC).pipe(tap(obs => console.log(obs))));
       }
 
       return this.onSuccess(id);

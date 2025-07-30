@@ -1,8 +1,8 @@
-import { Observable } from "rxjs";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable, Optional } from "@angular/core";
 import { Configuration } from "@api-client";
 import { ConfigService } from '@utility/services/config.service';
+import { Observable } from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -44,7 +44,7 @@ export class AttachmentUploadService {
     headers = headers.set('Accept', '*');
 
     const formParams: FormData = new FormData();
-    formParams.append('file', fileContent, file[0].name); // originalname is set in third param.
+    formParams.append('file', fileContent, file.name); // originalname is set in third param.
     formParams.append('projectId', <any>projectId);
     formParams.append('attachmentTypeCode', <any>attachmentTypeCode);
 
