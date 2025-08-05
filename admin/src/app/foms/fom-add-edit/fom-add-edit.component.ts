@@ -15,12 +15,12 @@ import { AttachmentUploadService } from "@admin-core/utils/attachmentUploadServi
 import { DEFAULT_ISO_DATE_FORMAT, MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import {
-  AttachmentResponse, DistrictResponse, ForestClientResponse,
-  ForestClientService,
-  ProjectCreateRequest,
-  ProjectPlanCodeEnum,
-  ProjectResponse,
-  ProjectService, WorkflowStateEnum
+    AttachmentResponse, DistrictResponse, ForestClientResponse,
+    ForestClientService,
+    ProjectCreateRequest,
+    ProjectPlanCodeEnum,
+    ProjectResponse,
+    ProjectService, WorkflowStateEnum
 } from '@api-client';
 import { RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
@@ -269,8 +269,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     projectCreate.commentingClosedDate = cmcDateIsoVal? cmcDateIsoVal: null;
     projectCreate.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
     projectCreate.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
-        
-    // lastValueFrom(
+    lastValueFrom(
       this.projectSvc.projectControllerCreate(projectCreate).pipe(
         tap((result) => {
           this.onSuccess(result.id);
@@ -280,7 +279,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
           return of(null);
         })
       )
-    // );
+    );
   }
 
   onSuccess(id: number) {
