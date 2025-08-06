@@ -22,6 +22,9 @@ parameters:
   - name: TAG
     description: Image tag; e.g. PR number, latest or prod
     required: true
+  - name: DB_VERSION
+    description: Database version number, e.g. v17
+    value: "17"
   - name: CRONJOB_RESTORE_TAG
     description: Image tag for database restore cronjob; e.g. PR number, latest or prod
     value: prod
@@ -48,9 +51,7 @@ parameters:
     description: Dummy parameter to make workflows easier
   - name: REPLICA_COUNT
     description: Dummy parameter to make workflows easier
-  - name: DB_UPGRADE_VERSION
-    description: Database version number for database upgrade
-    value: v17
+
   ### Backup-Container starts here ###
   - name: BACKUP_COMPONENT
     description: BACKUP_COMPONENT name
@@ -114,7 +115,7 @@ objects:
   - kind: PersistentVolumeClaim
     apiVersion: v1
     metadata:
-      name: ${NAME}-${ZONE}-${COMPONENT}
+      name: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
       labels:
         app: ${NAME}-${ZONE}
     spec:
@@ -124,22 +125,6 @@ objects:
         requests:
           storage: "${DB_PVC_SIZE}"
       storageClassName: netapp-file-standard
-
-  ### for db major upgrade PVC only  ###
-  # - kind: PersistentVolumeClaim
-  #   apiVersion: v1
-  #   metadata:
-  #     name: ${NAME}-${ZONE}-dbupgrade-${DB_UPGRADE_VERSION}
-  #     labels:
-  #       app: ${NAME}-${ZONE}
-  #   spec:
-  #     accessModes:
-  #       - ReadWriteMany
-  #     resources:
-  #       requests:
-  #         storage: "${DB_BACKUP_PVC_SIZE}"
-  #     storageClassName: netapp-file-standard
-
 
   - kind: Deployment
     apiVersion: apps/v1
@@ -167,9 +152,10 @@ objects:
           volumes:
             - name: ${NAME}-${ZONE}-${COMPONENT}
               persistentVolumeClaim:
-                claimName: ${NAME}-${ZONE}-${COMPONENT}
+                claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
           containers:
             - name: ${NAME}
+              # Override manually like this - 'image: postgis/postgis:17-master'
               image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
               ports:
                 - containerPort: 5432
