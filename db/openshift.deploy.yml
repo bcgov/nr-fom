@@ -155,8 +155,8 @@ objects:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
           containers:
             - name: ${NAME}
-              # image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
-              image: postgis/postgis:17-master
+              # Override manually like this - 'image: postgis/postgis:17-master'
+              image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
               ports:
                 - containerPort: 5432
                   protocol: TCP
