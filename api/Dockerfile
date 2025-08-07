@@ -1,5 +1,5 @@
 # RedHat UBI 8 with nodejs 20
-FROM registry.access.redhat.com/ubi8/nodejs-20:1-71.1735831626 AS builder
+FROM registry.access.redhat.com/ubi8/nodejs-20:1-1754572950 AS builder
 
 # Install packages, build and keep only prod packages
 WORKDIR /app
@@ -11,7 +11,7 @@ RUN dnf install -y ca-certificates && \
 
 
 # Deployment container
-FROM registry.access.redhat.com/ubi8/ubi:8.10-1161
+FROM registry.access.redhat.com/ubi8/ubi:8.10-1754489414
 
 # Node packages and dependencies
 COPY --from=builder /usr/bin/node /usr/bin/
