@@ -1,0 +1,21 @@
+@import "../../assets/styles/base/base.scss";
+@import "../../assets/styles/layout/layout.scss";
+
+:host {
+  @include flex-box();
+  @include flex-direction(column);
+  @include flex(1 1 auto);
+
+  overflow: hidden;
+}
+
+.title-container {
+  flex-direction: column;
+}
+
+.dashboard-subtitle {
+  font-size: 14px;
+  letter-spacing: 0.16px;
+  margin-top: 4px;
+  margin-bottom: 30px;
+}

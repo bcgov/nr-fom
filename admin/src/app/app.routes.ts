@@ -9,6 +9,7 @@ import { InteractionsComponent } from 'app/foms/interactions/interactions.compon
 import { PublicNoticeEditComponent } from 'app/foms/public-notice/public-notice-edit.component';
 import { ReviewCommentsComponent } from 'app/foms/review-comments/review-comments.component';
 import { SummaryComponent } from 'app/foms/summary/summary.component';
+import { StatsDashboardComponent } from 'app/stats-dashboard/stats-dashboard.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
 import { SearchComponent } from './search/search.component';
 
@@ -82,7 +83,14 @@ export const AppRoutes: Routes = [
       projectDetail: projectDetailResolver
     }
   },
-  // --- End From previous fom-routing.modules.ts
+  {
+    path: 'stats-dashboard',
+    component: StatsDashboardComponent,
+    // resolve: {
+    //   // TODO: Resolve stats details for stats dashboard
+    //   statsDetail: projectDetailResolver
+    // }
+  },
 
   {
     // default route

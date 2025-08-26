@@ -1,0 +1,47 @@
+<form #searchForm="ngForm">
+  <div class="top-container" style="overflow-y: hidden;">
+    <div class="container">
+      <div class="title-container">
+        <div class="title-container__title">
+          <h1 class="text-muted">Dashboard</h1>
+        </div>
+        <div class="dashboard-subtitle">
+            Manage and track FOM information usage
+        </div>
+      </div>
+      <div class="filter-container">
+        <div class="row">
+            <div class="form-group col-md-2">
+            <label for="fomNumberInput" style="white-space: nowrap;">
+                    FOM Number
+            </label>
+
+            <input id="fNumberInput" name="fNumber" type="number"
+                    min="0" step="1"
+                    oninput="this.value = this.value.slice(0, 9)"
+                    class="form-control"
+                    style="font-size: 14px;"autofocus/>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-container scroll">
+    <div class="container" style="background: #f7f8fa; padding-bottom: 0;">
+      <div class="row">
+        <div class="form-group col-md-2">
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="search-results-container">
+        <h2>
+          <strong>No results found.</strong>
+        </h2>
+      </div>
+    </div>
+
+  </div>
+</form>
