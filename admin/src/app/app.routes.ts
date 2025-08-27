@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { AboutComponent } from 'app/about/about.component';
+import { AnalyticsDashboardComponent } from 'app/analytics-dashboard/analytics-dashboard.component';
 import { FomAddEditComponent } from 'app/foms/fom-add-edit/fom-add-edit.component';
 import { FomDetailComponent } from 'app/foms/fom-detail/fom-detail.component';
 import { FomSubmissionComponent } from 'app/foms/fom-submission/fom-submission.component';
@@ -9,7 +10,6 @@ import { InteractionsComponent } from 'app/foms/interactions/interactions.compon
 import { PublicNoticeEditComponent } from 'app/foms/public-notice/public-notice-edit.component';
 import { ReviewCommentsComponent } from 'app/foms/review-comments/review-comments.component';
 import { SummaryComponent } from 'app/foms/summary/summary.component';
-import { StatsDashboardComponent } from 'app/stats-dashboard/stats-dashboard.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
 import { SearchComponent } from './search/search.component';
 
@@ -84,8 +84,8 @@ export const AppRoutes: Routes = [
     }
   },
   {
-    path: 'stats-dashboard',
-    component: StatsDashboardComponent,
+    path: 'analytics-dashboard',
+    component: AnalyticsDashboardComponent,
     // resolve: {
     //   // TODO: Resolve stats details for stats dashboard
     //   statsDetail: projectDetailResolver

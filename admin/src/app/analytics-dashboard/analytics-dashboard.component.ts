@@ -44,12 +44,12 @@ type ApplicationPageType = 'create' | 'edit';
         NewlinesPipe,
         UploadBoxComponent
     ],
-    selector: 'app-stats-dashboard',
-    templateUrl: './stats-dashboard.component.html',
-    styleUrls: ['./stats-dashboard.component.scss'],
+    selector: 'app-analytics-dashboard',
+    templateUrl: './analytics-dashboard.component.html',
+    styleUrls: ['./analytics-dashboard.component.scss'],
     providers: [DatePipe]
 })
-export class StatsDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly DEFAULT_ISO_DATE_FORMAT = DEFAULT_ISO_DATE_FORMAT;
   fg: RxFormGroup;
