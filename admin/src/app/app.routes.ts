@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { analyticsResolver } from './analytics-dashboard/analytics.resolver';
 
 import { AboutComponent } from 'app/about/about.component';
 import { AnalyticsDashboardComponent } from 'app/analytics-dashboard/analytics-dashboard.component';
@@ -86,10 +87,9 @@ export const AppRoutes: Routes = [
   {
     path: 'analytics-dashboard',
     component: AnalyticsDashboardComponent,
-    // resolve: {
-    //   // TODO: Resolve stats details for stats dashboard
-    //   statsDetail: projectDetailResolver
-    // }
+    resolve: {
+      analyticsData: analyticsResolver
+    }
   },
 
   {
