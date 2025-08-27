@@ -1,17 +1,18 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { ResponseCode, ResponseCodeEnum } from './response-code.entity';
 import {
-  CommentScopeCode,
-  CommentScopeCodeEnum,
-} from './comment-scope-code.entity';
-import {
-  IsEmail,
-  IsEnum,
-  IsNumber,
-  IsOptional,
-  MaxLength,
-  MinLength,
+    IsEmail,
+    IsEnum,
+    IsNumber,
+    IsNumberString,
+    IsOptional,
+    MaxLength,
+    MinLength,
 } from 'class-validator';
+import {
+    CommentScopeCode,
+    CommentScopeCodeEnum,
+} from './comment-scope-code.entity';
+import { ResponseCode, ResponseCodeEnum } from './response-code.entity';
 
 export class PublicCommentCreateRequest {
   @ApiProperty()
@@ -104,6 +105,19 @@ export class PublicCommentCountByDistrictResponse {
 
   @ApiProperty()
   districtName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  publicCommentCount: number;
+}
+
+export class PublicCommentCountByForestClientResponse {
+  @ApiProperty()
+  @IsNumberString()
+  forestClientNumber: string;
+
+  @ApiProperty()
+  forestClientName: string;
 
   @ApiProperty()
   @IsNumber()

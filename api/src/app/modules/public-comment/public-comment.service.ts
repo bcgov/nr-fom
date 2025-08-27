@@ -1,3 +1,4 @@
+import { applyCommentCreateDateFilter } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
 import { DataService } from '@core';
 import { DeepPartial } from '@entities';
 import { ForbiddenException, Injectable } from '@nestjs/common';
@@ -9,15 +10,15 @@ import { FindOneOptions, Repository, UpdateResult } from 'typeorm';
 import { ProjectAuthService } from '../project/project-auth.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
 import {
-  PublicCommentAdminResponse,
-  PublicCommentAdminUpdateRequest,
-  PublicCommentCreateRequest,
-  PublicCommentCountByDistrictResponse,
-  PublicCommentCountByCategoryResponse,
-  PublicCommentCountByProjectResponse,
+    PublicCommentAdminResponse,
+    PublicCommentAdminUpdateRequest,
+    PublicCommentCountByCategoryResponse,
+    PublicCommentCountByDistrictResponse,
+    PublicCommentCountByForestClientResponse,
+    PublicCommentCountByProjectResponse,
+    PublicCommentCreateRequest,
 } from './public-comment.dto';
 import { PublicComment } from './public-comment.entity';
-import { applyCommentCreateDateFilter } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
 
 @Injectable()
 export class PublicCommentService extends DataService<
@@ -242,6 +243,33 @@ export class PublicCommentService extends DataService<
       .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')
       .groupBy('p.district_id')
       .addGroupBy('d.name')
+      .orderBy('"publicCommentCount"', 'DESC')
+      .getRawMany();
+  }
+
+  /**
+   * Returns the total number of public comments grouped by forest clients.
+   * Used by analytics dashboard module.
+   *
+   * @param startDate - Start of date range (YYYY-MM-DD)
+   * @param endDate - End of date range (YYYY-MM-DD)
+   * @returns Promise resolving to an array of PublicCommentCountByForestClientResponse
+   */
+  async getCommentCountByForestClient(
+    startDate: string,
+    endDate: string
+  ): Promise<PublicCommentCountByForestClientResponse[]> {
+    const qb = this.repository.createQueryBuilder('c');
+    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
+    
+    return await qb
+      .innerJoin('c.project', 'p')
+      .innerJoin('p.forestClient', 'f')
+      .select('f.id', 'forestClientNumber')
+      .addSelect('f.name', 'forestClientName')
+      .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')
+      .groupBy('f.id')
+      .addGroupBy('f.name')
       .orderBy('"publicCommentCount"', 'DESC')
       .getRawMany();
   }

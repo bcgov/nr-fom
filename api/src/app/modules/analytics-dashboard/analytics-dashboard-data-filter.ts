@@ -1,5 +1,5 @@
-import { SelectQueryBuilder } from 'typeorm';
 import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.entity';
+import { SelectQueryBuilder } from 'typeorm';
 
 export function applyFomDateAndStateFilters<T>(
   qb: SelectQueryBuilder<T>,
@@ -17,11 +17,14 @@ export function applyFomDateAndStateFilters<T>(
 
 export function applyCommentCreateDateFilter<T>(
   qb: SelectQueryBuilder<T>,
-  startDate: string,
-  endDate: string,
+  startDate: string, // YYYY-MM-DD
+  endDate: string, // YYYY-MM-DD
   alias: string
 ): SelectQueryBuilder<T> {
   return qb
-    .where(`${alias}.create_timestamp >= :startDate`, { startDate })
-    .andWhere(`${alias}.create_timestamp <= :endDate`, { endDate });
+    // Note: 'create_timestamp' is a timestamp column and 'startDate' is a 'Date' string (no time portion).
+    //       To compare, we can use DATE_TRUNC for extracting only 'Date' part from timestamp. Without
+    //       it, will result into some missing edge data.
+    .where(`DATE_TRUNC('day', ${alias}.create_timestamp) >= :startDate`,  { startDate })
+    .andWhere(`DATE_TRUNC('day', ${alias}.create_timestamp) <= :endDate`, { endDate });
 }

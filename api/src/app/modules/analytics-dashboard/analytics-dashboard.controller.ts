@@ -1,32 +1,33 @@
-import {
-  Controller,
-  Get,
-  Query,
-  DefaultValuePipe,
-  ParseIntPipe,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { ProjectService } from '@api-modules/project/project.service';
-import { PublicCommentService } from '@api-modules/public-comment/public-comment.service';
+import { AdminOperationGuard } from '@api-core/security/admin.guard';
+import { AuthGuard } from '@api-core/security/auth.guard';
 import { DateRangeRequest } from '@api-modules/analytics-dashboard/analytics-dashboard.dto';
 import {
   ProjectCountByDistrictResponse,
   ProjectCountByForestClientResponse,
 } from '@api-modules/project/project.dto';
+import { ProjectService } from '@api-modules/project/project.service';
 import {
-  PublicCommentCountByDistrictResponse,
   PublicCommentCountByCategoryResponse,
+  PublicCommentCountByDistrictResponse,
+  PublicCommentCountByForestClientResponse,
   PublicCommentCountByProjectResponse,
 } from '@api-modules/public-comment/public-comment.dto';
-import { AuthGuard } from '@api-core/security/auth.guard';
-import { AdminOperationGuard } from '@api-core/security/admin.guard';
+import { PublicCommentService } from '@api-modules/public-comment/public-comment.service';
+import {
+  Controller,
+  DefaultValuePipe,
+  Get,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('analytics-dashboard')
 @UseGuards(AuthGuard, AdminOperationGuard)
@@ -172,6 +173,33 @@ export class AnalyticsDashboardController {
     @Query() query: DateRangeRequest
   ): Promise<PublicCommentCountByDistrictResponse[]> {
     return this.publicCommentService.getCommentCountByDistrict(
+      query.startDate,
+      query.endDate
+    );
+  }
+
+  /**
+   * Returns the number of public comments grouped by forest clients
+   * with a create timestamp within the specified date range.
+   *
+   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @returns An array of objects containing forestClientNumber, forestClientName, and publicCommentCount
+   */
+  @Get('public-comment/count-by-forest-client')
+  @ApiOperation({
+    summary:
+      'Get number of public comments created in a user selected date range, grouped by forest clients',
+  })
+    @ApiResponse({
+    status: 200,
+    description: 'List of comment counts by forest clients',
+    type: PublicCommentCountByForestClientResponse,
+    isArray: true,
+  })
+  async getCommentCountByForestClient(
+    @Query() query: DateRangeRequest
+  ): Promise<PublicCommentCountByForestClientResponse[]> {
+    return this.publicCommentService.getCommentCountByForestClient(
       query.startDate,
       query.endDate
     );
