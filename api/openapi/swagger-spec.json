@@ -1385,13 +1385,7 @@
             "in": "query",
             "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
             "schema": {
-              "default": "FSP",
-              "type": "string",
-              "enum": [
-                "FSP",
-                "WOODLOT",
-                "ALL"
-              ]
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
             }
           }
         ],
@@ -1446,13 +1440,7 @@
             "in": "query",
             "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
             "schema": {
-              "default": "FSP",
-              "type": "string",
-              "enum": [
-                "FSP",
-                "WOODLOT",
-                "ALL"
-              ]
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
             }
           }
         ],
@@ -1510,13 +1498,7 @@
             "in": "query",
             "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
             "schema": {
-              "default": "FSP",
-              "type": "string",
-              "enum": [
-                "FSP",
-                "WOODLOT",
-                "ALL"
-              ]
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
             }
           }
         ],
@@ -1571,13 +1553,7 @@
             "in": "query",
             "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
             "schema": {
-              "default": "FSP",
-              "type": "string",
-              "enum": [
-                "FSP",
-                "WOODLOT",
-                "ALL"
-              ]
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
             }
           }
         ],
@@ -1635,13 +1611,7 @@
             "in": "query",
             "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
             "schema": {
-              "default": "FSP",
-              "type": "string",
-              "enum": [
-                "FSP",
-                "WOODLOT",
-                "ALL"
-              ]
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
             }
           }
         ],
@@ -1699,13 +1669,7 @@
             "in": "query",
             "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
             "schema": {
-              "default": "FSP",
-              "type": "string",
-              "enum": [
-                "FSP",
-                "WOODLOT",
-                "ALL"
-              ]
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
             }
           }
         ],
@@ -1763,13 +1727,7 @@
             "in": "query",
             "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
             "schema": {
-              "default": "FSP",
-              "type": "string",
-              "enum": [
-                "FSP",
-                "WOODLOT",
-                "ALL"
-              ]
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
             }
           }
         ],
@@ -1827,13 +1785,7 @@
             "in": "query",
             "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
             "schema": {
-              "default": "FSP",
-              "type": "string",
-              "enum": [
-                "FSP",
-                "WOODLOT",
-                "ALL"
-              ]
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
             }
           },
           {
@@ -3007,6 +2959,14 @@
           "response",
           "responseDetails",
           "scopeFeatureName"
+        ]
+      },
+      "ProjectPlanCodeFilterEnum": {
+        "type": "string",
+        "enum": [
+          "FSP",
+          "WOODLOT",
+          "ALL"
         ]
       },
       "ProjectCountByDistrictResponse": {

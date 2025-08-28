@@ -15,6 +15,7 @@ export * from './projectCountByForestClientResponse';
 export * from './projectCreateRequest';
 export * from './projectMetricsResponse';
 export * from './projectPlanCodeEnum';
+export * from './projectPlanCodeFilterEnum';
 export * from './projectPublicSummaryResponse';
 export * from './projectResponse';
 export * from './projectUpdateRequest';
