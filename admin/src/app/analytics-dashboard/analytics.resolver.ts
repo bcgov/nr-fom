@@ -1,12 +1,12 @@
 import { inject } from '@angular/core';
+import { AnalyticsDashboardService } from '@api-client';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AnalyticsDashboardService } from '../../../../libs/client/typescript-ng/api/analyticsDashboard.service';
 
 export const analyticsResolver = () => {
   const analyticsService = inject(AnalyticsDashboardService);
   // Example date range, adjust as needed or make dynamic
-  const startDate = '2024-01-01';
+  const startDate = '2024-04-01'; // FOM production live date
   const endDate = '2025-12-31';
   const limit = 15;
 
@@ -29,7 +29,7 @@ export const analyticsResolver = () => {
     nonInitialPublishedProjectCountByForestClient: analyticsService.analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate, endDate).pipe(
       catchError(err => { console.error('Failed to fetch nonInitialPublishedProjectCountByForestClient', err); return of(null); })
     ),
-    topCommentedProjects: analyticsService.analyticsDashboardControllerGetTopCommentedProjects(startDate, endDate, limit).pipe(
+    topCommentedProjects: analyticsService.analyticsDashboardControllerGetTopCommentedProjects(startDate, endDate, null, limit).pipe(
       catchError(err => { console.error('Failed to fetch topCommentedProjects', err); return of(null); })
     ),
     uniqueForestClientCount: analyticsService.analyticsDashboardControllerGetUniqueForestClientCount(startDate, endDate).pipe(

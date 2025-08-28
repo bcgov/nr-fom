@@ -16,6 +16,7 @@ export class AnalyticsDashboarQuaryRequest {
   @ApiProperty({
     description: 'Project plan code filter (FSP, WOODLOT, ALL). Default to FSP',
     enum: ProjectPlanCodeFilterEnum,
+    enumName: 'ProjectPlanCodeFilterEnum',
     required: false,
     default: ProjectPlanCodeFilterEnum.FSP,
   })

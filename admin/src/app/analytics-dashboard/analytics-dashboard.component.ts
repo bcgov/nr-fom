@@ -52,8 +52,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    // this.ngUnsubscribe.next();
+    // this.ngUnsubscribe.complete();
   }
 
 }
