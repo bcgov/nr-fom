@@ -1,7 +1,7 @@
 import { AdminOperationGuard } from '@api-core/security/admin.guard';
 import { AuthGuard } from '@api-core/security/auth.guard';
 import { ProjectPlanCodeFilterEnum } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
-import { DateRangeRequest } from '@api-modules/analytics-dashboard/analytics-dashboard.dto';
+import { AnalyticsDashboarQuaryRequest as AnalyticsRequestQuaryParams } from '@api-modules/analytics-dashboard/analytics-dashboard.dto';
 import {
     ProjectCountByDistrictResponse,
     ProjectCountByForestClientResponse,
@@ -29,6 +29,7 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
+import { PinoLogger } from 'nestjs-pino';
 
 @ApiTags('analytics-dashboard')
 @UseGuards(AuthGuard, AdminOperationGuard)
@@ -37,7 +38,8 @@ import {
 export class AnalyticsDashboardController {
   constructor(
     private readonly projectService: ProjectService,
-    private readonly publicCommentService: PublicCommentService
+    private readonly publicCommentService: PublicCommentService,
+    private readonly logger: PinoLogger
   ) {}
 
   /**
@@ -60,20 +62,14 @@ export class AnalyticsDashboardController {
       'Number of non-Initial FOMs projects published in the date range',
     type: Number,
   })
-  @ApiQuery({
-    name: 'projectPlanCode',
-    required: false,
-    enum: ProjectPlanCodeFilterEnum,
-    description: 'Project plan code filter (FSP, WOODLOT, ALL)',
-  })
   async getNonInitialPublishedProjectCount(
-    @Query() query: DateRangeRequest,
-    @Query('projectPlanCode', new DefaultValuePipe(ProjectPlanCodeFilterEnum.FSP)) projectPlanCode: ProjectPlanCodeFilterEnum
+    @Query() query: AnalyticsRequestQuaryParams
   ): Promise<number> {
+    this.logger.debug(`Controller 'getNonInitialPublishedProjectCount' called with params ${JSON.stringify(query)}`)
     return this.projectService.getNonInitialPublishedProjectCount(
       query.startDate,
       query.endDate,
-      projectPlanCode
+      query.projectPlanCode as ProjectPlanCodeFilterEnum
     );
   }
 
@@ -97,7 +93,7 @@ export class AnalyticsDashboardController {
     isArray: true,
   })
   async getNonInitialPublishedProjectCountByDistrict(
-    @Query() query: DateRangeRequest
+    @Query() query: AnalyticsRequestQuaryParams
   ): Promise<ProjectCountByDistrictResponse[]> {
     return this.projectService.getNonInitialPublishedProjectCountByDistrict(
       query.startDate,
@@ -124,7 +120,7 @@ export class AnalyticsDashboardController {
     type: Number,
   })
   async getUniqueForestClientCount(
-    @Query() query: DateRangeRequest
+    @Query() query: AnalyticsRequestQuaryParams
   ): Promise<number> {
     return this.projectService.getUniqueForestClientCount(
       query.startDate,
@@ -153,7 +149,7 @@ export class AnalyticsDashboardController {
     isArray: true,
   })
   async getNonInitialPublishedProjectCountByForestClient(
-    @Query() query: DateRangeRequest
+    @Query() query: AnalyticsRequestQuaryParams
   ): Promise<ProjectCountByForestClientResponse[]> {
     return this.projectService.getNonInitialPublishedProjectCountByForestClient(
       query.startDate,
@@ -180,7 +176,7 @@ export class AnalyticsDashboardController {
     isArray: true,
   })
   async getCommentCountByDistrict(
-    @Query() query: DateRangeRequest
+    @Query() query: AnalyticsRequestQuaryParams
   ): Promise<PublicCommentCountByDistrictResponse[]> {
     return this.publicCommentService.getCommentCountByDistrict(
       query.startDate,
@@ -207,7 +203,7 @@ export class AnalyticsDashboardController {
     isArray: true,
   })
   async getCommentCountByForestClient(
-    @Query() query: DateRangeRequest
+    @Query() query: AnalyticsRequestQuaryParams
   ): Promise<PublicCommentCountByForestClientResponse[]> {
     return this.publicCommentService.getCommentCountByForestClient(
       query.startDate,
@@ -234,7 +230,7 @@ export class AnalyticsDashboardController {
     isArray: true,
   })
   async getCommentCountByResponseCode(
-    @Query() query: DateRangeRequest
+    @Query() query: AnalyticsRequestQuaryParams
   ): Promise<PublicCommentCountByCategoryResponse[]> {
     return this.publicCommentService.getCommentCountByResponseCode(
       query.startDate,
@@ -265,7 +261,7 @@ export class AnalyticsDashboardController {
     description: 'Maximum number of projects to return (default: 15)',
   })
   async getTopCommentedProjects(
-    @Query() query: DateRangeRequest,
+    @Query() query: AnalyticsRequestQuaryParams,
     @Query('limit', new DefaultValuePipe(15), ParseIntPipe) limit: number
   ): Promise<PublicCommentCountByProjectResponse[]> {
     return this.publicCommentService.getCommentCountByProject(
