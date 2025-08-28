@@ -1378,6 +1378,21 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "default": "FSP",
+              "type": "string",
+              "enum": [
+                "FSP",
+                "WOODLOT",
+                "ALL"
+              ]
+            }
           }
         ],
         "responses": {
@@ -1423,6 +1438,21 @@
             "description": "End date in YYYY-MM-DD format",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "default": "FSP",
+              "type": "string",
+              "enum": [
+                "FSP",
+                "WOODLOT",
+                "ALL"
+              ]
             }
           }
         ],
@@ -1473,6 +1503,21 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "default": "FSP",
+              "type": "string",
+              "enum": [
+                "FSP",
+                "WOODLOT",
+                "ALL"
+              ]
+            }
           }
         ],
         "responses": {
@@ -1518,6 +1563,21 @@
             "description": "End date in YYYY-MM-DD format",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "default": "FSP",
+              "type": "string",
+              "enum": [
+                "FSP",
+                "WOODLOT",
+                "ALL"
+              ]
             }
           }
         ],
@@ -1568,6 +1628,21 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "default": "FSP",
+              "type": "string",
+              "enum": [
+                "FSP",
+                "WOODLOT",
+                "ALL"
+              ]
+            }
           }
         ],
         "responses": {
@@ -1616,6 +1691,21 @@
             "description": "End date in YYYY-MM-DD format",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "default": "FSP",
+              "type": "string",
+              "enum": [
+                "FSP",
+                "WOODLOT",
+                "ALL"
+              ]
             }
           }
         ],
@@ -1666,6 +1756,21 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "default": "FSP",
+              "type": "string",
+              "enum": [
+                "FSP",
+                "WOODLOT",
+                "ALL"
+              ]
+            }
           }
         ],
         "responses": {
@@ -1714,6 +1819,21 @@
             "description": "End date in YYYY-MM-DD format",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "default": "FSP",
+              "type": "string",
+              "enum": [
+                "FSP",
+                "WOODLOT",
+                "ALL"
+              ]
             }
           },
           {

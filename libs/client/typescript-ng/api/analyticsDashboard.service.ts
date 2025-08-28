@@ -93,13 +93,14 @@ export class AnalyticsDashboardService {
      * Get number of public comments created in a user selected date range, grouped by district
      * @param startDate Start date in YYYY-MM-DD format
      * @param endDate End date in YYYY-MM-DD format
+     * @param projectPlanCode Project plan code filter (FSP, WOODLOT, ALL). Default to FSP
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyticsDashboardControllerGetCommentCountByDistrict(startDate: string, endDate: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<PublicCommentCountByDistrictResponse>>;
-    public analyticsDashboardControllerGetCommentCountByDistrict(startDate: string, endDate: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<PublicCommentCountByDistrictResponse>>>;
-    public analyticsDashboardControllerGetCommentCountByDistrict(startDate: string, endDate: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<PublicCommentCountByDistrictResponse>>>;
-    public analyticsDashboardControllerGetCommentCountByDistrict(startDate: string, endDate: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
+    public analyticsDashboardControllerGetCommentCountByDistrict(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<PublicCommentCountByDistrictResponse>>;
+    public analyticsDashboardControllerGetCommentCountByDistrict(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<PublicCommentCountByDistrictResponse>>>;
+    public analyticsDashboardControllerGetCommentCountByDistrict(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<PublicCommentCountByDistrictResponse>>>;
+    public analyticsDashboardControllerGetCommentCountByDistrict(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
         if (startDate === null || startDate === undefined) {
             throw new Error('Required parameter startDate was null or undefined when calling analyticsDashboardControllerGetCommentCountByDistrict.');
         }
@@ -115,6 +116,10 @@ export class AnalyticsDashboardService {
         if (endDate !== undefined && endDate !== null) {
           queryParameters = this.addToHttpParams(queryParameters,
             <any>endDate, 'endDate');
+        }
+        if (projectPlanCode !== undefined && projectPlanCode !== null) {
+          queryParameters = this.addToHttpParams(queryParameters,
+            <any>projectPlanCode, 'projectPlanCode');
         }
 
         let headers = this.defaultHeaders;
@@ -160,13 +165,14 @@ export class AnalyticsDashboardService {
      * Get number of public comments created in a user selected date range, grouped by forest clients
      * @param startDate Start date in YYYY-MM-DD format
      * @param endDate End date in YYYY-MM-DD format
+     * @param projectPlanCode Project plan code filter (FSP, WOODLOT, ALL). Default to FSP
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyticsDashboardControllerGetCommentCountByForestClient(startDate: string, endDate: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<PublicCommentCountByForestClientResponse>>;
-    public analyticsDashboardControllerGetCommentCountByForestClient(startDate: string, endDate: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<PublicCommentCountByForestClientResponse>>>;
-    public analyticsDashboardControllerGetCommentCountByForestClient(startDate: string, endDate: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<PublicCommentCountByForestClientResponse>>>;
-    public analyticsDashboardControllerGetCommentCountByForestClient(startDate: string, endDate: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
+    public analyticsDashboardControllerGetCommentCountByForestClient(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<PublicCommentCountByForestClientResponse>>;
+    public analyticsDashboardControllerGetCommentCountByForestClient(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<PublicCommentCountByForestClientResponse>>>;
+    public analyticsDashboardControllerGetCommentCountByForestClient(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<PublicCommentCountByForestClientResponse>>>;
+    public analyticsDashboardControllerGetCommentCountByForestClient(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
         if (startDate === null || startDate === undefined) {
             throw new Error('Required parameter startDate was null or undefined when calling analyticsDashboardControllerGetCommentCountByForestClient.');
         }
@@ -182,6 +188,10 @@ export class AnalyticsDashboardService {
         if (endDate !== undefined && endDate !== null) {
           queryParameters = this.addToHttpParams(queryParameters,
             <any>endDate, 'endDate');
+        }
+        if (projectPlanCode !== undefined && projectPlanCode !== null) {
+          queryParameters = this.addToHttpParams(queryParameters,
+            <any>projectPlanCode, 'projectPlanCode');
         }
 
         let headers = this.defaultHeaders;
@@ -227,13 +237,14 @@ export class AnalyticsDashboardService {
      * Get number of public comments created in a user selected date range, grouped by response code
      * @param startDate Start date in YYYY-MM-DD format
      * @param endDate End date in YYYY-MM-DD format
+     * @param projectPlanCode Project plan code filter (FSP, WOODLOT, ALL). Default to FSP
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyticsDashboardControllerGetCommentCountByResponseCode(startDate: string, endDate: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<PublicCommentCountByCategoryResponse>>;
-    public analyticsDashboardControllerGetCommentCountByResponseCode(startDate: string, endDate: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<PublicCommentCountByCategoryResponse>>>;
-    public analyticsDashboardControllerGetCommentCountByResponseCode(startDate: string, endDate: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<PublicCommentCountByCategoryResponse>>>;
-    public analyticsDashboardControllerGetCommentCountByResponseCode(startDate: string, endDate: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
+    public analyticsDashboardControllerGetCommentCountByResponseCode(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<PublicCommentCountByCategoryResponse>>;
+    public analyticsDashboardControllerGetCommentCountByResponseCode(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<PublicCommentCountByCategoryResponse>>>;
+    public analyticsDashboardControllerGetCommentCountByResponseCode(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<PublicCommentCountByCategoryResponse>>>;
+    public analyticsDashboardControllerGetCommentCountByResponseCode(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
         if (startDate === null || startDate === undefined) {
             throw new Error('Required parameter startDate was null or undefined when calling analyticsDashboardControllerGetCommentCountByResponseCode.');
         }
@@ -249,6 +260,10 @@ export class AnalyticsDashboardService {
         if (endDate !== undefined && endDate !== null) {
           queryParameters = this.addToHttpParams(queryParameters,
             <any>endDate, 'endDate');
+        }
+        if (projectPlanCode !== undefined && projectPlanCode !== null) {
+          queryParameters = this.addToHttpParams(queryParameters,
+            <any>projectPlanCode, 'projectPlanCode');
         }
 
         let headers = this.defaultHeaders;
@@ -294,13 +309,14 @@ export class AnalyticsDashboardService {
      * Get total number of non-initial FOMs published in a user selected date range
      * @param startDate Start date in YYYY-MM-DD format
      * @param endDate End date in YYYY-MM-DD format
+     * @param projectPlanCode Project plan code filter (FSP, WOODLOT, ALL). Default to FSP
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCount(startDate: string, endDate: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<number>;
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCount(startDate: string, endDate: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<number>>;
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCount(startDate: string, endDate: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<number>>;
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCount(startDate: string, endDate: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCount(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<number>;
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCount(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<number>>;
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCount(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<number>>;
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCount(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
         if (startDate === null || startDate === undefined) {
             throw new Error('Required parameter startDate was null or undefined when calling analyticsDashboardControllerGetNonInitialPublishedProjectCount.');
         }
@@ -316,6 +332,10 @@ export class AnalyticsDashboardService {
         if (endDate !== undefined && endDate !== null) {
           queryParameters = this.addToHttpParams(queryParameters,
             <any>endDate, 'endDate');
+        }
+        if (projectPlanCode !== undefined && projectPlanCode !== null) {
+          queryParameters = this.addToHttpParams(queryParameters,
+            <any>projectPlanCode, 'projectPlanCode');
         }
 
         let headers = this.defaultHeaders;
@@ -361,13 +381,14 @@ export class AnalyticsDashboardService {
      * Get number of non-initial FOMs published in a user selected date range, grouped by district
      * @param startDate Start date in YYYY-MM-DD format
      * @param endDate End date in YYYY-MM-DD format
+     * @param projectPlanCode Project plan code filter (FSP, WOODLOT, ALL). Default to FSP
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate: string, endDate: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<ProjectCountByDistrictResponse>>;
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate: string, endDate: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<ProjectCountByDistrictResponse>>>;
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate: string, endDate: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<ProjectCountByDistrictResponse>>>;
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate: string, endDate: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<ProjectCountByDistrictResponse>>;
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<ProjectCountByDistrictResponse>>>;
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<ProjectCountByDistrictResponse>>>;
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
         if (startDate === null || startDate === undefined) {
             throw new Error('Required parameter startDate was null or undefined when calling analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict.');
         }
@@ -383,6 +404,10 @@ export class AnalyticsDashboardService {
         if (endDate !== undefined && endDate !== null) {
           queryParameters = this.addToHttpParams(queryParameters,
             <any>endDate, 'endDate');
+        }
+        if (projectPlanCode !== undefined && projectPlanCode !== null) {
+          queryParameters = this.addToHttpParams(queryParameters,
+            <any>projectPlanCode, 'projectPlanCode');
         }
 
         let headers = this.defaultHeaders;
@@ -428,13 +453,14 @@ export class AnalyticsDashboardService {
      * Get number of non-initial FOMs published in a user selected date range, grouped by forest client numbers
      * @param startDate Start date in YYYY-MM-DD format
      * @param endDate End date in YYYY-MM-DD format
+     * @param projectPlanCode Project plan code filter (FSP, WOODLOT, ALL). Default to FSP
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate: string, endDate: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<ProjectCountByForestClientResponse>>;
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate: string, endDate: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<ProjectCountByForestClientResponse>>>;
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate: string, endDate: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<ProjectCountByForestClientResponse>>>;
-    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate: string, endDate: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<ProjectCountByForestClientResponse>>;
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<ProjectCountByForestClientResponse>>>;
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<ProjectCountByForestClientResponse>>>;
+    public analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
         if (startDate === null || startDate === undefined) {
             throw new Error('Required parameter startDate was null or undefined when calling analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient.');
         }
@@ -450,6 +476,10 @@ export class AnalyticsDashboardService {
         if (endDate !== undefined && endDate !== null) {
           queryParameters = this.addToHttpParams(queryParameters,
             <any>endDate, 'endDate');
+        }
+        if (projectPlanCode !== undefined && projectPlanCode !== null) {
+          queryParameters = this.addToHttpParams(queryParameters,
+            <any>projectPlanCode, 'projectPlanCode');
         }
 
         let headers = this.defaultHeaders;
@@ -495,14 +525,15 @@ export class AnalyticsDashboardService {
      * Get the top N most commented projects (FOMs)
      * @param startDate Start date in YYYY-MM-DD format
      * @param endDate End date in YYYY-MM-DD format
+     * @param projectPlanCode Project plan code filter (FSP, WOODLOT, ALL). Default to FSP
      * @param limit Maximum number of projects to return (default: 15)
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyticsDashboardControllerGetTopCommentedProjects(startDate: string, endDate: string, limit?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<PublicCommentCountByProjectResponse>>;
-    public analyticsDashboardControllerGetTopCommentedProjects(startDate: string, endDate: string, limit?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<PublicCommentCountByProjectResponse>>>;
-    public analyticsDashboardControllerGetTopCommentedProjects(startDate: string, endDate: string, limit?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<PublicCommentCountByProjectResponse>>>;
-    public analyticsDashboardControllerGetTopCommentedProjects(startDate: string, endDate: string, limit?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
+    public analyticsDashboardControllerGetTopCommentedProjects(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', limit?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<Array<PublicCommentCountByProjectResponse>>;
+    public analyticsDashboardControllerGetTopCommentedProjects(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', limit?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<Array<PublicCommentCountByProjectResponse>>>;
+    public analyticsDashboardControllerGetTopCommentedProjects(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', limit?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<Array<PublicCommentCountByProjectResponse>>>;
+    public analyticsDashboardControllerGetTopCommentedProjects(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', limit?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
         if (startDate === null || startDate === undefined) {
             throw new Error('Required parameter startDate was null or undefined when calling analyticsDashboardControllerGetTopCommentedProjects.');
         }
@@ -518,6 +549,10 @@ export class AnalyticsDashboardService {
         if (endDate !== undefined && endDate !== null) {
           queryParameters = this.addToHttpParams(queryParameters,
             <any>endDate, 'endDate');
+        }
+        if (projectPlanCode !== undefined && projectPlanCode !== null) {
+          queryParameters = this.addToHttpParams(queryParameters,
+            <any>projectPlanCode, 'projectPlanCode');
         }
         if (limit !== undefined && limit !== null) {
           queryParameters = this.addToHttpParams(queryParameters,
@@ -567,13 +602,14 @@ export class AnalyticsDashboardService {
      * Get total number of unique forest clients who published FOMs in a user selected date range
      * @param startDate Start date in YYYY-MM-DD format
      * @param endDate End date in YYYY-MM-DD format
+     * @param projectPlanCode Project plan code filter (FSP, WOODLOT, ALL). Default to FSP
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyticsDashboardControllerGetUniqueForestClientCount(startDate: string, endDate: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<number>;
-    public analyticsDashboardControllerGetUniqueForestClientCount(startDate: string, endDate: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<number>>;
-    public analyticsDashboardControllerGetUniqueForestClientCount(startDate: string, endDate: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<number>>;
-    public analyticsDashboardControllerGetUniqueForestClientCount(startDate: string, endDate: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
+    public analyticsDashboardControllerGetUniqueForestClientCount(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<number>;
+    public analyticsDashboardControllerGetUniqueForestClientCount(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<number>>;
+    public analyticsDashboardControllerGetUniqueForestClientCount(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<number>>;
+    public analyticsDashboardControllerGetUniqueForestClientCount(startDate: string, endDate: string, projectPlanCode?: 'FSP' | 'WOODLOT' | 'ALL', observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
         if (startDate === null || startDate === undefined) {
             throw new Error('Required parameter startDate was null or undefined when calling analyticsDashboardControllerGetUniqueForestClientCount.');
         }
@@ -589,6 +625,10 @@ export class AnalyticsDashboardService {
         if (endDate !== undefined && endDate !== null) {
           queryParameters = this.addToHttpParams(queryParameters,
             <any>endDate, 'endDate');
+        }
+        if (projectPlanCode !== undefined && projectPlanCode !== null) {
+          queryParameters = this.addToHttpParams(queryParameters,
+            <any>projectPlanCode, 'projectPlanCode');
         }
 
         let headers = this.defaultHeaders;
