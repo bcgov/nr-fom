@@ -1,32 +1,33 @@
 import { AdminOperationGuard } from '@api-core/security/admin.guard';
 import { AuthGuard } from '@api-core/security/auth.guard';
+import { ProjectPlanCodeFilterEnum } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
 import { DateRangeRequest } from '@api-modules/analytics-dashboard/analytics-dashboard.dto';
 import {
-  ProjectCountByDistrictResponse,
-  ProjectCountByForestClientResponse,
+    ProjectCountByDistrictResponse,
+    ProjectCountByForestClientResponse,
 } from '@api-modules/project/project.dto';
 import { ProjectService } from '@api-modules/project/project.service';
 import {
-  PublicCommentCountByCategoryResponse,
-  PublicCommentCountByDistrictResponse,
-  PublicCommentCountByForestClientResponse,
-  PublicCommentCountByProjectResponse,
+    PublicCommentCountByCategoryResponse,
+    PublicCommentCountByDistrictResponse,
+    PublicCommentCountByForestClientResponse,
+    PublicCommentCountByProjectResponse,
 } from '@api-modules/public-comment/public-comment.dto';
 import { PublicCommentService } from '@api-modules/public-comment/public-comment.service';
 import {
-  Controller,
-  DefaultValuePipe,
-  Get,
-  ParseIntPipe,
-  Query,
-  UseGuards,
+    Controller,
+    DefaultValuePipe,
+    Get,
+    ParseIntPipe,
+    Query,
+    UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
+    ApiBearerAuth,
+    ApiOperation,
+    ApiQuery,
+    ApiResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 
 @ApiTags('analytics-dashboard')
@@ -45,6 +46,7 @@ export class AnalyticsDashboardController {
    * excluding those with an INITIAL workflow status.
    *
    * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @param projectPlanCode - Optional project plan code filter (FSP, WOODLOT, ALL). Default is FSP.
    * @returns Number of non-Initial FOMs projects published in the date range
    */
   @Get('project/count')
@@ -58,12 +60,20 @@ export class AnalyticsDashboardController {
       'Number of non-Initial FOMs projects published in the date range',
     type: Number,
   })
+  @ApiQuery({
+    name: 'projectPlanCode',
+    required: false,
+    enum: ProjectPlanCodeFilterEnum,
+    description: 'Project plan code filter (FSP, WOODLOT, ALL)',
+  })
   async getNonInitialPublishedProjectCount(
-    @Query() query: DateRangeRequest
+    @Query() query: DateRangeRequest,
+    @Query('projectPlanCode', new DefaultValuePipe(ProjectPlanCodeFilterEnum.FSP)) projectPlanCode: ProjectPlanCodeFilterEnum
   ): Promise<number> {
     return this.projectService.getNonInitialPublishedProjectCount(
       query.startDate,
-      query.endDate
+      query.endDate,
+      projectPlanCode
     );
   }
 

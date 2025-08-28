@@ -14,6 +14,7 @@ import { BadRequestException, ForbiddenException, Injectable, InternalServerErro
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { USER_SYSTEM } from '@src/app-constants';
+import { applyFomDateAndStateFilters, applyProjectPlanCodeFilter, ProjectPlanCodeFilterEnum } from '@src/app/modules/analytics-dashboard/analytics-dashboard-data-filter';
 import { ProjectPlanCodeEnum } from '@src/app/modules/project/project-plan-code.entity';
 import { User } from "@utility/security/user";
 import * as dayjs from 'dayjs';
@@ -21,12 +22,13 @@ import { isEmpty, isNil } from 'lodash';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import {
-    ProjectCommentClassificationMandatoryChangeRequest, ProjectCommentingClosedDateChangeRequest, ProjectCreateRequest, ProjectMetricsResponse, ProjectPublicSummaryResponse, ProjectResponse, ProjectUpdateRequest,
-    ProjectWorkflowStateChangeRequest, ProjectCountByDistrictResponse, ProjectCountByForestClientResponse,
+  ProjectCommentClassificationMandatoryChangeRequest, ProjectCommentingClosedDateChangeRequest,
+  ProjectCountByDistrictResponse, ProjectCountByForestClientResponse,
+  ProjectCreateRequest, ProjectMetricsResponse, ProjectPublicSummaryResponse, ProjectResponse, ProjectUpdateRequest,
+  ProjectWorkflowStateChangeRequest,
 } from './project.dto';
 import { Project } from './project.entity';
 import { WorkflowStateEnum } from './workflow-state-code.entity';
-import { applyFomDateAndStateFilters } from '@src/app/modules/analytics-dashboard/analytics-dashboard-data-filter';
 import NodeCache = require('node-cache');
 import _ = require('lodash');
 export class ProjectFindCriteria {
@@ -876,14 +878,16 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    * 
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @param projectPlanCode - The project plan code to filter by (FSP, WOODLOT, or ALL)
    * @returns Promise resolving to the count of projects matching the criteria
    */
   async getNonInitialPublishedProjectCount(
-    startDate: string,
-    endDate: string
+    startDate: string, endDate: string, projectPlanCode: ProjectPlanCodeFilterEnum  
   ): Promise<number> {
     const qb = this.repository.createQueryBuilder('p');
     applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
+    this.logger.debug(`Query built for getNonInitialPublishedProjectCount: ${qb.getQueryAndParameters()}`);
     return await qb.getCount();
   }
 

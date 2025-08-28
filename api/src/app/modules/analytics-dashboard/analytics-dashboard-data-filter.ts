@@ -1,6 +1,12 @@
 import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.entity';
 import { SelectQueryBuilder } from 'typeorm';
 
+export enum ProjectPlanCodeFilterEnum {
+  FSP = 'FSP',
+  WOODLOT = 'WOODLOT',
+  ALL = 'ALL'
+}
+
 export function applyFomDateAndStateFilters<T>(
   qb: SelectQueryBuilder<T>,
   startDate: string,
@@ -27,4 +33,16 @@ export function applyCommentCreateDateFilter<T>(
     //       it, will result into some missing edge data.
     .where(`DATE_TRUNC('day', ${alias}.create_timestamp) >= :startDate`,  { startDate })
     .andWhere(`DATE_TRUNC('day', ${alias}.create_timestamp) <= :endDate`, { endDate });
+}
+
+export function applyProjectPlanCodeFilter<T>(
+  qb: SelectQueryBuilder<T>,
+  projectPlanCode: ProjectPlanCodeFilterEnum,
+  alias: string
+): SelectQueryBuilder<T> {
+  if (projectPlanCode === ProjectPlanCodeFilterEnum.ALL) {
+    return qb.andWhere(`${alias}.project_plan_code IN (:...codes)`, { codes: [ProjectPlanCodeFilterEnum.FSP, ProjectPlanCodeFilterEnum.WOODLOT] });
+  } else {
+    return qb.andWhere(`${alias}.project_plan_code = :code`, { code: projectPlanCode });
+  }
 }
