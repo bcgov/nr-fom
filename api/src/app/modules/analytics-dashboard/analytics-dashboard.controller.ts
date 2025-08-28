@@ -1,6 +1,5 @@
 import { AdminOperationGuard } from '@api-core/security/admin.guard';
 import { AuthGuard } from '@api-core/security/auth.guard';
-import { ProjectPlanCodeFilterEnum } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
 import { AnalyticsDashboarQuaryRequest as AnalyticsRequestQuaryParams } from '@api-modules/analytics-dashboard/analytics-dashboard.dto';
 import {
     ProjectCountByDistrictResponse,
@@ -47,8 +46,7 @@ export class AnalyticsDashboardController {
    * with a commenting open date within the specified date range,
    * excluding those with an INITIAL workflow status.
    *
-   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
-   * @param projectPlanCode - Optional project plan code filter (FSP, WOODLOT, ALL). Default is FSP.
+   * @param query - AnalyticsRequestQuaryParams containing startDate and endDate in 'YYYY-MM-DD' format and projectPlanCode
    * @returns Number of non-Initial FOMs projects published in the date range
    */
   @Get('project/count')
@@ -67,9 +65,7 @@ export class AnalyticsDashboardController {
   ): Promise<number> {
     this.logger.debug(`Controller 'getNonInitialPublishedProjectCount' called with params ${JSON.stringify(query)}`)
     return this.projectService.getNonInitialPublishedProjectCount(
-      query.startDate,
-      query.endDate,
-      query.projectPlanCode as ProjectPlanCodeFilterEnum
+      query.startDate, query.endDate, query.projectPlanCode
     );
   }
 
@@ -78,7 +74,7 @@ export class AnalyticsDashboardController {
    * with a commenting open date within the specified date range,
    * excluding those with an INITIAL workflow status.
    *
-   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @param query - AnalyticsRequestQuaryParams containing startDate and endDate in 'YYYY-MM-DD' format and projectPlanCode
    * @returns An array of objects containing districtId, districtName, and projectCount
    */
   @Get('project/count-by-district')
@@ -95,9 +91,9 @@ export class AnalyticsDashboardController {
   async getNonInitialPublishedProjectCountByDistrict(
     @Query() query: AnalyticsRequestQuaryParams
   ): Promise<ProjectCountByDistrictResponse[]> {
+    this.logger.debug(`Controller 'getNonInitialPublishedProjectCountByDistrict' called with params ${JSON.stringify(query)}`)
     return this.projectService.getNonInitialPublishedProjectCountByDistrict(
-      query.startDate,
-      query.endDate
+      query.startDate, query.endDate, query.projectPlanCode
     );
   }
 
@@ -106,7 +102,7 @@ export class AnalyticsDashboardController {
    * with a commenting open date within the specified range,
    * excluding those with an INITIAL workflow status.
    *
-   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @param query - AnalyticsRequestQuaryParams containing startDate and endDate in 'YYYY-MM-DD' format and projectPlanCode
    * @returns Number of distinct forest client numbers
    */
   @Get('project/count-forest-client')
@@ -122,9 +118,11 @@ export class AnalyticsDashboardController {
   async getUniqueForestClientCount(
     @Query() query: AnalyticsRequestQuaryParams
   ): Promise<number> {
+    this.logger.debug(`Controller 'getUniqueForestClientCount' called with params ${JSON.stringify(query)}`);
     return this.projectService.getUniqueForestClientCount(
       query.startDate,
-      query.endDate
+      query.endDate,
+      query.projectPlanCode
     );
   }
 
@@ -133,7 +131,7 @@ export class AnalyticsDashboardController {
    * with a commenting open date within the specified date range,
    * excluding those with an INITIAL workflow status.
    *
-   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @param query - AnalyticsRequestQuaryParams containing startDate and endDate in 'YYYY-MM-DD' format and projectPlanCode
    * @returns An array of objects containing forestClientNumber, forestClientName, projectCount
    */
   @Get('project/count-by-forest-client')
@@ -151,9 +149,11 @@ export class AnalyticsDashboardController {
   async getNonInitialPublishedProjectCountByForestClient(
     @Query() query: AnalyticsRequestQuaryParams
   ): Promise<ProjectCountByForestClientResponse[]> {
+    this.logger.debug(`Controller 'getNonInitialPublishedProjectCountByForestClient' called with params ${JSON.stringify(query)}`);
     return this.projectService.getNonInitialPublishedProjectCountByForestClient(
       query.startDate,
-      query.endDate
+      query.endDate,
+      query.projectPlanCode
     );
   }
 
@@ -161,7 +161,7 @@ export class AnalyticsDashboardController {
    * Returns the number of public comments grouped by district
    * with a create timestamp within the specified date range.
    *
-   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @param query - AnalyticsRequestQuaryParams containing startDate and endDate in 'YYYY-MM-DD' format and projectPlanCode
    * @returns An array of objects containing districtId, districtName, and publicCommentCount
    */
   @Get('public-comment/count-by-district')
@@ -178,9 +178,11 @@ export class AnalyticsDashboardController {
   async getCommentCountByDistrict(
     @Query() query: AnalyticsRequestQuaryParams
   ): Promise<PublicCommentCountByDistrictResponse[]> {
+    this.logger.debug(`Controller 'getCommentCountByDistrict' called with params ${JSON.stringify(query)}`);
     return this.publicCommentService.getCommentCountByDistrict(
       query.startDate,
-      query.endDate
+      query.endDate,
+      query.projectPlanCode
     );
   }
 
@@ -188,7 +190,7 @@ export class AnalyticsDashboardController {
    * Returns the number of public comments grouped by forest clients
    * with a create timestamp within the specified date range.
    *
-   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @param query - AnalyticsRequestQuaryParams containing startDate and endDate in 'YYYY-MM-DD' format and projectPlanCode
    * @returns An array of objects containing forestClientNumber, forestClientName, and publicCommentCount
    */
   @Get('public-comment/count-by-forest-client')
@@ -205,9 +207,11 @@ export class AnalyticsDashboardController {
   async getCommentCountByForestClient(
     @Query() query: AnalyticsRequestQuaryParams
   ): Promise<PublicCommentCountByForestClientResponse[]> {
+    this.logger.debug(`Controller 'getCommentCountByForestClient' called with params ${JSON.stringify(query)}`);
     return this.publicCommentService.getCommentCountByForestClient(
       query.startDate,
-      query.endDate
+      query.endDate,
+      query.projectPlanCode
     );
   }
 
@@ -215,7 +219,7 @@ export class AnalyticsDashboardController {
    * Returns the number of public comments grouped by response code (category)
    * with a create timestamp within the specified date range.
    *
-   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @param query - AnalyticsRequestQuaryParams containing startDate and endDate in 'YYYY-MM-DD' format and projectPlanCode
    * @returns An array of objects containing responseCode and publicCommentCount
    */
   @Get('public-comment/count-by-responsecode')
@@ -232,9 +236,11 @@ export class AnalyticsDashboardController {
   async getCommentCountByResponseCode(
     @Query() query: AnalyticsRequestQuaryParams
   ): Promise<PublicCommentCountByCategoryResponse[]> {
+    this.logger.debug(`Controller 'getCommentCountByForestClient' called with params ${JSON.stringify(query)}`);
     return this.publicCommentService.getCommentCountByResponseCode(
       query.startDate,
-      query.endDate
+      query.endDate,
+      query.projectPlanCode
     );
   }
 
@@ -242,7 +248,7 @@ export class AnalyticsDashboardController {
    * Returns the top N most commented projects (FOMs)
    * with a comment create timestamp within the specified date range
    *
-   * @param query - DateRangeRequest containing startDate and endDate in 'YYYY-MM-DD' format
+   * @param query - AnalyticsRequestQuaryParams containing startDate and endDate in 'YYYY-MM-DD' format and projectPlanCode
    * @param limit - Maximum number of projects to return
    * @returns An array of objects containing projectId, projectName, and publicCommentCount
    */
@@ -264,9 +270,11 @@ export class AnalyticsDashboardController {
     @Query() query: AnalyticsRequestQuaryParams,
     @Query('limit', new DefaultValuePipe(15), ParseIntPipe) limit: number
   ): Promise<PublicCommentCountByProjectResponse[]> {
+    this.logger.debug(`Controller 'getTopCommentedProjects' called with params ${JSON.stringify(query)} and limit ${limit}`);
     return this.publicCommentService.getCommentCountByProject(
       query.startDate,
       query.endDate,
+      query.projectPlanCode,
       limit
     );
   }

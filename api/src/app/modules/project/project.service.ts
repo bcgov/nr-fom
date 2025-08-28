@@ -887,7 +887,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     const qb = this.repository.createQueryBuilder('p');
     applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
     applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
-    this.logger.debug(`Query built for getNonInitialPublishedProjectCount: ${qb.getQueryAndParameters()}`);
+    this.logger.debug(`getNonInitialPublishedProjectCount SQL: ${qb.getQueryAndParameters()}`);
     return await qb.getCount();
   }
 
@@ -897,23 +897,25 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    *
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @param projectPlanCode - The project plan code to filter by (FSP, WOODLOT, or ALL)
    * @returns Promise resolving to an array of ProjectCountByDistrictResponse
    */
   async getNonInitialPublishedProjectCountByDistrict(
-    startDate: string,
-    endDate: string
+    startDate: string, endDate: string, projectPlanCode: ProjectPlanCodeFilterEnum 
   ): Promise<ProjectCountByDistrictResponse[]> {
     const qb = this.repository.createQueryBuilder('p');
     applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
-    return await qb
+    applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
+    qb
       .innerJoin('p.district', 'd')
       .select('p.district_id', 'districtId')
       .addSelect('COUNT(p.project_id)', 'projectCount')
       .addSelect('d.name', 'districtName')
       .groupBy('p.district_id')
       .addGroupBy('d.name')
-      .orderBy('"projectCount"', 'DESC')
-      .getRawMany();
+      .orderBy('"projectCount"', 'DESC');
+    this.logger.debug(`getNonInitialPublishedProjectCountByDistrict SQL: ${qb.getQueryAndParameters()}`);
+    return await qb.getRawMany();
   }
 
   /**
@@ -922,14 +924,14 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    *
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @param projectPlanCode - The project plan code to filter by (FSP, WOODLOT, or ALL)
    * @returns Promise resolving to the count of distinct forest client numbers
    */
   async getUniqueForestClientCount(
-    startDate: string,
-    endDate: string
-  ): Promise<number> {
+startDate: string, endDate: string, projectPlanCode: ProjectPlanCodeFilterEnum  ): Promise<number> {
     const qb = this.repository.createQueryBuilder('p');
     applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
     return await qb
       .select('COUNT(DISTINCT forest_client_number)', 'count')
       .getRawOne()
@@ -942,23 +944,25 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    *
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @param projectPlanCode - The project plan code to filter by (FSP, WOODLOT, or ALL)
    * @returns Promise resolving to an array of ProjectCountByForestClientResponse
    */
   async getNonInitialPublishedProjectCountByForestClient(
-    startDate: string,
-    endDate: string
+    startDate: string, endDate: string, projectPlanCode: ProjectPlanCodeFilterEnum  
   ): Promise<ProjectCountByForestClientResponse[]> {
     const qb = this.repository.createQueryBuilder('p');
     applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
-    return await qb
+    applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
+    qb
       .innerJoin('p.forestClient', 'fc')
       .select('p.forest_client_number', 'forestClientNumber')
       .addSelect('fc.name', 'forestClientName')
       .addSelect('COUNT(p.project_id)', 'projectCount')
       .groupBy('p.forest_client_number')
       .addGroupBy('fc.name')
-      .orderBy('"projectCount"', 'DESC')
-      .getRawMany();
+      .orderBy('"projectCount"', 'DESC');
+    this.logger.debug(`getNonInitialPublishedProjectCountByForestClient SQL: ${qb.getQueryAndParameters()}`);
+    return await qb.getRawMany();
   }
 
 }
