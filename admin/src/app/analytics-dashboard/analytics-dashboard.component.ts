@@ -9,7 +9,8 @@ import { RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AppFormControlDirective } from '@admin-core/directives/form-control.directive';
 import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
-import { FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
+import { AnalyticsDashboardDataService } from '@admin-core/services/analytics-dashboard-data.service';
+import { DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -40,55 +41,69 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
     providers: [DatePipe]
 })
 export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
-  onPlanFilterChange(value: string) {
-    this.selectedFilter = value;
-    this.fetchAnalyticsData();
-  }
+  isInitialized = false;
   analyticsData = signal<any>(null);
-  startDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
-  endDate: Date = new Date();
+  startDate: Date;
+  endDate: Date;
   planFilterOptions = [
     { value: ProjectPlanCodeFilterEnum.Fsp, label: 'FSP' },
     { value: ProjectPlanCodeFilterEnum.Woodlot, label: 'Woodlot' },
     { value: ProjectPlanCodeFilterEnum.All, label: 'All' }
   ];
-  selectedFilter: string = this.planFilterOptions[0]?.value || '';
+  selectedPlan: ProjectPlanCodeFilterEnum = this.planFilterOptions[0]?.value;
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private formBuilder: RxFormBuilder
+    private formBuilder: RxFormBuilder,
+    private analyticsDashboardDataService: AnalyticsDashboardDataService
   ) {
   }
 
   ngOnInit() {
     this.analyticsData.set(this.route.snapshot.data['analyticsData']);
-    this.selectedFilter = this.planFilterOptions[0]?.value || '';
+    console.log('Analytics data loaded:', this.analyticsData());
+    this.selectedPlan = this.planFilterOptions[0]?.value;
+    this.startDate = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
+    this.endDate = new Date();
+  }
+
+  async ngAfterViewInit() {
+    // Implement a delay before setting isInitialized to true
+    await new Promise(resolve => setTimeout(resolve, 1000)); // 500ms delay
+    this.isInitialized = true;
   }
 
   onDateChange(type: 'startDate' | 'endDate', value: Date) {
-    // Convert Date to string in 'YYYY-MM-DD' format
-    const formatted = value ? DateTime.fromJSDate(value).toFormat('yyyy-MM-dd') : '';
+    const formatted = value ? DateTime.fromJSDate(value).toFormat(DEFAULT_ISO_DATE_FORMAT) : '';
     if (type === 'startDate') {
       this.startDate = value;
     } else if (type === 'endDate') {
       this.endDate = value;
     }
-    // Fetch new analytics data from backend
-    this.fetchAnalyticsData();
+    if (this.isInitialized) {
+      this.fetchAnalyticsData();
+    }
+  }
+
+  onPlanFilterChange(value: ProjectPlanCodeFilterEnum) {
+    this.selectedPlan = value;
+    if (this.isInitialized) {
+      this.fetchAnalyticsData();
+    }
   }
 
   fetchAnalyticsData() {
-    // TODO: Replace with actual API call
-    // Example: this.analyticsService.getAnalytics(this.startDate, this.endDate, this.selectedFilter)
-    //   .subscribe(data => this.analyticsData.set(data));
-    // For now, just log to console
-    console.log('Fetching analytics data for:', this.startDate, this.endDate, this.selectedFilter);
-    // Simulate fetch
-    // this.analyticsData.set(mockData);
-  }
-
-  ngAfterViewInit() {
+    const startDateStr = this.startDate ? DateTime.fromJSDate(this.startDate).toFormat(DEFAULT_ISO_DATE_FORMAT) : FOM_GO_LIVE_DATE;
+    const endDateStr = this.endDate ? DateTime.fromJSDate(this.endDate).toFormat(DEFAULT_ISO_DATE_FORMAT) :  DateTime.fromJSDate(new Date()).toFormat(DEFAULT_ISO_DATE_FORMAT);
+    const selectedPlan = this.selectedPlan;
+    const limit = 15; // TODO, implement this, not hardcoded.
+    console.log('Fetching analytics data with params:', { startDateStr, endDateStr, selectedPlan, limit });
+    this.analyticsDashboardDataService.getAnalyticsData(startDateStr, endDateStr, selectedPlan, limit)
+      .subscribe(data => {
+        this.analyticsData.set(data);
+        console.log("Analytics data loaded:", this.analyticsData());
+    });
   }
 
   ngOnDestroy() {

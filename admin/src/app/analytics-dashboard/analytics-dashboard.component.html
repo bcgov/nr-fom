@@ -41,7 +41,7 @@
               <div class="form-group">
                 <label for="plan-select">Show</label>
                 <select id="plan-select" class="form-control" name="plan-select"
-                  [(ngModel)]="selectedFilter"
+                  [(ngModel)]="selectedPlan"
                   (ngModelChange)="onPlanFilterChange($event)">
                   <option *ngFor="let opt of planFilterOptions" [value]="opt.value">{{ opt.label }}</option>
                 </select>
