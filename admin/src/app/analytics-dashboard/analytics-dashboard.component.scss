@@ -9,13 +9,43 @@
   overflow: hidden;
 }
 
+.top-container .container{
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
 .title-container {
+  display: flex;
   flex-direction: column;
+  h1 {
+    font-size: 1.65rem;
+  }
+}
+
+.flex-row-align-end{
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
 }
 
 .dashboard-subtitle {
   font-size: 14px;
   letter-spacing: 0.16px;
   margin-top: 4px;
-  margin-bottom: 30px;
+  margin-bottom: 0;
+}
+
+.filter-div {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin-top: 0;
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    margin-bottom: 0;
+  }
 }

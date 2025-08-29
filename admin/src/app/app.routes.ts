@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { analyticsResolver } from './analytics-dashboard/analytics.resolver';
 
+import { adminGuard } from '@admin-core/guards/admin.guard';
+
 import { AboutComponent } from 'app/about/about.component';
 import { AnalyticsDashboardComponent } from 'app/analytics-dashboard/analytics-dashboard.component';
 import { FomAddEditComponent } from 'app/foms/fom-add-edit/fom-add-edit.component';
@@ -87,6 +89,7 @@ export const AppRoutes: Routes = [
   {
     path: 'analytics-dashboard',
     component: AnalyticsDashboardComponent,
+    canActivate: [adminGuard],
     resolve: {
       analyticsData: analyticsResolver
     }

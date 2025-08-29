@@ -2,27 +2,48 @@
   <div class="top-container" style="overflow-y: hidden;">
     <div class="container">
       <div class="title-container">
-        <div class="title-container__title">
-          <h1 class="text-muted">Dashboard</h1>
-        </div>
-        <div class="dashboard-subtitle">
-            Manage and track FOM information usage
-        </div>
-      </div>
-      <div class="filter-container">
-        <div class="row">
-            <div class="form-group col-md-2">
-            <label for="fomNumberInput" style="white-space: nowrap;">
-                    FOM Number
-            </label>
-
-            <input id="fNumberInput" name="fNumber" type="number"
-                    min="0" step="1"
-                    oninput="this.value = this.value.slice(0, 9)"
-                    class="form-control"
-                    style="font-size: 14px;"autofocus/>
+          <div class="flex-row-align-end">
+            <div>
+              <h1 class="text-muted mb-0">Dashboard</h1>
+              <div class="dashboard-subtitle mb-0">Manage and track FOM information usage</div>
             </div>
-        </div>
+            <div class="filter-div">
+              <div class="form-group me-2">
+                <label for="startDate">Start Date</label>
+                <input
+                  id="startDate"
+                  name="startDate"
+                  readonly
+                  type="text"
+                  class="form-control readonly-normal"
+                  placeholder="YYYY-MM-DD"
+                  bsDatepicker
+                  [minDate]="minStartDate"
+                  [(ngModel)]="startDate"
+                  [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                />
+              </div>
+              <div class="form-group me-2">
+                <label for="endDate">End Date</label>
+                <input
+                  id="endDate"
+                  name="endDate"
+                  type="text"
+                  class="form-control readonly-normal"
+                  placeholder="YYYY-MM-DD"
+                  bsDatepicker
+                  [(ngModel)]="endDate"
+                  [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                />
+              </div>
+              <div class="form-group">
+                <label for="filterSelect">Filter</label>
+                <select class="form-control" [(ngModel)]="selectedFilter" name="filterSelect" id="filterSelect">
+                  <option *ngFor="let opt of filterOptions" [value]="opt.value">{{ opt.label }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
       </div>
     </div>
   </div>
