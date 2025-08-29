@@ -1,3 +1,4 @@
+
 @import "../../assets/styles/base/base.scss";
 @import "../../assets/styles/layout/layout.scss";
 
@@ -9,6 +10,7 @@
   overflow: hidden;
 }
 
+// --- Top Container
 .top-container .container{
   padding-top: 18px;
   padding-bottom: 18px;
@@ -48,4 +50,14 @@
     justify-content: flex-end;
     margin-bottom: 0;
   }
+}
+
+// --- Bottom Container
+.bottom-container {
+  &.scroll {
+    // Show vertical scrollbar only when content overflows viewport
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+
 }
