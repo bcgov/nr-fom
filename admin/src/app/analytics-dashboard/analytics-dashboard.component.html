@@ -9,7 +9,7 @@
             </div>
             <div class="filter-div">
               <div class="form-group me-2">
-                <label for="startDate">Start Date</label>
+                <label for="startDate">Start date</label>
                 <input
                   id="startDate"
                   name="startDate"
@@ -21,10 +21,11 @@
                   [minDate]="minStartDate"
                   [(ngModel)]="startDate"
                   [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                  (bsValueChange)="onDateChange('startDate', $event)"
                 />
               </div>
               <div class="form-group me-2">
-                <label for="endDate">End Date</label>
+                <label for="endDate">End date</label>
                 <input
                   id="endDate"
                   name="endDate"
@@ -34,12 +35,15 @@
                   bsDatepicker
                   [(ngModel)]="endDate"
                   [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                  (bsValueChange)="onDateChange('endDate', $event)"
                 />
               </div>
               <div class="form-group">
-                <label for="filterSelect">Filter</label>
-                <select class="form-control" [(ngModel)]="selectedFilter" name="filterSelect" id="filterSelect">
-                  <option *ngFor="let opt of filterOptions" [value]="opt.value">{{ opt.label }}</option>
+                <label for="plan-select">Show</label>
+                <select id="plan-select" class="form-control" name="plan-select"
+                  [(ngModel)]="selectedFilter"
+                  (ngModelChange)="onPlanFilterChange($event)">
+                  <option *ngFor="let opt of planFilterOptions" [value]="opt.value">{{ opt.label }}</option>
                 </select>
               </div>
             </div>

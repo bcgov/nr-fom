@@ -1,3 +1,4 @@
+import { FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
 import { inject } from '@angular/core';
 import { AnalyticsDashboardService } from '@api-client';
 import { forkJoin, of } from 'rxjs';
@@ -6,7 +7,7 @@ import { catchError } from 'rxjs/operators';
 export const analyticsResolver = () => {
   const analyticsService = inject(AnalyticsDashboardService);
   // Example date range, adjust as needed or make dynamic
-  const startDate = '2024-04-01'; // FOM production live date
+  const startDate = FOM_GO_LIVE_DATE;
   const endDate = '2025-12-31';
   const limit = 15;
 
