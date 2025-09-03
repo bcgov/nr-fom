@@ -17,8 +17,31 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ProjectPlanCodeFilterEnum } from '@api-client';
 import { DateTime } from 'luxon';
+import {
+  ApexAxisChartSeries,
+  ApexChart,
+  ApexDataLabels,
+  ApexFill,
+  ApexLegend,
+  ApexPlotOptions,
+  ApexTitleSubtitle,
+  ApexXAxis,
+  ApexYAxis,
+  NgApexchartsModule
+} from 'ng-apexcharts';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
+export type ChartOptions = {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  dataLabels: ApexDataLabels;
+  plotOptions: ApexPlotOptions;
+  yaxis: ApexYAxis;
+  xaxis: ApexXAxis;
+  fill: ApexFill;
+  legend: ApexLegend;
+  title: ApexTitleSubtitle
+};
 @Component({
     standalone: true,
     imports: [
@@ -27,6 +50,7 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
       ReactiveFormsModule,
       BsDatepickerModule,
       NgClass,
+      NgApexchartsModule,
       NgFor,
       AppFormControlDirective,
       NewlinesPipe,
@@ -52,6 +76,11 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
   ];
   selectedPlan: ProjectPlanCodeFilterEnum = this.planFilterOptions[0]?.value;
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
+  
+  // chart options
+  public chartOptions: Partial<ChartOptions>;
+  public cmmtssByRespCodeOptions: Partial<ChartOptions>; // Comments by response code chart options
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -66,6 +95,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
     this.selectedPlan = this.planFilterOptions[0]?.value;
     this.startDate = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
     this.endDate = new Date();
+
+    this.initCommentsByResponseCodeChartOptions();
   }
 
   async ngAfterViewInit() {
@@ -109,6 +140,69 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
   ngOnDestroy() {
     // this.ngUnsubscribe.next();
     // this.ngUnsubscribe.complete();
+  }
+
+  initCommentsByResponseCodeChartOptions() {
+    this.cmmtssByRespCodeOptions = {
+      title: {
+        text: "Total comments received by category"
+      },
+      series: [
+        {
+          name: "Comments by Response Code",
+          data: [480, 118, 90]
+        }
+      ],
+      chart: {
+        type: "bar",
+        height: 380
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: "55%",
+          dataLabels: {
+            position: "top" // top, center, bottom
+          }
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function(val) {
+          return val as number;
+        },
+        offsetY: -20,
+        style: {
+          fontSize: "12px",
+          colors: ["#304758"]
+        }
+      },
+      xaxis: {
+        categories: [
+          "Considered",
+          "Addressed",
+          "Not applicable"
+        ],
+        title: {
+          text: "Comment category",
+          style: {
+            cssClass: "chart-title-label"
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: "Number of comments",
+          style: {
+            cssClass: "chart-title-label"
+          }
+        }
+      },
+      fill: {
+        opacity: 1,
+        colors: ["#123B64"]
+      }
+    };
   }
 
 }
