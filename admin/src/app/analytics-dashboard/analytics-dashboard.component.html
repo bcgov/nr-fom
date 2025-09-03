@@ -10,33 +10,55 @@
             <div class="filter-div">
               <div class="form-group me-2">
                 <label for="startDate">Start date</label>
-                <input
-                  id="startDate"
-                  name="startDate"
-                  readonly
-                  type="text"
-                  class="form-control readonly-normal"
-                  placeholder="YYYY-MM-DD"
-                  bsDatepicker
-                  [minDate]="minStartDate"
-                  [(ngModel)]="startDate"
-                  [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
-                  (bsValueChange)="onDateChange('startDate', $event)"
-                />
+                <div class="input-group">
+                  <input
+                    #startDatePicker="bsDatepicker"
+                    id="startDate"
+                    name="startDate"
+                    readonly
+                    type="text"
+                    (keydown)="$event.preventDefault()"
+                    class="form-control readonly-normal"
+                    placeholder="YYYY-MM-DD"
+                    bsDatepicker
+                    [minDate]="minStartDate"
+                    [(ngModel)]="startDate"
+                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                    (bsValueChange)="onDateChange('startDate', $event)"
+                  />
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-icon" type="button" tabindex="-1" (click)="startDatePicker.show()"
+                      [attr.aria-expanded]="startDatePicker.isOpen">
+                      <em class="material-icons">date_range</em>
+                    </button>
+                  </div>
+                </div>
               </div>
               <div class="form-group me-2">
                 <label for="endDate">End date</label>
-                <input
-                  id="endDate"
-                  name="endDate"
-                  type="text"
-                  class="form-control readonly-normal"
-                  placeholder="YYYY-MM-DD"
-                  bsDatepicker
-                  [(ngModel)]="endDate"
-                  [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
-                  (bsValueChange)="onDateChange('endDate', $event)"
-                />
+                <div class="input-group">
+                  <input
+                    #endDatePicker="bsDatepicker"
+                    id="endDate"
+                    name="endDate"
+                    type="text"
+                    (keydown)="$event.preventDefault()"
+                    class="form-control readonly-normal"
+                    placeholder="YYYY-MM-DD"
+                    bsDatepicker
+                    [(ngModel)]="endDate"
+                    [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                    (bsValueChange)="onDateChange('endDate', $event)"
+                  />
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-icon" type="button" tabindex="-1" (click)="endDatePicker.show()"
+                      [attr.aria-expanded]="endDatePicker.isOpen">
+                      <em class="material-icons">date_range</em>
+                    </button>
+                  </div>
+                </div>
               </div>
               <div class="form-group">
                 <label for="plan-select">Show</label>
