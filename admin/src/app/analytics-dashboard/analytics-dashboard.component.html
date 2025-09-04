@@ -85,21 +85,21 @@
                 Total FOMs published for public comments
               </div>
               <div class="total-fom-content-value">
-                23
+                {{ analyticsData()?.nonInitialPublishedProjectCount || 0 }}
               </div>
             </div>
           </div>
           <div style="height: 100%;">
             <apx-chart
-                [series]="cmmtssByRespCodeOptions.series"
-                [chart]="cmmtssByRespCodeOptions.chart"
-                [dataLabels]="cmmtssByRespCodeOptions.dataLabels"
-                [plotOptions]="cmmtssByRespCodeOptions.plotOptions"
-                [yaxis]="cmmtssByRespCodeOptions.yaxis"
-                [legend]="cmmtssByRespCodeOptions.legend"
-                [fill]="cmmtssByRespCodeOptions.fill"
-                [title]="cmmtssByRespCodeOptions.title"
-                [xaxis]="cmmtssByRespCodeOptions.xaxis"
+                [series]="cmmtsByRespCodeOptions.series"
+                [chart]="cmmtsByRespCodeOptions.chart"
+                [dataLabels]="cmmtsByRespCodeOptions.dataLabels"
+                [plotOptions]="cmmtsByRespCodeOptions.plotOptions"
+                [yaxis]="cmmtsByRespCodeOptions.yaxis"
+                [legend]="cmmtsByRespCodeOptions.legend"
+                [fill]="cmmtsByRespCodeOptions.fill"
+                [title]="cmmtsByRespCodeOptions.title"
+                [xaxis]="cmmtsByRespCodeOptions.xaxis"
             ></apx-chart>
           </div>
         </div>

@@ -9,13 +9,13 @@ import { RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AppFormControlDirective } from '@admin-core/directives/form-control.directive';
 import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
-import { AnalyticsDashboardDataService } from '@admin-core/services/analytics-dashboard-data.service';
+import { AnalyticsDashboardData, AnalyticsDashboardDataService } from '@admin-core/services/analytics-dashboard-data.service';
 import { DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { ProjectPlanCodeFilterEnum } from '@api-client';
+import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
 import { DateTime } from 'luxon';
 import {
   ApexAxisChartSeries,
@@ -31,6 +31,8 @@ import {
 } from 'ng-apexcharts';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
+import { commentsByResponseCodeChartConfig } from './analytics-dashboard-chart-config';
+
 export type ChartOptions = {
   series: ApexAxisChartSeries;
   chart: ApexChart;
@@ -42,6 +44,7 @@ export type ChartOptions = {
   legend: ApexLegend;
   title: ApexTitleSubtitle
 };
+
 @Component({
     standalone: true,
     imports: [
@@ -66,7 +69,7 @@ export type ChartOptions = {
 })
 export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isInitialized = false;
-  analyticsData = signal<any>(null);
+  analyticsData = signal<AnalyticsDashboardData>(null);
   startDate: Date;
   endDate: Date;
   planFilterOptions = [
@@ -79,7 +82,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
   
   // chart options
   public chartOptions: Partial<ChartOptions>;
-  public cmmtssByRespCodeOptions: Partial<ChartOptions>; // Comments by response code chart options
+  public cmmtsByRespCodeOptions: Partial<ChartOptions>; // Comments by response code chart options
 
   constructor(
     private route: ActivatedRoute,
@@ -96,7 +99,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
     this.startDate = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
     this.endDate = new Date();
 
-    this.initCommentsByResponseCodeChartOptions();
+    this.applyCommentsByResponseCodeChartOptions();
   }
 
   async ngAfterViewInit() {
@@ -133,6 +136,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
     this.analyticsDashboardDataService.getAnalyticsData(startDateStr, endDateStr, selectedPlan, limit)
       .subscribe(data => {
         this.analyticsData.set(data);
+        this.applyCommentsByResponseCodeChartOptions();
         console.log("Analytics data loaded:", this.analyticsData());
     });
   }
@@ -142,67 +146,17 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
     // this.ngUnsubscribe.complete();
   }
 
-  initCommentsByResponseCodeChartOptions() {
-    this.cmmtssByRespCodeOptions = {
-      title: {
-        text: "Total comments received by category"
-      },
-      series: [
-        {
-          name: "Comments by Response Code",
-          data: [480, 118, 90]
-        }
-      ],
-      chart: {
-        type: "bar",
-        height: 380
-      },
-      plotOptions: {
-        bar: {
-          horizontal: false,
-          columnWidth: "55%",
-          dataLabels: {
-            position: "top" // top, center, bottom
-          }
-        }
-      },
-      dataLabels: {
-        enabled: true,
-        formatter: function(val) {
-          return val as number;
-        },
-        offsetY: -20,
-        style: {
-          fontSize: "12px",
-          colors: ["#304758"]
-        }
-      },
-      xaxis: {
-        categories: [
-          "Considered",
-          "Addressed",
-          "Not applicable"
-        ],
-        title: {
-          text: "Comment category",
-          style: {
-            cssClass: "chart-title-label"
-          }
-        }
-      },
-      yaxis: {
-        title: {
-          text: "Number of comments",
-          style: {
-            cssClass: "chart-title-label"
-          }
-        }
-      },
-      fill: {
-        opacity: 1,
-        colors: ["#123B64"]
-      }
-    };
+  applyCommentsByResponseCodeChartOptions() {
+    this.cmmtsByRespCodeOptions = commentsByResponseCodeChartConfig;
+    const data = this.analyticsData().commentCountByResponseCode;
+    this.cmmtsByRespCodeOptions.series = [{
+      name: this.cmmtsByRespCodeOptions.series[0].name,
+      data: [
+        data[ResponseCodeEnum.Considered] || 0,
+        data[ResponseCodeEnum.Addressed] || 0,
+        data['NOT_CATEGORIZED'] || 0
+      ]
+    }];
   }
 
 }
