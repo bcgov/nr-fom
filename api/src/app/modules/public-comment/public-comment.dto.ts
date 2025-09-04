@@ -146,6 +146,12 @@ export class PublicCommentCountByProjectResponse {
   projectName: string;
 
   @ApiProperty()
+  forestClientName: string;
+
+  @ApiProperty()
+  districtName: string;
+
+  @ApiProperty()
   @IsNumber()
   publicCommentCount: number;
 }

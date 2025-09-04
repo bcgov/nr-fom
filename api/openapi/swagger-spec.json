@@ -3084,6 +3084,12 @@
           "projectName": {
             "type": "string"
           },
+          "forestClientName": {
+            "type": "string"
+          },
+          "districtName": {
+            "type": "string"
+          },
           "publicCommentCount": {
             "type": "number"
           }
@@ -3091,6 +3097,8 @@
         "required": [
           "projectId",
           "projectName",
+          "forestClientName",
+          "districtName",
           "publicCommentCount"
         ]
       },

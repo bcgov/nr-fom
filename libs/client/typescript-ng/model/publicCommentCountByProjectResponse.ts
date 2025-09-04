@@ -14,6 +14,8 @@
 export interface PublicCommentCountByProjectResponse { 
     projectId: string;
     projectName: string;
+    forestClientName: string;
+    districtName: string;
     publicCommentCount: number;
 }
 

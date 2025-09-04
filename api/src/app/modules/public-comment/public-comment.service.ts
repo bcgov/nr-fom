@@ -10,13 +10,13 @@ import { FindOneOptions, Repository, UpdateResult } from 'typeorm';
 import { ProjectAuthService } from '../project/project-auth.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
 import {
-  PublicCommentAdminResponse,
-  PublicCommentAdminUpdateRequest,
-  PublicCommentCountByCategoryResponse,
-  PublicCommentCountByDistrictResponse,
-  PublicCommentCountByForestClientResponse,
-  PublicCommentCountByProjectResponse,
-  PublicCommentCreateRequest,
+    PublicCommentAdminResponse,
+    PublicCommentAdminUpdateRequest,
+    PublicCommentCountByCategoryResponse,
+    PublicCommentCountByDistrictResponse,
+    PublicCommentCountByForestClientResponse,
+    PublicCommentCountByProjectResponse,
+    PublicCommentCreateRequest,
 } from './public-comment.dto';
 import { PublicComment } from './public-comment.entity';
 
@@ -334,11 +334,17 @@ export class PublicCommentService extends DataService<
     applyProjectPlanCodeFilter(qb, projectPlanCode, 'p')
     qb
       .innerJoin('c.project', 'p')
+      .innerJoin('p.forestClient', 'f')
+      .innerJoin('p.district', 'd')
       .select('p.project_id', 'projectId')
       .addSelect('p.name', 'projectName')
+      .addSelect('f.name', 'forestClientName')
+      .addSelect('d.name', 'districtName')
       .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')
       .groupBy('p.project_id')
       .addGroupBy('p.name')
+      .addGroupBy('f.name')
+      .addGroupBy('d.name')
       .orderBy('"publicCommentCount"', 'DESC')
       .limit(limit);
     this.logger.debug(`getCommentCountByProject SQL: ${qb.getQueryAndParameters()}`);
