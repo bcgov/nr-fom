@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 
 import { signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,13 +9,13 @@ import { RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AppFormControlDirective } from '@admin-core/directives/form-control.directive';
 import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
-import { AnalyticsDashboardData, AnalyticsDashboardDataService } from '@admin-core/services/analytics-dashboard-data.service';
-import { DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
+import { ANALYTICS_DATA_DEFAULT_SIZE, DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
+import { AnalyticsDashboardData, AnalyticsDashboardDataService } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
   ApexAxisChartSeries,
@@ -67,7 +67,7 @@ export type ChartOptions = {
     styleUrls: ['./analytics-dashboard.component.scss'],
     providers: [DatePipe]
 })
-export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   isInitialized = false;
   analyticsData = signal<AnalyticsDashboardData>(null);
   startDate: Date;
@@ -131,7 +131,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
     const startDateStr = this.startDate ? DateTime.fromJSDate(this.startDate).toFormat(DEFAULT_ISO_DATE_FORMAT) : FOM_GO_LIVE_DATE;
     const endDateStr = this.endDate ? DateTime.fromJSDate(this.endDate).toFormat(DEFAULT_ISO_DATE_FORMAT) :  DateTime.fromJSDate(new Date()).toFormat(DEFAULT_ISO_DATE_FORMAT);
     const selectedPlan = this.selectedPlan;
-    const limit = 15; // TODO, implement this, not hardcoded.
+    const limit = ANALYTICS_DATA_DEFAULT_SIZE; // TODO, implement this, not hardcoded.
     console.log('Fetching analytics data with params:', { startDateStr, endDateStr, selectedPlan, limit });
     this.analyticsDashboardDataService.getAnalyticsData(startDateStr, endDateStr, selectedPlan, limit)
       .subscribe(data => {
@@ -139,11 +139,6 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit, OnDes
         this.applyCommentsByResponseCodeChartOptions();
         console.log("Analytics data loaded:", this.analyticsData());
     });
-  }
-
-  ngOnDestroy() {
-    // this.ngUnsubscribe.next();
-    // this.ngUnsubscribe.complete();
   }
 
   applyCommentsByResponseCodeChartOptions() {
