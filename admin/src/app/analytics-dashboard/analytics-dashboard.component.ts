@@ -154,13 +154,13 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const data = this.analyticsData().topCommentedProjects;
     if (Array.isArray(data)) {
       this.topCommentedProjectsChartOptions.xaxis.categories = data.map(
-        item => item.projectId + "(" + item.districtName + "), " + item.forestClientName
+        item => item.projectId + "(" + item.districtName + "), " + item.forestClientName + "\u00A0\u00A0"
       );
       this.topCommentedProjectsChartOptions.series = [{
         name: this.topCommentedProjectsChartOptions.series[0].name,
         data: data.map(item => item.publicCommentCount)
       }];
-      this.topCommentedProjectsChartOptions.chart.height = Math.max(350, data.length * 20);
+      this.topCommentedProjectsChartOptions.chart.height = Math.max(330, data.length * 30); // adjust height dynamically for horizontal bar chart
     }
   }
 

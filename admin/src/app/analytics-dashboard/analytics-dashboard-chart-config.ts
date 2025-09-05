@@ -1,5 +1,9 @@
-import { ApexChart, ApexTheme, ChartType } from 'ng-apexcharts';
+import { ApexChart, ApexTheme, ApexYAxis, ChartType } from 'ng-apexcharts';
 
+const COLOR_LABEL = "#304758";
+const COLOR_FILL_1 = "#123B64";
+const COLOR_FILL_2 = "#52AE1E";
+const COLOR_GRID_ROW_1 = "#f3f3f3";
 // Chart options for: Total comments received by category
 // This is initial config, component will change it.
 export const commentsByResponseCodeChartOptions = {
@@ -36,7 +40,7 @@ export const commentsByResponseCodeChartOptions = {
     offsetY: -25,
     style: {
       fontSize: "12px",
-      colors: ["#304758"]
+      colors: [COLOR_LABEL]
     }
   },
   xaxis: {
@@ -62,7 +66,7 @@ export const commentsByResponseCodeChartOptions = {
   },
   fill: {
     opacity: 1,
-    colors: ["#123B64"]
+    colors: [COLOR_FILL_1]
   }
 };
 
@@ -78,8 +82,6 @@ export const topCommentedProjectsChartOptions = {
   ],
   chart: {
     type: 'bar' as ChartType,
-    height: 700,
-    
   } as ApexChart,
   theme: {
     mode: 'light',
@@ -101,29 +103,40 @@ export const topCommentedProjectsChartOptions = {
     },
     style: {
       fontSize: "12px",
-      colors: ["#304758"]
+      colors: [COLOR_LABEL]
     }
   },
   xaxis: {
     categories: [
     ],
     title: {
-      text: "Number of comments"
+      text: "Number of comments",
+      style: {
+        cssClass: "chart-title-label"
+      }
     },
   },
   yaxis: {
     title: {
-      text: "FOM Number (District), Forest Client"
+      text: "FOM Number (District), Forest Client",
+      style: {
+        cssClass: "chart-title-label"
+      }
+    },
+    labels: {
+      show: true,
+      align: 'left',
+      maxWidth: 400, // This is important when dealing with long labels!!
     }
-  },
+  } as ApexYAxis,
   fill: {
     opacity: 1,
-    colors: ["#52AE1E"]
+    colors: [COLOR_FILL_2]
   },
   grid: {
     row: {
-      colors: ["#f3f3f3", "transparent"],
+      colors: [COLOR_GRID_ROW_1, "transparent"],
       opacity: 0.5
-    }
+    },
   },
 };
