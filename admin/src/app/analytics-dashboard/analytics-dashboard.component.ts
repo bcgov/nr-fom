@@ -1,20 +1,16 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
-
-import { signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-
-import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
-import { RxFormBuilder } from '@rxweb/reactive-form-validators';
-
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AppFormControlDirective } from '@admin-core/directives/form-control.directive';
 import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
 import { ANALYTICS_DATA_DEFAULT_SIZE, DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
+import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { AfterViewInit, Component, OnInit, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
+import { commentsByResponseCodeChartOptions, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
 import { AnalyticsDashboardData, AnalyticsDashboardDataService } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
@@ -22,16 +18,15 @@ import {
   ApexChart,
   ApexDataLabels,
   ApexFill,
-  ApexLegend,
+  ApexGrid,
   ApexPlotOptions,
+  ApexTheme,
   ApexTitleSubtitle,
   ApexXAxis,
   ApexYAxis,
   NgApexchartsModule
 } from 'ng-apexcharts';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
-
-import { commentsByResponseCodeChartConfig } from './analytics-dashboard-chart-config';
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
@@ -41,8 +36,9 @@ export type ChartOptions = {
   yaxis: ApexYAxis;
   xaxis: ApexXAxis;
   fill: ApexFill;
-  legend: ApexLegend;
-  title: ApexTitleSubtitle
+  title: ApexTitleSubtitle;
+  theme: ApexTheme;
+  grid: ApexGrid;
 };
 
 @Component({
@@ -73,21 +69,20 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   startDate: Date;
   endDate: Date;
   planFilterOptions = [
-    { value: ProjectPlanCodeFilterEnum.Fsp, label: 'FSP' },
-    { value: ProjectPlanCodeFilterEnum.Woodlot, label: 'Woodlot' },
+    { value: ProjectPlanCodeFilterEnum.Fsp, label: 'FSP Holder' },
+    { value: ProjectPlanCodeFilterEnum.Woodlot, label: 'Woodlot Licensee' },
     { value: ProjectPlanCodeFilterEnum.All, label: 'All' }
   ];
   selectedPlan: ProjectPlanCodeFilterEnum = this.planFilterOptions[0]?.value;
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
   
   // chart options
-  public chartOptions: Partial<ChartOptions>;
-  public cmmtsByRespCodeOptions: Partial<ChartOptions>; // Comments by response code chart options
+  public commentsByResponseCodeChartOptions: Partial<ChartOptions>; // Comments by response code chart options
+  public topCommentedProjectsChartOptions: Partial<ChartOptions>;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private formBuilder: RxFormBuilder,
     private analyticsDashboardDataService: AnalyticsDashboardDataService
   ) {
   }
@@ -100,6 +95,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     this.endDate = new Date();
 
     this.applyCommentsByResponseCodeChartOptions();
+    this.applyTopCommentedProjectsChartOptions();
   }
 
   async ngAfterViewInit() {
@@ -109,7 +105,6 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   }
 
   onDateChange(type: 'startDate' | 'endDate', value: Date) {
-    const formatted = value ? DateTime.fromJSDate(value).toFormat(DEFAULT_ISO_DATE_FORMAT) : '';
     if (type === 'startDate') {
       this.startDate = value;
     } else if (type === 'endDate') {
@@ -142,16 +137,31 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   }
 
   applyCommentsByResponseCodeChartOptions() {
-    this.cmmtsByRespCodeOptions = commentsByResponseCodeChartConfig;
+    this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions;
     const data = this.analyticsData().commentCountByResponseCode;
-    this.cmmtsByRespCodeOptions.series = [{
-      name: this.cmmtsByRespCodeOptions.series[0].name,
+    this.commentsByResponseCodeChartOptions.series = [{
+      name: this.commentsByResponseCodeChartOptions.series[0].name,
       data: [
         data[ResponseCodeEnum.Considered] || 0,
         data[ResponseCodeEnum.Addressed] || 0,
         data['NOT_CATEGORIZED'] || 0
       ]
     }];
+  }
+
+  applyTopCommentedProjectsChartOptions() {
+    this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;
+    const data = this.analyticsData().topCommentedProjects;
+    if (Array.isArray(data)) {
+      this.topCommentedProjectsChartOptions.xaxis.categories = data.map(
+        item => item.projectId + "(" + item.districtName + "), " + item.forestClientName
+      );
+      this.topCommentedProjectsChartOptions.series = [{
+        name: this.topCommentedProjectsChartOptions.series[0].name,
+        data: data.map(item => item.publicCommentCount)
+      }];
+      this.topCommentedProjectsChartOptions.chart.height = Math.max(350, data.length * 20);
+    }
   }
 
 }

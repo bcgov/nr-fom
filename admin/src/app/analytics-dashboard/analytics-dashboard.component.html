@@ -91,15 +91,31 @@
           </div>
           <div style="height: 100%;">
             <apx-chart
-                [series]="cmmtsByRespCodeOptions.series"
-                [chart]="cmmtsByRespCodeOptions.chart"
-                [dataLabels]="cmmtsByRespCodeOptions.dataLabels"
-                [plotOptions]="cmmtsByRespCodeOptions.plotOptions"
-                [yaxis]="cmmtsByRespCodeOptions.yaxis"
-                [legend]="cmmtsByRespCodeOptions.legend"
-                [fill]="cmmtsByRespCodeOptions.fill"
-                [title]="cmmtsByRespCodeOptions.title"
-                [xaxis]="cmmtsByRespCodeOptions.xaxis"
+                [series]="commentsByResponseCodeChartOptions.series"
+                [chart]="commentsByResponseCodeChartOptions.chart"
+                [dataLabels]="commentsByResponseCodeChartOptions.dataLabels"
+                [plotOptions]="commentsByResponseCodeChartOptions.plotOptions"
+                [xaxis]="commentsByResponseCodeChartOptions.xaxis"
+                [yaxis]="commentsByResponseCodeChartOptions.yaxis"
+                [fill]="commentsByResponseCodeChartOptions.fill"
+                [title]="commentsByResponseCodeChartOptions.title"
+                [theme]="commentsByResponseCodeChartOptions.theme"
+            ></apx-chart>
+          </div>
+        </div>
+        <div>
+          <div id="most-commented-foms" style="min-height: 100px; max-height: 800px; padding-top: 35px">
+            <apx-chart
+              [series]="topCommentedProjectsChartOptions.series"
+              [chart]="topCommentedProjectsChartOptions.chart"
+              [dataLabels]="topCommentedProjectsChartOptions.dataLabels"
+              [plotOptions]="topCommentedProjectsChartOptions.plotOptions"
+              [xaxis]="topCommentedProjectsChartOptions.xaxis"
+              [yaxis]="topCommentedProjectsChartOptions.yaxis"
+              [theme]="topCommentedProjectsChartOptions.theme"
+              [fill]="topCommentedProjectsChartOptions.fill"
+              [title]="topCommentedProjectsChartOptions.title"
+              [grid]="topCommentedProjectsChartOptions.grid"
             ></apx-chart>
           </div>
         </div>
