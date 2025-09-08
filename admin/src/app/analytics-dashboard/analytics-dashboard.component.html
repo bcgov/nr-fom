@@ -143,5 +143,15 @@
         </div>
       </div>
     </div>
+
+    <div class="container pb-0" id="district-level-insights">
+      <div class="row"><p>Forest client activity</p></div>
+        <div class="unique-fc-box">
+          <div>Unique forest clients submitting FOMs</div>
+          <div class="unique-fc-vtxt">
+            {{ analyticsData()?.uniqueForestClientCount || 0 }}
+          </div>
+        </div>
+      </div>
   </div>
 </form>

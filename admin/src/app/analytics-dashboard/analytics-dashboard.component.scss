@@ -59,7 +59,6 @@ $stats-blue-1: #123B64;
 ::ng-deep .apexcharts-xaxis .apexcharts-xaxis-title .chart-title-label,
 ::ng-deep .apexcharts-yaxis .apexcharts-yaxis-title .chart-title-label {
     font-weight: 700;
-    font-style: Bold;
     font-size: 14px;
     line-height: 18px;
     letter-spacing: 0.20px;
@@ -93,7 +92,7 @@ $stats-blue-1: #123B64;
     font-weight: 700;
     text-align: center;
     color: $white;
-    font-style: bold;
+    font-weight: bold;
 
     .total-fom-content-title {
       font-size: 16px;
@@ -108,6 +107,23 @@ $stats-blue-1: #123B64;
       line-height: 18px;
       letter-spacing: 0.16px;
     }
+  }
+}
+
+.unique-fc-box {
+  background: #775DD0;
+  height: 78px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  color: $white;
+  font-weight: bold;
+
+  .unique-fc-vtxt {
+    font-size: 64px;
+    font-weight: 700;
   }
 }
 
