@@ -3,17 +3,18 @@ import { AppFormControlDirective } from '@admin-core/directives/form-control.dir
 import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
 import { ANALYTICS_DATA_DEFAULT_SIZE, DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
 import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
-import { AfterViewInit, Component, OnInit, signal } from '@angular/core';
+import { AfterViewInit, Component, OnInit, signal, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
-import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
+import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis as maxxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
 import { AnalyticsDashboardData, AnalyticsDashboardDataService } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
+  ChartComponent,
   NgApexchartsModule
 } from 'ng-apexcharts';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
@@ -53,8 +54,13 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   selectedPlan: ProjectPlanCodeFilterEnum = this.planFilterOptions[0]?.value;
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
   
+  // chart view
+  @ViewChild("topCommentedProjectsChart") topCommentedProjectsChart!: ChartComponent;
+  @ViewChild("fomsCountByDistrictChart") fomsCountByDistrictChart!: ChartComponent;
+  @ViewChild("fomsCountByForestClientChart") fomsCountByForestClientChart!: ChartComponent;
+
   // chart options
-  commentsByResponseCodeChartOptions: Partial<ChartOptions>; // Comments by response code chart options
+  commentsByResponseCodeChartOptions: Partial<ChartOptions>;
   topCommentedProjectsChartOptions: Partial<ChartOptions>;
   fomsCountByDistrictChartOptions: Partial<ChartOptions>;
   fomsCountByForestClientChartOptions: Partial<ChartOptions>;
@@ -64,6 +70,11 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     private router: Router,
     private analyticsDashboardDataService: AnalyticsDashboardDataService
   ) {
+    // Initialize chart options
+    this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;
+    this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions;
+    this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions;
+    this.fomsCountByForestClientChartOptions = fomsCountByForestClientChartOptions;
   }
 
   ngOnInit() {
@@ -72,14 +83,15 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     this.selectedPlan = this.planFilterOptions[0]?.value;
     this.startDate = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
     this.endDate = new Date();
-
-    this.applyChartOptions();
   }
 
   async ngAfterViewInit() {
     // Implement a delay before setting isInitialized to true
     await new Promise(resolve => setTimeout(resolve, 1000)); // 500ms delay
     this.isInitialized = true;
+
+    // only apply chart options after view is init
+    this.applyChartOptions();
   }
 
   onDateChange(type: 'startDate' | 'endDate', value: Date) {
@@ -88,6 +100,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     } else if (type === 'endDate') {
       this.endDate = value;
     }
+
+    // only after view update is stable then fetch data
     if (this.isInitialized) {
       this.fetchAnalyticsData();
     }
@@ -100,6 +114,9 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Fetch analytics data based on the current filters from backend and apply to chart options.
+   */
   fetchAnalyticsData() {
     const startDateStr = this.startDate ? DateTime.fromJSDate(this.startDate).toFormat(DEFAULT_ISO_DATE_FORMAT) : FOM_GO_LIVE_DATE;
     const endDateStr = this.endDate ? DateTime.fromJSDate(this.endDate).toFormat(DEFAULT_ISO_DATE_FORMAT) :  DateTime.fromJSDate(new Date()).toFormat(DEFAULT_ISO_DATE_FORMAT);
@@ -135,56 +152,70 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   }
 
   applyTopCommentedProjectsChartOptions() {
-    this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;
-    const data = this.analyticsData().topCommentedProjects;
-    if (Array.isArray(data)) {
-      this.topCommentedProjectsChartOptions.xaxis.categories = data.map(
-        item => item.projectId + "(" + item.districtName + "), " + item.forestClientName + "\u00A0\u00A0"
-      );
-      this.topCommentedProjectsChartOptions.series = [{
-        name: this.topCommentedProjectsChartOptions.series[0].name,
-        data: data.map(item => item.publicCommentCount)
-      }];
-      this.topCommentedProjectsChartOptions.xaxis.max = maxAxis(this.topCommentedProjectsChartOptions.series[0].data);
-      this.topCommentedProjectsChartOptions.chart.height = Math.max(330, data.length * 30); // adjust height dynamically for horizontal bar chart
+    const apiData = this.analyticsData().topCommentedProjects;
+    if (apiData && Array.isArray(apiData)) {
+      const data = apiData.map(item => item.publicCommentCount);
+      this.topCommentedProjectsChart.updateOptions({
+        series: [{
+          name: this.topCommentedProjectsChartOptions.series[0].name,
+          data: data
+        }],
+        xaxis: { 
+          categories: apiData.map(item => 
+            item.projectId + "(" + item.districtName + "), " + item.forestClientName + "\u00A0\u00A0"
+          ),
+          max: maxxAxis(data)
+        },
+        chart: {
+          // Horizontal bar chart dynamic height adjustment
+          height: Math.max(330, apiData.length * 30)
+        }
+      });
     }
   }
 
   applyFomsCountByDistrictChartOptions() {
-    this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions;
-    const data = this.analyticsData().nonInitialPublishedProjectCountByDistrict;
-
-    // TODO, update chart for horizontal bas does not work entirely, need to try `this.chart.updateOptions` with @ViewChild("chart") chart!: ChartComponent;
-    if (Array.isArray(data) && data.length > 0) {
-        this.fomsCountByDistrictChartOptions.xaxis.categories = data.map(
-          item => item.districtName + "\u00A0\u00A0"
-        );
-        this.fomsCountByDistrictChartOptions.series = [{
+    const apiData = this.analyticsData().nonInitialPublishedProjectCountByDistrict;
+    if (apiData && Array.isArray(apiData)) {
+      const data = apiData.map(item => item.projectCount);
+      this.fomsCountByDistrictChart.updateOptions({
+        series: [{
           name: this.fomsCountByDistrictChartOptions.series[0].name,
-          data: data.map(item => item.projectCount)
-        }];
-
-      this.fomsCountByDistrictChartOptions.xaxis.max = maxAxis(this.fomsCountByDistrictChartOptions.series[0].data);
-      this.fomsCountByDistrictChartOptions.chart.height = Math.max(330, data.length * 30); // adjust height dynamically for horizontal bar chart
+          data: data
+        }],
+        xaxis: {
+          categories: apiData.map(item =>
+            item.districtName + "\u00A0\u00A0"
+          ),
+          max: maxxAxis(data)
+        },
+        chart: {
+          // Horizontal bar chart dynamic height adjustment
+          height: Math.max(250, apiData.length * 30)
+        }
+      });
     }
   }
 
   applyFomsCountByForestClientChartOptions() {
-    this.fomsCountByForestClientChartOptions = fomsCountByForestClientChartOptions;
-    const data = this.analyticsData().nonInitialPublishedProjectCountByForestClient;
-
-    // TODO, update chart for horizontal bas does not work entirely, need to try `this.chart.updateOptions` with @ViewChild("chart") chart!: ChartComponent;
-    if (Array.isArray(data) && data.length > 0) {
-        this.fomsCountByForestClientChartOptions.xaxis.categories = data.map(
-          item => item.forestClientName + "\u00A0\u00A0"
-        );
-        this.fomsCountByForestClientChartOptions.series = [{
+    const apiData = this.analyticsData().nonInitialPublishedProjectCountByForestClient;
+    if (Array.isArray(apiData) && apiData.length > 0) {
+      const data = apiData.map(item => item.projectCount);
+      this.fomsCountByForestClientChart.updateOptions({
+        series: [{
           name: this.fomsCountByForestClientChartOptions.series[0].name,
-          data: data.map(item => item.projectCount)
-        }];
-
-      this.fomsCountByForestClientChartOptions.xaxis.max = maxAxis(this.fomsCountByForestClientChartOptions.series[0].data);
-      this.fomsCountByForestClientChartOptions.chart.height = Math.max(330, data.length * 30); // adjust height dynamically for horizontal bar chart
+          data: data
+        }],
+        xaxis: {
+          categories: apiData.map(item => item.forestClientName + "\u00A0\u00A0"),
+          max: maxxAxis(data)
+        },
+        chart: {
+          // Horizontal bar chart dynamic height adjustment
+          height: Math.max(330, apiData.length * 30)
+        }
+      });
     }
   }
+
 }
