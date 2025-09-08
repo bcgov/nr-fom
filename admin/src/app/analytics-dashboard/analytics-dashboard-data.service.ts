@@ -1,6 +1,6 @@
 import { ANALYTICS_DATA_DEFAULT_SIZE } from '@admin-core/utils/constants';
 import { Injectable } from '@angular/core';
-import { AnalyticsDashboardService, ProjectPlanCodeFilterEnum, PublicCommentCountByProjectResponse } from '@api-client';
+import { AnalyticsDashboardService, ProjectCountByDistrictResponse, ProjectPlanCodeFilterEnum, PublicCommentCountByProjectResponse } from '@api-client';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -12,6 +12,7 @@ export type AnalyticsDashboardData = {
   nonInitialPublishedProjectCount: number | ApiError // Total FOM count
   commentCountByResponseCode: Record<string, number> | ApiError
   topCommentedProjects: Array<PublicCommentCountByProjectResponse> | ApiError
+  nonInitialPublishedProjectCountByDistrict: Array<ProjectCountByDistrictResponse> | ApiError
 }
 
 @Injectable({ providedIn: 'root' })
@@ -34,14 +35,14 @@ export class AnalyticsDashboardDataService {
       topCommentedProjects: this.api.analyticsDashboardControllerGetTopCommentedProjects(startDate, endDate, projectPlanCode, limit).pipe(
         catchError(err => { console.error('Failed to fetch topCommentedProjects', err); return of({ message: err } as ApiError); })
       ),
-    //   commentCountByForestClient: this.api.analyticsDashboardControllerGetCommentCountByForestClient(startDate, endDate, projectPlanCode).pipe(
-    //     catchError(err => { console.error('Failed to fetch commentCountByForestClient', err); return of(null); })
-    //   ),
+      nonInitialPublishedProjectCountByDistrict: this.api.analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate, endDate, projectPlanCode).pipe(
+        catchError(err => { console.error('Failed to fetch nonInitialPublishedProjectCountByDistrict', err); return of({ message: err } as ApiError); })
+      ),
     //   commentCountByDistrict: this.api.analyticsDashboardControllerGetCommentCountByDistrict(startDate, endDate, projectPlanCode).pipe(
     //     catchError(err => { console.error('Failed to fetch commentCountByDistrict', err); return of(null); })
     //   ),
-    //   nonInitialPublishedProjectCountByDistrict: this.api.analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate, endDate, projectPlanCode).pipe(
-    //     catchError(err => { console.error('Failed to fetch nonInitialPublishedProjectCountByDistrict', err); return of(null); })
+    //   commentCountByForestClient: this.api.analyticsDashboardControllerGetCommentCountByForestClient(startDate, endDate, projectPlanCode).pipe(
+    //     catchError(err => { console.error('Failed to fetch commentCountByForestClient', err); return of(null); })
     //   ),
     //   nonInitialPublishedProjectCountByForestClient: this.api.analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate, endDate, projectPlanCode).pipe(
     //     catchError(err => { console.error('Failed to fetch nonInitialPublishedProjectCountByForestClient', err); return of(null); })

@@ -10,7 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
-import { commentsByResponseCodeChartOptions, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
+import { commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, maxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
 import { AnalyticsDashboardData, AnalyticsDashboardDataService } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
@@ -77,8 +77,9 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
   
   // chart options
-  public commentsByResponseCodeChartOptions: Partial<ChartOptions>; // Comments by response code chart options
-  public topCommentedProjectsChartOptions: Partial<ChartOptions>;
+  commentsByResponseCodeChartOptions: Partial<ChartOptions>; // Comments by response code chart options
+  topCommentedProjectsChartOptions: Partial<ChartOptions>;
+  fomsCountByDistrictChartOptions: Partial<ChartOptions>;
 
   constructor(
     private route: ActivatedRoute,
@@ -96,6 +97,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
 
     this.applyCommentsByResponseCodeChartOptions();
     this.applyTopCommentedProjectsChartOptions();
+    this.applyFomsCountByDistrictChartOptions();
   }
 
   async ngAfterViewInit() {
@@ -132,6 +134,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
       .subscribe(data => {
         this.analyticsData.set(data);
         this.applyCommentsByResponseCodeChartOptions();
+        this.applyTopCommentedProjectsChartOptions();
+        this.applyFomsCountByDistrictChartOptions();
         console.log("Analytics data loaded:", this.analyticsData());
     });
   }
@@ -160,8 +164,25 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         name: this.topCommentedProjectsChartOptions.series[0].name,
         data: data.map(item => item.publicCommentCount)
       }];
+      this.topCommentedProjectsChartOptions.xaxis.max = maxAxis(this.topCommentedProjectsChartOptions.series[0].data);
       this.topCommentedProjectsChartOptions.chart.height = Math.max(330, data.length * 30); // adjust height dynamically for horizontal bar chart
     }
   }
 
+  applyFomsCountByDistrictChartOptions() {
+    this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions;
+    const data = this.analyticsData().nonInitialPublishedProjectCountByDistrict;
+    if (Array.isArray(data)) {
+      this.fomsCountByDistrictChartOptions.xaxis.categories = data.map(
+        item => item.districtName + "\u00A0\u00A0"
+      );
+      this.fomsCountByDistrictChartOptions.series = [{
+        name: this.fomsCountByDistrictChartOptions.series[0].name,
+        data: data.map(item => item.projectCount)
+      }];
+
+      this.fomsCountByDistrictChartOptions.xaxis.max = maxAxis(this.fomsCountByDistrictChartOptions.series[0].data);
+      this.fomsCountByDistrictChartOptions.chart.height = Math.max(330, data.length * 30); // adjust height dynamically for horizontal bar chart
+    }
+  }
 }
