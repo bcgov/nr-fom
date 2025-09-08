@@ -1,6 +1,6 @@
 import { ANALYTICS_DATA_DEFAULT_SIZE } from '@admin-core/utils/constants';
 import { Injectable } from '@angular/core';
-import { AnalyticsDashboardService, ProjectCountByDistrictResponse, ProjectPlanCodeFilterEnum, PublicCommentCountByProjectResponse } from '@api-client';
+import { AnalyticsDashboardService, ProjectCountByDistrictResponse, ProjectCountByForestClientResponse, ProjectPlanCodeFilterEnum, PublicCommentCountByProjectResponse } from '@api-client';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -14,6 +14,7 @@ export type AnalyticsDashboardData = {
   topCommentedProjects: Array<PublicCommentCountByProjectResponse> | ApiError
   nonInitialPublishedProjectCountByDistrict: Array<ProjectCountByDistrictResponse> | ApiError
   uniqueForestClientCount: number | ApiError
+  nonInitialPublishedProjectCountByForestClient: Array<ProjectCountByForestClientResponse> | ApiError
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,32 +28,37 @@ export class AnalyticsDashboardDataService {
   ) {
     return forkJoin({
       nonInitialPublishedProjectCount: this.api.analyticsDashboardControllerGetNonInitialPublishedProjectCount(startDate, endDate, projectPlanCode).pipe(
-        catchError(err => { console.error('Failed to fetch nonInitialPublishedProjectCount', err); return of({ message: err }); })
+        catchError(err => this.handleApiError('nonInitialPublishedProjectCount', err))
       ),
       commentCountByResponseCode: this.api.analyticsDashboardControllerGetCommentCountByResponseCode(startDate, endDate, projectPlanCode).pipe(
         map(mapCommentCountByResponseCodeFn),
-        catchError(err => { console.error('Failed to fetch commentCountByResponseCode', err); return of({ message: err } as ApiError); })
+        catchError(err => this.handleApiError('commentCountByResponseCode', err))
       ),
       topCommentedProjects: this.api.analyticsDashboardControllerGetTopCommentedProjects(startDate, endDate, projectPlanCode, limit).pipe(
-        catchError(err => { console.error('Failed to fetch topCommentedProjects', err); return of({ message: err } as ApiError); })
+        catchError(err => this.handleApiError('topCommentedProjects', err))
       ),
       nonInitialPublishedProjectCountByDistrict: this.api.analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate, endDate, projectPlanCode).pipe(
-        catchError(err => { console.error('Failed to fetch nonInitialPublishedProjectCountByDistrict', err); return of({ message: err } as ApiError); })
+        catchError(err => this.handleApiError('nonInitialPublishedProjectCountByDistrict', err))
       ),
       uniqueForestClientCount: this.api.analyticsDashboardControllerGetUniqueForestClientCount(startDate, endDate, projectPlanCode).pipe(
-        catchError(err => { console.error('Failed to fetch uniqueForestClientCount', err); return of({ message: err } as ApiError); })
+        catchError(err => this.handleApiError('uniqueForestClientCount', err))
+      ),
+      nonInitialPublishedProjectCountByForestClient: this.api.analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate, endDate, projectPlanCode).pipe(
+        catchError(err => this.handleApiError('nonInitialPublishedProjectCountByForestClient', err))
       ),
     //   commentCountByDistrict: this.api.analyticsDashboardControllerGetCommentCountByDistrict(startDate, endDate, projectPlanCode).pipe(
-    //     catchError(err => { console.error('Failed to fetch commentCountByDistrict', err); return of(null); })
+    //     catchError(err => { console.error('Failed to fetch commentCountByDistrict', err); return of({ message: err } as ApiError); })
     //   ),
     //   commentCountByForestClient: this.api.analyticsDashboardControllerGetCommentCountByForestClient(startDate, endDate, projectPlanCode).pipe(
     //     catchError(err => { console.error('Failed to fetch commentCountByForestClient', err); return of(null); })
     //   ),
-    //   nonInitialPublishedProjectCountByForestClient: this.api.analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate, endDate, projectPlanCode).pipe(
-    //     catchError(err => { console.error('Failed to fetch nonInitialPublishedProjectCountByForestClient', err); return of(null); })
-    //   ),
     });
   }
+  
+  private handleApiError = (context: string, err: any) => {
+    console.error(`Failed to fetch ${context}`, err);
+    return of({ message: err } as ApiError);
+  };
 }
 
 /**

@@ -10,36 +10,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
-import { commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, maxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
+import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
 import { AnalyticsDashboardData, AnalyticsDashboardDataService } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
-  ApexAxisChartSeries,
-  ApexChart,
-  ApexDataLabels,
-  ApexFill,
-  ApexGrid,
-  ApexPlotOptions,
-  ApexTheme,
-  ApexTitleSubtitle,
-  ApexXAxis,
-  ApexYAxis,
   NgApexchartsModule
 } from 'ng-apexcharts';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
-
-export type ChartOptions = {
-  series: ApexAxisChartSeries;
-  chart: ApexChart;
-  dataLabels: ApexDataLabels;
-  plotOptions: ApexPlotOptions;
-  yaxis: ApexYAxis;
-  xaxis: ApexXAxis;
-  fill: ApexFill;
-  title: ApexTitleSubtitle;
-  theme: ApexTheme;
-  grid: ApexGrid;
-};
 
 @Component({
     standalone: true,
@@ -80,6 +57,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   commentsByResponseCodeChartOptions: Partial<ChartOptions>; // Comments by response code chart options
   topCommentedProjectsChartOptions: Partial<ChartOptions>;
   fomsCountByDistrictChartOptions: Partial<ChartOptions>;
+  fomsCountByForestClientChartOptions: Partial<ChartOptions>;
 
   constructor(
     private route: ActivatedRoute,
@@ -95,9 +73,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     this.startDate = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
     this.endDate = new Date();
 
-    this.applyCommentsByResponseCodeChartOptions();
-    this.applyTopCommentedProjectsChartOptions();
-    this.applyFomsCountByDistrictChartOptions();
+    this.applyChartOptions();
   }
 
   async ngAfterViewInit() {
@@ -133,11 +109,16 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     this.analyticsDashboardDataService.getAnalyticsData(startDateStr, endDateStr, selectedPlan, limit)
       .subscribe(data => {
         this.analyticsData.set(data);
-        this.applyCommentsByResponseCodeChartOptions();
-        this.applyTopCommentedProjectsChartOptions();
-        this.applyFomsCountByDistrictChartOptions();
+        this.applyChartOptions();
         console.log("Analytics data loaded:", this.analyticsData());
     });
+  }
+
+  applyChartOptions() {
+    this.applyCommentsByResponseCodeChartOptions();
+    this.applyTopCommentedProjectsChartOptions();
+    this.applyFomsCountByDistrictChartOptions();
+    this.applyFomsCountByForestClientChartOptions();
   }
 
   applyCommentsByResponseCodeChartOptions() {
@@ -172,17 +153,38 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   applyFomsCountByDistrictChartOptions() {
     this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions;
     const data = this.analyticsData().nonInitialPublishedProjectCountByDistrict;
-    if (Array.isArray(data)) {
-      this.fomsCountByDistrictChartOptions.xaxis.categories = data.map(
-        item => item.districtName + "\u00A0\u00A0"
-      );
-      this.fomsCountByDistrictChartOptions.series = [{
-        name: this.fomsCountByDistrictChartOptions.series[0].name,
-        data: data.map(item => item.projectCount)
-      }];
+
+    // TODO, update chart for horizontal bas does not work entirely, need to try `this.chart.updateOptions` with @ViewChild("chart") chart!: ChartComponent;
+    if (Array.isArray(data) && data.length > 0) {
+        this.fomsCountByDistrictChartOptions.xaxis.categories = data.map(
+          item => item.districtName + "\u00A0\u00A0"
+        );
+        this.fomsCountByDistrictChartOptions.series = [{
+          name: this.fomsCountByDistrictChartOptions.series[0].name,
+          data: data.map(item => item.projectCount)
+        }];
 
       this.fomsCountByDistrictChartOptions.xaxis.max = maxAxis(this.fomsCountByDistrictChartOptions.series[0].data);
       this.fomsCountByDistrictChartOptions.chart.height = Math.max(330, data.length * 30); // adjust height dynamically for horizontal bar chart
+    }
+  }
+
+  applyFomsCountByForestClientChartOptions() {
+    this.fomsCountByForestClientChartOptions = fomsCountByForestClientChartOptions;
+    const data = this.analyticsData().nonInitialPublishedProjectCountByForestClient;
+
+    // TODO, update chart for horizontal bas does not work entirely, need to try `this.chart.updateOptions` with @ViewChild("chart") chart!: ChartComponent;
+    if (Array.isArray(data) && data.length > 0) {
+        this.fomsCountByForestClientChartOptions.xaxis.categories = data.map(
+          item => item.forestClientName + "\u00A0\u00A0"
+        );
+        this.fomsCountByForestClientChartOptions.series = [{
+          name: this.fomsCountByForestClientChartOptions.series[0].name,
+          data: data.map(item => item.projectCount)
+        }];
+
+      this.fomsCountByForestClientChartOptions.xaxis.max = maxAxis(this.fomsCountByForestClientChartOptions.series[0].data);
+      this.fomsCountByForestClientChartOptions.chart.height = Math.max(330, data.length * 30); // adjust height dynamically for horizontal bar chart
     }
   }
 }
