@@ -36,6 +36,12 @@ export const maxAxis = (series) => {
     case (maxValue < 500):
       maxAxis = 500;
       break;
+    case (maxValue < 1000):
+      maxAxis = 1000;
+      break;
+    case (maxValue < 1500):
+      maxAxis = 1500;
+      break;
     default:
       maxAxis = Math.ceil(maxValue / 1000) * 1000;
   }
@@ -159,7 +165,7 @@ export const topCommentedProjectsChartOptions = {
   } as ApexXAxis,
   yaxis: {
     title: {
-      text: "FOM Number (District), Forest Client",
+      text: "FOM Number (District),Forest Client",
       style: {
         cssClass: "chart-title-label"
       }
