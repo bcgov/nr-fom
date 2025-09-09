@@ -4,8 +4,8 @@ import { AnalyticsDashboardService, ProjectCountByDistrictResponse, ProjectCount
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
-export type ApiError = {
-  message: any;
+export class ApiError {
+  constructor(public message: any) {}
 }
 
 export type AnalyticsDashboardData = {
@@ -57,7 +57,7 @@ export class AnalyticsDashboardDataService {
   
   private handleApiError = (context: string, err: any) => {
     console.error(`Failed to fetch ${context}`, err);
-    return of({ message: err } as ApiError);
+    return of(new ApiError(err));
   };
 }
 

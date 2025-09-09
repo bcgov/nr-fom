@@ -11,7 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
 import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis as maxxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
-import { AnalyticsDashboardData, AnalyticsDashboardDataService } from 'app/analytics-dashboard/analytics-dashboard-data.service';
+import { AnalyticsDashboardData, AnalyticsDashboardDataService, ApiError } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
   ChartComponent,
@@ -55,6 +55,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
   
   // chart view
+  @ViewChild("commentsByResponseCodeChart") commentsByResponseCodeChart!: ChartComponent;
   @ViewChild("topCommentedProjectsChart") topCommentedProjectsChart!: ChartComponent;
   @ViewChild("fomsCountByDistrictChart") fomsCountByDistrictChart!: ChartComponent;
   @ViewChild("fomsCountByForestClientChart") fomsCountByForestClientChart!: ChartComponent;
@@ -71,8 +72,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     private analyticsDashboardDataService: AnalyticsDashboardDataService
   ) {
     // Initialize chart options
-    this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;
     this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions;
+    this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;
     this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions;
     this.fomsCountByForestClientChartOptions = fomsCountByForestClientChartOptions;
   }
@@ -139,16 +140,20 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   }
 
   applyCommentsByResponseCodeChartOptions() {
-    this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions;
-    const data = this.analyticsData().commentCountByResponseCode;
-    this.commentsByResponseCodeChartOptions.series = [{
-      name: this.commentsByResponseCodeChartOptions.series[0].name,
-      data: [
-        data[ResponseCodeEnum.Considered] || 0,
-        data[ResponseCodeEnum.Addressed] || 0,
-        data['NOT_CATEGORIZED'] || 0
-      ]
-    }];
+    const apiData = this.analyticsData().commentCountByResponseCode;
+    if (apiData && !(apiData instanceof ApiError)) {
+      this.commentsByResponseCodeChart.updateOptions({
+        series: [{
+          name: this.commentsByResponseCodeChartOptions.series[0].name,
+          data: [
+            apiData[ResponseCodeEnum.Considered] || 0,
+            apiData[ResponseCodeEnum.Addressed] || 0,
+            apiData[ResponseCodeEnum.Irrelevant] || 0,
+            apiData['NOT_CATEGORIZED'] || 0
+          ]
+        }]
+      });
+    }
   }
 
   applyTopCommentedProjectsChartOptions() {

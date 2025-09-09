@@ -50,7 +50,7 @@ export const commentsByResponseCodeChartOptions = {
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: "55%",
+      columnWidth: "45%",
       dataLabels: {
         position: "top" // top, center, bottom
       }
@@ -71,6 +71,7 @@ export const commentsByResponseCodeChartOptions = {
     categories: [
       "Considered",
       "Addressed",
+      "Irrelevant",
       "Not applicable"
     ],
     title: {
