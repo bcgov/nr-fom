@@ -8,7 +8,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
 import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis as maxxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
 import { AnalyticsDashboardData, AnalyticsDashboardDataService, ApiError } from 'app/analytics-dashboard/analytics-dashboard-data.service';
@@ -51,7 +51,13 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     { value: ProjectPlanCodeFilterEnum.Woodlot, label: 'Woodlot Licensee' },
     { value: ProjectPlanCodeFilterEnum.All, label: 'All' }
   ];
+  fcLimitOptions = [
+    { value: 10, label: '10 Forest clients' },
+    { value: 1, label: '20 Forest clients' },
+    { value: 0, label: 'Show all' },
+  ];
   selectedPlan: ProjectPlanCodeFilterEnum = this.planFilterOptions[0]?.value;
+  selectedFcLimit: number = 10; // default
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
   
   // chart view
@@ -68,7 +74,6 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private analyticsDashboardDataService: AnalyticsDashboardDataService
   ) {
     // Initialize chart options
@@ -113,6 +118,10 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     if (this.isInitialized) {
       this.fetchAnalyticsData();
     }
+  }
+
+  onFcLimitChange(value: number) {
+    this.applyFomsCountByForestClientChartOptions();
   }
 
   /**
@@ -196,7 +205,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         },
         chart: {
           // Horizontal bar chart dynamic height adjustment
-          height: Math.max(250, apiData.length * 30)
+          height: Math.max(250, apiData.length * 45)
         }
       });
     }
@@ -205,19 +214,25 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   applyFomsCountByForestClientChartOptions() {
     const apiData = this.analyticsData().nonInitialPublishedProjectCountByForestClient;
     if (Array.isArray(apiData) && apiData.length > 0) {
-      const data = apiData.map(item => item.projectCount);
+      // applying limit to the data set.
+      console.log('Applying selected Forest clients limit:', this.selectedFcLimit);
+      const slice = this.selectedFcLimit > 0 ? this.selectedFcLimit : apiData.length;
+      const data = apiData
+        .slice(0, slice)
+        .map(item => item.projectCount);
+      console.log('limited data:', data);
       this.fomsCountByForestClientChart.updateOptions({
         series: [{
           name: this.fomsCountByForestClientChartOptions.series[0].name,
           data: data
         }],
         xaxis: {
-          categories: apiData.map(item => item.forestClientName + "\u00A0\u00A0"),
+          categories: apiData.slice(0, slice).map(item => item.forestClientName + "\u00A0\u00A0"),
           max: maxxAxis(data)
         },
         chart: {
           // Horizontal bar chart dynamic height adjustment
-          height: Math.max(330, apiData.length * 30)
+          height: Math.max(200, apiData.slice(0, slice).length * 70)
         }
       });
     }
