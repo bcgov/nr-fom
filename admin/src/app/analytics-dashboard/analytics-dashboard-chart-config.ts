@@ -23,8 +23,22 @@ const COLOR_GRID_ROW_1 = "#f3f3f3";
 /* *** Some utility functions to help with chart configuration and display *** */
 export const maxAxis = (series) => {
   let maxValue = Math.max(...series);
-  // Add a little headroom (so the max data does not get cut off)
-  let maxAxis = Math.ceil((maxValue * 1.25) / 10) * 10;
+  let maxAxis = 10;
+  switch (true) {
+    case (maxValue < 10):
+      break;
+    case (maxValue < 40):
+      maxAxis = 40;
+      break;
+    case (maxValue < 100):
+      maxAxis = 100;
+      break;
+    case (maxValue < 500):
+      maxAxis = 500;
+      break;
+    default:
+      maxAxis = Math.ceil(maxValue / 1000) * 1000;
+  }
   return maxAxis;
 }
 
@@ -88,6 +102,7 @@ export const commentsByResponseCodeChartOptions = {
         cssClass: "chart-title-label"
       }
     },
+    min: 0
   },
   fill: {
     opacity: 1,
@@ -278,15 +293,13 @@ export const fomsCountByForestClientChartOptions = {
     }
   } as ApexDataLabels,
   xaxis: {
-    categories: [
-    ],
+    categories: [],
     title: {
       text: "Number of FOMs submitted",
       style: {
         cssClass: "chart-title-label"
       }
     },
-    min: 0, // important if max is dynamically set.
   } as ApexXAxis,
   yaxis: {
     title: {

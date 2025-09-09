@@ -10,12 +10,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
-import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis as maxxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
+import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis, maxAxis as maxxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
 import { AnalyticsDashboardData, AnalyticsDashboardDataService, ApiError } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
-  ChartComponent,
-  NgApexchartsModule
+    ChartComponent,
+    NgApexchartsModule
 } from 'ng-apexcharts';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
@@ -160,7 +160,11 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
             apiData[ResponseCodeEnum.Irrelevant] || 0,
             apiData['NOT_CATEGORIZED'] || 0
           ]
-        }]
+        }],
+        yaxis: {
+            min: 0,
+            max: maxAxis(Object.values(apiData))
+        }
       });
     }
   }
@@ -227,6 +231,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         }],
         xaxis: {
           categories: apiData.slice(0, slice).map(item => item.forestClientName + "\u00A0\u00A0"),
+          min: 0,
           max: maxxAxis(data)
         },
         chart: {
