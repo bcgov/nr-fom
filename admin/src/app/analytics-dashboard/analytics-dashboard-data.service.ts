@@ -17,6 +17,9 @@ export type AnalyticsDashboardData = {
   nonInitialPublishedProjectCountByForestClient: Array<ProjectCountByForestClientResponse> | ApiError
 }
 
+/**
+ * Service for fetching analytics dashboard data from backend.
+ */
 @Injectable({ providedIn: 'root' })
 export class AnalyticsDashboardDataService {
   constructor(private api: AnalyticsDashboardService) {}
@@ -45,13 +48,7 @@ export class AnalyticsDashboardDataService {
       ),
       nonInitialPublishedProjectCountByForestClient: this.api.analyticsDashboardControllerGetNonInitialPublishedProjectCountByForestClient(startDate, endDate, projectPlanCode).pipe(
         catchError(err => this.handleApiError('nonInitialPublishedProjectCountByForestClient', err))
-      ),
-    //   commentCountByDistrict: this.api.analyticsDashboardControllerGetCommentCountByDistrict(startDate, endDate, projectPlanCode).pipe(
-    //     catchError(err => { console.error('Failed to fetch commentCountByDistrict', err); return of({ message: err } as ApiError); })
-    //   ),
-    //   commentCountByForestClient: this.api.analyticsDashboardControllerGetCommentCountByForestClient(startDate, endDate, projectPlanCode).pipe(
-    //     catchError(err => { console.error('Failed to fetch commentCountByForestClient', err); return of(null); })
-    //   ),
+      )
     });
   }
   

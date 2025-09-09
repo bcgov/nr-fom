@@ -57,7 +57,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     { value: 0, label: 'Show all' },
   ];
   selectedPlan: ProjectPlanCodeFilterEnum = this.planFilterOptions[0]?.value;
-  selectedFcLimit: number = 10; // default
+  selectedFcLimit: number = this.fcLimitOptions[0].value; // default
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
   
   // chart view
@@ -76,7 +76,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private analyticsDashboardDataService: AnalyticsDashboardDataService
   ) {
-    // Initialize chart options
+    // Initialize empty chart options earlier.
     this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions;
     this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;
     this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions;
@@ -167,7 +167,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
 
   applyTopCommentedProjectsChartOptions() {
     const apiData = this.analyticsData().topCommentedProjects;
-    if (apiData && Array.isArray(apiData)) {
+    if (apiData && !(apiData instanceof ApiError)) {
       const data = apiData.map(item => item.publicCommentCount);
       this.topCommentedProjectsChart.updateOptions({
         series: [{
@@ -190,7 +190,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
 
   applyFomsCountByDistrictChartOptions() {
     const apiData = this.analyticsData().nonInitialPublishedProjectCountByDistrict;
-    if (apiData && Array.isArray(apiData)) {
+    if (apiData && !(apiData instanceof ApiError)) {
       const data = apiData.map(item => item.projectCount);
       this.fomsCountByDistrictChart.updateOptions({
         series: [{
@@ -213,7 +213,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
 
   applyFomsCountByForestClientChartOptions() {
     const apiData = this.analyticsData().nonInitialPublishedProjectCountByForestClient;
-    if (Array.isArray(apiData) && apiData.length > 0) {
+    if (apiData && !(apiData instanceof ApiError)) {
       // apply limit to the data set.
       console.log('Applying selected Forest clients limit:', this.selectedFcLimit);
       const slice = this.selectedFcLimit > 0 ? this.selectedFcLimit : apiData.length;
