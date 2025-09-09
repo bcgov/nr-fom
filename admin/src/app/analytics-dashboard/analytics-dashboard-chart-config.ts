@@ -116,6 +116,7 @@ export const commentsByResponseCodeChartOptions = {
   }
 };
 
+// Chart options for: Top most commentted FOMs
 export const topCommentedProjectsChartOptions = {
   title: {
     text: "Total 15 FOMs with most public comments"

@@ -42,7 +42,7 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
     providers: [DatePipe]
 })
 export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
-  isInitialized = false;
+  isInitialized = false; // Is Angular view done initialization
   analyticsData = signal<AnalyticsDashboardData>(null);
   startDate: Date;
   endDate: Date;
@@ -60,7 +60,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   selectedFcLimit: number = this.fcLimitOptions[0].value; // default
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
   
-  // chart view
+  // chart Angular views
   @ViewChild("commentsByResponseCodeChart") commentsByResponseCodeChart!: ChartComponent;
   @ViewChild("topCommentedProjectsChart") topCommentedProjectsChart!: ChartComponent;
   @ViewChild("fomsCountByDistrictChart") fomsCountByDistrictChart!: ChartComponent;
