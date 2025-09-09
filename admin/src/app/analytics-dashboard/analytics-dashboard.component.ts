@@ -53,7 +53,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   ];
   fcLimitOptions = [
     { value: 10, label: '10 Forest clients' },
-    { value: 1, label: '20 Forest clients' },
+    { value: 20, label: '20 Forest clients' },
     { value: 0, label: 'Show all' },
   ];
   selectedPlan: ProjectPlanCodeFilterEnum = this.planFilterOptions[0]?.value;
@@ -85,7 +85,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.analyticsData.set(this.route.snapshot.data['analyticsData']);
-    console.log('Analytics data loaded:', this.analyticsData());
+    console.log('Initial analytics data loaded:', this.analyticsData());
     this.selectedPlan = this.planFilterOptions[0]?.value;
     this.startDate = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
     this.endDate = new Date();
@@ -131,7 +131,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const startDateStr = this.startDate ? DateTime.fromJSDate(this.startDate).toFormat(DEFAULT_ISO_DATE_FORMAT) : FOM_GO_LIVE_DATE;
     const endDateStr = this.endDate ? DateTime.fromJSDate(this.endDate).toFormat(DEFAULT_ISO_DATE_FORMAT) :  DateTime.fromJSDate(new Date()).toFormat(DEFAULT_ISO_DATE_FORMAT);
     const selectedPlan = this.selectedPlan;
-    const limit = ANALYTICS_DATA_DEFAULT_SIZE; // TODO, implement this, not hardcoded.
+    const limit = ANALYTICS_DATA_DEFAULT_SIZE;
     console.log('Fetching analytics data with params:', { startDateStr, endDateStr, selectedPlan, limit });
     this.analyticsDashboardDataService.getAnalyticsData(startDateStr, endDateStr, selectedPlan, limit)
       .subscribe(data => {
@@ -205,7 +205,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         },
         chart: {
           // Horizontal bar chart dynamic height adjustment
-          height: Math.max(250, apiData.length * 45)
+          height: Math.max(250, apiData.length * 40)
         }
       });
     }
@@ -214,13 +214,12 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   applyFomsCountByForestClientChartOptions() {
     const apiData = this.analyticsData().nonInitialPublishedProjectCountByForestClient;
     if (Array.isArray(apiData) && apiData.length > 0) {
-      // applying limit to the data set.
+      // apply limit to the data set.
       console.log('Applying selected Forest clients limit:', this.selectedFcLimit);
       const slice = this.selectedFcLimit > 0 ? this.selectedFcLimit : apiData.length;
       const data = apiData
         .slice(0, slice)
         .map(item => item.projectCount);
-      console.log('limited data:', data);
       this.fomsCountByForestClientChart.updateOptions({
         series: [{
           name: this.fomsCountByForestClientChartOptions.series[0].name,
@@ -232,7 +231,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         },
         chart: {
           // Horizontal bar chart dynamic height adjustment
-          height: Math.max(200, apiData.slice(0, slice).length * 70)
+          height: Math.max(200, apiData.slice(0, slice).length * 40)
         }
       });
     }
