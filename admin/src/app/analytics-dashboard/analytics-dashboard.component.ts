@@ -14,8 +14,8 @@ import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictCh
 import { AnalyticsDashboardData, AnalyticsDashboardDataService, ApiError } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
-    ChartComponent,
-    NgApexchartsModule
+  ChartComponent,
+  NgApexchartsModule
 } from 'ng-apexcharts';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 

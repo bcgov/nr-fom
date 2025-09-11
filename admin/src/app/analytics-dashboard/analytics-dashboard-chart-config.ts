@@ -108,7 +108,8 @@ export const commentsByResponseCodeChartOptions = {
         cssClass: "chart-title-label"
       }
     },
-    min: 0
+    min: 0,
+    max: 5 // this is only for initial display (to prevent axis displays decimal) and will be updated dynamically.
   },
   fill: {
     opacity: 1,
