@@ -14,8 +14,8 @@ import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictCh
 import { AnalyticsDashboardData, AnalyticsDashboardDataService, ApiError } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
-  ChartComponent,
-  NgApexchartsModule
+    ChartComponent,
+    NgApexchartsModule
 } from 'ng-apexcharts';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
@@ -93,7 +93,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
 
   async ngAfterViewInit() {
     // Implement a delay before setting isInitialized to true
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 500ms delay
+    await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
     this.isInitialized = true;
 
     // only apply chart options after view is init
