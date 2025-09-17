@@ -1,4 +1,4 @@
-import { applyCommentCreateDateFilter, applyProjectPlanCodeFilter, ProjectPlanCodeFilterEnum } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
+import { applyFomDateAndStateFilters, applyProjectPlanCodeFilter, ProjectPlanCodeFilterEnum } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
 import { DataService } from '@core';
 import { DeepPartial } from '@entities';
 import { ForbiddenException, Injectable } from '@nestjs/common';
@@ -234,7 +234,7 @@ export class PublicCommentService extends DataService<
     startDate: string, endDate: string, projectPlanCode: ProjectPlanCodeFilterEnum 
   ): Promise<PublicCommentCountByDistrictResponse[]> {
     const qb = this.repository.createQueryBuilder('c');
-    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
     applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
     qb
       .innerJoin('c.project', 'p')
@@ -265,7 +265,7 @@ export class PublicCommentService extends DataService<
     projectPlanCode: ProjectPlanCodeFilterEnum
   ): Promise<PublicCommentCountByForestClientResponse[]> {
     const qb = this.repository.createQueryBuilder('c');
-    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
     applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
     qb
       .innerJoin('c.project', 'p')
@@ -295,7 +295,7 @@ export class PublicCommentService extends DataService<
     projectPlanCode: ProjectPlanCodeFilterEnum
   ): Promise<PublicCommentCountByCategoryResponse[]> {
     const qb = this.repository.createQueryBuilder('c');
-    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
     applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
     qb
       .innerJoin('c.project', 'p')
@@ -330,7 +330,7 @@ export class PublicCommentService extends DataService<
     limit: number
   ): Promise<PublicCommentCountByProjectResponse[]> {
     const qb = this.repository.createQueryBuilder('c');
-    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
     applyProjectPlanCodeFilter(qb, projectPlanCode, 'p')
     qb
       .innerJoin('c.project', 'p')
