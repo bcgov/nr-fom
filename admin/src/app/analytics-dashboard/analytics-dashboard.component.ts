@@ -186,7 +186,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         },
         chart: {
           // Horizontal bar chart dynamic height adjustment
-          height: Math.max(330, apiData.length * 30)
+          height: Math.max(330, apiData.length * 50)
         }
       });
     }
@@ -209,7 +209,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         },
         chart: {
           // Horizontal bar chart dynamic height adjustment
-          height: Math.max(250, apiData.length * 40)
+          height: Math.max(260, apiData.length * 50)
         }
       });
     }
@@ -236,7 +236,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         },
         chart: {
           // Horizontal bar chart dynamic height adjustment
-          height: Math.max(200, apiData.slice(0, slice).length * 40)
+          height: Math.max(260, apiData.length * 50)
         }
       });
     }
