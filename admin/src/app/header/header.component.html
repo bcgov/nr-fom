@@ -36,6 +36,12 @@
             <span>Search for FOM</span>
           </a>
         </li>
+        <div *ngIf="user.isAdmin" class="v-bar"><div></div></div>
+        <li *ngIf="user.isAdmin" class="nav-item">
+          <a class="nav-link" routerLink="/analytics-dashboard" title="Analytics dashboard" tabindex="1">
+            <span>Analytics dashboard</span>
+          </a>
+        </li>
         <div class="v-bar"><div></div></div>
         <li class="nav-item">
           <a class="nav-link" routerLink="/about" title="Training modules" tabindex="2">

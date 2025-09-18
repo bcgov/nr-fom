@@ -1,3 +1,4 @@
+import { applyFomDateAndStateFilters, applyProjectPlanCodeFilter, ProjectPlanCodeFilterEnum } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
 import { DataService } from '@core';
 import { DeepPartial } from '@entities';
 import { ForbiddenException, Injectable } from '@nestjs/common';
@@ -9,15 +10,15 @@ import { FindOneOptions, Repository, UpdateResult } from 'typeorm';
 import { ProjectAuthService } from '../project/project-auth.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
 import {
-  PublicCommentAdminResponse,
-  PublicCommentAdminUpdateRequest,
-  PublicCommentCreateRequest,
-  PublicCommentCountByDistrictResponse,
-  PublicCommentCountByCategoryResponse,
-  PublicCommentCountByProjectResponse,
+    PublicCommentAdminResponse,
+    PublicCommentAdminUpdateRequest,
+    PublicCommentCountByCategoryResponse,
+    PublicCommentCountByDistrictResponse,
+    PublicCommentCountByForestClientResponse,
+    PublicCommentCountByProjectResponse,
+    PublicCommentCreateRequest,
 } from './public-comment.dto';
 import { PublicComment } from './public-comment.entity';
-import { applyCommentCreateDateFilter } from '@api-modules/analytics-dashboard/analytics-dashboard-data-filter';
 
 @Injectable()
 export class PublicCommentService extends DataService<
@@ -226,15 +227,16 @@ export class PublicCommentService extends DataService<
    *
    * @param startDate - Start of date range (YYYY-MM-DD)
    * @param endDate - End of date range (YYYY-MM-DD)
+   * @param projectPlanCode - Project plan code filter (FSP, WOODLOT, ALL)
    * @returns Promise resolving to an array of PublicCommentCountByDistrictResponse
    */
   async getCommentCountByDistrict(
-    startDate: string,
-    endDate: string
+    startDate: string, endDate: string, projectPlanCode: ProjectPlanCodeFilterEnum 
   ): Promise<PublicCommentCountByDistrictResponse[]> {
     const qb = this.repository.createQueryBuilder('c');
-    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
-    return await qb
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
+    qb
       .innerJoin('c.project', 'p')
       .innerJoin('p.district', 'd')
       .select('p.district_id', 'districtId')
@@ -242,8 +244,40 @@ export class PublicCommentService extends DataService<
       .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')
       .groupBy('p.district_id')
       .addGroupBy('d.name')
-      .orderBy('"publicCommentCount"', 'DESC')
-      .getRawMany();
+      .orderBy('"publicCommentCount"', 'DESC');
+
+    this.logger.debug(`getCommentCountByDistrict SQL: ${qb.getQueryAndParameters()}`);
+    return await qb.getRawMany();
+  }
+
+  /**
+   * Returns the total number of public comments grouped by forest clients.
+   * Used by analytics dashboard module.
+   *
+   * @param startDate - Start of date range (YYYY-MM-DD)
+   * @param endDate - End of date range (YYYY-MM-DD)
+   * @param projectPlanCode - Project plan code filter (FSP, WOODLOT, ALL)
+   * @returns Promise resolving to an array of PublicCommentCountByForestClientResponse
+   */
+  async getCommentCountByForestClient(
+    startDate: string,
+    endDate: string,
+    projectPlanCode: ProjectPlanCodeFilterEnum
+  ): Promise<PublicCommentCountByForestClientResponse[]> {
+    const qb = this.repository.createQueryBuilder('c');
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
+    qb
+      .innerJoin('c.project', 'p')
+      .innerJoin('p.forestClient', 'f')
+      .select('f.id', 'forestClientNumber')
+      .addSelect('f.name', 'forestClientName')
+      .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')
+      .groupBy('f.id')
+      .addGroupBy('f.name')
+      .orderBy('"publicCommentCount"', 'DESC');
+    this.logger.debug(`getCommentCountByForestClient SQL: ${qb.getQueryAndParameters()}`);
+    return await qb.getRawMany();
   }
 
   /**
@@ -252,20 +286,25 @@ export class PublicCommentService extends DataService<
    *
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @param projectPlanCode - Project plan code filter (FSP, WOODLOT, ALL)
    * @returns Promise resolving to an array of PublicCommentCountByCategoryResponse
    */
   async getCommentCountByResponseCode(
     startDate: string,
-    endDate: string
+    endDate: string,
+    projectPlanCode: ProjectPlanCodeFilterEnum
   ): Promise<PublicCommentCountByCategoryResponse[]> {
     const qb = this.repository.createQueryBuilder('c');
-    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
-    const result = await qb
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    applyProjectPlanCodeFilter(qb, projectPlanCode, 'p');
+    qb
+      .innerJoin('c.project', 'p')
       .select('response_code', 'responseCode')
       .addSelect('COUNT(public_comment_id)', 'publicCommentCount')
       .groupBy('response_code')
-      .orderBy('"publicCommentCount"', 'DESC')
-      .getRawMany();
+      .orderBy('"publicCommentCount"', 'DESC');
+    this.logger.debug(`getCommentCountByResponseCode SQL: ${qb.getQueryAndParameters()}`);
+    const result = await qb.getRawMany();
 
     return result.map((row) => ({
       responseCode: row.responseCode ?? 'NOT_CATEGORIZED',
@@ -280,25 +319,35 @@ export class PublicCommentService extends DataService<
    *
    * @param startDate - The start of the date range (inclusive, YYYY-MM-DD)
    * @param endDate - The end of the date range (inclusive, YYYY-MM-DD)
+   * @param projectPlanCode - Project plan code filter (FSP, WOODLOT, ALL)
    * @param limit - The maximum number of projects to return
    * @returns Promise resolving to an array of PublicCommentCountByProjectResponse
    */
   async getCommentCountByProject(
     startDate: string,
     endDate: string,
+    projectPlanCode: ProjectPlanCodeFilterEnum,
     limit: number
   ): Promise<PublicCommentCountByProjectResponse[]> {
     const qb = this.repository.createQueryBuilder('c');
-    applyCommentCreateDateFilter(qb, startDate, endDate, 'c');
-    return qb
+    applyFomDateAndStateFilters(qb, startDate, endDate, 'p');
+    applyProjectPlanCodeFilter(qb, projectPlanCode, 'p')
+    qb
       .innerJoin('c.project', 'p')
+      .innerJoin('p.forestClient', 'f')
+      .innerJoin('p.district', 'd')
       .select('p.project_id', 'projectId')
       .addSelect('p.name', 'projectName')
+      .addSelect('f.name', 'forestClientName')
+      .addSelect('d.name', 'districtName')
       .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')
       .groupBy('p.project_id')
       .addGroupBy('p.name')
+      .addGroupBy('f.name')
+      .addGroupBy('d.name')
       .orderBy('"publicCommentCount"', 'DESC')
-      .limit(limit)
-      .getRawMany();
+      .limit(limit);
+    this.logger.debug(`getCommentCountByProject SQL: ${qb.getQueryAndParameters()}`);
+    return await qb.getRawMany();
   }
 }

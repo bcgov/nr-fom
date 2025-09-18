@@ -2,9 +2,11 @@ import { NgModule, ModuleWithProviders, SkipSelf, Optional } from '@angular/core
 import { Configuration } from './configuration';
 import { HttpClient } from '@angular/common/http';
 
+import { AnalyticsDashboardService } from './api/analyticsDashboard.service';
 import { AttachmentService } from './api/attachment.service';
 import { AuthService } from './api/auth.service';
 import { DistrictService } from './api/district.service';
+import { ExternalService } from './api/external.service';
 import { ForestClientService } from './api/forestClient.service';
 import { InteractionService } from './api/interaction.service';
 import { ProjectService } from './api/project.service';

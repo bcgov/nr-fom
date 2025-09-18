@@ -1,2678 +1,3375 @@
 {
-    "openapi": "3.0.0",
-    "paths": {
-      "/api/awsCognitoConfig": {
-        "get": {
-          "operationId": "AuthController_getAwsCognitoConfig",
-          "parameters": [],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/AwsCognitoConfig"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "auth"
-          ]
-        }
-      },
-      "/api/attachment": {
-        "post": {
-          "operationId": "AttachmentController_create",
-          "parameters": [],
-          "requestBody": {
-            "required": true,
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/awsCognitoConfig": {
+      "get": {
+        "operationId": "AuthController_getAwsCognitoConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
             "content": {
-              "multipart/form-data": {
+              "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "file": {
-                      "type": "string",
-                      "format": "binary"
-                    },
-                    "projectId": {
-                      "type": "number"
-                    },
-                    "attachmentTypeCode": {
-                      "type": "string"
-                    }
-                  }
+                  "$ref": "#/components/schemas/AwsCognitoConfig"
                 }
               }
             }
-          },
-          "responses": {
-            "201": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "attachment"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "get": {
-          "operationId": "AttachmentController_find",
-          "parameters": [
-            {
-              "name": "projectId",
-              "required": true,
-              "in": "query",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/attachment": {
+      "post": {
+        "operationId": "AttachmentController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
               "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/AttachmentResponse"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "attachment"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/attachment/file/{id}": {
-        "get": {
-          "operationId": "AttachmentController_getFileContents",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/octet-stream": {
-                  "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
                     "type": "string",
                     "format": "binary"
+                  },
+                  "projectId": {
+                    "type": "number"
+                  },
+                  "attachmentTypeCode": {
+                    "type": "string"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "attachment"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "attachment"
+        ]
       },
-      "/api/attachment/{id}": {
-        "get": {
-          "operationId": "AttachmentController_findOne",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
+      "get": {
+        "operationId": "AttachmentController_find",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
             }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
                     "$ref": "#/components/schemas/AttachmentResponse"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "attachment"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "delete": {
-          "operationId": "AttachmentController_remove",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "attachment"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/attachment-type-code": {
-        "get": {
-          "operationId": "AttachmentTypeCodeController_findAll",
-          "parameters": [],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/AttachmentTypeCode"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "attachment"
-          ]
-        }
-      },
-      "/api/interaction": {
-        "post": {
-          "operationId": "InteractionController_create",
-          "parameters": [],
-          "requestBody": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "attachment"
+        ]
+      }
+    },
+    "/api/attachment/file/{id}": {
+      "get": {
+        "operationId": "AttachmentController_getFileContents",
+        "parameters": [
+          {
+            "name": "id",
             "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
             "content": {
-              "multipart/form-data": {
+              "application/octet-stream": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "file": {
-                      "type": "string",
-                      "format": "binary"
-                    },
-                    "projectId": {
-                      "type": "number"
-                    },
-                    "stakeholder": {
-                      "type": "string"
-                    },
-                    "communicationDate": {
-                      "type": "string"
-                    },
-                    "communicationDetails": {
-                      "type": "string"
-                    },
-                    "filename": {
-                      "type": "string"
-                    }
-                  }
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
-          },
-          "responses": {
-            "201": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "interaction"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "get": {
-          "operationId": "InteractionController_find",
-          "parameters": [
-            {
-              "name": "projectId",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/InteractionResponse"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "interaction"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/interaction/{id}": {
-        "put": {
-          "operationId": "InteractionController_update",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "requestBody": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "attachment"
+        ]
+      }
+    },
+    "/api/attachment/{id}": {
+      "get": {
+        "operationId": "AttachmentController_findOne",
+        "parameters": [
+          {
+            "name": "id",
             "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
             "content": {
-              "multipart/form-data": {
+              "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "file": {
-                      "type": "string",
-                      "format": "binary"
-                    },
-                    "projectId": {
-                      "type": "number"
-                    },
-                    "stakeholder": {
-                      "type": "string"
-                    },
-                    "communicationDate": {
-                      "type": "string"
-                    },
-                    "communicationDetails": {
-                      "type": "string"
-                    },
-                    "revisionCount": {
-                      "type": "number"
-                    },
-                    "filename": {
-                      "type": "string"
-                    }
+                  "$ref": "#/components/schemas/AttachmentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "attachment"
+        ]
+      },
+      "delete": {
+        "operationId": "AttachmentController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "attachment"
+        ]
+      }
+    },
+    "/api/attachment-type-code": {
+      "get": {
+        "operationId": "AttachmentTypeCodeController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AttachmentTypeCode"
                   }
                 }
               }
             }
-          },
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
+          }
+        },
+        "tags": [
+          "attachment"
+        ]
+      }
+    },
+    "/api/interaction": {
+      "post": {
+        "operationId": "InteractionController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "projectId": {
+                    "type": "number"
+                  },
+                  "stakeholder": {
+                    "type": "string"
+                  },
+                  "communicationDate": {
+                    "type": "string"
+                  },
+                  "communicationDetails": {
+                    "type": "string"
+                  },
+                  "filename": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "interaction"
+        ]
+      },
+      "get": {
+        "operationId": "InteractionController_find",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
                     "$ref": "#/components/schemas/InteractionResponse"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "interaction"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "delete": {
-          "operationId": "InteractionController_remove",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "interaction"
+        ]
+      }
+    },
+    "/api/interaction/{id}": {
+      "put": {
+        "operationId": "InteractionController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
             }
-          ],
-          "responses": {
-            "200": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "interaction"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/project/publicSummary": {
-        "get": {
-          "operationId": "ProjectController_findPublicSummary",
-          "parameters": [
-            {
-              "name": "projectId",
-              "required": false,
-              "in": "query",
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
               "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "includeCommentOpen",
-              "required": false,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "includePostCommentOpen",
-              "required": false,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "forestClientName",
-              "required": false,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "openedOnOrAfter",
-              "required": false,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/ProjectPublicSummaryResponse"
-                    }
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "projectId": {
+                    "type": "number"
+                  },
+                  "stakeholder": {
+                    "type": "string"
+                  },
+                  "communicationDate": {
+                    "type": "string"
+                  },
+                  "communicationDetails": {
+                    "type": "string"
+                  },
+                  "revisionCount": {
+                    "type": "number"
+                  },
+                  "filename": {
+                    "type": "string"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "project"
-          ]
-        }
-      },
-      "/api/project/{id}": {
-        "get": {
-          "operationId": "ProjectController_findOne",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InteractionResponse"
+                }
               }
             }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "interaction"
+        ]
+      },
+      "delete": {
+        "operationId": "InteractionController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "interaction"
+        ]
+      }
+    },
+    "/api/project/publicSummary": {
+      "get": {
+        "operationId": "ProjectController_findPublicSummary",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeCommentOpen",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includePostCommentOpen",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "forestClientName",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "openedOnOrAfter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectPublicSummaryResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "project"
+        ]
+      }
+    },
+    "/api/project/{id}": {
+      "get": {
+        "operationId": "ProjectController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "project"
+        ]
+      },
+      "put": {
+        "operationId": "ProjectController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "project"
+        ]
+      },
+      "delete": {
+        "operationId": "ProjectController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "project"
+        ]
+      }
+    },
+    "/api/project/metrics/{id}": {
+      "get": {
+        "operationId": "ProjectController_findProjectMetrics",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectMetricsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "project"
+        ]
+      }
+    },
+    "/api/project": {
+      "get": {
+        "operationId": "ProjectController_find",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fspId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "districtId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workflowStateCode",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "forestClientName",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
                     "$ref": "#/components/schemas/ProjectResponse"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "project"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "put": {
-          "operationId": "ProjectController_update",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "project"
+        ]
+      },
+      "post": {
+        "operationId": "ProjectController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
               "schema": {
-                "type": "number"
+                "$ref": "#/components/schemas/ProjectCreateRequest"
               }
             }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectUpdateRequest"
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProjectResponse"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "project"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "delete": {
-          "operationId": "ProjectController_remove",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "project"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/project/metrics/{id}": {
-        "get": {
-          "operationId": "ProjectController_findProjectMetrics",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProjectMetricsResponse"
-                  }
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
                 }
               }
             }
-          },
-          "tags": [
-            "project"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/project": {
-        "get": {
-          "operationId": "ProjectController_find",
-          "parameters": [
-            {
-              "name": "projectId",
-              "required": false,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "fspId",
-              "required": false,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "districtId",
-              "required": false,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "workflowStateCode",
-              "required": false,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "forestClientName",
-              "required": false,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/ProjectResponse"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "project"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "post": {
-          "operationId": "ProjectController_create",
-          "parameters": [],
-          "requestBody": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "project"
+        ]
+      }
+    },
+    "/api/project/workflowState/{id}": {
+      "put": {
+        "operationId": "ProjectController_stateChange",
+        "parameters": [
+          {
+            "name": "id",
             "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectCreateRequest"
-                }
-              }
+            "in": "path",
+            "schema": {
+              "type": "number"
             }
-          },
-          "responses": {
-            "201": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProjectResponse"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "project"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/project/workflowState/{id}": {
-        "put": {
-          "operationId": "ProjectController_stateChange",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
               "schema": {
-                "type": "number"
+                "$ref": "#/components/schemas/ProjectWorkflowStateChangeRequest"
               }
             }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectWorkflowStateChangeRequest"
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProjectResponse"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "project"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/project/commentClassification/{id}": {
-        "put": {
-          "operationId": "ProjectController_commentClassificationMandatoryChange",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectCommentClassificationMandatoryChangeRequest"
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ProjectResponse"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "project"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/project/commentingClosedDate/{id}": {
-        "put": {
-          "operationId": "ProjectController_commentingClosedDateChange",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectCommentingClosedDateChangeRequest"
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "project"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/public-notice": {
-        "get": {
-          "operationId": "PublicNoticeController_findListForPublicFrontEnd",
-          "parameters": [],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/PublicNoticePublicFrontEndResponse"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "public-notice"
-          ]
+          }
         },
-        "post": {
-          "operationId": "PublicNoticeController_create",
-          "parameters": [],
-          "requestBody": {
-            "required": true,
+        "responses": {
+          "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicNoticeCreateRequest"
+                  "$ref": "#/components/schemas/ProjectResponse"
                 }
               }
             }
-          },
-          "responses": {
-            "201": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/PublicNoticeResponse"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "public-notice"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/public-notice/latest/{forestClientId}": {
-        "get": {
-          "operationId": "PublicNoticeController_findLatestPublicNotice",
-          "parameters": [
-            {
-              "name": "forestClientId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/PublicNoticeResponse"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "public-notice"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/public-notice/{id}": {
-        "get": {
-          "operationId": "PublicNoticeController_findOne",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/PublicNoticeResponse"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "public-notice"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "put": {
-          "operationId": "PublicNoticeController_update",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "project"
+        ]
+      }
+    },
+    "/api/project/commentClassification/{id}": {
+      "put": {
+        "operationId": "ProjectController_commentClassificationMandatoryChange",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
               "schema": {
-                "type": "number"
+                "$ref": "#/components/schemas/ProjectCommentClassificationMandatoryChangeRequest"
               }
             }
-          ],
-          "requestBody": {
-            "required": true,
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicNoticeUpdateRequest"
+                  "$ref": "#/components/schemas/ProjectResponse"
                 }
               }
             }
-          },
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/PublicNoticeResponse"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "public-notice"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "delete": {
-          "operationId": "PublicNoticeController_remove",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "project"
+        ]
+      }
+    },
+    "/api/project/commentingClosedDate/{id}": {
+      "put": {
+        "operationId": "ProjectController_commentingClosedDateChange",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
               "schema": {
-                "type": "number"
+                "$ref": "#/components/schemas/ProjectCommentingClosedDateChangeRequest"
               }
             }
-          ],
-          "responses": {
-            "200": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "public-notice"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/workflow-state-code": {
-        "get": {
-          "operationId": "WorkflowStateCodeController_findAll",
-          "parameters": [],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/WorkflowStateCode"
-                    }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "project"
+        ]
+      }
+    },
+    "/api/public-notice": {
+      "get": {
+        "operationId": "PublicNoticeController_findListForPublicFrontEnd",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicNoticePublicFrontEndResponse"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "project"
-          ]
-        }
+          }
+        },
+        "tags": [
+          "public-notice"
+        ]
       },
-      "/api/district": {
-        "get": {
-          "operationId": "DistrictController_findAll",
-          "parameters": [],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/DistrictResponse"
-                    }
+      "post": {
+        "operationId": "PublicNoticeController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicNoticeCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicNoticeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "public-notice"
+        ]
+      }
+    },
+    "/api/public-notice/latest/{forestClientId}": {
+      "get": {
+        "operationId": "PublicNoticeController_findLatestPublicNotice",
+        "parameters": [
+          {
+            "name": "forestClientId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicNoticeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "public-notice"
+        ]
+      }
+    },
+    "/api/public-notice/{id}": {
+      "get": {
+        "operationId": "PublicNoticeController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicNoticeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "public-notice"
+        ]
+      },
+      "put": {
+        "operationId": "PublicNoticeController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicNoticeUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicNoticeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "public-notice"
+        ]
+      },
+      "delete": {
+        "operationId": "PublicNoticeController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "public-notice"
+        ]
+      }
+    },
+    "/api/workflow-state-code": {
+      "get": {
+        "operationId": "WorkflowStateCodeController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WorkflowStateCode"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "district"
-          ]
-        }
-      },
-      "/api/district/{id}": {
-        "get": {
-          "operationId": "DistrictController_findOne",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
+          }
+        },
+        "tags": [
+          "project"
+        ]
+      }
+    },
+    "/api/district": {
+      "get": {
+        "operationId": "DistrictController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
                     "$ref": "#/components/schemas/DistrictResponse"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "district"
-          ]
-        }
-      },
-      "/api/forest-client": {
-        "get": {
-          "operationId": "ForestClientController_find",
-          "parameters": [],
-          "responses": {
-            "200": {
-              "description": "Returns only forest clients that the user is authorized for.",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/ForestClientResponse"
-                    }
-                  }
+          }
+        },
+        "tags": [
+          "district"
+        ]
+      }
+    },
+    "/api/district/{id}": {
+      "get": {
+        "operationId": "DistrictController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DistrictResponse"
                 }
               }
             }
-          },
-          "tags": [
-            "forest-client"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/forest-client/{id}": {
-        "get": {
-          "operationId": "ForestClientController_findOne",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
+          }
+        },
+        "tags": [
+          "district"
+        ]
+      }
+    },
+    "/api/forest-client": {
+      "get": {
+        "operationId": "ForestClientController_find",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Returns only forest clients that the user is authorized for.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
                     "$ref": "#/components/schemas/ForestClientResponse"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "forest-client"
-          ]
-        }
-      },
-      "/api/public-comment": {
-        "post": {
-          "operationId": "PublicCommentController_create",
-          "parameters": [],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicCommentCreateRequest"
-                }
-              }
-            }
-          },
-          "responses": {
-            "201": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "public-comment"
-          ]
+          }
         },
-        "get": {
-          "operationId": "PublicCommentController_find",
-          "parameters": [
-            {
-              "name": "projectId",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/PublicCommentAdminResponse"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "public-comment"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/public-comment/{id}": {
-        "put": {
-          "operationId": "PublicCommentController_update",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "requestBody": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "forest-client"
+        ]
+      }
+    },
+    "/api/forest-client/{id}": {
+      "get": {
+        "operationId": "ForestClientController_findOne",
+        "parameters": [
+          {
+            "name": "id",
             "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicCommentAdminUpdateRequest"
+                  "$ref": "#/components/schemas/ForestClientResponse"
                 }
               }
             }
-          },
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
+          }
+        },
+        "tags": [
+          "forest-client"
+        ]
+      }
+    },
+    "/api/public-comment": {
+      "post": {
+        "operationId": "PublicCommentController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicCommentCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "public-comment"
+        ]
+      },
+      "get": {
+        "operationId": "PublicCommentController_find",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
                     "$ref": "#/components/schemas/PublicCommentAdminResponse"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "public-comment"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
+          }
         },
-        "get": {
-          "operationId": "PublicCommentController_findOne",
-          "parameters": [
-            {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/PublicCommentAdminResponse"
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "public-comment"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/comment-scope-code": {
-        "get": {
-          "operationId": "CommentScopeCodeController_findAll",
-          "parameters": [],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/CommentScopeCode"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "public-comment"
-          ]
-        }
-      },
-      "/api/response-code": {
-        "get": {
-          "operationId": "ResponseCodeController_findAll",
-          "parameters": [],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/ResponseCode"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "public-comment"
-          ]
-        }
-      },
-      "/api/submission": {
-        "post": {
-          "operationId": "SubmissionController_processSpatialSubmission",
-          "parameters": [],
-          "requestBody": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "public-comment"
+        ]
+      }
+    },
+    "/api/public-comment/{id}": {
+      "put": {
+        "operationId": "PublicCommentController_update",
+        "parameters": [
+          {
+            "name": "id",
             "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicCommentAdminUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SubmissionRequest"
+                  "$ref": "#/components/schemas/PublicCommentAdminResponse"
                 }
               }
             }
-          },
-          "responses": {
-            "200": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "submission"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "public-comment"
+        ]
       },
-      "/api/submission/detail/{projectId}": {
-        "get": {
-          "operationId": "SubmissionController_findSubmissionDetailForCurrentSubmissionType",
-          "parameters": [
-            {
-              "name": "projectId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
+      "get": {
+        "operationId": "PublicCommentController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicCommentAdminResponse"
+                }
               }
             }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/SubmissionDetailResponse"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "public-comment"
+        ]
+      }
+    },
+    "/api/comment-scope-code": {
+      "get": {
+        "operationId": "CommentScopeCodeController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommentScopeCode"
                   }
                 }
               }
             }
-          },
-          "tags": [
-            "submission"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/submission/{submissionId}": {
-        "delete": {
-          "operationId": "SubmissionController_removeSpatialSubmissionByType",
-          "parameters": [
-            {
-              "name": "submissionId",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "number"
+          }
+        },
+        "tags": [
+          "public-comment"
+        ]
+      }
+    },
+    "/api/response-code": {
+      "get": {
+        "operationId": "ResponseCodeController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ResponseCode"
+                  }
+                }
               }
-            },
-            {
-              "name": "spatialObjectCode",
-              "required": true,
-              "in": "query",
+            }
+          }
+        },
+        "tags": [
+          "public-comment"
+        ]
+      }
+    },
+    "/api/analytics-dashboard/project/count": {
+      "get": {
+        "operationId": "AnalyticsDashboardController_getNonInitialPublishedProjectCount",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Number of non-Initial FOMs projects published in the date range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get total number of non-initial FOMs published in a user selected date range",
+        "tags": [
+          "analytics-dashboard"
+        ]
+      }
+    },
+    "/api/analytics-dashboard/project/count-by-district": {
+      "get": {
+        "operationId": "AnalyticsDashboardController_getNonInitialPublishedProjectCountByDistrict",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of non-initial FOM project counts by district",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectCountByDistrictResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get number of non-initial FOMs published in a user selected date range, grouped by district",
+        "tags": [
+          "analytics-dashboard"
+        ]
+      }
+    },
+    "/api/analytics-dashboard/project/count-forest-client": {
+      "get": {
+        "operationId": "AnalyticsDashboardController_getUniqueForestClientCount",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Total unique forest client count for published FOMs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get total number of unique forest clients who published FOMs in a user selected date range",
+        "tags": [
+          "analytics-dashboard"
+        ]
+      }
+    },
+    "/api/analytics-dashboard/project/count-by-forest-client": {
+      "get": {
+        "operationId": "AnalyticsDashboardController_getNonInitialPublishedProjectCountByForestClient",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of non-initial FOM project counts by forest client numbers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectCountByForestClientResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get number of non-initial FOMs published in a user selected date range, grouped by forest client numbers",
+        "tags": [
+          "analytics-dashboard"
+        ]
+      }
+    },
+    "/api/analytics-dashboard/public-comment/count-by-district": {
+      "get": {
+        "operationId": "AnalyticsDashboardController_getCommentCountByDistrict",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of comment counts by district",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicCommentCountByDistrictResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get number of public comments created in a user selected date range, grouped by district",
+        "tags": [
+          "analytics-dashboard"
+        ]
+      }
+    },
+    "/api/analytics-dashboard/public-comment/count-by-forest-client": {
+      "get": {
+        "operationId": "AnalyticsDashboardController_getCommentCountByForestClient",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of comment counts by forest clients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicCommentCountByForestClientResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get number of public comments created in a user selected date range, grouped by forest clients",
+        "tags": [
+          "analytics-dashboard"
+        ]
+      }
+    },
+    "/api/analytics-dashboard/public-comment/count-by-responsecode": {
+      "get": {
+        "operationId": "AnalyticsDashboardController_getCommentCountByResponseCode",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of comment counts by response code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicCommentCountByCategoryResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get number of public comments created in a user selected date range, grouped by response code",
+        "tags": [
+          "analytics-dashboard"
+        ]
+      }
+    },
+    "/api/analytics-dashboard/public-comment/most-commented-projects": {
+      "get": {
+        "operationId": "AnalyticsDashboardController_getTopCommentedProjects",
+        "parameters": [
+          {
+            "name": "startDate",
+            "required": true,
+            "in": "query",
+            "description": "Start date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": true,
+            "in": "query",
+            "description": "End date in YYYY-MM-DD format",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectPlanCode",
+            "required": false,
+            "in": "query",
+            "description": "Project plan code filter (FSP, WOODLOT, ALL). Default to FSP",
+            "schema": {
+              "$ref": "#/components/schemas/ProjectPlanCodeFilterEnum"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of projects to return (default: 15)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of comment counts by project",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicCommentCountByProjectResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the top N most commented projects (FOMs)",
+        "tags": [
+          "analytics-dashboard"
+        ]
+      }
+    },
+    "/api/submission": {
+      "post": {
+        "operationId": "SubmissionController_processSpatialSubmission",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
               "schema": {
+                "$ref": "#/components/schemas/SubmissionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "submission"
+        ]
+      }
+    },
+    "/api/submission/detail/{projectId}": {
+      "get": {
+        "operationId": "SubmissionController_findSubmissionDetailForCurrentSubmissionType",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionDetailResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "submission"
+        ]
+      }
+    },
+    "/api/submission/{submissionId}": {
+      "delete": {
+        "operationId": "SubmissionController_removeSpatialSubmissionByType",
+        "parameters": [
+          {
+            "name": "submissionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "spatialObjectCode",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "CUT_BLOCK",
+                "ROAD_SECTION",
+                "WTRA"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "submission"
+        ]
+      }
+    },
+    "/api/submission-type-code": {
+      "get": {
+        "operationId": "SubmissionTypeCodeController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubmissionTypeCode"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "submission"
+        ]
+      }
+    },
+    "/api/spatial-feature": {
+      "get": {
+        "operationId": "SpatialFeatureController_getForProject",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SpatialFeaturePublicResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "spatial-feature"
+        ]
+      }
+    },
+    "/api/spatial-feature/bcgw-extract": {
+      "get": {
+        "operationId": "SpatialFeatureController_getBcgwExtract",
+        "parameters": [
+          {
+            "name": "version",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SpatialFeatureBcgwResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "spatial-feature"
+        ]
+      }
+    },
+    "/api/external/fom-by-fsp": {
+      "get": {
+        "operationId": "ProjectsByFspController_findByFsp",
+        "parameters": [
+          {
+            "name": "fspId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectByFspResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "external"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "FOM API",
+    "description": "API for FOM backend",
+    "version": "1.0",
+    "contact": {
+
+    }
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "AwsCognitoOauthConfig": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "redirectSignIn": {
+            "type": "string"
+          },
+          "redirectSignOut": {
+            "type": "string"
+          },
+          "responseType": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain",
+          "scope",
+          "redirectSignIn",
+          "redirectSignOut",
+          "responseType"
+        ]
+      },
+      "AwsCognitoConfig": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "aws_cognito_domain": {
+            "type": "string"
+          },
+          "aws_cognito_region": {
+            "type": "string"
+          },
+          "aws_user_pools_id": {
+            "type": "string"
+          },
+          "aws_user_pools_web_client_id": {
+            "type": "string"
+          },
+          "aws_mandatory_sign_in": {
+            "type": "string"
+          },
+          "oauth": {
+            "$ref": "#/components/schemas/AwsCognitoOauthConfig"
+          },
+          "federationTarget": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "aws_cognito_domain",
+          "aws_cognito_region",
+          "aws_user_pools_id",
+          "aws_user_pools_web_client_id",
+          "aws_mandatory_sign_in",
+          "oauth",
+          "federationTarget"
+        ]
+      },
+      "AttachmentTypeCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "description"
+        ]
+      },
+      "AttachmentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "projectId": {
+            "type": "number"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "attachmentType": {
+            "$ref": "#/components/schemas/AttachmentTypeCode"
+          },
+          "createTimestamp": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "fileName",
+          "attachmentType",
+          "createTimestamp"
+        ]
+      },
+      "InteractionResponse": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "number"
+          },
+          "stakeholder": {
+            "type": "string"
+          },
+          "communicationDate": {
+            "type": "string"
+          },
+          "communicationDetails": {
+            "type": "string"
+          },
+          "attachmentId": {
+            "type": "number"
+          },
+          "id": {
+            "type": "number"
+          },
+          "revisionCount": {
+            "type": "number"
+          },
+          "createTimestamp": {
+            "type": "string",
+            "description": "ISO-formatted timestamp"
+          }
+        },
+        "required": [
+          "projectId",
+          "communicationDate",
+          "communicationDetails",
+          "id",
+          "revisionCount",
+          "createTimestamp"
+        ]
+      },
+      "ProjectPublicSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "geojson": {
+            "type": "object",
+            "example": " { \"type\": \"Point\", \"coordinates\": [-119.396071939, 49.813816629]}"
+          },
+          "projectPlanCode": {
+            "type": "string"
+          },
+          "fspId": {
+            "type": "number"
+          },
+          "woodlotLicenseNumber": {
+            "type": "string"
+          },
+          "forestClientName": {
+            "type": "string"
+          },
+          "workflowStateName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "geojson",
+          "projectPlanCode",
+          "forestClientName",
+          "workflowStateName"
+        ]
+      },
+      "DistrictResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ForestClientResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "WorkflowStateCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "description"
+        ]
+      },
+      "ProjectResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "commentingOpenDate": {
+            "type": "string",
+            "description": "ISO-formatted date"
+          },
+          "commentingClosedDate": {
+            "type": "string",
+            "description": "ISO-formatted date"
+          },
+          "validityEndDate": {
+            "type": "string",
+            "description": "ISO-formatted date"
+          },
+          "projectPlanCode": {
+            "type": "string"
+          },
+          "fspId": {
+            "type": "number"
+          },
+          "woodlotLicenseNumber": {
+            "type": "string"
+          },
+          "district": {
+            "$ref": "#/components/schemas/DistrictResponse"
+          },
+          "forestClient": {
+            "$ref": "#/components/schemas/ForestClientResponse"
+          },
+          "workflowState": {
+            "$ref": "#/components/schemas/WorkflowStateCode"
+          },
+          "revisionCount": {
+            "type": "number"
+          },
+          "createTimestamp": {
+            "type": "string",
+            "description": "ISO-formatted timestamp"
+          },
+          "commentClassificationMandatory": {
+            "type": "boolean",
+            "default": true
+          },
+          "publicNoticeId": {
+            "type": "number"
+          },
+          "noticePostDate": {
+            "type": "string"
+          },
+          "operationStartYear": {
+            "type": "number"
+          },
+          "operationEndYear": {
+            "type": "number"
+          },
+          "bctsMgrName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "commentingOpenDate",
+          "commentingClosedDate",
+          "validityEndDate",
+          "projectPlanCode",
+          "district",
+          "forestClient",
+          "workflowState",
+          "revisionCount",
+          "createTimestamp",
+          "commentClassificationMandatory",
+          "publicNoticeId",
+          "noticePostDate",
+          "operationStartYear",
+          "operationEndYear",
+          "bctsMgrName"
+        ]
+      },
+      "ProjectMetricsResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "totalInteractionsCount": {
+            "type": "number"
+          },
+          "totalCommentsCount": {
+            "type": "number"
+          },
+          "respondedToCommentsCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "totalInteractionsCount",
+          "totalCommentsCount",
+          "respondedToCommentsCount"
+        ]
+      },
+      "ProjectPlanCodeEnum": {
+        "type": "string",
+        "enum": [
+          "FSP",
+          "WOODLOT"
+        ]
+      },
+      "ProjectCreateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "commentingOpenDate": {
+            "type": "string",
+            "description": "ISO-formatted date"
+          },
+          "commentingClosedDate": {
+            "type": "string",
+            "description": "ISO-formatted date"
+          },
+          "forestClientNumber": {
+            "type": "string"
+          },
+          "projectPlanCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectPlanCodeEnum"
+              }
+            ]
+          },
+          "fspId": {
+            "type": "number"
+          },
+          "woodlotLicenseNumber": {
+            "type": "string"
+          },
+          "districtId": {
+            "type": "number"
+          },
+          "operationStartYear": {
+            "type": "number"
+          },
+          "operationEndYear": {
+            "type": "number"
+          },
+          "bctsMgrName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "commentingOpenDate",
+          "commentingClosedDate",
+          "forestClientNumber",
+          "projectPlanCode",
+          "fspId",
+          "woodlotLicenseNumber",
+          "districtId",
+          "operationStartYear",
+          "operationEndYear",
+          "bctsMgrName"
+        ]
+      },
+      "ProjectUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "commentingOpenDate": {
+            "type": "string",
+            "description": "ISO-formatted date"
+          },
+          "commentingClosedDate": {
+            "type": "string",
+            "description": "ISO-formatted date"
+          },
+          "projectPlanCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProjectPlanCodeEnum"
+              }
+            ]
+          },
+          "fspId": {
+            "type": "number"
+          },
+          "woodlotLicenseNumber": {
+            "type": "string"
+          },
+          "districtId": {
+            "type": "number"
+          },
+          "operationStartYear": {
+            "type": "number"
+          },
+          "operationEndYear": {
+            "type": "number"
+          },
+          "bctsMgrName": {
+            "type": "string"
+          },
+          "revisionCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "revisionCount"
+        ]
+      },
+      "WorkflowStateEnum": {
+        "type": "string",
+        "enum": [
+          "INITIAL",
+          "PUBLISHED",
+          "COMMENT_OPEN",
+          "COMMENT_CLOSED",
+          "FINALIZED",
+          "EXPIRED"
+        ]
+      },
+      "ProjectWorkflowStateChangeRequest": {
+        "type": "object",
+        "properties": {
+          "revisionCount": {
+            "type": "number"
+          },
+          "workflowStateCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WorkflowStateEnum"
+              }
+            ]
+          }
+        },
+        "required": [
+          "revisionCount",
+          "workflowStateCode"
+        ]
+      },
+      "ProjectCommentClassificationMandatoryChangeRequest": {
+        "type": "object",
+        "properties": {
+          "commentClassificationMandatory": {
+            "type": "boolean"
+          },
+          "revisionCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "commentClassificationMandatory",
+          "revisionCount"
+        ]
+      },
+      "ProjectCommentingClosedDateChangeRequest": {
+        "type": "object",
+        "properties": {
+          "commentingClosedDate": {
+            "type": "string",
+            "description": "ISO-formatted date"
+          },
+          "revisionCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "commentingClosedDate",
+          "revisionCount"
+        ]
+      },
+      "PublicNoticePublicFrontEndResponse": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "number"
+          },
+          "reviewAddress": {
+            "type": "string"
+          },
+          "reviewBusinessHours": {
+            "type": "string"
+          },
+          "receiveCommentsAddress": {
+            "type": "string"
+          },
+          "receiveCommentsBusinessHours": {
+            "type": "string"
+          },
+          "isReceiveCommentsSameAsReview": {
+            "type": "boolean"
+          },
+          "mailingAddress": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "postDate": {
+            "type": "string",
+            "description": "Date planed for online public notice posted."
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectResponse"
+          }
+        },
+        "required": [
+          "projectId",
+          "reviewAddress",
+          "reviewBusinessHours",
+          "receiveCommentsAddress",
+          "receiveCommentsBusinessHours",
+          "isReceiveCommentsSameAsReview",
+          "mailingAddress",
+          "email",
+          "postDate",
+          "project"
+        ]
+      },
+      "PublicNoticeResponse": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "number"
+          },
+          "reviewAddress": {
+            "type": "string"
+          },
+          "reviewBusinessHours": {
+            "type": "string"
+          },
+          "receiveCommentsAddress": {
+            "type": "string"
+          },
+          "receiveCommentsBusinessHours": {
+            "type": "string"
+          },
+          "isReceiveCommentsSameAsReview": {
+            "type": "boolean"
+          },
+          "mailingAddress": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "postDate": {
+            "type": "string",
+            "description": "Date planed for online public notice posted."
+          },
+          "revisionCount": {
+            "type": "number"
+          },
+          "id": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "projectId",
+          "reviewAddress",
+          "reviewBusinessHours",
+          "receiveCommentsAddress",
+          "receiveCommentsBusinessHours",
+          "isReceiveCommentsSameAsReview",
+          "mailingAddress",
+          "email",
+          "postDate",
+          "revisionCount",
+          "id"
+        ]
+      },
+      "PublicNoticeCreateRequest": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "number"
+          },
+          "reviewAddress": {
+            "type": "string"
+          },
+          "reviewBusinessHours": {
+            "type": "string"
+          },
+          "receiveCommentsAddress": {
+            "type": "string"
+          },
+          "receiveCommentsBusinessHours": {
+            "type": "string"
+          },
+          "isReceiveCommentsSameAsReview": {
+            "type": "boolean"
+          },
+          "mailingAddress": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "postDate": {
+            "type": "string",
+            "description": "Date planed for online public notice posted."
+          }
+        },
+        "required": [
+          "projectId",
+          "reviewAddress",
+          "reviewBusinessHours",
+          "receiveCommentsAddress",
+          "receiveCommentsBusinessHours",
+          "isReceiveCommentsSameAsReview",
+          "mailingAddress",
+          "email",
+          "postDate"
+        ]
+      },
+      "PublicNoticeUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "number"
+          },
+          "reviewAddress": {
+            "type": "string"
+          },
+          "reviewBusinessHours": {
+            "type": "string"
+          },
+          "receiveCommentsAddress": {
+            "type": "string"
+          },
+          "receiveCommentsBusinessHours": {
+            "type": "string"
+          },
+          "isReceiveCommentsSameAsReview": {
+            "type": "boolean"
+          },
+          "mailingAddress": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "postDate": {
+            "type": "string",
+            "description": "Date planed for online public notice posted."
+          },
+          "revisionCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "projectId",
+          "reviewAddress",
+          "reviewBusinessHours",
+          "receiveCommentsAddress",
+          "receiveCommentsBusinessHours",
+          "isReceiveCommentsSameAsReview",
+          "mailingAddress",
+          "email",
+          "postDate",
+          "revisionCount"
+        ]
+      },
+      "PublicCommentCreateRequest": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "number"
+          },
+          "commentScopeCode": {
+            "type": "string"
+          },
+          "scopeCutBlockId": {
+            "type": "number"
+          },
+          "scopeRoadSectionId": {
+            "type": "number"
+          },
+          "feedback": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "projectId",
+          "commentScopeCode",
+          "scopeCutBlockId",
+          "scopeRoadSectionId",
+          "feedback",
+          "name",
+          "location",
+          "email",
+          "phoneNumber"
+        ]
+      },
+      "ResponseCodeEnum": {
+        "type": "string",
+        "enum": [
+          "IRRELEVANT",
+          "CONSIDERED",
+          "ADDRESSED"
+        ]
+      },
+      "PublicCommentAdminUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "revisionCount": {
+            "type": "number"
+          },
+          "responseCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ResponseCodeEnum"
+              }
+            ]
+          },
+          "responseDetails": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "revisionCount",
+          "responseCode",
+          "responseDetails"
+        ]
+      },
+      "CommentScopeCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "description"
+        ]
+      },
+      "ResponseCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "description"
+        ]
+      },
+      "PublicCommentAdminResponse": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "number"
+          },
+          "scopeCutBlockId": {
+            "type": "number"
+          },
+          "scopeRoadSectionId": {
+            "type": "number"
+          },
+          "feedback": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "id": {
+            "type": "number"
+          },
+          "revisionCount": {
+            "type": "number"
+          },
+          "createTimestamp": {
+            "type": "string",
+            "description": "ISO-formatted timestamp"
+          },
+          "commentScope": {
+            "$ref": "#/components/schemas/CommentScopeCode"
+          },
+          "response": {
+            "$ref": "#/components/schemas/ResponseCode"
+          },
+          "responseDetails": {
+            "type": "string"
+          },
+          "scopeFeatureName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "projectId",
+          "scopeCutBlockId",
+          "scopeRoadSectionId",
+          "feedback",
+          "name",
+          "location",
+          "email",
+          "phoneNumber",
+          "id",
+          "revisionCount",
+          "createTimestamp",
+          "commentScope",
+          "response",
+          "responseDetails",
+          "scopeFeatureName"
+        ]
+      },
+      "ProjectPlanCodeFilterEnum": {
+        "type": "string",
+        "enum": [
+          "FSP",
+          "WOODLOT",
+          "ALL"
+        ]
+      },
+      "ProjectCountByDistrictResponse": {
+        "type": "object",
+        "properties": {
+          "districtId": {
+            "type": "number"
+          },
+          "districtName": {
+            "type": "string"
+          },
+          "projectCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "districtId",
+          "districtName",
+          "projectCount"
+        ]
+      },
+      "ProjectCountByForestClientResponse": {
+        "type": "object",
+        "properties": {
+          "forestClientNumber": {
+            "type": "string"
+          },
+          "forestClientName": {
+            "type": "string"
+          },
+          "projectCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "forestClientNumber",
+          "forestClientName",
+          "projectCount"
+        ]
+      },
+      "PublicCommentCountByDistrictResponse": {
+        "type": "object",
+        "properties": {
+          "districtId": {
+            "type": "number"
+          },
+          "districtName": {
+            "type": "string"
+          },
+          "publicCommentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "districtId",
+          "districtName",
+          "publicCommentCount"
+        ]
+      },
+      "PublicCommentCountByForestClientResponse": {
+        "type": "object",
+        "properties": {
+          "forestClientNumber": {
+            "type": "string"
+          },
+          "forestClientName": {
+            "type": "string"
+          },
+          "publicCommentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "forestClientNumber",
+          "forestClientName",
+          "publicCommentCount"
+        ]
+      },
+      "PublicCommentCountByCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "responseCode": {
+            "oneOf": [
+              {
+                "type": "string",
                 "enum": [
-                  "CUT_BLOCK",
-                  "ROAD_SECTION",
-                  "WTRA"
-                ],
-                "type": "string"
+                  "IRRELEVANT",
+                  "CONSIDERED",
+                  "ADDRESSED"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "NOT_CATEGORIZED"
+                ]
               }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": ""
-            }
+            ]
           },
-          "tags": [
-            "submission"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
+          "publicCommentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "responseCode",
+          "publicCommentCount"
+        ]
       },
-      "/api/submission-type-code": {
-        "get": {
-          "operationId": "SubmissionTypeCodeController_findAll",
-          "parameters": [],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/SubmissionTypeCode"
-                    }
-                  }
-                }
-              }
-            }
+      "PublicCommentCountByProjectResponse": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
           },
-          "tags": [
-            "submission"
-          ]
-        }
+          "projectName": {
+            "type": "string"
+          },
+          "forestClientName": {
+            "type": "string"
+          },
+          "districtName": {
+            "type": "string"
+          },
+          "publicCommentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "projectId",
+          "projectName",
+          "forestClientName",
+          "districtName",
+          "publicCommentCount"
+        ]
       },
-      "/api/spatial-feature": {
-        "get": {
-          "operationId": "SpatialFeatureController_getForProject",
-          "parameters": [
-            {
-              "name": "projectId",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "type": "number"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/SpatialFeaturePublicResponse"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "spatial-feature"
-          ]
-        }
+      "SubmissionTypeCodeEnum": {
+        "type": "string",
+        "enum": [
+          "PROPOSED",
+          "FINAL"
+        ]
       },
-      "/api/spatial-feature/bcgw-extract": {
-        "get": {
-          "operationId": "SpatialFeatureController_getBcgwExtract",
-          "parameters": [
-            {
-              "name": "version",
-              "required": true,
-              "in": "query",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/SpatialFeatureBcgwResponse"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "tags": [
-            "spatial-feature"
-          ]
-        }
-      }
-    },
-    "info": {
-      "title": "FOM API",
-      "description": "API for FOM backend",
-      "version": "1.0",
-      "contact": {
-  
-      }
-    },
-    "tags": [],
-    "servers": [],
-    "components": {
-      "securitySchemes": {
-        "bearer": {
-          "scheme": "bearer",
-          "bearerFormat": "JWT",
-          "type": "http"
-        }
+      "SpatialObjectCodeEnum": {
+        "type": "string",
+        "enum": [
+          "CUT_BLOCK",
+          "ROAD_SECTION",
+          "WTRA"
+        ]
       },
-      "schemas": {
-        "AwsCognitoOauthConfig": {
-          "type": "object",
-          "properties": {
-            "domain": {
-              "type": "string"
-            },
-            "scope": {
-              "type": "array",
-              "items": {
-                "type": "string"
+      "SubmissionRequest": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "number"
+          },
+          "submissionTypeCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SubmissionTypeCodeEnum"
               }
-            },
-            "redirectSignIn": {
-              "type": "string"
-            },
-            "redirectSignOut": {
-              "type": "string"
-            },
-            "responseType": {
-              "type": "string"
-            }
+            ]
           },
-          "required": [
-            "domain",
-            "scope",
-            "redirectSignIn",
-            "redirectSignOut",
-            "responseType"
-          ]
-        },
-        "AwsCognitoConfig": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "type": "boolean"
-            },
-            "aws_cognito_domain": {
-              "type": "string"
-            },
-            "aws_cognito_region": {
-              "type": "string"
-            },
-            "aws_user_pools_id": {
-              "type": "string"
-            },
-            "aws_user_pools_web_client_id": {
-              "type": "string"
-            },
-            "aws_mandatory_sign_in": {
-              "type": "string"
-            },
-            "oauth": {
-              "$ref": "#/components/schemas/AwsCognitoOauthConfig"
-            },
-            "federationTarget": {
-              "type": "string"
-            }
+          "spatialObjectCode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SpatialObjectCodeEnum"
+              }
+            ]
           },
-          "required": [
-            "enabled",
-            "aws_cognito_domain",
-            "aws_cognito_region",
-            "aws_user_pools_id",
-            "aws_user_pools_web_client_id",
-            "aws_mandatory_sign_in",
-            "oauth",
-            "federationTarget"
-          ]
+          "jsonSpatialSubmission": {
+            "type": "object"
+          }
         },
-        "AttachmentTypeCode": {
-          "type": "object",
-          "properties": {
-            "code": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            }
+        "required": [
+          "projectId",
+          "submissionTypeCode",
+          "spatialObjectCode",
+          "jsonSpatialSubmission"
+        ]
+      },
+      "SubmissionSpatialObjectDetail": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
           },
-          "required": [
-            "code",
-            "description"
-          ]
+          "dateSubmitted": {
+            "format": "date-time",
+            "type": "string"
+          }
         },
-        "AttachmentResponse": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number"
-            },
-            "projectId": {
-              "type": "number"
-            },
-            "fileName": {
-              "type": "string"
-            },
-            "attachmentType": {
-              "$ref": "#/components/schemas/AttachmentTypeCode"
-            },
-            "createTimestamp": {
-              "format": "date-time",
-              "type": "string"
-            }
+        "required": [
+          "count",
+          "dateSubmitted"
+        ]
+      },
+      "SubmissionDetailResponse": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "number"
           },
-          "required": [
-            "id",
-            "projectId",
-            "fileName",
-            "attachmentType",
-            "createTimestamp"
-          ]
-        },
-        "InteractionResponse": {
-          "type": "object",
-          "properties": {
-            "projectId": {
-              "type": "number"
-            },
-            "stakeholder": {
-              "type": "string"
-            },
-            "communicationDate": {
-              "type": "string"
-            },
-            "communicationDetails": {
-              "type": "string"
-            },
-            "attachmentId": {
-              "type": "number"
-            },
-            "id": {
-              "type": "number"
-            },
-            "revisionCount": {
-              "type": "number"
-            },
-            "createTimestamp": {
-              "type": "string",
-              "description": "ISO-formatted timestamp"
-            }
+          "submissionId": {
+            "type": "number"
           },
-          "required": [
-            "projectId",
-            "communicationDate",
-            "communicationDetails",
-            "id",
-            "revisionCount",
-            "createTimestamp"
-          ]
-        },
-        "ProjectPublicSummaryResponse": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number"
-            },
-            "name": {
-              "type": "string"
-            },
-            "geojson": {
-              "type": "object",
-              "example": " { \"type\": \"Point\", \"coordinates\": [-119.396071939, 49.813816629]}"
-            },
-            "projectPlanCode": {
-              "type": "string"
-            },
-            "fspId": {
-              "type": "number"
-            },
-            "woodlotLicenseNumber": {
-              "type": "string"
-            },
-            "forestClientName": {
-              "type": "string"
-            },
-            "workflowStateName": {
-              "type": "string"
-            }
+          "submissionTypeCode": {
+            "example": "PROPOSED",
+            "default": "PROPOSED",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SubmissionTypeCodeEnum"
+              }
+            ]
           },
-          "required": [
-            "id",
-            "name",
-            "geojson",
-            "projectPlanCode",
-            "forestClientName",
-            "workflowStateName"
-          ]
-        },
-        "DistrictResponse": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number"
-            },
-            "name": {
-              "type": "string"
-            }
+          "cutblocks": {
+            "$ref": "#/components/schemas/SubmissionSpatialObjectDetail"
           },
-          "required": [
-            "id",
-            "name"
-          ]
-        },
-        "ForestClientResponse": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            }
+          "roadSections": {
+            "$ref": "#/components/schemas/SubmissionSpatialObjectDetail"
           },
-          "required": [
-            "id",
-            "name"
-          ]
+          "retentionAreas": {
+            "$ref": "#/components/schemas/SubmissionSpatialObjectDetail"
+          }
         },
-        "WorkflowStateCode": {
-          "type": "object",
-          "properties": {
-            "code": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            }
+        "required": [
+          "projectId",
+          "submissionId",
+          "submissionTypeCode",
+          "cutblocks",
+          "roadSections",
+          "retentionAreas"
+        ]
+      },
+      "SubmissionTypeCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
           },
-          "required": [
-            "code",
-            "description"
-          ]
+          "description": {
+            "type": "string"
+          }
         },
-        "ProjectResponse": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number"
-            },
-            "name": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            },
-            "commentingOpenDate": {
-              "type": "string",
-              "description": "ISO-formatted date"
-            },
-            "commentingClosedDate": {
-              "type": "string",
-              "description": "ISO-formatted date"
-            },
-            "validityEndDate": {
-              "type": "string",
-              "description": "ISO-formatted date"
-            },
-            "projectPlanCode": {
-              "type": "string"
-            },
-            "fspId": {
-              "type": "number"
-            },
-            "woodlotLicenseNumber": {
-              "type": "string"
-            },
-            "district": {
-              "$ref": "#/components/schemas/DistrictResponse"
-            },
-            "forestClient": {
-              "$ref": "#/components/schemas/ForestClientResponse"
-            },
-            "workflowState": {
-              "$ref": "#/components/schemas/WorkflowStateCode"
-            },
-            "revisionCount": {
-              "type": "number"
-            },
-            "createTimestamp": {
-              "type": "string",
-              "description": "ISO-formatted timestamp"
-            },
-            "commentClassificationMandatory": {
-              "type": "boolean",
-              "default": true
-            },
-            "publicNoticeId": {
-              "type": "number"
-            },
-            "noticePostDate": {
-              "type": "string"
-            },
-            "operationStartYear": {
-              "type": "number"
-            },
-            "operationEndYear": {
-              "type": "number"
-            },
-            "bctsMgrName": {
-              "type": "string"
-            }
+        "required": [
+          "code",
+          "description"
+        ]
+      },
+      "FeatureTypeCode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
           },
-          "required": [
-            "id",
-            "name",
-            "description",
-            "commentingOpenDate",
-            "commentingClosedDate",
-            "validityEndDate",
-            "projectPlanCode",
-            "district",
-            "forestClient",
-            "workflowState",
-            "revisionCount",
-            "createTimestamp",
-            "commentClassificationMandatory",
-            "publicNoticeId",
-            "noticePostDate",
-            "operationStartYear",
-            "operationEndYear",
-            "bctsMgrName"
-          ]
+          "description": {
+            "type": "string"
+          }
         },
-        "ProjectMetricsResponse": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number"
-            },
-            "totalInteractionsCount": {
-              "type": "number"
-            },
-            "totalCommentsCount": {
-              "type": "number"
-            },
-            "respondedToCommentsCount": {
-              "type": "number"
-            }
+        "required": [
+          "code",
+          "description"
+        ]
+      },
+      "SpatialFeaturePublicResponse": {
+        "type": "object",
+        "properties": {
+          "featureType": {
+            "$ref": "#/components/schemas/FeatureTypeCode"
           },
-          "required": [
-            "id",
-            "totalInteractionsCount",
-            "totalCommentsCount",
-            "respondedToCommentsCount"
-          ]
-        },
-        "ProjectPlanCodeEnum": {
-          "type": "string",
-          "enum": [
-            "FSP",
-            "WOODLOT"
-          ]
-        },
-        "ProjectCreateRequest": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            },
-            "commentingOpenDate": {
-              "type": "string",
-              "description": "ISO-formatted date"
-            },
-            "commentingClosedDate": {
-              "type": "string",
-              "description": "ISO-formatted date"
-            },
-            "forestClientNumber": {
-              "type": "string"
-            },
-            "projectPlanCode": {
-              "$ref": "#/components/schemas/ProjectPlanCodeEnum"
-            },
-            "fspId": {
-              "type": "number"
-            },
-            "woodlotLicenseNumber": {
-              "type": "string"
-            },
-            "districtId": {
-              "type": "number"
-            },
-            "operationStartYear": {
-              "type": "number"
-            },
-            "operationEndYear": {
-              "type": "number"
-            },
-            "bctsMgrName": {
-              "type": "string"
-            }
+          "featureId": {
+            "type": "number"
           },
-          "required": [
-            "name",
-            "description",
-            "commentingOpenDate",
-            "commentingClosedDate",
-            "forestClientNumber",
-            "projectPlanCode",
-            "fspId",
-            "woodlotLicenseNumber",
-            "districtId",
-            "operationStartYear",
-            "operationEndYear",
-            "bctsMgrName"
-          ]
-        },
-        "ProjectUpdateRequest": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            },
-            "commentingOpenDate": {
-              "type": "string",
-              "description": "ISO-formatted date"
-            },
-            "commentingClosedDate": {
-              "type": "string",
-              "description": "ISO-formatted date"
-            },
-            "projectPlanCode": {
-              "$ref": "#/components/schemas/ProjectPlanCodeEnum"
-            },
-            "fspId": {
-              "type": "number"
-            },
-            "woodlotLicenseNumber": {
-              "type": "string"
-            },
-            "districtId": {
-              "type": "number"
-            },
-            "operationStartYear": {
-              "type": "number"
-            },
-            "operationEndYear": {
-              "type": "number"
-            },
-            "bctsMgrName": {
-              "type": "string"
-            },
-            "revisionCount": {
-              "type": "number"
-            }
+          "name": {
+            "type": "string"
           },
-          "required": [
-            "revisionCount"
-          ]
-        },
-        "WorkflowStateEnum": {
-          "type": "string",
-          "enum": [
-            "INITIAL",
-            "PUBLISHED",
-            "COMMENT_OPEN",
-            "COMMENT_CLOSED",
-            "FINALIZED",
-            "EXPIRED"
-          ]
-        },
-        "ProjectWorkflowStateChangeRequest": {
-          "type": "object",
-          "properties": {
-            "revisionCount": {
-              "type": "number"
-            },
-            "workflowStateCode": {
-              "$ref": "#/components/schemas/WorkflowStateEnum"
-            }
+          "geometry": {
+            "type": "object",
+            "description": "Format: GeoJSON Geometry object"
           },
-          "required": [
-            "revisionCount",
-            "workflowStateCode"
-          ]
-        },
-        "ProjectCommentClassificationMandatoryChangeRequest": {
-          "type": "object",
-          "properties": {
-            "commentClassificationMandatory": {
-              "type": "boolean"
-            },
-            "revisionCount": {
-              "type": "number"
-            }
+          "centroid": {
+            "type": "object",
+            "description": "Format: GeoJSON Point"
           },
-          "required": [
-            "commentClassificationMandatory",
-            "revisionCount"
-          ]
-        },
-        "ProjectCommentingClosedDateChangeRequest": {
-          "type": "object",
-          "properties": {
-            "commentingClosedDate": {
-              "type": "string",
-              "description": "ISO-formatted date"
-            },
-            "revisionCount": {
-              "type": "number"
-            }
+          "plannedDevelopmentDate": {
+            "type": "string",
+            "description": "Format: YYYY-MM-DD"
           },
-          "required": [
-            "commentingClosedDate",
-            "revisionCount"
-          ]
-        },
-        "PublicNoticePublicFrontEndResponse": {
-          "type": "object",
-          "properties": {
-            "projectId": {
-              "type": "number"
-            },
-            "reviewAddress": {
-              "type": "string"
-            },
-            "reviewBusinessHours": {
-              "type": "string"
-            },
-            "receiveCommentsAddress": {
-              "type": "string"
-            },
-            "receiveCommentsBusinessHours": {
-              "type": "string"
-            },
-            "isReceiveCommentsSameAsReview": {
-              "type": "boolean"
-            },
-            "mailingAddress": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "postDate": {
-              "type": "string",
-              "description": "Date planed for online public notice posted."
-            },
-            "project": {
-              "$ref": "#/components/schemas/ProjectResponse"
-            }
+          "plannedAreaHa": {
+            "type": "number"
           },
-          "required": [
-            "projectId",
-            "reviewAddress",
-            "reviewBusinessHours",
-            "receiveCommentsAddress",
-            "receiveCommentsBusinessHours",
-            "isReceiveCommentsSameAsReview",
-            "mailingAddress",
-            "email",
-            "postDate",
-            "project"
-          ]
-        },
-        "PublicNoticeResponse": {
-          "type": "object",
-          "properties": {
-            "projectId": {
-              "type": "number"
-            },
-            "reviewAddress": {
-              "type": "string"
-            },
-            "reviewBusinessHours": {
-              "type": "string"
-            },
-            "receiveCommentsAddress": {
-              "type": "string"
-            },
-            "receiveCommentsBusinessHours": {
-              "type": "string"
-            },
-            "isReceiveCommentsSameAsReview": {
-              "type": "boolean"
-            },
-            "mailingAddress": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "postDate": {
-              "type": "string",
-              "description": "Date planed for online public notice posted."
-            },
-            "revisionCount": {
-              "type": "number"
-            },
-            "id": {
-              "type": "number"
-            }
+          "plannedLengthKm": {
+            "type": "number"
           },
-          "required": [
-            "projectId",
-            "reviewAddress",
-            "reviewBusinessHours",
-            "receiveCommentsAddress",
-            "receiveCommentsBusinessHours",
-            "isReceiveCommentsSameAsReview",
-            "mailingAddress",
-            "email",
-            "postDate",
-            "revisionCount",
-            "id"
-          ]
+          "submissionType": {
+            "$ref": "#/components/schemas/SubmissionTypeCode"
+          }
         },
-        "PublicNoticeCreateRequest": {
-          "type": "object",
-          "properties": {
-            "projectId": {
-              "type": "number"
-            },
-            "reviewAddress": {
-              "type": "string"
-            },
-            "reviewBusinessHours": {
-              "type": "string"
-            },
-            "receiveCommentsAddress": {
-              "type": "string"
-            },
-            "receiveCommentsBusinessHours": {
-              "type": "string"
-            },
-            "isReceiveCommentsSameAsReview": {
-              "type": "boolean"
-            },
-            "mailingAddress": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "postDate": {
-              "type": "string",
-              "description": "Date planed for online public notice posted."
-            }
+        "required": [
+          "featureType",
+          "featureId",
+          "name",
+          "geometry",
+          "centroid",
+          "plannedDevelopmentDate",
+          "plannedAreaHa",
+          "plannedLengthKm",
+          "submissionType"
+        ]
+      },
+      "SpatialFeatureBcgwResponse": {
+        "type": "object",
+        "properties": {
+          "fomId": {
+            "type": "number"
           },
-          "required": [
-            "projectId",
-            "reviewAddress",
-            "reviewBusinessHours",
-            "receiveCommentsAddress",
-            "receiveCommentsBusinessHours",
-            "isReceiveCommentsSameAsReview",
-            "mailingAddress",
-            "email",
-            "postDate"
-          ]
-        },
-        "PublicNoticeUpdateRequest": {
-          "type": "object",
-          "properties": {
-            "projectId": {
-              "type": "number"
-            },
-            "reviewAddress": {
-              "type": "string"
-            },
-            "reviewBusinessHours": {
-              "type": "string"
-            },
-            "receiveCommentsAddress": {
-              "type": "string"
-            },
-            "receiveCommentsBusinessHours": {
-              "type": "string"
-            },
-            "isReceiveCommentsSameAsReview": {
-              "type": "boolean"
-            },
-            "mailingAddress": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "postDate": {
-              "type": "string",
-              "description": "Date planed for online public notice posted."
-            },
-            "revisionCount": {
-              "type": "number"
-            }
+          "featureType": {
+            "type": "string",
+            "enum": [
+              "cut_block",
+              "road_section",
+              "retention_area"
+            ]
           },
-          "required": [
-            "projectId",
-            "reviewAddress",
-            "reviewBusinessHours",
-            "receiveCommentsAddress",
-            "receiveCommentsBusinessHours",
-            "isReceiveCommentsSameAsReview",
-            "mailingAddress",
-            "email",
-            "postDate",
-            "revisionCount"
-          ]
-        },
-        "PublicCommentCreateRequest": {
-          "type": "object",
-          "properties": {
-            "projectId": {
-              "type": "number"
-            },
-            "commentScopeCode": {
-              "type": "string"
-            },
-            "scopeCutBlockId": {
-              "type": "number"
-            },
-            "scopeRoadSectionId": {
-              "type": "number"
-            },
-            "feedback": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "location": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "phoneNumber": {
-              "type": "string"
-            }
+          "featureId": {
+            "type": "number"
           },
-          "required": [
-            "projectId",
-            "commentScopeCode",
-            "scopeCutBlockId",
-            "scopeRoadSectionId",
-            "feedback",
-            "name",
-            "location",
-            "email",
-            "phoneNumber"
-          ]
-        },
-        "ResponseCodeEnum": {
-          "type": "string",
-          "enum": [
-            "IRRELEVANT",
-            "CONSIDERED",
-            "ADDRESSED"
-          ]
-        },
-        "PublicCommentAdminUpdateRequest": {
-          "type": "object",
-          "properties": {
-            "revisionCount": {
-              "type": "number"
-            },
-            "responseCode": {
-              "$ref": "#/components/schemas/ResponseCodeEnum"
-            },
-            "responseDetails": {
-              "type": "string"
-            }
+          "name": {
+            "type": "string",
+            "description": "Feature object name",
+            "example": "My cut block 2311"
           },
-          "required": [
-            "revisionCount",
-            "responseCode",
-            "responseDetails"
-          ]
-        },
-        "CommentScopeCode": {
-          "type": "object",
-          "properties": {
-            "code": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            }
+          "fspHolderName": {
+            "type": "string",
+            "description": "Maximum length is expected to be \u003C= 100"
           },
-          "required": [
-            "code",
-            "description"
-          ]
-        },
-        "ResponseCode": {
-          "type": "object",
-          "properties": {
-            "code": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            }
+          "lifecycleStatus": {
+            "type": "string",
+            "enum": [
+              "Proposed",
+              "Final"
+            ]
           },
-          "required": [
-            "code",
-            "description"
-          ]
-        },
-        "PublicCommentAdminResponse": {
-          "type": "object",
-          "properties": {
-            "projectId": {
-              "type": "number"
-            },
-            "scopeCutBlockId": {
-              "type": "number"
-            },
-            "scopeRoadSectionId": {
-              "type": "number"
-            },
-            "feedback": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "location": {
-              "type": "string"
-            },
-            "email": {
-              "type": "string"
-            },
-            "phoneNumber": {
-              "type": "string"
-            },
-            "id": {
-              "type": "number"
-            },
-            "revisionCount": {
-              "type": "number"
-            },
-            "createTimestamp": {
-              "type": "string",
-              "description": "ISO-formatted timestamp"
-            },
-            "commentScope": {
-              "$ref": "#/components/schemas/CommentScopeCode"
-            },
-            "response": {
-              "$ref": "#/components/schemas/ResponseCode"
-            },
-            "responseDetails": {
-              "type": "string"
-            },
-            "scopeFeatureName": {
-              "type": "string"
-            }
+          "createDate": {
+            "type": "string",
+            "description": "Format: YYYY-MM-DD",
+            "example": "2021-03-31"
           },
-          "required": [
-            "projectId",
-            "scopeCutBlockId",
-            "scopeRoadSectionId",
-            "feedback",
-            "name",
-            "location",
-            "email",
-            "phoneNumber",
-            "id",
-            "revisionCount",
-            "createTimestamp",
-            "commentScope",
-            "response",
-            "responseDetails",
-            "scopeFeatureName"
-          ]
-        },
-        "SubmissionTypeCodeEnum": {
-          "type": "string",
-          "enum": [
-            "PROPOSED",
-            "FINAL"
-          ]
-        },
-        "SpatialObjectCodeEnum": {
-          "type": "string",
-          "enum": [
-            "CUT_BLOCK",
-            "ROAD_SECTION",
-            "WTRA"
-          ]
-        },
-        "SubmissionRequest": {
-          "type": "object",
-          "properties": {
-            "projectId": {
-              "type": "number"
-            },
-            "submissionTypeCode": {
-              "$ref": "#/components/schemas/SubmissionTypeCodeEnum"
-            },
-            "spatialObjectCode": {
-              "$ref": "#/components/schemas/SpatialObjectCodeEnum"
-            },
-            "jsonSpatialSubmission": {
-              "type": "object"
-            }
+          "geometry": {
+            "type": "object",
+            "description": "Format: GeoJSON Geometry as per RFC 7946 https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.",
+            "example": "Cut Block / Retention Area Example: {\"type\":\"Polygon\",\"coordinates\":[[[-121.652853481,51.67951884],[-121.499131212,51.763467947],[-121.363845891,51.668139701],[-121.373301212,51.578595415],[-121.661722435,51.589952346],[-121.652853481,51.67951884]]]} Road Section Example: {\"type\":\"LineString\",\"coordinates\":[[-124.667049923,52.651503193],[-124.739768473,52.697146151],[-124.816364174,52.60827305]]}"
           },
-          "required": [
-            "projectId",
-            "submissionTypeCode",
-            "spatialObjectCode",
-            "jsonSpatialSubmission"
-          ]
-        },
-        "SubmissionSpatialObjectDetail": {
-          "type": "object",
-          "properties": {
-            "count": {
-              "type": "number"
-            },
-            "dateSubmitted": {
-              "format": "date-time",
-              "type": "string"
-            }
+          "plannedDevelopmentDate": {
+            "type": "string",
+            "description": "Format: YYYY-MM-DD",
+            "example": "2021-03-31"
           },
-          "required": [
-            "count",
-            "dateSubmitted"
-          ]
-        },
-        "SubmissionDetailResponse": {
-          "type": "object",
-          "properties": {
-            "projectId": {
-              "type": "number"
-            },
-            "submissionId": {
-              "type": "number"
-            },
-            "submissionTypeCode": {
-              "example": "PROPOSED",
-              "default": "PROPOSED",
-              "$ref": "#/components/schemas/SubmissionTypeCodeEnum"
-            },
-            "cutblocks": {
-              "$ref": "#/components/schemas/SubmissionSpatialObjectDetail"
-            },
-            "roadSections": {
-              "$ref": "#/components/schemas/SubmissionSpatialObjectDetail"
-            },
-            "retentionAreas": {
-              "$ref": "#/components/schemas/SubmissionSpatialObjectDetail"
-            }
+          "plannedAreaHa": {
+            "type": "number",
+            "example": "1.2345"
           },
-          "required": [
-            "projectId",
-            "submissionId",
-            "submissionTypeCode",
-            "cutblocks",
-            "roadSections",
-            "retentionAreas"
-          ]
+          "plannedLengthKm": {
+            "type": "number",
+            "example": "1.2345"
+          }
         },
-        "SubmissionTypeCode": {
-          "type": "object",
-          "properties": {
-            "code": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            }
+        "required": [
+          "fomId",
+          "featureType",
+          "featureId",
+          "name",
+          "fspHolderName",
+          "lifecycleStatus",
+          "createDate",
+          "geometry",
+          "plannedDevelopmentDate",
+          "plannedAreaHa",
+          "plannedLengthKm"
+        ]
+      },
+      "ProjectByFspResponse": {
+        "type": "object",
+        "properties": {
+          "fomId": {
+            "type": "number"
           },
-          "required": [
-            "code",
-            "description"
-          ]
+          "name": {
+            "type": "string"
+          },
+          "fspId": {
+            "type": "number"
+          },
+          "forestClient": {
+            "$ref": "#/components/schemas/ForestClientResponse"
+          }
         },
-        "FeatureTypeCode": {
-          "type": "object",
-          "properties": {
-            "code": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "code",
-            "description"
-          ]
-        },
-        "SpatialFeaturePublicResponse": {
-          "type": "object",
-          "properties": {
-            "featureType": {
-              "$ref": "#/components/schemas/FeatureTypeCode"
-            },
-            "featureId": {
-              "type": "number"
-            },
-            "name": {
-              "type": "string"
-            },
-            "geometry": {
-              "type": "object",
-              "description": "Format: GeoJSON Geometry object"
-            },
-            "centroid": {
-              "type": "object",
-              "description": "Format: GeoJSON Point"
-            },
-            "plannedDevelopmentDate": {
-              "type": "string",
-              "description": "Format: YYYY-MM-DD"
-            },
-            "plannedAreaHa": {
-              "type": "number"
-            },
-            "plannedLengthKm": {
-              "type": "number"
-            },
-            "submissionType": {
-              "$ref": "#/components/schemas/SubmissionTypeCode"
-            }
-          },
-          "required": [
-            "featureType",
-            "featureId",
-            "name",
-            "geometry",
-            "centroid",
-            "plannedDevelopmentDate",
-            "plannedAreaHa",
-            "plannedLengthKm",
-            "submissionType"
-          ]
-        },
-        "SpatialFeatureBcgwResponse": {
-          "type": "object",
-          "properties": {
-            "fomId": {
-              "type": "number"
-            },
-            "featureType": {
-              "type": "string",
-              "enum": [
-                "cut_block",
-                "road_section",
-                "retention_area"
-              ]
-            },
-            "featureId": {
-              "type": "number"
-            },
-            "fspHolderName": {
-              "type": "string",
-              "description": "Maximum length is expected to be \u003C= 100"
-            },
-            "lifecycleStatus": {
-              "type": "string",
-              "enum": [
-                "Proposed",
-                "Final"
-              ]
-            },
-            "createDate": {
-              "type": "string",
-              "description": "Format: YYYY-MM-DD",
-              "example": "2021-03-31"
-            },
-            "geometry": {
-              "type": "object",
-              "description": "Format: GeoJSON Geometry as per RFC 7946 https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.",
-              "example": "Cut Block / Retention Area Example: {\"type\":\"Polygon\",\"coordinates\":[[[-121.652853481,51.67951884],[-121.499131212,51.763467947],[-121.363845891,51.668139701],[-121.373301212,51.578595415],[-121.661722435,51.589952346],[-121.652853481,51.67951884]]]} Road Section Example: {\"type\":\"LineString\",\"coordinates\":[[-124.667049923,52.651503193],[-124.739768473,52.697146151],[-124.816364174,52.60827305]]}"
-            },
-            "plannedDevelopmentDate": {
-              "type": "string",
-              "description": "Format: YYYY-MM-DD",
-              "example": "2021-03-31"
-            },
-            "plannedAreaHa": {
-              "type": "number",
-              "example": "1.2345"
-            },
-            "plannedLengthKm": {
-              "type": "number",
-              "example": "1.2345"
-            }
-          },
-          "required": [
-            "fomId",
-            "featureType",
-            "featureId",
-            "fspHolderName",
-            "lifecycleStatus",
-            "createDate",
-            "geometry",
-            "plannedDevelopmentDate",
-            "plannedAreaHa",
-            "plannedLengthKm"
-          ]
-        }
+        "required": [
+          "fomId",
+          "name",
+          "fspId"
+        ]
       }
     }
   }
+}

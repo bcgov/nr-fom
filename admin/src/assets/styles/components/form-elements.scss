@@ -78,11 +78,38 @@ label {
   font-size: 0.875rem;
 }
 
-// Input Group
-.input-group-append {
-  .btn-icon {
-    border-color: #ccc;
-  }
+
+// Visually integrate input and button in input-group for datepicker
+.input-group .form-control.readonly-normal {
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: none;
+  border-color: #ced4da;
+}
+
+.input-group .btn.btn-icon {
+  border-left: none;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  height: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+  box-shadow: none;
+  border-color: #ced4da;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.input-group .btn.btn-icon:hover,
+.input-group .btn.btn-icon:focus {
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+  outline: none;
+  justify-content: center;
 }
 
 // Validation

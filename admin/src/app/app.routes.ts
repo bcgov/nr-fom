@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
+import { analyticsResolver } from './analytics-dashboard/analytics.resolver';
+
+import { adminGuard } from '@admin-core/guards/admin.guard';
 
 import { AboutComponent } from 'app/about/about.component';
+import { AnalyticsDashboardComponent } from 'app/analytics-dashboard/analytics-dashboard.component';
 import { FomAddEditComponent } from 'app/foms/fom-add-edit/fom-add-edit.component';
 import { FomDetailComponent } from 'app/foms/fom-detail/fom-detail.component';
 import { FomSubmissionComponent } from 'app/foms/fom-submission/fom-submission.component';
@@ -82,7 +86,14 @@ export const AppRoutes: Routes = [
       projectDetail: projectDetailResolver
     }
   },
-  // --- End From previous fom-routing.modules.ts
+  {
+    path: 'analytics-dashboard',
+    component: AnalyticsDashboardComponent,
+    canActivate: [adminGuard],
+    resolve: {
+      analyticsData: analyticsResolver
+    }
+  },
 
   {
     // default route

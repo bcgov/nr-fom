@@ -1,0 +1,129 @@
+@import "../../assets/styles/base/base.scss";
+@import "../../assets/styles/layout/layout.scss";
+
+:host {
+  @include flex-box();
+  @include flex-direction(column);
+  @include flex(1 1 auto);
+
+  overflow: hidden;
+}
+
+$stats-blue-1: #123B64;
+
+// --- Top Container
+.top-container .container{
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.title-container {
+  display: flex;
+  flex-direction: column;
+  h1 {
+    font-size: 1.65rem;
+  }
+}
+
+.dashboard-subtitle {
+  font-size: 14px;
+  letter-spacing: 0.16px;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.filter-div {
+  display: flex;
+  margin-top: 20px;
+
+  .form-group {
+    flex-basis: 25%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    margin-bottom: 0;
+  }
+}
+
+// --- Bottom Container
+.bottom-container {
+  &.scroll {
+    // Show vertical scrollbar only when content overflows viewport
+    overflow-y: auto;
+    // height: 65.45vh; // TODO: need to dynamically calculate this.
+    height: 58.45vh; // TODO: need to dynamically calculate this.
+  }
+}
+
+// --- chart styling
+::ng-deep .apexcharts-xaxis .apexcharts-xaxis-title .chart-title-label,
+::ng-deep .apexcharts-yaxis .apexcharts-yaxis-title .chart-title-label {
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 18px;
+    letter-spacing: 0.20px;
+    text-align: center;
+}
+
+.grid-1-3 {
+  display: grid; 
+  grid-template-columns: 1fr 3fr; 
+  gap: 32px; 
+  align-items: stretch; 
+  width: 100%;
+}
+
+// Rectangle box for total FOM
+.total-fom-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 15px 30px;
+
+  .total-fom-content-box {
+    border-radius: 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    align-items: center;
+    justify-content: center;
+    background: $stats-blue-1;
+    font-weight: 700;
+    text-align: center;
+    color: $white;
+    font-weight: bold;
+
+    .total-fom-content-title {
+      font-size: 16px;
+      line-height: 22px;
+      letter-spacing: 0px;
+      margin-bottom: 12px;
+      width: 124px;
+    }
+
+    .total-fom-content-value {
+      font-size: 64px;
+      line-height: 18px;
+      letter-spacing: 0.16px;
+    }
+  }
+}
+
+.unique-fc-box {
+  background: #775DD0;
+  height: 78px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  color: $white;
+  font-weight: bold;
+
+  .unique-fc-vtxt {
+    font-size: 64px;
+    font-weight: 700;
+  }
+}
+

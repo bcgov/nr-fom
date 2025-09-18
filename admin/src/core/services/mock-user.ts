@@ -49,6 +49,7 @@ export function getFakeAllAccessUser(): User {
   const user = new User();
   user.userName = 'fakeAllAccessUser';
   user.displayName = 'All Access User';
+  user.isAdmin = true;
   user.isMinistry = true;
   user.isForestClient = true;
   user.clientIds.push('00001011')

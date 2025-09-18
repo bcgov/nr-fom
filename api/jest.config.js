@@ -11,7 +11,7 @@ module.exports = {
   transform: {
     '^.+\\.[tj]s$': 'ts-jest',
   },
-  "testRegex": ".*\\.spec\\.ts$",
+  "testRegex": ".*\\.(spec|e2e-spec)\\.ts$",
   "modulePaths": ["<rootDir>/src", "<rootDir>/src/"],
   // 'moduleNameMapper' important to map some 'paths' from tsconfig.json for jest.
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' } ),

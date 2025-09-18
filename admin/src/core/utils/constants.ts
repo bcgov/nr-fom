@@ -39,3 +39,5 @@ export const SpatialTypeMap = new Map<SpatialObjectCodeEnum, object>([
 export const PROJECT_ID_PARAM_KEY: string = 'appId';
 
 export const DEFAULT_ISO_DATE_FORMAT = "yyyy-MM-dd";
+export const FOM_GO_LIVE_DATE = '2024-04-01';
+export const ANALYTICS_DATA_DEFAULT_SIZE = 15;
