@@ -157,7 +157,6 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
           data: [
             apiData[ResponseCodeEnum.Considered] || 0,
             apiData[ResponseCodeEnum.Addressed] || 0,
-            apiData[ResponseCodeEnum.Irrelevant] || 0,
             apiData['NOT_CATEGORIZED'] || 0
           ]
         }],
