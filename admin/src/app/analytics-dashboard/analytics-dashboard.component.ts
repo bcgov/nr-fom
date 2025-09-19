@@ -104,8 +104,16 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   onDateChange(type: 'startDate' | 'endDate', value: Date) {
     if (type === 'startDate') {
       this.startDate = value;
+      // If new startDate is after endDate, adjust endDate
+      if (this.endDate && this.startDate > this.endDate) {
+        this.endDate = new Date(this.startDate);
+      }
     } else if (type === 'endDate') {
       this.endDate = value;
+      // If new endDate is before startDate, adjust startDate
+      if (this.startDate && this.endDate < this.startDate) {
+        this.startDate = new Date(this.endDate);
+      }
     }
 
     // only after view update is stable then fetch data
