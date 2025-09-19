@@ -91,7 +91,6 @@ export const commentsByResponseCodeChartOptions = {
     categories: [
       "Considered",
       "Addressed",
-      "Irrelevant",
       "Not applicable"
     ],
     title: {
