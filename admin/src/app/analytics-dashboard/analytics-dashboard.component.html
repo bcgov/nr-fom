@@ -23,7 +23,8 @@
                     class="form-control readonly-normal"
                     placeholder="YYYY-MM-DD"
                     bsDatepicker
-                    [minDate]="minStartDate"
+                    [minDate]="minDate"
+                    [maxDate]="maxDate"
                     [(ngModel)]="startDate"
                     [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
                     (bsValueChange)="onDateChange('startDate', $event)"
@@ -49,7 +50,8 @@
                     class="form-control readonly-normal"
                     placeholder="YYYY-MM-DD"
                     bsDatepicker
-                    [maxDate]="maxEndDate"
+                    [minDate]="minDate"
+                    [maxDate]="maxDate"
                     [(ngModel)]="endDate"
                     [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
                     (bsValueChange)="onDateChange('endDate', $event)"
