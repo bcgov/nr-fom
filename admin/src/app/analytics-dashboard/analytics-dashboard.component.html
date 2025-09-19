@@ -49,6 +49,7 @@
                     class="form-control readonly-normal"
                     placeholder="YYYY-MM-DD"
                     bsDatepicker
+                    [maxDate]="maxEndDate"
                     [(ngModel)]="endDate"
                     [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
                     (bsValueChange)="onDateChange('endDate', $event)"

@@ -59,6 +59,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   selectedPlan: ProjectPlanCodeFilterEnum = this.planFilterOptions[0]?.value;
   selectedFcLimit: number = this.fcLimitOptions[0].value; // default
   minStartDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
+  maxEndDate: Date = new Date(); // today
   
   // chart Angular views
   @ViewChild("commentsByResponseCodeChart") commentsByResponseCodeChart!: ChartComponent;
