@@ -47,12 +47,8 @@ $stats-blue-1: #123B64;
 
 // --- Bottom Container
 .bottom-container {
-  &.scroll {
-    // Show vertical scrollbar only when content overflows viewport
+  // Show vertical scrollbar only when content overflows viewport
     overflow-y: auto;
-    // height: 65.45vh; // TODO: need to dynamically calculate this.
-    height: 58.45vh; // TODO: need to dynamically calculate this.
-  }
 }
 
 // --- chart styling
