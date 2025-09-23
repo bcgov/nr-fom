@@ -1,8 +1,7 @@
-<form #alyticsForm="ngForm">
   <div class="top-container" style="overflow-y: hidden;">
     <div class="container">
       <div class="title-container">
-          <div>
+          <form #alyticsForm="ngForm">
             <!-- Page title and subtitle-->
             <div>
               <h1 class="text-muted mb-0">Dashboard</h1>
@@ -74,12 +73,12 @@
                 </select>
               </div>
             </div>
-          </div>
+          </form>
       </div>
     </div>
   </div>
 
-  <div class="bottom-container scroll">
+  <div class="bottom-container">
     <!-- Public Engagement Overview -->
     <div class="container pb-0" id="public-engagement-overview">
       <div class="row"><p>Public Engagement Overview</p></div>
@@ -188,4 +187,3 @@
         </div>
       </div>
   </div>
-</form>

@@ -244,7 +244,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         },
         chart: {
           // Horizontal bar chart dynamic height adjustment
-          height: Math.max(260, apiData.length * 50)
+          height: Math.max(260, data.length * 50)
         }
       });
     }
