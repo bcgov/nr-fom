@@ -9,7 +9,8 @@ import { periodOperationsTxt, woodlotOperationsTxt } from '@public-core/constant
 import { ShortenPipe } from '@public-core/pipes/shorten.pipe';
 import { UrlService } from '@public-core/services/url.service';
 import { DateTime } from "luxon";
-import { isNullish, pathOr, stringToPath } from 'remeda';
+import { isNullish } from 'remeda';
+
 import { IUpdateEvent } from '../projects.component';
 import { Panel } from '../utils/panel.enum';
 import { NoticeFilter, PublicNoticesFilterPanelComponent } from './notices-filter-panel/public-notices-filter-panel.component';
@@ -127,12 +128,24 @@ export class PublicNoticesPanelComponent implements OnInit {
       filterValue = filterValue.toLowerCase();
     }
 
+    // Utility to resolve dot-path string (e.g., 'project.district.name')
+    function resolvePath(obj: any, path: string) {
+      return path.split('.').reduce((acc, part) => {
+        if (acc && typeof acc === 'object' && part in acc) {
+          return acc[part];
+        }
+        return undefined;
+      }, obj);
+    }
+
     return function(data: PublicNoticePublicFrontEndResponse) {
-      let dataValue = pathOr(data, stringToPath(key), null).valueOf();
+      let dataValue = resolvePath(data, key);
+      if (isNullish(dataValue)) {
+        dataValue = null;
+      }
       if (typeof dataValue === 'string') {
         dataValue = dataValue.toLowerCase();
       }
-      
       if (comparFn.name === 'isDateOnOrAfter') {
         dataValue = DateTime.fromISO(dataValue as string).toJSDate(); // convert ISO date to js Date.
       }
