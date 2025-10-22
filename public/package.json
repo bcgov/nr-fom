@@ -22,7 +22,7 @@
     "@fortawesome/angular-fontawesome": "^1.0.0",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
-    "@ng-bootstrap/ng-bootstrap": "^19.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^18.0.0",
     "@rxweb/reactive-form-validators": "~13.0.0",
     "@types/file-saver-es": "^2.0.3",
     "@types/luxon": "^3.4.2",
