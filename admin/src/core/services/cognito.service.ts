@@ -4,9 +4,9 @@ import { AwsCognitoConfig } from "@api-client";
 import { User } from "@utility/security/user";
 import { ConfigService } from "@utility/services/config.service";
 import {
-  CognitoAccessToken,
-  CognitoIdToken,
-  CognitoUserSession
+    CognitoAccessToken,
+    CognitoIdToken,
+    CognitoUserSession
 } from 'amazon-cognito-identity-js';
 import { Amplify, ResourcesConfig } from "aws-amplify";
 import { fetchAuthSession, getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
@@ -85,7 +85,7 @@ export class CognitoService {
       this.refreshAndObtainAwsCognitoUserSession()
         .then((refreshed) => {
           this.cognitoAuthToken = this.parseToken(refreshed);
-          observer.next();
+          observer.next(undefined);
           observer.complete();
         })
         .catch((err) => {
