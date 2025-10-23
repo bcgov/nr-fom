@@ -1,26 +1,24 @@
-import { NgFor, NgIf } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { DropzoneCdkModule, FileInputValidators, FileInputValue } from '@ngx-dropzone/cdk';
-import { DropzoneMaterialModule } from '@ngx-dropzone/material';
+import { FileInputValidators, FileInputValue } from '@ngx-dropzone/cdk';
+import { MatDropzone } from '@ngx-dropzone/material';
 @Component({
     standalone: true,
     imports: [
         ReactiveFormsModule,
-        DropzoneCdkModule, 
-        DropzoneMaterialModule, 
+        MatDropzone, 
         MatFormFieldModule,
         MatInputModule,
         MatChipsModule,
         MatIconModule,
         MatFormField,
         MatLabel,
-        MatIcon,
-        NgFor, 
+        MatIcon, 
         NgIf],
     selector: 'app-upload-box',
     templateUrl:'./file-upload-box.component.html', 

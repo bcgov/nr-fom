@@ -13,7 +13,7 @@ import { takeUntil } from 'rxjs/operators';
 import { EnddateChangeModalComponent } from './enddate-change-modal/enddate-change-modal.component';
 
 import { NewlinesPipe } from "@admin-core/pipes/newlines.pipe";
-import { DatePipe, NgClass, NgFor, NgIf, TitleCasePipe } from "@angular/common";
+import { DatePipe, NgClass, NgFor, NgIf } from "@angular/common";
 import { DetailsMapComponent } from "../details-map/details-map.component";
 import { ShapeInfoComponent } from "../shape-info/shape-info.component";
 
@@ -27,8 +27,7 @@ import { ShapeInfoComponent } from "../shape-info/shape-info.component";
         NgFor, 
         DetailsMapComponent, 
         ShapeInfoComponent,
-        NgClass, 
-        TitleCasePipe, 
+        NgClass,
         DatePipe, 
         NewlinesPipe
     ],
