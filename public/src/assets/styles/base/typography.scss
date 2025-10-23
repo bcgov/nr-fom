@@ -1,10 +1,11 @@
+@use "../themes/default.scss" as default;
 // Fix the type flashing behavior that occurs when page loads
 .wf-loading {
   display: none;
 }
 
 body {
-  color: $gray7;
+  color: default.$gray7;
   font-family: "myriad-pro", sans-serif;
   font-weight: 400;
 }
@@ -14,6 +15,6 @@ h2,
 h3,
 h4,
 h5 {
-  color: $gray9;
+  color: default.$gray9;
   letter-spacing: -0.03rem;
 }

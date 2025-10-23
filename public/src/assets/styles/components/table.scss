@@ -1,9 +1,11 @@
+@use "../themes/default.scss" as default;
+
 .table {
   width: 100%;
   table-layout: fixed;
 
   tr {
-    border-top: $table-row-border;
+    border-top: default.$table-row-border;
   }
 
   td,
@@ -20,7 +22,7 @@
   }
 
   thead {
-    background: $table-header-bg;
+    background: default.$table-header-bg;
     border-bottom: 2px solid #fff;
 
     th {
@@ -37,13 +39,13 @@
         user-select: none;
 
         &:hover {
-          border-bottom-color: $table-header-sort-active;
+          border-bottom-color: default.$table-header-sort-active;
         }
 
         &.sort-asc,
         &.sort-desc {
           color: #000;
-          border-bottom-color: $table-header-sort-active;
+          border-bottom-color: default.$table-header-sort-active;
           background: transparent;
           text-shadow: none;
         }
@@ -53,10 +55,10 @@
 
   tbody {
     tr {
-      background: $table-row-bg;
+      background: default.$table-row-bg;
 
       &:nth-child(even) {
-        background: $table-alt-row-bg;
+        background: default.$table-alt-row-bg;
       }
     }
 
@@ -79,8 +81,8 @@ th {
   .sort {
     position: relative;
     margin-left: 0.15rem;
-    width: calc(#{$table-sort-icon-size} * 2);
-    height: calc(#{$table-sort-icon-size} * 2);
+    width: calc(#{default.$table-sort-icon-size} * 2);
+    height: calc(#{default.$table-sort-icon-size} * 2);
     display: inline-block;
 
     &::before,
@@ -88,26 +90,26 @@ th {
       content: ' ';
       position: absolute;
       display: block;
-      border-color: $table-sort-icon-color transparent;
+      border-color: default.$table-sort-icon-color transparent;
       border-style: solid;
     }
 
     &::before {
       top: -1px;
-      border-width: 0 $table-sort-icon-size $table-sort-icon-size $table-sort-icon-size;
+      border-width: 0 default.$table-sort-icon-size default.$table-sort-icon-size default.$table-sort-icon-size;
     }
 
     &::after {
       content: ' ';
       bottom: -1px;
-      border-width: $table-sort-icon-size $table-sort-icon-size 0 $table-sort-icon-size;
+      border-width: default.$table-sort-icon-size default.$table-sort-icon-size 0 default.$table-sort-icon-size;
     }
 
     &.sort-asc,
     &.sort-desc {
       &::before,
       &::after {
-        border-color: $table-sort-icon-active-color transparent;
+        border-color: default.$table-sort-icon-active-color transparent;
       }
     }
 

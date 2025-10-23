@@ -1,14 +1,15 @@
+@use "../themes/default.scss" as default;
 .bg-dark {
-  color: $bg-dark-color;
-  background-color: $bg-dark;
+  color: default.$bg-dark-color;
+  background-color: default.$bg-dark;
 }
 
 .bg-default {
-  background-color: $bg-default;
+  background-color: default.$bg-default;
 }
 
 .bg-dark-link {
-  color: $bg-dark-link-color;
+  color: default.$bg-dark-link-color;
 }
 
 // Named Anchors
