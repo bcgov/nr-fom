@@ -1,14 +1,16 @@
-@import "../../assets/styles/base/base.scss";
+@use "../../assets/styles/base/base.scss";
+@use "../../assets/styles/abstracts/mixins";
+@use "../../assets/styles/themes/default";
 
 :host {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
   display: block;
-  background: $bg-default;
+  background: default.$bg-default;
 }
 
 .block-container {
-  @include clearfix();
+  @include mixins.clearfix();
 
   margin: -0.75rem;
 }

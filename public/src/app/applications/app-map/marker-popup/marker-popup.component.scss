@@ -1,4 +1,5 @@
-@import '../../../../assets/styles/base/base.scss';
+@use '../../../../assets/styles/base/base.scss';
+@use "../../../../assets/styles/themes/default";
 
 $popup-border-radius: 0.2rem;
 $popup-title-color: #fff;
@@ -31,7 +32,7 @@ $popup-title-bg: #036;
 .applicant-name {
   font-size: 1rem;
   font-weight: 600;
-  color: $gray9;
+  color: default.$gray9;
 }
 
 .applicant-name,

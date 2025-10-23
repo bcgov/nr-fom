@@ -1,18 +1,19 @@
-@import "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/themes/default";
 
 .splash-modal {
   position: relative;
   padding: 1.5rem;
   border-radius: 0.3rem;
   background: #fff; /* Old browsers */
-  background: linear-gradient(150deg, #fff 40%, $gray0 40%);
+  background: linear-gradient(150deg, #fff 40%, default.$gray0 40%);
 }
 
 @media (min-width: 768px) {
   .splash-modal {
     padding: 3.5rem 4.5rem;
     background: #fff; /* Old browsers */
-    background: linear-gradient(150deg, #fff 52%, $gray0 52%);
+    background: linear-gradient(150deg, #fff 52%, default.$gray0 52%);
   }
 }
 
@@ -24,7 +25,7 @@ h2 {
 
 label {
   margin-bottom: 0.5rem;
-  color: $gray9;
+  color: default.$gray9;
   font-size: 1rem;
   font-weight: 600;
 }

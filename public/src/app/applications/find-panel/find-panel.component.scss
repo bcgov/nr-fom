@@ -1,4 +1,5 @@
-@import "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/themes/default";
 
 // Filters Content Layout and Typography
 section {
@@ -69,10 +70,10 @@ $select-badge-active-bg: #a5d8ff;
     padding-right: 1rem;
     padding-bottom: 0.2rem;
     padding-left: 2rem;
-    color: $gray7;
+    color: default.$gray7;
     border-radius: 1rem;
     border: 2px solid transparent;
-    background-color: $gray2;
+    background-color: default.$gray2;
     background-image: url("../../../assets/images/baseline-remove-24px.svg");
     background-position: 8px center;
     background-repeat: no-repeat;
@@ -95,7 +96,7 @@ $select-badge-active-bg: #a5d8ff;
   input:focus,
   input:active {
     + label {
-      color: $gray9;
+      color: default.$gray9;
       border-color: $select-badge-active-border-color;
       background-color: $select-badge-hover-bg;
     }
@@ -103,14 +104,14 @@ $select-badge-active-bg: #a5d8ff;
 
   input:hover {
     + label {
-      color: $gray9;
+      color: default.$gray9;
       background-color: $select-badge-hover-bg;
     }
   }
 
   input:checked {
     + label {
-      color: $gray9;
+      color: default.$gray9;
       background-color: $select-badge-active-bg;
       background-image: url("../../../assets/images/baseline-check-24px.svg");
     }

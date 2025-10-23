@@ -1,8 +1,9 @@
-@import "../../../../assets/styles/base/base.scss";
+@use "../../../../assets/styles/base/base.scss";
+@use "../../../../assets/styles/themes/default";
 
 section {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid $gray2;
+  border-bottom: 1px solid default.$gray2;
 }
 
 // Meta
@@ -49,7 +50,7 @@ section {
   .shapefile-list__item + .shapefile-list__item {
     margin-top: 1.25rem;
     padding-top: 1.25rem;
-    border-top: 1px solid $gray3;
+    border-top: 1px solid default.$gray3;
   }
 
   .meta-container {
@@ -83,9 +84,9 @@ mat-table {
 }
 
 .highlight {
-  background-color: $gray6 !important;
+  background-color: default.$gray6 !important;
   mat-cell, div, a, label {
-    color: $color-inverted;
+    color: default.$color-inverted;
   }
 }
 

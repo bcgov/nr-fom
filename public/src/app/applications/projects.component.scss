@@ -1,4 +1,6 @@
-@import "../../assets/styles/base/base.scss";
+@use "../../assets/styles/base/base.scss";
+@use "../../assets/styles/abstracts/mixins";
+@use "../../assets/styles/themes/default";
 
 $toggle-list-anim-duration: 0.2s;
 $map-component-shadow: 0.1rem 0.1rem 0.5rem rgba(0, 0, 0, 0.25);
@@ -18,7 +20,7 @@ app-projects:host {
 }
 
 .applications-view {
-  @include flex-box();
+  @include mixins.flex-box();
 
   position: absolute;
   width: 100%;
@@ -32,16 +34,16 @@ $side-nav-item-width-lg: 6rem;
 $side-nav-item-height-lg: 5.5rem;
 
 .side-nav {
-  @include flex(0 0 auto);
+  @include mixins.flex(0 0 auto);
 
   position: relative;
   z-index: 1002;
   order: 0;
-  background: $primary4;
+  background: default.$primary4;
 }
 
 .side-nav ul {
-  @include flex-box();
+  @include mixins.flex-box();
 
   margin: 0;
   padding: 0;
@@ -49,7 +51,7 @@ $side-nav-item-height-lg: 5.5rem;
 }
 
 .side-nav-item {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
   height: $side-nav-item-height-sm;
 }
@@ -59,7 +61,7 @@ $side-nav-item-height-lg: 5.5rem;
   width: 100%;
   height: 100%;
   color: $side-nav-color;
-  background: $primary4;
+  background: default.$primary4;
   border-radius: 0;
   border: none;
   text-align: center;
@@ -75,14 +77,14 @@ $side-nav-item-height-lg: 5.5rem;
 .side-nav-item .btn:focus,
 .side-nav-item .btn:hover {
   color: $side-nav-color;
-  background: $primary5;
+  background: default.$primary5;
   box-shadow: none;
 }
 
 .side-nav-item.active .btn {
   color: $side-nav-color;
   border: none;
-  background: $primary1;
+  background: default.$primary1;
   box-shadow: none;
 }
 
@@ -94,7 +96,7 @@ $side-nav-item-height-lg: 5.5rem;
   }
 
   .side-nav ul {
-    @include flex-direction(column);
+    @include mixins.flex-direction(column);
   }
 
   .side-nav-item {
@@ -176,7 +178,7 @@ $side-panel-shadow: 0.1rem 0 0.15rem rgba(0, 0, 0, 0.25);
 
 // Main content area
 .main-panel {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
   position: relative;
 }
@@ -185,7 +187,7 @@ $side-panel-shadow: 0.1rem 0 0.15rem rgba(0, 0, 0, 0.25);
 $app-results-bg: rgba(#fff, 0.9);
 
 .app-results {
-  @include flex-box();
+  @include mixins.flex-box();
 
   position: absolute;
   top: 0;
@@ -194,7 +196,7 @@ $app-results-bg: rgba(#fff, 0.9);
   z-index: 999;
   padding: 0.75rem 1.5rem;
   height: 4rem;
-  border-bottom: 1px solid $gray2;
+  border-bottom: 1px solid default.$gray2;
   background: $app-results-bg;
   align-items: center;
   transition: left ease-out 0.2s;
@@ -208,7 +210,7 @@ $app-results-bg: rgba(#fff, 0.9);
 
 .app-results__count {
   letter-spacing: -0.01rem;
-  color: $gray9;
+  color: default.$gray9;
 
   strong {
     margin-right: 0.1rem;
@@ -220,7 +222,7 @@ $app-results-bg: rgba(#fff, 0.9);
   margin-top: 0.1rem;
   margin-left: 0.8rem;
   padding-left: 0.25rem;
-  border-left: 1px solid $gray4;
+  border-left: 1px solid default.$gray4;
 
   .btn {
     font-weight: 700;
@@ -230,7 +232,7 @@ $app-results-bg: rgba(#fff, 0.9);
 // Define layout order
 @media (max-width: 1023px) {
   .applications-view {
-    @include flex-flow(column nowrap);
+    @include mixins.flex-flow(column nowrap);
   }
 
   .side-nav {
@@ -254,7 +256,7 @@ $app-results-bg: rgba(#fff, 0.9);
 
 @media (min-width: 1024px) {
   .applications-view {
-    @include flex-flow(row nowrap);
+    @include mixins.flex-flow(row nowrap);
   }
 
   .side-nav {
@@ -325,10 +327,10 @@ $select-badge-active-bg: #a5d8ff;
     padding-right: 1rem;
     padding-bottom: 0.2rem;
     padding-left: 2rem;
-    color: $gray7;
+    color: default.$gray7;
     border-radius: 1rem;
     border: 2px solid transparent;
-    background-color: $gray2;
+    background-color: default.$gray2;
     background-image: url("../../assets/images/baseline-remove-24px.svg");
     background-position: 8px center;
     background-repeat: no-repeat;
@@ -351,7 +353,7 @@ $select-badge-active-bg: #a5d8ff;
   input:focus,
   input:active {
     + label {
-      color: $gray9;
+      color: default.$gray9;
       border-color: $select-badge-active-border-color;
       background-color: $select-badge-hover-bg;
     }
@@ -359,14 +361,14 @@ $select-badge-active-bg: #a5d8ff;
 
   input:hover {
     + label {
-      color: $gray9;
+      color: default.$gray9;
       background-color: $select-badge-hover-bg;
     }
   }
 
   input:checked {
     + label {
-      color: $gray9;
+      color: default.$gray9;
       background-color: $select-badge-active-bg;
       background-image: url("../../assets/images/baseline-check-24px.svg");
     }
