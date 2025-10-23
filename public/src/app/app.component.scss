@@ -1,23 +1,17 @@
-@import "../assets/styles/base/base.scss";
+@use "../assets/styles/base/base.scss";
+@use "../assets/styles/abstracts/mixins.scss" as mixins;
 
 :host {
   display: block;
 
-  @include flex-box();
-  @include flex-direction(column);
+  @include mixins.flex-box();
+  @include mixins.flex-direction(column);
 
   min-height: 100vh;
   background: #036;
+  overflow: hidden;
 }
 
-.no-scroll {
-  :host {
-    min-height: auto;
-    max-height: 100vh;
-    overflow: hidden;
-  }
-}
-
-app-home {
-  display: block;
+app-header {
+	@include mixins.flex(0 0 auto);
 }
