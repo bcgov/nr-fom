@@ -127,8 +127,8 @@ export class AuthService {
             this.logger.debug("Trusted decoded Access token = %o", decodedAccessToken);
 
             const decodedToken = {
-                id_token: decodedIdToken,
-                access_token: decodedAccessToken
+                decodedIdToken,
+                decodedAccessToken
             }
             return User.convertAwsCognitoDecodedTokenToUser(decodedToken);
         } catch (err) {
