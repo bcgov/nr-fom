@@ -109,8 +109,8 @@ export class AuthService {
         try {
             console.log("Header bearer token (cognitoToken):", token)
             const cognitoToken = JSON.parse(token);
-            const cognitoIdToken = cognitoToken['idToken']['jwtToken'];
-            const cognitoAccessToken = cognitoToken['accessToken']['jwtToken'];
+            const cognitoIdToken = cognitoToken['idToken'];
+            const cognitoAccessToken = cognitoToken['accessToken'];
             const untrustedDecodedIdToken = decode(cognitoIdToken, { complete: true });
             const untrustedDecodedAccessToken = decode(cognitoAccessToken, { complete: true });
             this.logger.debug("Untrusted decoded ID token %o", untrustedDecodedIdToken);
