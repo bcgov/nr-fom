@@ -1,9 +1,11 @@
-@import "../../assets/styles/base/base.scss";
+@use "../../assets/styles/base/base.scss";
+@use "../../assets/styles/abstracts/mixins.scss" as mixins;
+@use "../../assets/styles/themes/default.scss" as theme;
 
 :host {
-  @include flex-box();
-  @include flex-direction(column);
-  @include flex(1 1 auto);
+  @include mixins.flex-box();
+  @include mixins.flex-direction(column);
+  @include mixins.flex(1 1 auto);
 
   overflow:hidden;
 }
@@ -45,8 +47,8 @@ h2 {
   }
 
   .filter-input {
-    @include placeholder {
-      color: $gray7;
+  @include mixins.placeholder {
+  color: theme.$gray7;
     }
   }
 

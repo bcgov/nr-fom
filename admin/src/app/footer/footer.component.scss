@@ -1,9 +1,10 @@
-@import "../../assets/styles/base/base.scss";
+@use "../../assets/styles/base/base.scss";
+@use "../../assets/styles/themes/default.scss" as theme;
 
 .app-footer {
-  border-top: 4px solid $gold;
-  background: $footer-bg;
-  color: $footer-color;
+  border-top: 4px solid theme.$gold;
+  background: theme.$footer-bg;
+  color: theme.$footer-color;
 
   .container {
     padding: 0.5rem 1.5rem;
@@ -20,15 +21,15 @@
   }
 
   a {
-    color: $footer-color;
+  color: theme.$footer-color;
 
     &:focus,
     &:hover {
-      color: $gold;
+  color: theme.$gold;
     }
 
     &.feedback-link {
-      color: $gold;
+  color: theme.$gold;
     }
   }
 

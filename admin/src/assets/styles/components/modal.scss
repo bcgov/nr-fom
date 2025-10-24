@@ -1,5 +1,7 @@
+@use "../themes/default.scss" as theme;
+
 .modal-header {
-  background-color: $white;
+  background-color: theme.$white;
 
   .modal-title {
     font-weight: bold;
@@ -7,7 +9,7 @@
 }
 
 .modal-body {
-  background-color: $modal-bg;
+  background-color: theme.$modal-bg;
 
   textarea {
     width: 100%;
@@ -17,5 +19,5 @@
 }
 
 .modal-footer {
-  background-color: $white;
+  background-color: theme.$white;
 }

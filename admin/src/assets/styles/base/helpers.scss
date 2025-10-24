@@ -1,10 +1,13 @@
+
+@use "../themes/default.scss" as theme;
+
 .bg-dark {
-  color: $bg-dark-color;
-  background-color: $bg-dark;
+  color: theme.$bg-dark-color;
+  background-color: theme.$bg-dark;
 }
 
 .bg-dark-link {
-  color: $bg-dark-link-color;
+  color: theme.$bg-dark-link-color;
 }
 
 .amp {

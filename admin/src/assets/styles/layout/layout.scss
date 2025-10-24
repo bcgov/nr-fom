@@ -1,4 +1,5 @@
-@import "../abstracts/mixins.scss";
+@use "../abstracts/mixins.scss";
+@use "../themes/default.scss" as theme;
 
 html,
 body {
@@ -109,10 +110,10 @@ main {
   .main-footer {
     padding: 1.5rem;
     background-color: rgba(0, 51, 102, 0.8);
-    color: $white;
+    color: theme.$white;
 
     a {
-      color: $gold;
+    color: theme.$gold;
     }
   }
 }
@@ -148,7 +149,7 @@ hr {
 /* class to make divs look like anchors */
 .clickable {
   cursor: pointer !important;
-  color: $link-color !important;
+  color: theme.$link-color !important;
 
   &:focus,
   &:hover {
@@ -166,10 +167,10 @@ hr {
 
 // Page Title Container
 .title-container {
-  @include flex-box();
+  @include mixins.flex-box();
 
   &__title {
-    @include flex(1 1 auto);
+    @include mixins.flex(1 1 auto);
 
     margin: 0;
 
@@ -180,7 +181,7 @@ hr {
   }
 
   &__actions {
-    @include flex(0 0 auto);
+    @include mixins.flex(0 0 auto);
 
     .btn {
       min-width: 5rem;
@@ -200,7 +201,7 @@ hr {
 }
 
 .top-container {
-  @include flex(0 0 auto);
+  @include mixins.flex(0 0 auto);
 
   position: relative;
   padding-right: 17px; // Offset approximate width of scrollbar
@@ -219,7 +220,7 @@ hr {
 }
 
 .bottom-container {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
   overflow-y: scroll;
   background: #f7f8fa;
@@ -239,8 +240,8 @@ hr {
 }
 
 input, textarea {
-  @include placeholder {
-      color: $gray4;
+  @include mixins.placeholder {
+      color: theme.$gray4;
   }
 }
 

@@ -1,3 +1,4 @@
+@use "../themes/default.scss" as theme;
 .table {
   width: 100%;
   table-layout: fixed;
@@ -16,12 +17,12 @@
   }
 
   thead {
-    background: $table-header-bg;
-    border-bottom: 2px solid $white;
+    background: theme.$table-header-bg;
+    border-bottom: 2px solid theme.$white;
 
     th {
       padding: 0.5rem;
-      border-bottom: 3px solid $lightgray;
+      border-bottom: 3px solid theme.$lightgray;
       vertical-align: middle;
       text-shadow: none;
       font-size: 0.875rem;
@@ -33,13 +34,13 @@
         user-select: none;
 
         &:hover {
-          border-bottom-color: $table-header-sort-active;
+          border-bottom-color: theme.$table-header-sort-active;
         }
 
         &.sort-asc,
         &.sort-desc {
-          color: $black;
-          border-bottom-color: $table-header-sort-active;
+          color: theme.$black;
+          border-bottom-color: theme.$table-header-sort-active;
           background: transparent;
           text-shadow: none;
         }
@@ -67,8 +68,8 @@ th {
   .sort {
     position: relative;
     margin-left: 0.15rem;
-    width: calc(#{$table-sort-icon-size} * 2);
-    height: calc(#{$table-sort-icon-size} * 2);
+  width: calc(#{theme.$table-sort-icon-size} * 2);
+  height: calc(#{theme.$table-sort-icon-size} * 2);
     display: inline-block;
 
     &::before,
@@ -76,26 +77,26 @@ th {
       content: ' ';
       position: absolute;
       display: block;
-      border-color: $table-sort-icon-color transparent;
+  border-color: theme.$table-sort-icon-color transparent;
       border-style: solid;
     }
 
     &::before {
       top: -1px;
-      border-width: 0 $table-sort-icon-size $table-sort-icon-size $table-sort-icon-size;
+  border-width: 0 theme.$table-sort-icon-size theme.$table-sort-icon-size theme.$table-sort-icon-size;
     }
 
     &::after {
       content: ' ';
       bottom: -1px;
-      border-width: $table-sort-icon-size $table-sort-icon-size 0 $table-sort-icon-size;
+  border-width: theme.$table-sort-icon-size theme.$table-sort-icon-size 0 theme.$table-sort-icon-size;
     }
 
     &.sort-asc,
     &.sort-desc {
       &::before,
       &::after {
-        border-color: $table-sort-icon-active-color transparent;
+  border-color: theme.$table-sort-icon-active-color transparent;
       }
     }
 

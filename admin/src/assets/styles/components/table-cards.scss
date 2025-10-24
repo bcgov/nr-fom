@@ -1,3 +1,6 @@
+@use "../themes/default.scss" as theme;
+@use "sass:color";
+
 /**
  * Responsive table that changes to a stacked card layout on screen size change.
  *
@@ -33,7 +36,7 @@
   }
 
   thead {
-    // border-bottom: 3px solid $primary;
+  // border-bottom: 3px solid theme.$primary;
     border-bottom: 2px solid #ddd;
 
     th {
@@ -55,7 +58,7 @@
         padding: 0.75rem 0;
 
         a {
-          color: $primary2;
+          color: theme.$primary2;
           text-decoration: none;
           display: inline-block;
           margin: 0 0.5rem 0 0;
@@ -63,7 +66,7 @@
           &:hover,
           &:active,
           &:focus {
-            color: darken($primary2, 10%);
+            color: color.adjust(theme.$primary2, $lightness: -10%);
             border: none;
           }
         }
@@ -105,10 +108,10 @@
       float: left;
       width: 100%;
       margin: 0 0 1rem;
-      border: 1px solid $gray4;
-      box-shadow: 0 2px 5px 0 $gray4;
+      border: 1px solid theme.$gray4;
+      box-shadow: 0 2px 5px 0 theme.$gray4;
       border-radius: 4px;
-      // border-top: 5px solid $primary;
+      // border-top: 5px solid theme.$primary;
 
       td {
         padding: 0.5rem 0.5rem 0.5rem 50%;

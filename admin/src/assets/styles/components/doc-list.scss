@@ -1,3 +1,6 @@
+@use "../abstracts/mixins.scss" as mixins;
+@use "../themes/default.scss" as theme;
+
 $doc-list-link-color: #007bff;
 
 // Document List Shared Styling
@@ -10,8 +13,8 @@ $doc-list-link-color: #007bff;
   }
 
   li {
-    @include flex-box();
-    @include flex-direction(row);
+    @include mixins.flex-direction(row);
+    @include mixins.flex-direction(row);
 
     background: #f7f8fa;
 
@@ -21,12 +24,12 @@ $doc-list-link-color: #007bff;
   }
 
   .doc-list__item {
-    @include flex-box();
-    @include flex-direction(row);
+    @include mixins.flex-box();
+    @include mixins.flex-direction(row);
 
     align-items: center;
     border-radius: 0.2rem;
-    background: $gray2;
+    background: theme.$gray2;
   }
 
   // Generic Column Types - Customize in your components as needed
@@ -69,7 +72,7 @@ $doc-list-link-color: #007bff;
 
     // Icon Column
     &.icon {
-      @include flex(0 0 auto);
+      @include mixins.flex(0 0 auto);
 
       padding-left: 0.75rem;
 
@@ -88,14 +91,12 @@ $doc-list-link-color: #007bff;
 
     // Name Column
     &.name {
-      @include flex(1 1 auto);
+      @include mixins.flex(1 1 auto);
 
       font-size: 0.875rem;
     }
-
-    // Actions Column
     &.actions {
-      @include flex(0 0 auto);
+      @include mixins.flex(0 0 auto);
     }
   }
 
