@@ -1,13 +1,13 @@
-@use "../themes/default.scss" as default;
+@use "../themes/default.scss" as theme;
 
 .spinner-new {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: default.$spinner-lg;
-  height: default.$spinner-lg;
-  margin-top: calc(-#{default.$spinner-lg} / 1.5);
-  margin-left: calc(-#{default.$spinner-lg} / 2);
+  width: theme.$spinner-lg;
+  height: theme.$spinner-lg;
+  margin-top: calc(-#{theme.$spinner-lg} / 1.5);
+  margin-left: calc(-#{theme.$spinner-lg} / 2);
   background-image: url("../../images/spinner.png");
 }
 
@@ -19,17 +19,17 @@
   background-size: 100%;
 
   &.spinner-sm {
-  width: default.$spinner-sm;
-  height: default.$spinner-sm;
-  margin-top: calc(-#{default.$spinner-sm} / 1.5);
-  margin-left: calc(-#{default.$spinner-sm} / 2);
+    width: theme.$spinner-sm;
+    height: theme.$spinner-sm;
+    margin-top: calc(-#{theme.$spinner-sm} / 1.5);
+    margin-left: calc(-#{theme.$spinner-sm} / 2);
   }
 
   &.spinner-lg {
-  width: default.$spinner-lg;
-  height: default.$spinner-lg;
-  margin-top: calc(-#{default.$spinner-lg} / 1.5);
-  margin-left: calc(-#{default.$spinner-lg} / 2);
+    width: theme.$spinner-lg;
+    height: theme.$spinner-lg;
+    margin-top: calc(-#{theme.$spinner-lg} / 1.5);
+    margin-left: calc(-#{theme.$spinner-lg} / 2);
   }
 }
 
@@ -51,13 +51,13 @@
   left: 0;
   right: 0;
   padding: 5%;
-  background: default.$spinner-bg;
+  background: theme.$spinner-bg;
   z-index: 9999; // to keep above everything else
   transition: all linear 0.5s;
 
   &.inverted,
   &.transparent {
-  background: default.$spinner-invert-bg;
+    background: theme.$spinner-invert-bg;
 
     .spinner-new {
       background-image: url("../../images/spinner.png");
@@ -65,7 +65,7 @@
   }
 
   &.inverted {
-  background: default.$spinner-invert-bg;
+    background: theme.$spinner-invert-bg;
   }
 
   &.transparent {

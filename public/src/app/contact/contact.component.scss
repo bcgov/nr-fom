@@ -1,12 +1,12 @@
 @use "../../assets/styles/base/base.scss";
 @use "../../assets/styles/abstracts/mixins";
-@use "../../assets/styles/themes/default";
+@use "../../assets/styles/themes/default" as theme;
 
 :host {
   @include mixins.flex(1 1 auto);
 
   display: block;
-  background: default.$bg-default;
+  background: theme.$bg-default;
 }
 
 .block-container {

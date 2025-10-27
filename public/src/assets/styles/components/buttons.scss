@@ -1,4 +1,4 @@
-@use "../themes/default.scss" as default;
+@use "../themes/default.scss" as theme;
 @use "sass:color";
 
 .btn {
@@ -13,8 +13,8 @@
     &:active,
     &:focus,
     &:hover {
-      border-color: default.$gold;
-      background: color.adjust(default.$gold, $lightness: -8%);
+    border-color: theme.$gold;
+    background: color.adjust(theme.$gold, $lightness: -8%);
     }
   }
 
@@ -38,7 +38,7 @@
 }
 
 .btn-inverted {
-  background: color.adjust(default.$gold, $lightness: -5%);
+  background: color.adjust(theme.$gold, $lightness: -5%);
   font-size: 0.9375rem;
   font-weight: 700;
 }
@@ -131,20 +131,20 @@
 
 .content-btn {
   padding: 0.5rem;
-  background: default.$lightgray;
-  color: default.$link-color;
+  background: theme.$lightgray;
+  color: theme.$link-color;
   font-size: 0.875rem;
   font-weight: 600;
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 
   &:focus,
   &:hover {
-    border-color: default.$gold;
-    background: default.$gold;
+    border-color: theme.$gold;
+    background: theme.$gold;
   }
 
   &:not([href]):not([tabindex]) {
-    color: default.$link-color;
+    color: theme.$link-color;
   }
 }
 
@@ -171,8 +171,8 @@
   right: 1rem;
   padding: 0.5rem;
   opacity: 0;
-  border-color: default.$gold;
-  background: default.$gold;
+  border-color: theme.$gold;
+  background: theme.$gold;
   transform: translateY(1rem);
   transition: all ease-out 0.2s;
 
@@ -204,7 +204,7 @@
   padding-bottom: 0.35rem;
   padding-left: 0;
   overflow: hidden;
-  color: default.$gray6;
+  color: theme.$gray6;
   background-color: transparent;
   transition: all ease-out 0.2s;
   cursor: pointer;
@@ -217,8 +217,8 @@
   &:active,
   &:focus,
   &:hover {
-    color: default.$gray9;
-    background-color: default.$gray2;
+    color: theme.$gray9;
+    background-color: theme.$gray2;
   }
 }
 
@@ -227,13 +227,13 @@
   width: 2rem;
   height: 2rem;
   padding: 0;
-  color: default.$gray6;
+  color: theme.$gray6;
 
   &:active,
   &:focus,
   &:hover {
-    color: default.$gray9;
-    background: default.$gray1;
+    color: theme.$gray9;
+    background: theme.$gray1;
   }
 }
 

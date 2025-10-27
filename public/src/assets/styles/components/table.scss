@@ -1,11 +1,11 @@
-@use "../themes/default.scss" as default;
+@use "../themes/default.scss" as theme;
 
 .table {
   width: 100%;
   table-layout: fixed;
 
   tr {
-    border-top: default.$table-row-border;
+    border-top: theme.$table-row-border;
   }
 
   td,
@@ -22,7 +22,7 @@
   }
 
   thead {
-    background: default.$table-header-bg;
+    background: theme.$table-header-bg;
     border-bottom: 2px solid #fff;
 
     th {
@@ -39,13 +39,13 @@
         user-select: none;
 
         &:hover {
-          border-bottom-color: default.$table-header-sort-active;
+          border-bottom-color: theme.$table-header-sort-active;
         }
 
         &.sort-asc,
         &.sort-desc {
           color: #000;
-          border-bottom-color: default.$table-header-sort-active;
+          border-bottom-color: theme.$table-header-sort-active;
           background: transparent;
           text-shadow: none;
         }
@@ -55,10 +55,10 @@
 
   tbody {
     tr {
-      background: default.$table-row-bg;
+        background: theme.$table-row-bg;
 
       &:nth-child(even) {
-        background: default.$table-alt-row-bg;
+        background: theme.$table-alt-row-bg;
       }
     }
 
@@ -81,8 +81,8 @@ th {
   .sort {
     position: relative;
     margin-left: 0.15rem;
-    width: calc(#{default.$table-sort-icon-size} * 2);
-    height: calc(#{default.$table-sort-icon-size} * 2);
+    width: calc(#{theme.$table-sort-icon-size} * 2);
+    height: calc(#{theme.$table-sort-icon-size} * 2);
     display: inline-block;
 
     &::before,
@@ -90,26 +90,26 @@ th {
       content: ' ';
       position: absolute;
       display: block;
-      border-color: default.$table-sort-icon-color transparent;
+      border-color: theme.$table-sort-icon-color transparent;
       border-style: solid;
     }
 
     &::before {
       top: -1px;
-      border-width: 0 default.$table-sort-icon-size default.$table-sort-icon-size default.$table-sort-icon-size;
+      border-width: 0 theme.$table-sort-icon-size theme.$table-sort-icon-size theme.$table-sort-icon-size;
     }
 
     &::after {
       content: ' ';
       bottom: -1px;
-      border-width: default.$table-sort-icon-size default.$table-sort-icon-size 0 default.$table-sort-icon-size;
+      border-width: theme.$table-sort-icon-size theme.$table-sort-icon-size 0 theme.$table-sort-icon-size;
     }
 
     &.sort-asc,
     &.sort-desc {
       &::before,
       &::after {
-        border-color: default.$table-sort-icon-active-color transparent;
+      border-color: theme.$table-sort-icon-active-color transparent;
       }
     }
 

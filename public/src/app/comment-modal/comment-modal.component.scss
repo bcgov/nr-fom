@@ -1,5 +1,5 @@
 @use "../../assets/styles/base/base.scss";
-@use "../../assets/styles/themes/default";
+@use "../../assets/styles/themes/default" as theme;
 
 h4,
 h5 {
@@ -12,7 +12,7 @@ h5 {
 
 .modal-title {
   em {
-    color: default.$gray5;
+  color: theme.$gray5;
     font-style: normal;
     font-weight: 400;
   }
@@ -53,7 +53,7 @@ h5 {
     padding-bottom: 1.5rem;
     padding-left: 5rem;
     color: #fff;
-    background: default.$primary1;
+    background: theme.$primary1;
     background-image: url("../../assets/images/outline-info-inverted-24px.svg");
     background-position: 2rem center;
     background-repeat: no-repeat;
