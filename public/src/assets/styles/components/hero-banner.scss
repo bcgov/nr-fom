@@ -1,10 +1,10 @@
 @use "../../../assets/styles/base/base.scss";
 @use "../abstracts/mixins";
-@use "../themes/default.scss" as default;
+@use "../themes/default.scss" as theme;
 
 .hero-banner {
   position: relative;
-  background-color: rgba(default.$header-bg, 1);
+  background-color: rgba(theme.$header-bg, 1);
   background-image: url("../../../assets/images/prc-hero-banner-img.jpg");
   background-position: center bottom;
   background-size: 350%;

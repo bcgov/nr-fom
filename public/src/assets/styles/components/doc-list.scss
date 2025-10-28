@@ -1,7 +1,7 @@
 @use "../abstracts/mixins";
-@use "../themes/default.scss" as default;
+@use "../themes/default.scss" as theme;
 
-$doc-list-link-color: default.$primary2;
+$doc-list-link-color: theme.$primary2;
 
 // Document List Shared Styling
 .doc-list {
@@ -20,7 +20,7 @@ $doc-list-link-color: default.$primary2;
 
   align-items: center;
   border-radius: 0.2rem;
-  background: default.$gray2;
+  background: theme.$gray2;
 }
 
 .doc-list__item + .doc-list__item {
@@ -32,8 +32,8 @@ a.doc-list__item {
   transition: all ease-out 0.2s;
 
   &:hover {
-    color: default.$color-inverted;
-    background: default.$primary0;
+    color: theme.$color-inverted;
+    background: theme.$primary0;
     text-decoration: none;
   }
 }

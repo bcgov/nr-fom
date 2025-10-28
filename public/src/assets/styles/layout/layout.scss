@@ -1,4 +1,4 @@
-@use "../themes/default.scss" as default;
+@use "../themes/default.scss" as theme;
 @use "../abstracts/mixins.scss" as mixins;
 
 // Container
@@ -81,7 +81,7 @@ hr {
   @include mixins.flex-box();
   @include mixins.flex-direction(column);
 
-  background: default.$gray0;
+  background: theme.$gray0;
 }
 
 .flex-panel__header {
@@ -96,7 +96,7 @@ hr {
   padding-right: 2.6rem;
   height: 4rem;
   align-items: center;
-  border-bottom: 1px solid default.$gray2;
+  border-bottom: 1px solid theme.$gray2;
   background: #fff;
 
   .title {
@@ -155,6 +155,6 @@ hr {
 }
   
 .ghost-button:hover, .ghost-button:active { 
-  background-color: default.$gray4;
+  background-color: theme.$gray4;
   transition: background-color 0.3s ease-in, color 0.3s ease-in; 
 }

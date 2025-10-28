@@ -1,9 +1,9 @@
 @use "../../../../assets/styles/base/base.scss";
-@use "../../../../assets/styles/themes/default";
+@use "../../../../assets/styles/themes/default" as theme;
 
-$date-input-btn-color: default.$gray7;
-$date-input-btn-color-active: default.$gray9;
-$date-input-border-color-active: default.$primary1;
+$date-input-btn-color: theme.$gray7;
+$date-input-btn-color-active: theme.$gray9;
+$date-input-border-color-active: theme.$primary1;
 
 .date-input {
   position: relative;
@@ -46,7 +46,7 @@ $date-input-border-color-active: default.$primary1;
   &:focus,
   &:hover {
     color: $date-input-btn-color-active;
-    background-color: default.$gray2;
+    background-color: theme.$gray2;
   }
 }
 
