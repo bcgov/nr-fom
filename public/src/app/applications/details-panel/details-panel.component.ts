@@ -34,8 +34,7 @@ import { Filter } from '../utils/filter';
   standalone: true,
   imports: [
     FontAwesomeModule, CommonModule, ShapeInfoComponent, 
-    CommentModalComponent, DetailsMapComponent, TooltipModule,
-    MatTooltipModule
+    DetailsMapComponent, TooltipModule, MatTooltipModule
   ],
   selector: 'app-details-panel',
   templateUrl: './details-panel.component.html',

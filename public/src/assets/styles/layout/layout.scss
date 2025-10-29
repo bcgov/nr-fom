@@ -1,3 +1,6 @@
+@use "../themes/default.scss" as theme;
+@use "../abstracts/mixins.scss" as mixins;
+
 // Container
 .container {
   margin: 0 auto;
@@ -75,16 +78,16 @@ hr {
 
 // Flex panel
 .flex-panel {
-  @include flex-box();
-  @include flex-direction(column);
+  @include mixins.flex-box();
+  @include mixins.flex-direction(column);
 
-  background: $gray0;
+  background: theme.$gray0;
 }
 
 .flex-panel__header {
-  @include flex-box();
-  @include flex-direction(row);
-  @include flex(0 0 auto);
+  @include mixins.flex-box();
+  @include mixins.flex-direction(row);
+  @include mixins.flex(0 0 auto);
 
   // padding: 0.75rem 1.5rem;
   padding-top: 0.75rem;
@@ -93,11 +96,11 @@ hr {
   padding-right: 2.6rem;
   height: 4rem;
   align-items: center;
-  border-bottom: 1px solid $gray2;
+  border-bottom: 1px solid theme.$gray2;
   background: #fff;
 
   .title {
-    @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
     margin: 0;
     letter-spacing: -0.01rem;
@@ -107,14 +110,14 @@ hr {
 }
 
 .flex-panel__scroll {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
   padding: 1.5rem;
   overflow-y: auto;
 }
 
 .flex-panel__footer {
-  @include flex(0 0 auto);
+  @include mixins.flex(0 0 auto);
 }
 
 @media (min-width: 1200px) {
@@ -152,6 +155,6 @@ hr {
 }
   
 .ghost-button:hover, .ghost-button:active { 
-  background-color: $gray4; 
+  background-color: theme.$gray4;
   transition: background-color 0.3s ease-in, color 0.3s ease-in; 
 }

@@ -1,28 +1,31 @@
+@use "../themes/default.scss" as theme;
+@use "../abstracts/mixins.scss" as mixins;
+
 .form-control {
-  border-color: $fc-border-color;
-  background: $fc-bg;
+  border-color: theme.$fc-border-color;
+  background: theme.$fc-bg;
   font-size: 0.9375rem;
 
   &:focus {
-    border-color: $fc-focus-border-color;
+    border-color: theme.$fc-focus-border-color;
   }
 }
 
 input {
   &.form-control {
-    height: $fc-height;
+    height: theme.$fc-height;
   }
 
   &[type="text"],
   &[type="email"],
   &[type="number"] {
-    @include placeholder {
-      color: $fc-placeholder-color;
+    @include mixins.placeholder {
+      color: theme.$fc-placeholder-color;
     }
 
-    height: $fc-height;
+    height: theme.$fc-height;
     padding: 0.75rem;
-    box-shadow: $fc-inner-shadow inset;
+    box-shadow: theme.$fc-inner-shadow inset;
   }
 }
 
@@ -35,19 +38,19 @@ input[type=number]::-webkit-outer-spin-button {
 select {
   &.form-control {
     &:not([size]):not([multiple]) {
-      height: $fc-height;
+      height: theme.$fc-height;
       padding: 0 0.5rem;
     }
   }
 }
 
 textarea {
-  @include placeholder {
-    color: $fc-placeholder-color;
+  @include mixins.placeholder {
+    color: theme.$fc-placeholder-color;
   }
 
   resize: vertical;
-  box-shadow: $fc-inner-shadow inset;
+  box-shadow: theme.$fc-inner-shadow inset;
 }
 
 .control-label {
@@ -119,7 +122,7 @@ label {
   padding: 0.5rem 1rem;
   font-weight: 600;
   color: #fff;
-  background: $fc-invalid-color;
+  background: theme.$fc-invalid-color;
 
   &::after {
     content: ' ';
@@ -129,7 +132,7 @@ label {
     width: 1rem;
     height: 1rem;
     border-right: 0.5rem solid transparent;
-    border-bottom: 0.5rem solid $fc-invalid-color;
+    border-bottom: 0.5rem solid theme.$fc-invalid-color;
     border-left: 0.5rem solid transparent;
   }
 }
@@ -139,17 +142,17 @@ label {
 }
 
 .form-control.ng-touched.ng-invalid {
-  border-color: $fc-invalid-color;
+  border-color: theme.$fc-invalid-color;
 }
 
 .input-group.is-invalid {
   .form-control {
-    border-color: $fc-invalid-color;
+    border-color: theme.$fc-invalid-color;
   }
 
   .input-group-append {
     .btn-icon {
-      border-color: $fc-invalid-color;
+      border-color: theme.$fc-invalid-color;
     }
   }
 }

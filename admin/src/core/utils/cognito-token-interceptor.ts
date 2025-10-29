@@ -1,10 +1,10 @@
+import { CognitoService } from "@admin-core/services/cognito.service";
 import {
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest,
+    HttpHandler,
+    HttpInterceptor,
+    HttpRequest,
 } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { CognitoService } from "@admin-core/services/cognito.service";
 import { Observable, Subject } from "rxjs";
 import { catchError, switchMap, tap } from "rxjs/operators";
 
@@ -99,7 +99,7 @@ export class CognitoTokenInterceptor implements HttpInterceptor {
     if (this.refreshTokenInProgress) {
       return new Observable((observer) => {
         this.tokenRefreshed$.subscribe(() => {
-          observer.next();
+            observer.next(undefined);
           observer.complete();
         });
       });

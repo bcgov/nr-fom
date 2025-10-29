@@ -29,7 +29,6 @@ import { FomAddEditForm } from './fom-add-edit.form';
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AppFormControlDirective } from '@admin-core/directives/form-control.directive';
 import { ICodeTable } from '@admin-core/models/code-tables';
-import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BsDatepickerConfig, BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
@@ -45,7 +44,6 @@ type ApplicationPageType = 'create' | 'edit';
         NgClass,
         NgFor,
         AppFormControlDirective,
-        NewlinesPipe,
         UploadBoxComponent
     ],
     selector: 'app-application-add-edit',

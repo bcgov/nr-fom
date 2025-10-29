@@ -1,9 +1,10 @@
-@import "../../assets/styles/base/base.scss";
+@use "../../assets/styles/base/base.scss";
+@use "../../assets/styles/themes/default.scss" as theme;
 
 .app-footer {
-  border-top: 4px solid $gold;
-  background: $footer-bg;
-  color: $footer-color;
+  border-top: 4px solid theme.$gold;
+  background: theme.$footer-bg;
+  color: theme.$footer-color;
 
   .container {
     padding-top: 1.5rem;
@@ -16,7 +17,7 @@
     text-align: center;
     margin-bottom: 1.5rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid $bg-dark-border-color;
+    border-bottom: 1px solid theme.$bg-dark-border-color;
 
     &.last {
       margin-bottom: 0;
@@ -27,7 +28,7 @@
 
   h4 {
     margin-bottom: 1rem;
-    color: $color-inverted;
+    color: theme.$color-inverted;
     font-size: medium;
     font-weight: bold;
   }
@@ -52,22 +53,22 @@
   }
 
   a {
-    color: $footer-color;
+    color: theme.$footer-color;
 
     &.feedback-link {
-      color: $gold;
+      color: theme.$gold;
     }
 
     &:focus,
     &:hover {
-      color: $gold;
+      color: theme.$gold;
     }
   }
 
   .footer-admin {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
-    border-top: 1px solid $bg-dark-border-color;
+    border-top: 1px solid theme.$bg-dark-border-color;
 
     div {
       padding-left: 0;
@@ -114,7 +115,7 @@
 
     h4 {
       padding-bottom: 1rem;
-      border-bottom: 1px solid $bg-dark-border-color;
+      border-bottom: 1px solid theme.$bg-dark-border-color;
     }
 
     .footer-admin {

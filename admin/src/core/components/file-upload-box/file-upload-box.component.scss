@@ -10,3 +10,17 @@ mat-form-field {
  .invalid-type-msg {
      color: red;
  }
+
+ // ngx-mat-dropzone at v19 seems to have issues with file input visibility.
+ // It shows the default file input button (unwanted), was not there at v18.
+ // So use this workaround to hide the file input element.
+::ng-deep ngx-mat-dropzone input[type="file"] {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  cursor: pointer;
+  z-index: 2;
+}

@@ -1,9 +1,11 @@
-@import "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/abstracts/mixins.scss" as mixins;
+@use "../../../assets/styles/themes/default.scss" as theme;
 
 :host {
-  @include flex-box();
-  @include flex-direction(column);
-  @include flex(1 1 auto);
+  @include mixins.flex-box();
+  @include mixins.flex-direction(column);
+  @include mixins.flex(1 1 auto);
 
   overflow:hidden;
 }
@@ -33,7 +35,7 @@
 
 .title-container {
   .title-container__title {
-    @include flex-box();
+  @include mixins.flex-box();
     
     align-items: center;
   }
@@ -67,7 +69,7 @@
         border-bottom: 1px dotted #ccc;
       
         li {
-          @include flex-box();
+          @include mixins.flex-box();
       
           padding: 0.5rem 0;
           border-top: 1px dotted #ccc;
@@ -75,12 +77,12 @@
         }
       
         span.name {
-          @include flex(0 0 13rem);
+          @include mixins.flex(0 0 13rem);
           margin: 0;
         }
       
         span.value {
-          @include flex(1 1 auto);
+          @include mixins.flex(1 1 auto);
         }
     }
 

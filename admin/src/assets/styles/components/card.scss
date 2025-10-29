@@ -1,7 +1,8 @@
+@use "../themes/default.scss" as theme;
 .card-header {
   padding: 0.5rem 1rem;
-  color: $card-header-color;
-  background: $card-header-bg;
+  color: theme.$card-header-color;
+  background: theme.$card-header-bg;
   font-size: 0.875rem;
   font-weight: 700;
 }

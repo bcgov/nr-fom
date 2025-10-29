@@ -1,3 +1,4 @@
+@use "../themes/default" as default;
 .leaflet-container {
   font-family: "myriad-pro", Calibri, Arial, sans-serif;
 
@@ -6,7 +7,7 @@
     right: 0.5rem;
     width: 2rem;
     height: 2rem;
-    color: $gray6;
+    color: default.$gray6;
     border-radius: 0.25rem;
     font-size: 24px; // default material-icon size
     font-weight: normal;
@@ -15,8 +16,8 @@
     &:active,
     &:focus,
     &:hover {
-      color: $gray9;
-      background: $gray1;
+      color: default.$gray9;
+      background: default.$gray1;
     }
   }
 }

@@ -1,3 +1,5 @@
+@use "../themes/default.scss" as theme;
+@use "../abstracts/mixins.scss" as mixins;
 .expand-panel {
     margin-bottom: 16px;
     padding: 2px;

@@ -1,8 +1,10 @@
-@import "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/base/base.scss";
+@use "../abstracts/mixins";
+@use "../themes/default.scss" as theme;
 
 .hero-banner {
   position: relative;
-  background-color: rgba($header-bg, 1);
+  background-color: rgba(theme.$header-bg, 1);
   background-image: url("../../../assets/images/prc-hero-banner-img.jpg");
   background-position: center bottom;
   background-size: 350%;
@@ -64,7 +66,7 @@
     cursor: pointer;
 
     + span {
-      @include flex(0 0 auto);
+      @include mixins.flex(0 0 auto);
 
       padding: 0.65rem 0.4rem;
       vertical-align: middle;

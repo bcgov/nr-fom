@@ -1,12 +1,14 @@
-@import "../../assets/styles/base/base.scss";
+@use "../../assets/styles/base/base.scss";
+@use "../../assets/styles/abstracts/mixins.scss" as mixins;
+@use "../../assets/styles/themes/default.scss" as theme;
 
 .app-header {
-  @include clearfix;
+  @include mixins.clearfix;
 
   padding: 0;
-  border-bottom: 2px solid $gold;
-  background: $header-bg;
-  color: $header-font-color;
+  border-bottom: 2px solid theme.$gold;
+  background: theme.$header-bg;
+  color: theme.$header-font-color;
   z-index: 1001;
 }
 
@@ -24,19 +26,19 @@
   }
 
   .app-header--flex {
-    @include flex(0 0 auto);
+  @include mixins.flex(0 0 auto);
 
     position: relative;
     border-bottom-width: 2px;
-    border-bottom-color: $gold;
-    background: $header-bg;
-    color: $header-font-color;
+  border-bottom-color: theme.$gold;
+  background: theme.$header-bg;
+  color: theme.$header-font-color;
   }
 
   .app-header--solid {
-    border-bottom: 2px solid $gold;
-    background: $header-bg;
-    color: $header-font-color;
+  border-bottom: 2px solid theme.$gold;
+  background: theme.$header-bg;
+  color: theme.$header-font-color;
   }
 }
 
@@ -44,8 +46,8 @@
 .navbar-toggler {
   margin-right: 0.5rem;
   padding: 0.5rem 0.4rem;
-  border: 2px solid $gold;
-  color: $gold;
+  border: 2px solid theme.$gold;
+  color: theme.$gold;
   font-size: medium;
   font-weight: 600;
   outline: none; // override user agent stylesheet default
@@ -56,7 +58,7 @@
 
   &.collapsed {
       border: 2px solid transparent;
-      color: $white;
+  color: theme.$white;
   }
 
   i {
@@ -68,7 +70,7 @@
       display: none;
       margin-top: 1px;
       margin-left: 0.25rem;
-      font-size: $mn-font-size;
+  font-size: theme.$mn-font-size;
       font-weight: 700;
       vertical-align: top;
       }
@@ -89,7 +91,7 @@
 // NAVBAR
 .navbar {
   padding: 0;
-  background-color: $header-bg;
+  background-color: theme.$header-bg;
   z-index: 1000;
   flex:1 1 0;
 
@@ -100,15 +102,15 @@
       position: relative;
       z-index: 1001; // +1 to keep above dropdown menus
       padding: 0.875rem 1rem;
-      border-top: 1px solid $mn-border-color;
-      color: $mn-color;
+  border-top: 1px solid theme.$mn-border-color;
+  color: theme.$mn-color;
       cursor: pointer;
     }
 
     .dropdown {
       &.show {
         .dropdown-toggle {
-          color: $gold;
+          color: theme.$gold;
         }
       }
     }
@@ -121,8 +123,8 @@
 
       .dropdown-item {
         padding: 0.5rem 1rem;
-        color: $mn-color;
-        font-size: $mn-dropdown-menu-size;
+        color: theme.$mn-color;
+        font-size: theme.$mn-dropdown-menu-size;
         white-space: normal;
         cursor: pointer;
 
@@ -143,7 +145,7 @@
           background: transparent;
 
           strong {
-            color: $mn-hover-color;
+            color: theme.$mn-hover-color;
           }
 
           .dd-item-desc {
@@ -221,7 +223,7 @@
         &.dropdown {
           &.show {
             .dropdown-toggle {
-              color: $mn-color;
+              color: theme.$mn-color;
             }
 
             .dropdown-menu {
@@ -268,7 +270,7 @@
 .navbar-brand__title {
   margin-left: 75px;
   display: inline-block;
-  color: $mn-color;
+  color: theme.$mn-color;
   line-height: 1.1rem;
   align-self: center;
 
@@ -280,7 +282,7 @@
 .navbar-brand__version {
   margin-top: -0.1rem;
   display: inline-block;
-  color: $gold;
+  color: theme.$gold;
   font-size: 0.5rem;
   font-weight: 700;
   vertical-align: top;
@@ -303,7 +305,7 @@ div.v-bar {
     align-self: center;
   }
   .downtime-notice {
-    color: $gold;
+  color: theme.$gold;
     font-size: smaller;
   }
 }

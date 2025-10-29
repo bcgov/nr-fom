@@ -1,9 +1,10 @@
-@import "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/abstracts/mixins.scss" as mixins;
 
 :host {
-  @include flex-box();
-  @include flex-direction(column);
-  @include flex(1 1 auto);
+  @include mixins.flex-box();
+  @include mixins.flex-direction(column);
+  @include mixins.flex(1 1 auto);
 
   overflow: hidden;
 }
@@ -30,12 +31,12 @@
 }
 
 .bottom-container {
-  @include flex-box();
+  @include mixins.flex-box();
 
   overflow: hidden;
 
   .container {
-    @include flex-box();
+    @include mixins.flex-box();
 
     padding-bottom: 1.5rem;
   }
@@ -47,21 +48,21 @@
 
 // Panel Layout
 .panel {
-  @include flex-box();
-  @include flex-direction(column);
+  @include mixins.flex-box();
+  @include mixins.flex-direction(column);
 
   overflow: hidden;
 }
 
 .panel-header {
-  @include flex-box();
-  @include flex(0 0 auto);
+  @include mixins.flex-box();
+  @include mixins.flex(0 0 auto);
 
   padding: 1rem;
   border-bottom: 1px solid #ddd;
 
   h2 {
-    @include flex(1 1 auto);
+    @include mixins.flex(1 1 auto);
 
     margin-top: 0.75rem;
     white-space: nowrap;
@@ -77,13 +78,13 @@
 }
 
 .panel-scroll {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
   overflow-y: auto;
 }
 
 .panel-footer {
-  @include flex(0 0 auto);
+  @include mixins.flex(0 0 auto);
 
   border-top: 1px solid #ddd;
   font-size: 0.875rem;
@@ -91,7 +92,7 @@
 
 // Layout
 .interactions {
-  @include flex-box();
+  @include mixins.flex-box();
 
   flex: 1 1 auto;
   margin: 0 auto;
@@ -101,7 +102,7 @@
 
 // Comment Layout
 .interactions__list {
-  @include flex(0 0 auto);
+  @include mixins.flex(0 0 auto);
 
   width: 23rem;
   border-right: 1px solid #ddd;
@@ -109,7 +110,7 @@
 }
 
 .interactions__detail {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 }
 
 .sort-comments.form-control {
@@ -160,14 +161,14 @@
 }
 
 .interaction-item-header {
-  @include flex-box();
-  @include flex-direction(row);
+  @include mixins.flex-box();
+  @include mixins.flex-direction(row);
   justify-content: flex-start;
   align-items: baseline;
 }
 
 .interaction-author {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
   overflow: hidden;
   white-space: nowrap;
@@ -176,7 +177,7 @@
 }
 
 .interaction-date {
-  @include flex(0 0 auto);
+  @include mixins.flex(0 0 auto);
 
   white-space: nowrap;
   font-size: 90%;
@@ -184,7 +185,7 @@
 }
 
 .interaction-response {
- @include flex(0 0 auto);
+ @include mixins.flex(0 0 auto);
 
   white-space: nowrap;
   font-weight: 90%;
@@ -192,7 +193,7 @@
 }
 
 .interaction-body {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
   margin-top: 0.2rem;
   overflow: hidden;

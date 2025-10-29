@@ -1,44 +1,29 @@
-import { NgFor, NgIf } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { NgIf } from '@angular/common';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { DropzoneCdkModule, FileInputValidators, FileInputValue } from '@ngx-dropzone/cdk';
-import { DropzoneMaterialModule } from '@ngx-dropzone/material';
+import { MatDropzone } from '@ngx-dropzone/material';
 @Component({
     standalone: true,
     imports: [
         ReactiveFormsModule,
-        DropzoneCdkModule, 
-        DropzoneMaterialModule, 
+        MatDropzone, 
         MatFormFieldModule,
         MatInputModule,
         MatChipsModule,
         MatIconModule,
         MatFormField,
         MatLabel,
-        MatIcon,
-        NgFor, 
+        MatIcon, 
         NgIf],
     selector: 'app-upload-box',
     templateUrl:'./file-upload-box.component.html', 
     styleUrls: ['./file-upload-box.component.scss']
 })
-export class UploadBoxComponent implements OnInit {
-  isImageType( type: string ) {
-    const imageTypes = [
-      'image/png',
-      'image/jpeg',
-      'image/tiff',
-      'image/x-tiff',
-      'image/bmp',
-      'image/x-windows-bmp',
-      'image/gif',
-    ]
-    return imageTypes.includes(type)
-  }
+export class UploadBoxComponent {
   @Input() maxFileSizeMB: number;
   @Input() isBlob: boolean = false;
   @Output() fileUploaded = new EventEmitter<File>(); // File descriptor/meta information.
@@ -58,53 +43,46 @@ export class UploadBoxComponent implements OnInit {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
   ];
-  allowedFileTypes: string; // limit for file types
   maxFileSize = 0; // bytes - default to max 10mb (set from global config)
   invalidTypeText: string;
-  fileCtrl: any;
+  uploadedFile: File;
+  filesCtrl = new FormControl<File[]>([]);
   
-  constructor() { 
+  constructor() {
     // Deliberately empty
   }
-  
-  ngOnInit(): void {
-    /* file size multiplied by 1024 for conversion */
+
+  onSelect(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files || files.length === 0) {
+      this.uploadedFile = null;
+      this.fileUploaded.emit(null);
+      this.outputFileContent.emit(null);
+      return;
+    }
+    const file = files[0];
+    // Validate file type
+    if (!this.fileTypes.includes(file.type)) {
+      this.invalidTypeText = 'The file type is not accepted';
+      this.uploadedFile = null;
+      this.fileUploaded.emit(null);
+      this.outputFileContent.emit(null);
+      return;
+    }
+    // Validate file size
     this.maxFileSize = (this.maxFileSizeMB ? this.maxFileSizeMB : 10) * 1048576;
-    this.allowedFileTypes = this.fileTypes.join(', ');
-    const validators = [
-      FileInputValidators.accept(this.allowedFileTypes),
-      FileInputValidators.maxSize(this.maxFileSize)
-    ];
-    this.fileCtrl = new FormControl<FileInputValue>(null, validators);
-
-    // Watch for validation errors
-    this.subscribeToFormStatusChange();
-
-    // Emit files when selected
-    this.subscribeToFileSelected();
-
-  }
-
-  private subscribeToFormStatusChange() {
-    this.fileCtrl.statusChanges.subscribe(() => {
-      const errors = this.fileCtrl.errors;
-      if (errors?.accept) {
-        this.invalidTypeText = 'The file type is not accepted';
-      } else if (errors?.maxSize) {
-        this.invalidTypeText = 'The file size cannot exceed ' + this.maxFileSize / 1048576 + ' MB.';
-      } else {
-        this.invalidTypeText = null;
-      }
-    });
-  }
-  
-  private subscribeToFileSelected() {
-    this.fileCtrl.valueChanges.subscribe((file: File) => {
-      if (file) {
-        this.fileUploaded.emit(file);
-        this.emitFilesContent(file);
-      }
-    });
+    if (file.size > this.maxFileSize) {
+      this.invalidTypeText = 'The file size cannot exceed ' + this.maxFileSize / 1048576 + ' MB.';
+      this.uploadedFile = null;
+      this.fileUploaded.emit(null);
+      this.outputFileContent.emit(null);
+      return;
+    }
+    this.invalidTypeText = null;
+    this.uploadedFile = file;
+    this.fileUploaded.emit(file);
+    this.emitFilesContent(file);
   }
 
   private readFileContentPromise(file: File): Promise<string> {
@@ -137,13 +115,10 @@ export class UploadBoxComponent implements OnInit {
     }
   }
 
-  get uploadedFile() {
-    return this.fileCtrl.value;
-  }
-
   remove() {
-    this.fileCtrl.setValue(null);
+    this.uploadedFile = null;
     this.fileUploaded.emit(null);
+    this.outputFileContent.emit(null);
   }
-
+  
 }

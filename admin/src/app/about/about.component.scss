@@ -1,7 +1,9 @@
-@import "../../assets/styles/base/base.scss";
+@use "../../assets/styles/base/base.scss";
+@use "../../assets/styles/abstracts/mixins.scss" as mixins;
+@use "../../assets/styles/themes/default.scss" as theme;
 
 :host {
-  @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 }
 
 section {
@@ -19,10 +21,10 @@ section {
 .related-links {
   section {
     padding-top: 1.5rem;
-    border-top: 1px solid $gray4;
+  border-top: 1px solid theme.$gray4;
 
     div {
-      @include flex(1 1 auto);
+  @include mixins.flex(1 1 auto);
 
       p {
         margin-bottom: 0;
@@ -30,7 +32,7 @@ section {
     }
 
     .btn {
-      @include flex(0 0 auto);
+  @include mixins.flex(0 0 auto);
 
       align-self: flex-start;
       margin-top: 0.75rem;

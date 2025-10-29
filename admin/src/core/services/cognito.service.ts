@@ -3,20 +3,16 @@ import { Injectable } from "@angular/core";
 import { AwsCognitoConfig } from "@api-client";
 import { User } from "@utility/security/user";
 import { ConfigService } from "@utility/services/config.service";
-import {
-  CognitoAccessToken,
-  CognitoIdToken,
-  CognitoUserSession
-} from 'amazon-cognito-identity-js';
 import { Amplify, ResourcesConfig } from "aws-amplify";
 import { fetchAuthSession, getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
+import { jwtDecode } from "jwt-decode";
 import { lastValueFrom, Observable } from "rxjs";
 import { getFakeUser } from "./mock-user";
 
 export interface CognitoAuthToken { 
-  id_token: { [id: string]: any }  // decoded jwt payload
-  access_token: { [id: string]: any } // decoded jwt payload
-  jwtToken: CognitoUserSession // original Cognito user session (tokens)
+  decodedIdToken: { [id: string]: any }  // decoded jwt payload
+  decodedAccessToken: { [id: string]: any } // decoded jwt payload
+  jwtToken: { idToken: string; accessToken: string }; // raw tokens
 }
 
 @Injectable({
@@ -71,8 +67,7 @@ export class CognitoService {
    */
   async refreshToken() {
     try {
-      const awsCognitoUserSession = await this.refreshAndObtainAwsCognitoUserSession();
-      this.cognitoAuthToken = this.parseToken(awsCognitoUserSession);
+      this.cognitoAuthToken = await this.refreshAndObtainAwsCognitoUserSession();
     } catch (error) {
       console.error("Problem refreshing token or token is invalidated:", error);
       // logout and redirect to login.
@@ -83,9 +78,9 @@ export class CognitoService {
   updateToken(): Observable<any> {
     return new Observable((observer) => {
       this.refreshAndObtainAwsCognitoUserSession()
-        .then((refreshed) => {
-          this.cognitoAuthToken = this.parseToken(refreshed);
-          observer.next();
+        .then((refreshedToken) => {
+          this.cognitoAuthToken = refreshedToken;
+          observer.next(undefined);
           observer.complete();
         })
         .catch((err) => {
@@ -185,37 +180,20 @@ export class CognitoService {
   }
 
   /**
-   * See OIDC Attribute Mapping mapping reference:
-   *      https://github.com/bcgov/nr-forests-access-management/wiki/OIDC-Attribute-Mapping
-   * The display username is "custom:idp_username" from token.
-   */
-  private parseToken(authToken: CognitoUserSession): CognitoAuthToken {
-    console.log("authToken: ", authToken)
-    const decodedIdToken = authToken.getIdToken().decodePayload();
-    const decodedAccessToken = authToken.getAccessToken().decodePayload();
-    return {
-      id_token: decodedIdToken,
-      access_token: decodedAccessToken,
-      jwtToken: authToken
-    };
-  }
-
-  /**
    * Note:
    * `aws-amplify` (v6) does not expose previous CognitoUserSession (JWT Token) and it does not
    * expose 'refreshToken' anymore than previous v5.
-   * To get entire encoded token, calls to the 'toString()' is necessary (but is not documented 
-   * on aws-amplify).
-   * @returns newly fetched session converted into Promise<CognitoUserSession> type.
+   * @returns newly fetched session converted into Promise<CognitoAuthToken> type.
    */
-  private async refreshAndObtainAwsCognitoUserSession(): Promise<CognitoUserSession> {
+  private async refreshAndObtainAwsCognitoUserSession(): Promise<CognitoAuthToken> {
     const authSession = await fetchAuthSession({ forceRefresh: true });
-    const cognitoUserSession = new CognitoUserSession( {
-      IdToken: new CognitoIdToken({IdToken: authSession.tokens.idToken.toString()}),
-      AccessToken: new CognitoAccessToken({AccessToken: authSession.tokens.accessToken.toString()}),
-      // RefreshToken: /* aws-amplify v6 does not provide refreshToken anymore, only internally for aws-amplify*/
-    })
-    return cognitoUserSession;
+    const idToken = authSession.tokens.idToken.toString();
+    const accessToken = authSession.tokens.accessToken.toString();
+    return {
+        decodedIdToken: jwtDecode(idToken),
+        decodedAccessToken: jwtDecode(accessToken),
+        jwtToken: { idToken, accessToken } // original raw tokens
+    };
   }
 
 }

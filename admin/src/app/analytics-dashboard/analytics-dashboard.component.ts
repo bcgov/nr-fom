@@ -1,8 +1,5 @@
-import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
-import { AppFormControlDirective } from '@admin-core/directives/form-control.directive';
-import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
 import { ANALYTICS_DATA_DEFAULT_SIZE, DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
-import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { DatePipe, NgFor } from '@angular/common';
 import { AfterViewInit, Component, OnInit, signal, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
@@ -22,16 +19,11 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 @Component({
     standalone: true,
     imports: [
-      NgIf,
       FormsModule,
       ReactiveFormsModule,
       BsDatepickerModule,
-      NgClass,
       NgApexchartsModule,
       NgFor,
-      AppFormControlDirective,
-      NewlinesPipe,
-      UploadBoxComponent,
       MatFormFieldModule,
       MatSelectModule,
       MatOptionModule

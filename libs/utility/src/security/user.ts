@@ -55,8 +55,8 @@ export class User {
 
     static convertAwsCognitoDecodedTokenToUser(decodedToken: any): User {
         const user = new User();
-        const idToken = decodedToken['id_token'];
-        const accessToken = decodedToken['access_token']
+        const idToken = decodedToken['decodedIdToken'];
+        const accessToken = decodedToken['decodedAccessToken']
         user.userName = idToken['custom:idp_username'];
         user.displayName = idToken['custom:idp_display_name'];
         let roles: string[];

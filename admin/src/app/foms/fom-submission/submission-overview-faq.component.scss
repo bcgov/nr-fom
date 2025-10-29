@@ -1,6 +1,8 @@
-@import "../../../assets/styles/base/base.scss";
-@import "../../../assets/styles/base/helpers.scss";
-@import "../../../assets/styles/components/expand-panel.scss";
+@use "../../../assets/styles/themes/default.scss" as theme;
+@use "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/abstracts/mixins.scss" as mixins;
+@use "../../../assets/styles/base/helpers.scss";
+@use "../../../assets/styles/components/expand-panel.scss";
 
 $section-margin-bottom: 30px;
 
@@ -19,6 +21,6 @@ $section-margin-bottom: 30px;
         text-decoration:none;
     }
     a:hover {
-        color: $white;
+    color: theme.$white;
     }
 }
