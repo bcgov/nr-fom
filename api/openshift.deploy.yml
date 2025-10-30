@@ -60,7 +60,7 @@ parameters:
     value: "3"
   - name: AWS_COGNITO_DOMAIN
     description: FAM Authentication Cognito domain
-    value: "prod-fam-user-pool-domain"
+    value: "lza-prod-fam-user-pool-domain"
     required: true
   - name: AWS_COGNITO_REGION
     description: FAM Authentication Cognito region
@@ -68,11 +68,11 @@ parameters:
     required: true
   - name: AWS_USER_POOLS_ID
     description: FAM Authentication Cognito user pools ID
-    value: "ca-central-1_t2HSZBHur"
+    value: "ca-central-1_UpeAqsYt4"
     required: true
   - name: AWS_USER_POOLS_WEB_CLIENT_ID
     description: FAM Authentication Cognito user pools client ID
-    value: "7hpo4qa7j0hs0rkfl2pm0sto5k"
+    value: "1iai0av52nvnjn7olurbi8unl0"
     required: true
   - name: LOGOUT_CHAIN_URL
     description: FAM Authentication Cognito logout chain url for Siteminder and Keycloak

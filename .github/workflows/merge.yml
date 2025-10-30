@@ -20,7 +20,7 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/.deploy.yml
     with:
-      aws_user_pools_web_client_id: k3b9ip1vf85o4tkqvu5g4adgj
+      aws_user_pools_web_client_id: 2t6hr174gbtg206ufgvajrlv0g
       batch_client_rfsh_api_tkn_op_secret_name: fom-demo-client-app-api
       db_testdata: true
       environment: test
