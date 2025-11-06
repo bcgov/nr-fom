@@ -1,12 +1,12 @@
 {
     "enabled": false,
-    "aws_cognito_domain": "prod-fam-user-pool-domain",
+    "aws_cognito_domain": "lza-prod-fam-user-pool-domain",
     "aws_cognito_region": "ca-central-1",
-    "aws_user_pools_id": "ca-central-1_t2HSZBHur",
-    "aws_user_pools_web_client_id": "7hpo4qa7j0hs0rkfl2pm0sto5k",
+    "aws_user_pools_id": "ca-central-1_UpeAqsYt4",
+    "aws_user_pools_web_client_id": "1iai0av52nvnjn7olurbi8unl0",
     "aws_mandatory_sign_in": "enable",
     "oauth": {
-        "domain": "prod-fam-user-pool-domain.auth.ca-central-1.amazoncognito.com",
+        "domain": "lza-prod-fam-user-pool-domain.auth.ca-central-1.amazoncognito.com",
         "scope": ["openid"],
         "redirectSignIn": "http://localhost:4200/admin/search",
         "redirectSignOut": "http://localhost:4200/admin/not-authorized?loggedout=true",

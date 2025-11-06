@@ -9,7 +9,7 @@ on:
       ### Typical / recommended
       aws_user_pools_web_client_id:
         description: AWS User Pools Web Client ID
-        default: 7hpo4qa7j0hs0rkfl2pm0sto5k
+        default: 1iai0av52nvnjn7olurbi8unl0
         type: string
       batch_client_rfsh_api_tkn_op_secret_name:
         description: OP secret name for CLIENT API Token
