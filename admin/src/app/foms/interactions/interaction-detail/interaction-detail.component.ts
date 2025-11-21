@@ -1,5 +1,5 @@
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AttachmentResponse, AttachmentService, InteractionResponse } from '@api-client';
 import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
@@ -58,6 +58,7 @@ export class InteractionDetailComponent {
     private configSvc: ConfigService,
     public attachmentSvc: AttachmentService,
     public attachmentResolverSvc: AttachmentResolverSvc,
+    private cdr: ChangeDetectorRef
   ) { }
 
   @Input() set selectedInteraction(interaction: InteractionResponse) {
@@ -67,9 +68,10 @@ export class InteractionDetailComponent {
     if (!this.editMode) {
       this.interactionFormGroup.disable();
     }
-    
     this.interaction.attachmentId? this.retrieveAttachment(this.interaction.attachmentId)
                                  : this.attachment = null;
+    // Force change detection to ensure child components render
+    this.cdr.detectChanges();
   }
   
   addNewFile(newFile: File) {
