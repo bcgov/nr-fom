@@ -1,5 +1,5 @@
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AttachmentResponse, AttachmentService, InteractionResponse } from '@api-client';
 import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
@@ -42,14 +42,14 @@ export class InteractionDetailComponent {
   file: File = null; // only 1 attachment for Interaction.
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
   fileContent: any;
-  /*
-  * Note: Stakeholder Engagement needs to allow 'application/vnd.ms-outlook' but the library 'ngx-dropzone' is having
-  * problem parsing it to the '(MIME) type'. It always returns '' empty string for type internally, resulting invalid type
-  * check with error message.
-  * To fix this, we allow all extension type at frontend as ['*'] for uploading, and let backend logic to validate the allowed 
-  * file type extension.
-  */
-  supportingFileTypes: string[] = ['*'];
+ 
+  supportingFileTypes: string[] = 
+  [ 'image/png', 'image/jpeg', 'image/jpg', 'application/pdf', 'image/tiff',
+    'application/pdf', 'text/plain', 'text/csv', 'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/rtf', 'application/vnd.ms-outlook'
+  ]
   attachment: AttachmentResponse;
   communicationDetailsLimit: number = 4000;
 
@@ -58,6 +58,7 @@ export class InteractionDetailComponent {
     private configSvc: ConfigService,
     public attachmentSvc: AttachmentService,
     public attachmentResolverSvc: AttachmentResolverSvc,
+    private cdr: ChangeDetectorRef
   ) { }
 
   @Input() set selectedInteraction(interaction: InteractionResponse) {
@@ -67,9 +68,10 @@ export class InteractionDetailComponent {
     if (!this.editMode) {
       this.interactionFormGroup.disable();
     }
-    
     this.interaction.attachmentId? this.retrieveAttachment(this.interaction.attachmentId)
                                  : this.attachment = null;
+    // Force change detection to ensure child components render
+    this.cdr.detectChanges();
   }
   
   addNewFile(newFile: File) {
