@@ -62,8 +62,8 @@ export class UploadBoxComponent {
       return;
     }
     const file = files[0];
-    // Validate file type
-    if (!this.fileTypes.includes(file.type)) {
+
+    if (!this.isAcceptedFileType(file)) {
       this.invalidTypeText = 'The file type is not accepted';
       this.uploadedFile = null;
       this.fileUploaded.emit(null);
@@ -113,6 +113,25 @@ export class UploadBoxComponent {
     } else {
       this.outputFileContent.emit(null);
     }
+  }
+
+  /**
+   * Checks if the file type is accepted.
+   * For .msg (email) files, the file.type is often empty, so we also check the file extension.
+   */
+  private isAcceptedFileType(file: File): boolean {
+    const OUTLOOK_MIME = 'application/vnd.ms-outlook';
+    const MSG_EXTENSION = 'msg';
+    
+    const fileType = file.type || '';
+    const fileName = file.name || '';
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    // Accept .msg files if parent accepts application/vnd.ms-outlook
+    if (fileType === OUTLOOK_MIME || extension === MSG_EXTENSION) {
+      return this.fileTypes.includes(OUTLOOK_MIME);
+    }
+    // Standard check
+    return this.fileTypes.includes(fileType);
   }
 
   remove() {
