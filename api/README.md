@@ -26,7 +26,7 @@ Once set up, the stack can be access using the following paths on localhost:
 
 ### Local / Bare Metal
 
-Run 'cd ../libs && npm ci' first. 
+Run 'cd ../libs && npm ci --ignore-scripts' first. 
 
 Run 'npm install' for this component.
 
@@ -44,7 +44,7 @@ source ./localdev.env      # Linux, MacOS
 export OBJECT_STORAGE_SECRET=<hidden>
 
 # Make sure 'libs' dependencies is installed
-cd ../libs && npm ci
+cd ../libs && npm ci --ignore-scripts
 
 # Install node modules
 npm i

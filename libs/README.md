@@ -33,7 +33,7 @@ Under 'libs' folder, current categories for the libs project contains:
 
 FOM has been migrated from mono-repo to none mono-repo for ease of resolving dependencies individually for each project (but not 'libs' with versioning). As 'libs' is a sibling project beside other projects, for the individual project to use it and to build, you do require to do following steps first before building individual project:
 - cd libs
-- npm ci
+- npm ci --ignore-scripts
 
 ## Client Library Generation
 - See [Client Library Generation](../api/README.md)

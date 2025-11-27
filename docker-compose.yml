@@ -13,8 +13,8 @@ services:
     entrypoint:
       - sh
       - -c
-      - cd libs && npm ci &&
-        cd ../admin && npm ci &&
+      - cd libs && npm ci --ignore-scripts &&
+        cd ../admin && npm ci --ignore-scripts &&
         npm run start:admin
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4200/admin"]
@@ -37,8 +37,8 @@ services:
     entrypoint:
       - sh
       - -c
-      - cd libs && npm ci &&
-        cd ../api && npm i &&
+      - cd libs && npm ci --ignore-scripts &&
+        cd ../api && npm ci --ignore-scripts &&
         npm run start:api
     environment:
       - DB_HOST=db
@@ -104,8 +104,8 @@ services:
     entrypoint:
       - sh
       - -c
-      - cd libs && npm ci &&
-        cd ../public && npm ci &&
+      - cd libs && npm ci --ignore-scripts &&
+        cd ../public && npm ci --ignore-scripts &&
         npm run start:public
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4300/public"]
