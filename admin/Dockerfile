@@ -11,8 +11,8 @@ ARG build_dir
 WORKDIR /app
 COPY ./libs ./libs
 COPY ./${build_dir} ./${build_dir}
-RUN cd libs && npm ci && cd .. && \
-    cd ${build_dir} && npm ci && npm run build:${build_dir} && cd .. && \
+RUN cd libs && npm ci --ignore-scripts && cd .. && \
+    cd ${build_dir} && npm ci --ignore-scripts && npm run build:${build_dir} && cd .. && \
     rm -rf libs/node_modules ${build_dir}/node_modules
 
 

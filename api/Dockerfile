@@ -6,8 +6,8 @@ WORKDIR /app
 COPY . ./
 USER root
 RUN dnf install -y ca-certificates && \
-    cd libs && npm ci && cd .. && \
-    cd api && npm ci && npm run build:api
+    cd libs && npm ci --ignore-scripts && cd .. && \
+    cd api && npm ci --ignore-scripts && npm run build:api
 
 
 # Deployment container
