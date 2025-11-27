@@ -28,7 +28,7 @@ Once set up, the stack can be access using the following paths on localhost:
 
 Run 'cd ../libs && npm ci --ignore-scripts' first. 
 
-Run 'npm install' for this component.
+Run 'npm install --ignore-scripts' for this component.
 
 Start commands are available in package.json.
 
