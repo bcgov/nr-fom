@@ -1,5 +1,5 @@
 ---
-version: '3.8'
+version: "3.8"
 
 volumes:
   postgres-data:
@@ -58,7 +58,7 @@ services:
       retries: 3
       start_period: 60s
       timeout: 5s
-    image: node:18  # need update to node 20
+    image: node:18 # need update to node 20
     ports:
       - 3333:3333
     links:
@@ -76,9 +76,9 @@ services:
       - sh
       - -c
       - grep -qxF 'CREATE EXTENSION IF NOT EXISTS pgcrypto'/docker-entrypoint-initdb.d/10_postgis.sh ||
-          sed -i '/EXISTS postgis_tiger_geocoder;*/a CREATE EXTENSION IF NOT EXISTS pgcrypto;'
-            /docker-entrypoint-initdb.d/10_postgis.sh &&
-          /usr/local/bin/docker-entrypoint.sh postgres
+        sed -i '/EXISTS postgis_tiger_geocoder;*/a CREATE EXTENSION IF NOT EXISTS pgcrypto;'
+        /docker-entrypoint-initdb.d/10_postgis.sh &&
+        /usr/local/bin/docker-entrypoint.sh postgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test
