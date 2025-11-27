@@ -24,7 +24,7 @@ jobs:
       - uses: bcgov/action-test-and-analyse@v1.3.0
         with:
           commands: |
-            npm ci
+            npm ci --ignore-scripts
             npm run test-unit
           dir: api
           node_version: 18.18.2
