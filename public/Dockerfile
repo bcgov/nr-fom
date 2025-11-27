@@ -16,7 +16,7 @@ RUN cd libs && npm ci --ignore-scripts && cd .. && \
 
 
 # Deploy container
-FROM caddy:2.8.4-alpine
+FROM caddy:2.10.2-alpine
 
 # Copy over Caddyfile and static content
 ARG build_dir
