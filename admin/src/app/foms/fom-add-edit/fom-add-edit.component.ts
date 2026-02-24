@@ -64,9 +64,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
   forestClients: ForestClientResponse[] = [];
   public publicNotice: File = null;
-  publicNoticeContent: any;
+  // publicNoticeContent: any;
   public supportingDocument: File = null;
-  supportingDocContent: any;
+  // supportingDocContent: any;
   public districtIdSelect: any = null;
   public forestClientSelect: any = null;
   public isInitialState: boolean = true;
@@ -207,21 +207,23 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  addPublicNotice(newFile: File) {
+  onFileEmitForPublicNotice(newFile: File) {
+    console.log('Received file for public notice:', newFile);
     this.publicNotice = newFile;
   }
 
-  addSupportingDocument(newFile: File) {
+  onFileEmitForSupportingDocument(newFile: File) {
+    console.log('Received file for supporting document:', newFile);
     this.supportingDocument = newFile;
   }
 
-  loadPublicNoticeFileContent(fileContent: any) {
-    this.publicNoticeContent = fileContent;
-  }
+  // loadPublicNoticeFileContent(fileContent: any) {
+  //   this.publicNoticeContent = fileContent;
+  // }
 
-  loadSupportingDocFileContent(fileContent: any) {
-    this.supportingDocContent = fileContent;
-  }
+  // loadSupportingDocFileContent(fileContent: any) {
+  //   this.supportingDocContent = fileContent;
+  // }
 
   ngAfterViewInit() {
     // if requested, scroll to specified section
@@ -307,18 +309,18 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
       if(this.publicNotice){
         file = this.publicNotice;
-        fileContent = new Blob([this.publicNoticeContent], {type: file.type});
+        // fileContent = new Blob([this.publicNoticeContent], {type: file.type});
         await lastValueFrom(this.attachmentUploadSvc
-          .attachmentCreate(file, fileContent, id,
+          .attachmentCreate(file, file, id,
             AttachmentTypeEnum.PUBLIC_NOTICE).pipe(tap(obs => console.log(obs))));
 
       }
 
       if (this.supportingDocument){
         file = this.supportingDocument;
-        fileContent = new Blob([this.supportingDocContent], {type: file.type});
+        // fileContent = new Blob([this.supportingDocContent], {type: file.type});
         await lastValueFrom(this.attachmentUploadSvc
-          .attachmentCreate(file, fileContent, id,
+          .attachmentCreate(file, file, id,
             AttachmentTypeEnum.SUPPORTING_DOC).pipe(tap(obs => console.log(obs))));
       }
 

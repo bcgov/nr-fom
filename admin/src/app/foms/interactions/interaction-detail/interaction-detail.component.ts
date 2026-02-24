@@ -74,7 +74,24 @@ export class InteractionDetailComponent {
     this.cdr.detectChanges();
   }
   
-  addNewFile(newFile: File) {
+  // addNewFile(newFile: File) {
+  //   this.file = newFile;
+  //   if (!this.file) {
+  //     this.interactionFormGroup.get('filename').setValue(null);
+  //   }
+  //   else {
+  //     this.interactionFormGroup.get('filename').setValue(this.file .name);
+  //   }
+  // }
+
+  // getFileContent(fileContent: any) {
+  //   this.fileContent = fileContent;
+  //   // Convert to proper Blob type for adding attachment to FormData.
+  //   const fileContentAsBlob = new Blob([this.fileContent], {type: this.file.type});
+  //   this.interactionFormGroup.get('fileContent').setValue(fileContentAsBlob);
+  // }
+
+  onFileEmit(newFile: File) {
     this.file = newFile;
     if (!this.file) {
       this.interactionFormGroup.get('filename').setValue(null);
@@ -82,13 +99,7 @@ export class InteractionDetailComponent {
     else {
       this.interactionFormGroup.get('filename').setValue(this.file .name);
     }
-  }
-
-  getFileContent(fileContent: any) {
-    this.fileContent = fileContent;
-    // Convert to proper Blob type for adding attachment to FormData.
-    const fileContentAsBlob = new Blob([this.fileContent], {type: this.file.type});
-    this.interactionFormGroup.get('fileContent').setValue(fileContentAsBlob);
+    this.interactionFormGroup.get('fileContent').setValue(this.file);
   }
 
   private async retrieveAttachment(attachmentId: number) {
