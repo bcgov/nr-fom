@@ -15,12 +15,12 @@ import { AttachmentUploadService } from "@admin-core/utils/attachmentUploadServi
 import { DEFAULT_ISO_DATE_FORMAT, MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import {
-    AttachmentResponse, DistrictResponse, ForestClientResponse,
-    ForestClientService,
-    ProjectCreateRequest,
-    ProjectPlanCodeEnum,
-    ProjectResponse,
-    ProjectService, WorkflowStateEnum
+  AttachmentResponse, DistrictResponse, ForestClientResponse,
+  ForestClientService,
+  ProjectCreateRequest,
+  ProjectPlanCodeEnum,
+  ProjectResponse,
+  ProjectService, WorkflowStateEnum
 } from '@api-client';
 import { RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
@@ -64,9 +64,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
   forestClients: ForestClientResponse[] = [];
   public publicNotice: File = null;
-  // publicNoticeContent: any;
   public supportingDocument: File = null;
-  // supportingDocContent: any;
   public districtIdSelect: any = null;
   public forestClientSelect: any = null;
   public isInitialState: boolean = true;
@@ -208,22 +206,13 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onFileEmitForPublicNotice(newFile: File) {
-    console.log('Received file for public notice:', newFile);
     this.publicNotice = newFile;
   }
 
   onFileEmitForSupportingDocument(newFile: File) {
-    console.log('Received file for supporting document:', newFile);
+    this.supportingDocument = newFile;
     this.supportingDocument = newFile;
   }
-
-  // loadPublicNoticeFileContent(fileContent: any) {
-  //   this.publicNoticeContent = fileContent;
-  // }
-
-  // loadSupportingDocFileContent(fileContent: any) {
-  //   this.supportingDocContent = fileContent;
-  // }
 
   ngAfterViewInit() {
     // if requested, scroll to specified section
@@ -304,12 +293,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
       await lastValueFrom(this.projectSvc.projectControllerUpdate(id, projectUpdateRequest));
 
-      let file: any = null;
-      let fileContent: any = null;
-
       if(this.publicNotice){
-        file = this.publicNotice;
-        // fileContent = new Blob([this.publicNoticeContent], {type: file.type});
+        const file = this.publicNotice;
         await lastValueFrom(this.attachmentUploadSvc
           .attachmentCreate(file, file, id,
             AttachmentTypeEnum.PUBLIC_NOTICE).pipe(tap(obs => console.log(obs))));
@@ -317,8 +302,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       }
 
       if (this.supportingDocument){
-        file = this.supportingDocument;
-        // fileContent = new Blob([this.supportingDocContent], {type: file.type});
+        const file = this.supportingDocument;
         await lastValueFrom(this.attachmentUploadSvc
           .attachmentCreate(file, file, id,
             AttachmentTypeEnum.SUPPORTING_DOC).pipe(tap(obs => console.log(obs))));

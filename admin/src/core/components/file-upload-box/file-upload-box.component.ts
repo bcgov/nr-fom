@@ -44,8 +44,6 @@ export class UploadBoxComponent implements OnInit {
     'application/vnd.ms-excel',
   ];
 
-  @Output() fileUploaded = new EventEmitter<File>(); // File descriptor/meta information.
-  @Output() outputFileContent = new EventEmitter<string | ArrayBuffer>(); // File content
   @Output() emitFile = new EventEmitter<File | null>();
 
   readonly BYTES_PER_MB = 1048576;
@@ -63,99 +61,17 @@ export class UploadBoxComponent implements OnInit {
   ngOnInit() {
     this.maxFileSize = this.maxFileSizeMB ? this.maxFileSizeMB * this.BYTES_PER_MB : this.maxFileSize;
     this.validators = [
-      FileInputValidators.accept(this.fileTypes.join(',')), 
-      FileInputValidators.maxSize(this.maxFileSize)
+      FileInputValidators.accept(this.fileTypes.join(',')), // file type validation
+      FileInputValidators.maxSize(this.maxFileSize) // file size validation
     ];
     this.fileCtrl.setValidators(this.validators);
 
     // Watch for changes and emit File/null if valid/invalid
     this.fileCtrl.valueChanges.subscribe(value => {
-      console.log('File control value changed:', value);
-      console.log('File control validity:', this.fileCtrl.valid);
-
       const file = this.fileCtrl.valid? value as File : null;
-      console.log('Emitting file:', file);
       this.emitFile.emit(file);
     });
   }
-
-  // onSelect(event: Event) {
-  //   console.log('File input change event:', event);
-  //   console.log('File controle: ', this.fileCtrl);
-  //   const input = event.target as HTMLInputElement;
-  //   const files = input.files;
-  //   if (!files || files.length === 0) {
-  //     this.uploadedFile = null;
-  //     this.fileUploaded.emit(null);
-  //     this.outputFileContent.emit(null);
-  //     return;
-  //   }
-  //   const file = files[0];
-
-  //   if (!this.isAcceptedFileType(file)) {
-  //     this.invalidTypeText = 'The file type is not accepted';
-  //     this.uploadedFile = null;
-  //     this.fileUploaded.emit(null);
-  //     this.outputFileContent.emit(null);
-  //     return;
-  //   }
-  //   // Validate file size
-  //   this.maxFileSize = (this.maxFileSizeMB ? this.maxFileSizeMB : 10) * 1048576;
-  //   if (file.size > this.maxFileSize) {
-  //     this.invalidTypeText = 'The file size cannot exceed ' + this.maxFileSize / 1048576 + ' MB.';
-  //     this.uploadedFile = null;
-  //     this.fileUploaded.emit(null);
-  //     this.outputFileContent.emit(null);
-  //     return;
-  //   }
-  //   this.invalidTypeText = null;
-  //   this.uploadedFile = file;
-  //   this.fileUploaded.emit(file);
-  //   this.emitFilesContent(file);
-  // }
-
-  // private readFileContentPromise(file: File): Promise<string> {
-  //   return new Promise((resolve) => {
-  //     const reader = new FileReader();
-  //     reader.onload = (event) => resolve(event.target.result.toString());
-  //     reader.readAsText(file);
-  //   });
-  // }
-
-  // private readFileContentAsBlobPromise(file: Blob): Promise<ArrayBuffer> {
-  //   return new Promise((resolve) => {
-  //     const reader = new FileReader();
-  //     reader.onload = (event) => resolve(event.target.result as ArrayBuffer);
-  //     reader.readAsArrayBuffer(file);
-  //   });
-  // }
-
-  // Removed emitFilesContent and isBlob logic
-
-  /**
-   * Checks if the file type is accepted.
-   * For .msg (email) files, the file.type is often empty, so we also check the file extension.
-   */
-  // private isAcceptedFileType(file: File): boolean {
-  //   const OUTLOOK_MIME = 'application/vnd.ms-outlook';
-  //   const MSG_EXTENSION = 'msg';
-    
-  //   const fileType = file.type || '';
-  //   const fileName = file.name || '';
-  //   const extension = fileName.split('.').pop()?.toLowerCase();
-  //   // Accept .msg files if parent accepts application/vnd.ms-outlook
-  //   if (fileType === OUTLOOK_MIME || extension === MSG_EXTENSION) {
-  //     return this.fileTypes.includes(OUTLOOK_MIME);
-  //   }
-  //   // Standard check
-  //   return this.fileTypes.includes(fileType);
-  // }
-
-  // removeFile() {
-  //   this.uploadedFile = null;
-  //   this.fileUploaded.emit(null);
-  //   this.outputFileContent.emit(null);
-  // }
 
   get file() {
     return this.fileCtrl.value;
