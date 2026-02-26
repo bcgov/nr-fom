@@ -40,6 +40,9 @@ export class AnalyticsDashboardDataService {
       topCommentedProjects: this.api.analyticsDashboardControllerGetTopCommentedProjects(startDate, endDate, projectPlanCode, limit).pipe(
         catchError(err => this.handleApiError('topCommentedProjects', err))
       ),
+      commentCountByDistrict: this.api.analyticsDashboardControllerGetCommentCountByDistrict(startDate, endDate, projectPlanCode).pipe(
+        catchError(err => this.handleApiError('commentCountByDistrict', err))
+      ),
       nonInitialPublishedProjectCountByDistrict: this.api.analyticsDashboardControllerGetNonInitialPublishedProjectCountByDistrict(startDate, endDate, projectPlanCode).pipe(
         catchError(err => this.handleApiError('nonInitialPublishedProjectCountByDistrict', err))
       ),

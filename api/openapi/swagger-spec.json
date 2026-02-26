@@ -3016,14 +3016,21 @@
           "districtName": {
             "type": "string"
           },
-          "publicCommentCount": {
+          "totalPublicCommentCount": {
             "type": "number"
+          },
+          "commentCountByCategory": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "districtId",
           "districtName",
-          "publicCommentCount"
+          "totalPublicCommentCount",
+          "commentCountByCategory"
         ]
       },
       "PublicCommentCountByForestClientResponse": {
