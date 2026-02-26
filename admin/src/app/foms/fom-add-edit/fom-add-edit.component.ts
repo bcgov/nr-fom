@@ -15,12 +15,12 @@ import { AttachmentUploadService } from "@admin-core/utils/attachmentUploadServi
 import { DEFAULT_ISO_DATE_FORMAT, MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import {
-    AttachmentResponse, DistrictResponse, ForestClientResponse,
-    ForestClientService,
-    ProjectCreateRequest,
-    ProjectPlanCodeEnum,
-    ProjectResponse,
-    ProjectService, WorkflowStateEnum
+  AttachmentResponse, DistrictResponse, ForestClientResponse,
+  ForestClientService,
+  ProjectCreateRequest,
+  ProjectPlanCodeEnum,
+  ProjectResponse,
+  ProjectService, WorkflowStateEnum
 } from '@api-client';
 import { RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
@@ -64,9 +64,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
   forestClients: ForestClientResponse[] = [];
   public publicNotice: File = null;
-  publicNoticeContent: any;
   public supportingDocument: File = null;
-  supportingDocContent: any;
   public districtIdSelect: any = null;
   public forestClientSelect: any = null;
   public isInitialState: boolean = true;
@@ -207,20 +205,13 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  addPublicNotice(newFile: File) {
+  onFileEmitForPublicNotice(newFile: File) {
     this.publicNotice = newFile;
   }
 
-  addSupportingDocument(newFile: File) {
+  onFileEmitForSupportingDocument(newFile: File) {
     this.supportingDocument = newFile;
-  }
-
-  loadPublicNoticeFileContent(fileContent: any) {
-    this.publicNoticeContent = fileContent;
-  }
-
-  loadSupportingDocFileContent(fileContent: any) {
-    this.supportingDocContent = fileContent;
+    this.supportingDocument = newFile;
   }
 
   ngAfterViewInit() {
@@ -302,23 +293,18 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
       await lastValueFrom(this.projectSvc.projectControllerUpdate(id, projectUpdateRequest));
 
-      let file: any = null;
-      let fileContent: any = null;
-
       if(this.publicNotice){
-        file = this.publicNotice;
-        fileContent = new Blob([this.publicNoticeContent], {type: file.type});
+        const file = this.publicNotice;
         await lastValueFrom(this.attachmentUploadSvc
-          .attachmentCreate(file, fileContent, id,
+          .attachmentCreate(file, file, id,
             AttachmentTypeEnum.PUBLIC_NOTICE).pipe(tap(obs => console.log(obs))));
 
       }
 
       if (this.supportingDocument){
-        file = this.supportingDocument;
-        fileContent = new Blob([this.supportingDocContent], {type: file.type});
+        const file = this.supportingDocument;
         await lastValueFrom(this.attachmentUploadSvc
-          .attachmentCreate(file, fileContent, id,
+          .attachmentCreate(file, file, id,
             AttachmentTypeEnum.SUPPORTING_DOC).pipe(tap(obs => console.log(obs))));
       }
 

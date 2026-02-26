@@ -78,11 +78,9 @@
         *ngIf="editMode">
       <label for="upload">Engagement Attachment</label>
       <app-upload-box id="upload"
-                      [isBlob]="true"
                       [fileTypes]="supportingFileTypes"
                       [maxFileSizeMB]="maxFileSize"
-                      (fileUploaded)="addNewFile($event)"
-                      (outputFileContent)="getFileContent($event)">
+                      (emitFile)="onFileEmit($event)">
       </app-upload-box>
       <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf, txt, csv, doc, docx, xls, xlsx, msg, rtf </em></div>
     </div>
