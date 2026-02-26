@@ -41,7 +41,6 @@ export class InteractionDetailComponent {
   
   file: File = null; // only 1 attachment for Interaction.
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
-  fileContent: any;
  
   supportingFileTypes: string[] = 
   [ 'image/png', 'image/jpeg', 'image/jpg', 'application/pdf', 'image/tiff',
@@ -73,8 +72,8 @@ export class InteractionDetailComponent {
     // Force change detection to ensure child components render
     this.cdr.detectChanges();
   }
-  
-  addNewFile(newFile: File) {
+
+  onFileEmit(newFile: File) {
     this.file = newFile;
     if (!this.file) {
       this.interactionFormGroup.get('filename').setValue(null);
@@ -82,13 +81,7 @@ export class InteractionDetailComponent {
     else {
       this.interactionFormGroup.get('filename').setValue(this.file .name);
     }
-  }
-
-  getFileContent(fileContent: any) {
-    this.fileContent = fileContent;
-    // Convert to proper Blob type for adding attachment to FormData.
-    const fileContentAsBlob = new Blob([this.fileContent], {type: this.file.type});
-    this.interactionFormGroup.get('fileContent').setValue(fileContentAsBlob);
+    this.interactionFormGroup.get('fileContent').setValue(this.file);
   }
 
   private async retrieveAttachment(attachmentId: number) {

@@ -155,14 +155,16 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     this.ngUnsubscribe.complete();
   }
 
-  addNewFile(newFile: File) {
+  onFileEmit(newFile: File) {
     this.file = newFile;
-  }
-
-  getContentFileFromUpload(fileContent: any) {
-    this.contentFile = fileContent;
     try {
-      this.originalSubmissionRequest.jsonSpatialSubmission = JSON.parse(this.contentFile);
+      if (this.file) {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.originalSubmissionRequest.jsonSpatialSubmission = JSON.parse(e.target.result);
+        };
+        reader.readAsText(this.file);
+      }
     }catch (e) {
       this.modalSvc.openErrorDialog('The file is not in a valid JSON format. Please fix your file and try again.');
     }
