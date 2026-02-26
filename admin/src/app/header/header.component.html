@@ -1,6 +1,10 @@
 <header class="app-header app-header--solid" id="header">
   <nav class="navbar navbar-expand-md justify-content-between">
-    <a class="navbar-brand" title="Forest Operations Map - FOM" routerLink="/home">
+    <a class="navbar-brand"
+      title="Forest Operations Map - FOM"
+      [routerLink]="user?.isAuthorizedForAdminSite() ? '/home' : null"
+      [style.pointerEvents]="user?.isAuthorizedForAdminSite() ? 'auto' : 'none'"
+      [attr.tabindex]="user?.isAuthorizedForAdminSite() ? 0 : -1">
       <span class="navbar-brand__title">
         Forest Operations Map - Admin 
       </span>
