@@ -14,6 +14,7 @@
 export interface PublicCommentCountByDistrictResponse { 
     districtId: number;
     districtName: string;
-    publicCommentCount: number;
+    totalPublicCommentCount: number;
+    commentCountByCategory: Array<string>;
 }
 
