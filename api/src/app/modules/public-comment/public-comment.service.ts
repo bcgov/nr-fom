@@ -241,13 +241,49 @@ export class PublicCommentService extends DataService<
       .innerJoin('p.district', 'd')
       .select('p.district_id', 'districtId')
       .addSelect('d.name', 'districtName')
+      .addSelect('COALESCE(c.response_code, \'NOT_CATEGORIZED\')', 'responseCode')
       .addSelect('COUNT(c.public_comment_id)', 'publicCommentCount')
       .groupBy('p.district_id')
       .addGroupBy('d.name')
-      .orderBy('"publicCommentCount"', 'DESC');
+      .addGroupBy('COALESCE(c.response_code, \'NOT_CATEGORIZED\')')
+      .orderBy('p.district_id', 'ASC')
+      .addOrderBy('"publicCommentCount"', 'DESC');
 
     this.logger.debug(`getCommentCountByDistrict SQL: ${qb.getQueryAndParameters()}`);
-    return await qb.getRawMany();
+    const results = await qb.getRawMany();
+
+    // Group by district and map to response structure
+    const districtMap = new Map<number, PublicCommentCountByDistrictResponse>();
+
+    /**
+     * Each row of the results represents the count of comments for a 
+     * specific response code within a district.
+     * Example: [
+     *  {"districtId":1,"districtName":"District A","responseCode":"CONSIDERED","publicCommentCount":"10"},
+     *  {"districtId":1,"districtName":"District A","responseCode":"ADDRESSED","publicCommentCount":"5"},
+     *  {"districtId":1,"districtName":"District A","responseCode":"IRRELEVANT","publicCommentCount":"2"},
+     *  {"districtId":1,"districtName":"District A","responseCode":"NOT_CATEGORIZED","publicCommentCount":"3"}
+     * ]
+     */
+    results.forEach(row => {
+      if (!districtMap.has(row.districtId)) {
+        districtMap.set(row.districtId, {
+          districtId: row.districtId,
+          districtName: row.districtName,
+          totalPublicCommentCount: 0,
+          commentCountByCategory: [],
+        });
+      }
+
+      const district = districtMap.get(row.districtId)!;
+      district.commentCountByCategory.push({
+        responseCode: row.responseCode,
+        publicCommentCount: Number(row.publicCommentCount),
+      });
+      district.totalPublicCommentCount += Number(row.publicCommentCount);
+    });
+
+    return Array.from(districtMap.values());
   }
 
   /**

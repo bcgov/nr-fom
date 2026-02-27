@@ -1,5 +1,6 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import {
+  IsArray,
     IsEmail,
     IsEnum,
     IsNumber,
@@ -108,7 +109,11 @@ export class PublicCommentCountByDistrictResponse {
 
   @ApiProperty()
   @IsNumber()
-  publicCommentCount: number;
+  totalPublicCommentCount: number;
+
+  @ApiProperty({ type: () => [PublicCommentCountByCategoryResponse] })
+  @IsArray()
+  commentCountByCategory: PublicCommentCountByCategoryResponse[];
 }
 
 export class PublicCommentCountByForestClientResponse {
@@ -126,10 +131,7 @@ export class PublicCommentCountByForestClientResponse {
 
 export class PublicCommentCountByCategoryResponse {
   @ApiProperty({
-    oneOf: [
-      { type: 'string', enum: Object.values(ResponseCodeEnum) },
-      { type: 'string', enum: ['NOT_CATEGORIZED'] },
-    ],
+    enum: [...Object.values(ResponseCodeEnum), 'NOT_CATEGORIZED'],
   })
   responseCode: string;
 

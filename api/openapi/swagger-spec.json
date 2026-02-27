@@ -3007,6 +3007,27 @@
           "projectCount"
         ]
       },
+      "PublicCommentCountByCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "responseCode": {
+            "type": "string",
+            "enum": [
+              "IRRELEVANT",
+              "CONSIDERED",
+              "ADDRESSED",
+              "NOT_CATEGORIZED"
+            ]
+          },
+          "publicCommentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "responseCode",
+          "publicCommentCount"
+        ]
+      },
       "PublicCommentCountByDistrictResponse": {
         "type": "object",
         "properties": {
@@ -3016,14 +3037,21 @@
           "districtName": {
             "type": "string"
           },
-          "publicCommentCount": {
+          "totalPublicCommentCount": {
             "type": "number"
+          },
+          "commentCountByCategory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicCommentCountByCategoryResponse"
+            }
           }
         },
         "required": [
           "districtId",
           "districtName",
-          "publicCommentCount"
+          "totalPublicCommentCount",
+          "commentCountByCategory"
         ]
       },
       "PublicCommentCountByForestClientResponse": {
@@ -3042,36 +3070,6 @@
         "required": [
           "forestClientNumber",
           "forestClientName",
-          "publicCommentCount"
-        ]
-      },
-      "PublicCommentCountByCategoryResponse": {
-        "type": "object",
-        "properties": {
-          "responseCode": {
-            "oneOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "IRRELEVANT",
-                  "CONSIDERED",
-                  "ADDRESSED"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "NOT_CATEGORIZED"
-                ]
-              }
-            ]
-          },
-          "publicCommentCount": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "responseCode",
           "publicCommentCount"
         ]
       },
