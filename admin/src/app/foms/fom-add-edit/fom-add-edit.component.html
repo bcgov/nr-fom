@@ -484,10 +484,8 @@
         </div>
         <div class="row">
           <div class="form-group col-md-6" >
-            <app-upload-box [isBlob]="true"
-                            [fileTypes]="fileTypesParentInitial"
-                            (fileUploaded)="addPublicNotice($event)"
-                            (outputFileContent)="loadPublicNoticeFileContent($event)"
+            <app-upload-box [fileTypes]="fileTypesParentInitial"
+                            (emitFile)="onFileEmitForPublicNotice($event)"
                             [maxFileSizeMB]="maxFileSize"
             ></app-upload-box>
             <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf </em></div>
@@ -536,10 +534,8 @@
         </div>
           <div class="row">
             <div class="form-group col-md-6">
-              <app-upload-box [isBlob]="true"
-                              [fileTypes]="fileTypesParentSupporting"
-                              (fileUploaded)="addSupportingDocument($event)"
-                              (outputFileContent)="loadSupportingDocFileContent($event)"
+              <app-upload-box [fileTypes]="fileTypesParentSupporting"
+                              (emitFile)="onFileEmitForSupportingDocument($event)"
                               [maxFileSizeMB]="maxFileSize">
               </app-upload-box>
               <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf, txt, csv, doc, docx, xls, xlsx </em></div>
