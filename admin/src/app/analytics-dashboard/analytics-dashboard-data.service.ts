@@ -1,6 +1,6 @@
 import { ANALYTICS_DATA_DEFAULT_SIZE } from '@admin-core/utils/constants';
 import { Injectable } from '@angular/core';
-import { AnalyticsDashboardService, ProjectCountByDistrictResponse, ProjectCountByForestClientResponse, ProjectPlanCodeFilterEnum, PublicCommentCountByProjectResponse } from '@api-client';
+import { AnalyticsDashboardService, ProjectCountByDistrictResponse, ProjectCountByForestClientResponse, ProjectPlanCodeFilterEnum, PublicCommentCountByDistrictResponse, PublicCommentCountByProjectResponse } from '@api-client';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -12,6 +12,7 @@ export type AnalyticsDashboardData = {
   nonInitialPublishedProjectCount: number | ApiError // Total FOM count
   commentCountByResponseCode: Record<string, number> | ApiError
   topCommentedProjects: Array<PublicCommentCountByProjectResponse> | ApiError
+  commentCountByDistrict: Array<PublicCommentCountByDistrictResponse> | ApiError
   nonInitialPublishedProjectCountByDistrict: Array<ProjectCountByDistrictResponse> | ApiError
   uniqueForestClientCount: number | ApiError
   nonInitialPublishedProjectCountByForestClient: Array<ProjectCountByForestClientResponse> | ApiError

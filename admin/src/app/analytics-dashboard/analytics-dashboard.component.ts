@@ -6,8 +6,8 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute } from '@angular/router';
-import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
-import { ChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis, maxAxis as maxxAxis, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
+import { ProjectPlanCodeFilterEnum, ResponseCodeEnum, PublicCommentCountByCategoryResponse } from '@api-client';
+import { ChartOptions, commentsByDistrictChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis, maxAxis as maxxAxis, RESPONSE_CODE_COLORS, RESPONSE_CODE_LABELS, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
 import { AnalyticsDashboardData, AnalyticsDashboardDataService, ApiError } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
@@ -50,6 +50,8 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   ];
   selectedPlan: ProjectPlanCodeFilterEnum = this.planFilterOptions[0]?.value;
   selectedFcLimit: number = this.fcLimitOptions[0].value; // default
+  districtFilterOptions: Array<{ value: number | null, label: string }> = [];
+  selectedDistrict: number | null = null; // null means 'All districts'
   minDate: Date = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
   maxDate: Date = new Date(); // today
   
@@ -57,12 +59,14 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   @ViewChild("commentsByResponseCodeChart") commentsByResponseCodeChart!: ChartComponent;
   @ViewChild("topCommentedProjectsChart") topCommentedProjectsChart!: ChartComponent;
   @ViewChild("fomsCountByDistrictChart") fomsCountByDistrictChart!: ChartComponent;
+  @ViewChild("commentsByDistrictChart") commentsByDistrictChart!: ChartComponent;
   @ViewChild("fomsCountByForestClientChart") fomsCountByForestClientChart!: ChartComponent;
 
   // chart options
   commentsByResponseCodeChartOptions: Partial<ChartOptions>;
   topCommentedProjectsChartOptions: Partial<ChartOptions>;
   fomsCountByDistrictChartOptions: Partial<ChartOptions>;
+  commentsByDistrictChartOptions: Partial<ChartOptions>;
   fomsCountByForestClientChartOptions: Partial<ChartOptions>;
 
   constructor(
@@ -73,6 +77,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions;
     this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;
     this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions;
+    this.commentsByDistrictChartOptions = commentsByDistrictChartOptions;
     this.fomsCountByForestClientChartOptions = fomsCountByForestClientChartOptions;
   }
 
@@ -125,6 +130,11 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     this.applyFomsCountByForestClientChartOptions();
   }
 
+  onDistrictFilterChange(value: number | null) {
+    this.selectedDistrict = value;
+    this.applyCommentsByDistrictChartOptions();
+  }
+
   /**
    * Fetch analytics data based on the current filters from backend and apply to chart options.
    */
@@ -146,6 +156,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     this.applyCommentsByResponseCodeChartOptions();
     this.applyTopCommentedProjectsChartOptions();
     this.applyFomsCountByDistrictChartOptions();
+    this.applyCommentsByDistrictChartOptions();
     this.applyFomsCountByForestClientChartOptions();
   }
 
@@ -210,6 +221,75 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         chart: {
           // Horizontal bar chart dynamic height adjustment
           height: Math.max(260, apiData.length * 50)
+        }
+      });
+    }
+  }
+
+  applyCommentsByDistrictChartOptions() {
+    const apiData = this.analyticsData().commentCountByDistrict;
+    if (apiData && !(apiData instanceof ApiError)) {
+      // Update district filter options
+      this.districtFilterOptions = [
+        { value: null, label: 'All districts' },
+        ...apiData.map(item => ({ value: item.districtId, label: item.districtName }))
+      ];
+
+      // Filter data based on selected district
+      const filteredData = this.selectedDistrict === null 
+        ? apiData 
+        : apiData.filter(item => item.districtId === this.selectedDistrict);
+
+      if (filteredData.length === 0) return;
+
+      // Collect all unique response codes across all districts
+      const allResponseCodes = new Set<string>();
+      filteredData.forEach(district => {
+        district.commentCountByCategory.forEach(cat => {
+          allResponseCodes.add(cat.responseCode);
+        });
+      });
+
+      // Build series - one for each category + total
+      const series: any[] = [];
+      const seriesColors: string[] = [];
+
+      // Add series for each category
+      allResponseCodes.forEach(responseCode => {
+        const data = filteredData.map(district => {
+          const category = district.commentCountByCategory.find(c => c.responseCode === responseCode);
+          return category ? category.publicCommentCount : 0;
+        });
+        series.push({
+          name: RESPONSE_CODE_LABELS[responseCode] || responseCode,
+          data: data
+        });
+        seriesColors.push(RESPONSE_CODE_COLORS[responseCode] || '#999999');
+      });
+
+      // Add Total series
+      const totalData = filteredData.map(district => district.totalPublicCommentCount);
+      series.push({
+        name: 'Total',
+        data: totalData
+      });
+      seriesColors.push(RESPONSE_CODE_COLORS['TOTAL']);
+
+      // Calculate max value for axis
+      const allValues = series.flatMap(s => s.data);
+      const maxValue = maxxAxis(allValues);
+
+      // Update chart
+      this.commentsByDistrictChart.updateOptions({
+        series: series,
+        xaxis: {
+          categories: filteredData.map(item => item.districtName + "\u00A0\u00A0"),
+          min: 0,
+          max: maxValue
+        },
+        colors: seriesColors,
+        chart: {
+          height: Math.max(300, filteredData.length * 80)
         }
       });
     }
