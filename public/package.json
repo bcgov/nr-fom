@@ -37,10 +37,10 @@
     "remeda": "^2.19.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.5.0",
-    "zone.js": "~0.15.0"
+    "zone.js": "~0.16.0"
   },
   "devDependencies": {
-    "@angular-devkit/architect": "^0.1900.0",
+    "@angular-devkit/architect": "^0.2101.0",
     "@angular-devkit/build-angular": "^19.0.0",
     "@angular-devkit/core": "^19.0.0",
     "@angular-eslint/builder": "^19.0.0",
@@ -60,6 +60,6 @@
     "jest-preset-angular": "^14.0.0",
     "ts-jest": "^29.0.0",
     "ts-node": "^10.0.0",
-    "typescript": "~5.5.0"
+    "typescript": "~5.9.0"
   }
 }
