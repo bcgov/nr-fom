@@ -19,11 +19,14 @@ const COLOR_FILL_1 = "#123B64";
 const COLOR_FILL_2 = "#52AE1E";
 const COLOR_FILL_3 = "#2576C8";
 const COLOR_FILL_4 = "#775DD0";
-const COLOR_FILL_5 = "#e8f322";
-const COLOR_FILL_6 = "#aba08c";
-const COLOR_FILL_7 = "#ff8d00";
-const COLOR_FILL_TOTAL = COLOR_FILL_4;
+const COLOR_FILL_5 = "#005F73";
+const COLOR_FILL_6 = "#E9D8A6";
+const COLOR_FILL_7 = "#EE9B00";
+const COLOR_FILL_8 = "#CA6702";
+const COLOR_FILL_9 = "#3A0CA3";
+
 const COLOR_GRID_ROW_1 = "#f3f3f3";
+const COLOR_FILL_DST_CMMT_TOTAL = COLOR_FILL_9;
 
 // Map response codes to display labels
 export const RESPONSE_CODE_LABELS = {
@@ -36,11 +39,11 @@ export const RESPONSE_CODE_LABELS = {
 
 // Map response codes to colors
 export const RESPONSE_CODE_COLORS = {
-  'CONSIDERED': COLOR_FILL_7,
-  'ADDRESSED': COLOR_FILL_3,
-  'IRRELEVANT': COLOR_FILL_5,
-  'NOT_CATEGORIZED': COLOR_FILL_6,
-  'TOTAL': COLOR_FILL_TOTAL
+  'CONSIDERED': COLOR_FILL_8,
+  'ADDRESSED': COLOR_FILL_7,
+  'IRRELEVANT': COLOR_FILL_6,
+  'NOT_CATEGORIZED': COLOR_FILL_5,
+  'TOTAL': COLOR_FILL_DST_CMMT_TOTAL
 };
 
 /* *** Some utility functions to help with chart configuration and display *** */
