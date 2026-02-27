@@ -36,12 +36,22 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (!this.user || !this.user.isAuthorizedForAdminSite()) {
+    // user is not authorized.
+    if (!this.user 
+        || (
+          !this.user.isAuthorizedForAdminSite() 
+          && !this.user.isAuthorizedForAdminOperation()
+        )) {
       // If on not-authorized page, or if just logged out, don't redirect to not-authorized page as would cause an infinite loop.
       if (window.location.href.indexOf('/not-authorized') == -1 && window.location.href.indexOf("loggedout=true") == -1) {
         this.router.navigate(['/not-authorized']);
       }
     }
+
+    // user is admin only
+    if (this.user.isAuthorizedForAdminOperation() && !this.user.isAuthorizedForAdminSite()) {
+      this.router.navigate(['/analytics-dashboard']);
+    } 
   }
 
   async navigateToLogout() {
