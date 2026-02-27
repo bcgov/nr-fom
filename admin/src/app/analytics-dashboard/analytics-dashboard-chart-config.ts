@@ -214,6 +214,7 @@ export const topCommentedProjectsChartOptions = {
     },
   },
 };
+
 // Chart options for: Comments by district and category
 export const commentsByDistrictChartOptions = {
   title: {

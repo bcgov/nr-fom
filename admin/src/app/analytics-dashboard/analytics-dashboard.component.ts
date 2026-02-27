@@ -6,13 +6,13 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute } from '@angular/router';
-import { ProjectPlanCodeFilterEnum, ResponseCodeEnum, PublicCommentCountByCategoryResponse } from '@api-client';
+import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
 import { ChartOptions, commentsByDistrictChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis, maxAxis as maxxAxis, RESPONSE_CODE_COLORS, RESPONSE_CODE_LABELS, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
 import { AnalyticsDashboardData, AnalyticsDashboardDataService, ApiError } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
-    ChartComponent,
-    NgApexchartsModule
+  ChartComponent,
+  NgApexchartsModule
 } from 'ng-apexcharts';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
