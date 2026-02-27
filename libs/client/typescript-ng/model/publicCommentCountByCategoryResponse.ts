@@ -12,7 +12,17 @@
 
 
 export interface PublicCommentCountByCategoryResponse { 
-    responseCode: string;
+    responseCode: PublicCommentCountByCategoryResponse.ResponseCodeEnum;
     publicCommentCount: number;
 }
+export namespace PublicCommentCountByCategoryResponse {
+    export type ResponseCodeEnum = 'IRRELEVANT' | 'CONSIDERED' | 'ADDRESSED' | 'NOT_CATEGORIZED';
+    export const ResponseCodeEnum = {
+        Irrelevant: 'IRRELEVANT' as ResponseCodeEnum,
+        Considered: 'CONSIDERED' as ResponseCodeEnum,
+        Addressed: 'ADDRESSED' as ResponseCodeEnum,
+        NotCategorized: 'NOT_CATEGORIZED' as ResponseCodeEnum
+    };
+}
+
 
