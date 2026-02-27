@@ -111,7 +111,7 @@ export class PublicCommentCountByDistrictResponse {
   @IsNumber()
   totalPublicCommentCount: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: () => [PublicCommentCountByCategoryResponse] })
   @IsArray()
   commentCountByCategory: PublicCommentCountByCategoryResponse[];
 }
@@ -131,10 +131,7 @@ export class PublicCommentCountByForestClientResponse {
 
 export class PublicCommentCountByCategoryResponse {
   @ApiProperty({
-    oneOf: [
-      { type: 'string', enum: Object.values(ResponseCodeEnum) },
-      { type: 'string', enum: ['NOT_CATEGORIZED'] },
-    ],
+    enum: [...Object.values(ResponseCodeEnum), 'NOT_CATEGORIZED'],
   })
   responseCode: string;
 

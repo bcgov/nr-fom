@@ -9,12 +9,13 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { PublicCommentCountByCategoryResponse } from './publicCommentCountByCategoryResponse';
 
 
 export interface PublicCommentCountByDistrictResponse { 
     districtId: number;
     districtName: string;
     totalPublicCommentCount: number;
-    commentCountByCategory: Array<string>;
+    commentCountByCategory: Array<PublicCommentCountByCategoryResponse>;
 }
 

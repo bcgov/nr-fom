@@ -3007,6 +3007,27 @@
           "projectCount"
         ]
       },
+      "PublicCommentCountByCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "responseCode": {
+            "type": "string",
+            "enum": [
+              "IRRELEVANT",
+              "CONSIDERED",
+              "ADDRESSED",
+              "NOT_CATEGORIZED"
+            ]
+          },
+          "publicCommentCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "responseCode",
+          "publicCommentCount"
+        ]
+      },
       "PublicCommentCountByDistrictResponse": {
         "type": "object",
         "properties": {
@@ -3022,7 +3043,7 @@
           "commentCountByCategory": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/PublicCommentCountByCategoryResponse"
             }
           }
         },
@@ -3049,36 +3070,6 @@
         "required": [
           "forestClientNumber",
           "forestClientName",
-          "publicCommentCount"
-        ]
-      },
-      "PublicCommentCountByCategoryResponse": {
-        "type": "object",
-        "properties": {
-          "responseCode": {
-            "oneOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "IRRELEVANT",
-                  "CONSIDERED",
-                  "ADDRESSED"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "NOT_CATEGORIZED"
-                ]
-              }
-            ]
-          },
-          "publicCommentCount": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "responseCode",
           "publicCommentCount"
         ]
       },
