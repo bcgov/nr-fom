@@ -50,7 +50,6 @@ export class HeaderComponent implements OnInit {
 
     // user has admin role only
     if (this.user && this.isAdminRoleOnly()) {
-      console.warn("User has admin role only. Redirecting to analytics dashboard.");
       this.router.navigate(['/analytics-dashboard']);
       return;
     } 
