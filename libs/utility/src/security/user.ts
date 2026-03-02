@@ -6,13 +6,11 @@ export class User {
     isForestClient: boolean = false;
     isAdmin: boolean = false;
     clientIds: string[] = [];
-  
-    isAuthorizedForAdminOperation():boolean {
-      return this.isAdmin;
-    }
 
     isAuthorizedForAdminSite():boolean {
-      return this.isMinistry || this.isForestClient;
+      // A user is authorized for FOM admin site if it has any of the roles (ministry, forest client, or admin).
+      // However, curently for admin role the user can only access Analytics Dashboard.
+      return this.isMinistry || this.isForestClient || this.isAdmin;
     }
     
     isAuthorizedForClientId(clientId:string):boolean {

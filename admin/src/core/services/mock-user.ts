@@ -1,7 +1,7 @@
 import { User } from "@utility/security/user";
 
 export function getFakeUser():User {
-  const userType:string = 'AllAccess'; // NoAccess, ForestClient, Ministry, AllAccess
+  const userType:string = 'AllAccess'; // NoAccess, ForestClient, Ministry, AdminOnly, AllAccess
   switch (userType) {
     case 'NoAccess':
       return getFakeNoAccessUser();
@@ -9,6 +9,8 @@ export function getFakeUser():User {
       return getFakeForestClientUser();
     case 'Ministry':
       return getFakeMinistryUser();
+    case 'AdminOnly':
+      return getFakeAdminOnlyUser();
     case 'AllAccess':
       return getFakeAllAccessUser();
     default:
@@ -55,5 +57,15 @@ export function getFakeAllAccessUser(): User {
   user.clientIds.push('00001011')
   user.clientIds.push('00001012');
   user.clientIds.push('00132188');
+  return user;
+}
+
+export function getFakeAdminOnlyUser(): User {
+  const user = new User();
+  user.userName = 'fakeAdminOnlyUser';
+  user.displayName = 'Admin Only User';
+  user.isAdmin = true;
+  user.isMinistry = false;
+  user.isForestClient = false;
   return user;
 }
