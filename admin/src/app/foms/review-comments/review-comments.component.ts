@@ -116,7 +116,13 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.projectId = this.route.snapshot.params.appId;
     this.projectSvc.projectControllerFindOne(this.projectId).toPromise()
-      .then((result) => { this.project = result; });
+      .then((result) => {
+        this.project = result;
+        // Sync form state now that authorization is known.
+        if (this.commentDetailForm) {
+          this.commentDetailForm.canReplyComment = this.canReplyComment();
+        }
+      });
 
     this.spatialFeatureService.spatialFeatureControllerGetForProject(this.projectId)
       .toPromise()
@@ -266,6 +272,8 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   onReviewItemClicked(item: PublicCommentAdminResponse, pos?: number) {
     this.selectedItem = item;
     this.commentDetailForm.selectedComment = item;
+    // Explicitly sync — the @Input binding may not have fired yet if project is still loading.
+    this.commentDetailForm.canReplyComment = this.canReplyComment();
     this.showDetailOnMobile = true;
     if (pos != null) {
       setTimeout(() => {
