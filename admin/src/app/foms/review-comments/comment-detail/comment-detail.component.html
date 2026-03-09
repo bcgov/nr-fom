@@ -38,7 +38,7 @@
   <form [formGroup]="commentFormGroup">
     <div class="row">
       <div class="col-md-4">
-        <label>Response to Commment</label>
+        <label>Response to Comment</label>
       </div>
     </div>
     <div class="row">
@@ -68,7 +68,6 @@
         <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails').value?.length}} characters remaining.</small>
       </div>
     </div>
-    &nbsp;
     <ng-content>
     </ng-content>
 </form>

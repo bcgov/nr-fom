@@ -1,0 +1,18 @@
+<div class="dashboard">
+  <div class="dashboard__stats">
+    <div *ngFor="let s of stats" class="stat-card" [ngClass]="s.colorClass">
+      <div class="stat-card__count">{{ s.count }}</div>
+      <div class="stat-card__label">{{ s.label }}</div>
+    </div>
+  </div>
+
+  <div class="dashboard__progress">
+    <div class="progress-label">
+      <span>{{ actioned }} of {{ total }} actioned</span>
+      <span class="progress-pct">{{ completionPct }}%</span>
+    </div>
+    <div class="progress" role="progressbar" [attr.aria-valuenow]="completionPct" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar" [style.width.%]="completionPct"></div>
+    </div>
+  </div>
+</div>
