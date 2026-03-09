@@ -13,7 +13,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import {
   ProjectResponse, ProjectService, PublicCommentAdminResponse,
-  PublicCommentAdminUpdateRequest, PublicCommentService, SpatialFeatureService
+  PublicCommentAdminUpdateRequest, PublicCommentService, ResponseCodeEnum, SpatialFeatureService
 } from '@api-client';
 import { User } from "@utility/security/user";
 import { indexBy } from 'remeda';
@@ -274,7 +274,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   }
 
   /** Apply a status inline from the list row without opening detail. */
-  async setInlineStatus(comment: PublicCommentAdminResponse, responseCode: string, event: Event) {
+  async setInlineStatus(comment: PublicCommentAdminResponse, responseCode: ResponseCodeEnum, event: Event) {
     event.stopPropagation();
     if (!this.canReplyComment()) return;
 
@@ -385,7 +385,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     }
     this.bulkLoading = false;
     this.selectedIds.clear();
-    this.bulkStatus = '';
+    this.bulkStatus = null;
     this.applyFilters();
   }
 
