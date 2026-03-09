@@ -95,7 +95,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
   // ── bulk selection ────────────────────────────────────────────────────────
   public selectedIds = new Set<number>();
-  public bulkStatus: string = '';
+  public bulkStatus: ResponseCodeEnum = null;
   public bulkLoading = false;
 
   readonly RESPONSE_DISPLAY = RESPONSE_DISPLAY;
@@ -279,7 +279,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     if (!this.canReplyComment()) return;
 
     const update: PublicCommentAdminUpdateRequest = {
-      responseCode: responseCode as any,
+      responseCode,
       responseDetails: comment.responseDetails,
       revisionCount: comment.revisionCount,
     };
@@ -327,7 +327,23 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
   async saveCommentAndNext(update: PublicCommentAdminUpdateRequest, selectedComment: PublicCommentAdminResponse) {
     await this.saveComment(update, selectedComment);
-    const nextUnactioned = this.filteredComments.find(c => !c.response?.code && c.id !== selectedComment.id);
+    const currentIdx = this.filteredComments.findIndex(c => c.id === selectedComment.id);
+    let nextUnactioned: PublicCommentAdminResponse | undefined;
+    for (let i = currentIdx + 1; i < this.filteredComments.length; i++) {
+      if (!this.filteredComments[i].response?.code) {
+        nextUnactioned = this.filteredComments[i];
+        break;
+      }
+    }
+    // Optionally wrap to start if none found after current
+    if (!nextUnactioned) {
+      for (let i = 0; i < currentIdx; i++) {
+        if (!this.filteredComments[i].response?.code) {
+          nextUnactioned = this.filteredComments[i];
+          break;
+        }
+      }
+    }
     if (nextUnactioned) {
       this.onReviewItemClicked(nextUnactioned);
       // Ensure nextUnactioned is on the correct page.
@@ -351,7 +367,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       const comment = this.allComments.find(c => c.id === id);
       if (!comment) continue;
       const update: PublicCommentAdminUpdateRequest = {
-        responseCode: this.bulkStatus as any,
+        responseCode: this.bulkStatus,
         responseDetails: comment.responseDetails,
         revisionCount: comment.revisionCount,
       };
