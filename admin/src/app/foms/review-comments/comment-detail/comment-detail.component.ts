@@ -10,19 +10,19 @@ import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
 import { DatePipe, NgFor, NgIf } from '@angular/common';
 
 @Component({
-    standalone: true,
-    imports: [
-        NgIf, 
-        FormsModule, 
-        ReactiveFormsModule, 
-        NgFor, 
-        DatePipe, 
-        NewlinesPipe
-    ],
-    selector: 'app-comment-detail',
-    templateUrl: './comment-detail.component.html',
-    styleUrls: ['./comment-detail.component.scss'],
-    exportAs: 'commentForm'
+  standalone: true,
+  imports: [
+    NgIf,
+    FormsModule,
+    ReactiveFormsModule,
+    NgFor,
+    DatePipe,
+    NewlinesPipe
+  ],
+  selector: 'app-comment-detail',
+  templateUrl: './comment-detail.component.html',
+  styleUrls: [ './comment-detail.component.scss' ],
+  exportAs: 'commentForm'
 })
 export class CommentDetailComponent {
   commentScopeCodes = indexBy(this.stateSvc.getCodeTable('commentScopeCode'), (x) => x.code);

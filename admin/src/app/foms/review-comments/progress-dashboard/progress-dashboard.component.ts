@@ -17,7 +17,7 @@ interface StatusStat {
   styleUrls: [ './progress-dashboard.component.scss' ]
 })
 export class ProgressDashboardComponent implements OnChanges {
-    @Output() filterByStatus = new EventEmitter<string>();
+  @Output() filterByStatus = new EventEmitter<string>();
   @Input() comments: PublicCommentAdminResponse[] = [];
 
   total = 0;

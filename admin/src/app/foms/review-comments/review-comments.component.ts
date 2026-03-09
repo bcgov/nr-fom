@@ -330,16 +330,16 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     const currentIdx = this.filteredComments.findIndex(c => c.id === selectedComment.id);
     let nextUnactioned: PublicCommentAdminResponse | undefined;
     for (let i = currentIdx + 1; i < this.filteredComments.length; i++) {
-      if (!this.filteredComments[i].response?.code) {
-        nextUnactioned = this.filteredComments[i];
+      if (!this.filteredComments[ i ].response?.code) {
+        nextUnactioned = this.filteredComments[ i ];
         break;
       }
     }
     // Optionally wrap to start if none found after current
     if (!nextUnactioned) {
       for (let i = 0; i < currentIdx; i++) {
-        if (!this.filteredComments[i].response?.code) {
-          nextUnactioned = this.filteredComments[i];
+        if (!this.filteredComments[ i ].response?.code) {
+          nextUnactioned = this.filteredComments[ i ];
           break;
         }
       }
