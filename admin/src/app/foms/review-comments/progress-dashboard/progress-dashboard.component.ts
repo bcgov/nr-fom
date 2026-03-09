@@ -6,16 +6,18 @@ interface StatusStat {
   label: string;
   count: number;
   colorClass: string;
+  filterValue: string;
 }
 
 @Component({
   standalone: true,
-  imports: [NgFor, NgClass],
+  imports: [ NgFor, NgClass ],
   selector: 'app-progress-dashboard',
   templateUrl: './progress-dashboard.component.html',
-  styleUrls: ['./progress-dashboard.component.scss']
+  styleUrls: [ './progress-dashboard.component.scss' ]
 })
 export class ProgressDashboardComponent implements OnChanges {
+    @Output() filterByStatus = new EventEmitter<string>();
   @Input() comments: PublicCommentAdminResponse[] = [];
 
   total = 0;
@@ -36,11 +38,11 @@ export class ProgressDashboardComponent implements OnChanges {
     this.completionPct = total > 0 ? Math.round((actioned / total) * 100) : 0;
 
     this.stats = [
-      { label: 'Total', count: total, colorClass: 'stat--total' },
-      { label: 'Considered', count: considered, colorClass: 'stat--considered' },
-      { label: 'Addressed', count: addressed, colorClass: 'stat--addressed' },
-      { label: 'Not Applicable', count: notApplicable, colorClass: 'stat--not-applicable' },
-      { label: 'Unactioned', count: unactioned, colorClass: 'stat--unactioned' },
+      { label: 'Total', count: total, colorClass: 'stat--total', filterValue: 'ALL' },
+      { label: 'Considered', count: considered, colorClass: 'stat--considered', filterValue: 'CONSIDERED' },
+      { label: 'Addressed', count: addressed, colorClass: 'stat--addressed', filterValue: 'ADDRESSED' },
+      { label: 'Not Applicable', count: notApplicable, colorClass: 'stat--not-applicable', filterValue: 'IRRELEVANT' },
+      { label: 'Unactioned', count: unactioned, colorClass: 'stat--unactioned', filterValue: 'UNACTIONED' },
     ];
   }
 }

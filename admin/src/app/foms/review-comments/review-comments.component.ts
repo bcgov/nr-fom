@@ -12,8 +12,8 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import {
-    ProjectResponse, ProjectService, PublicCommentAdminResponse,
-    PublicCommentAdminUpdateRequest, PublicCommentService, SpatialFeatureService
+  ProjectResponse, ProjectService, PublicCommentAdminResponse,
+  PublicCommentAdminUpdateRequest, PublicCommentService, SpatialFeatureService
 } from '@api-client';
 import { User } from "@utility/security/user";
 import { indexBy } from 'remeda';
@@ -31,28 +31,28 @@ export const RESPONSE_DISPLAY: Record<string, string> = {
 };
 
 @Component({
-    standalone: true,
-    imports: [
-        NgIf,
-        NgFor,
-        NgClass,
-        RouterLink,
-        MatFormFieldModule,
-        MatSelectModule,
-        FormsModule,
-        NgFor,
-        MatOptionModule,
-        CommentDetailComponent,
-        ProgressDashboardComponent,
-        DatePipe,
-    ],
-    selector: 'app-review-comments',
-    templateUrl: './review-comments.component.html',
-    styleUrls: ['./review-comments.component.scss']
+  standalone: true,
+  imports: [
+    NgIf,
+    NgFor,
+    NgClass,
+    RouterLink,
+    MatFormFieldModule,
+    MatSelectModule,
+    FormsModule,
+    NgFor,
+    MatOptionModule,
+    CommentDetailComponent,
+    ProgressDashboardComponent,
+    DatePipe,
+  ],
+  selector: 'app-review-comments',
+  templateUrl: './review-comments.component.html',
+  styleUrls: [ './review-comments.component.scss' ]
 })
 export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
-  @ViewChild('commentListScrollContainer', {read: ElementRef})
+  @ViewChild('commentListScrollContainer', { read: ElementRef })
   public commentListScrollContainer: ElementRef;
   @ViewChild('commentDetailForm')
   commentDetailForm: CommentDetailComponent;
@@ -116,14 +116,14 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.projectId = this.route.snapshot.params.appId;
     this.projectSvc.projectControllerFindOne(this.projectId).toPromise()
-        .then((result) => { this.project = result; });
+      .then((result) => { this.project = result; });
 
     this.spatialFeatureService.spatialFeatureControllerGetForProject(this.projectId)
-        .toPromise()
-        .then((spatialDetails) => {
-            this.commentScopeOpts = CommonUtil.buildCommentScopeOptions(spatialDetails);
-            this.selectedScope = this.commentScopeOpts.filter(opt => opt.commentScopeCode == null)[0];
-        });
+      .toPromise()
+      .then((spatialDetails) => {
+        this.commentScopeOpts = CommonUtil.buildCommentScopeOptions(spatialDetails);
+        this.selectedScope = this.commentScopeOpts.filter(opt => opt.commentScopeCode == null)[ 0 ];
+      });
 
     this.loadComments();
   }
@@ -162,7 +162,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
         } else {
           if (c.commentScope.code !== scope.commentScopeCode) return false;
           if (!((c.scopeCutBlockId && c.scopeCutBlockId == scope.scopeId) ||
-                (c.scopeRoadSectionId && c.scopeRoadSectionId == scope.scopeId))) return false;
+            (c.scopeRoadSectionId && c.scopeRoadSectionId == scope.scopeId))) return false;
         }
       }
 
@@ -233,7 +233,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
   get allPageSelected(): boolean {
     return this.pagedComments.length > 0 &&
-           this.pagedComments.every(c => this.selectedIds.has(c.id));
+      this.pagedComments.every(c => this.selectedIds.has(c.id));
   }
 
   toggleSelectAll(checked: boolean) {
@@ -286,7 +286,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     try {
       const result = await this.commentSvc.publicCommentControllerUpdate(comment.id, update).toPromise();
       const idx = this.allComments.findIndex(c => c.id === comment.id);
-      if (idx !== -1) this.allComments[idx] = result;
+      if (idx !== -1) this.allComments[ idx ] = result;
       if (this.selectedItem?.id === comment.id) {
         this.selectedItem = result;
         this.commentDetailForm.selectedComment = result;
@@ -300,8 +300,8 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   canReplyComment(): boolean {
     if (!this.project) return false;
     const userCanModify = this.user.isAuthorizedForClientId(this.project.forestClient.id);
-    return userCanModify && (this.project.workflowState['code'] === 'COMMENT_OPEN'
-                            || this.project.workflowState['code'] === 'COMMENT_CLOSED');
+    return userCanModify && (this.project.workflowState[ 'code' ] === 'COMMENT_OPEN'
+      || this.project.workflowState[ 'code' ] === 'COMMENT_CLOSED');
   }
 
   async saveComment(update: PublicCommentAdminUpdateRequest, selectedComment: PublicCommentAdminResponse) {
@@ -314,7 +314,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       this.loading = true;
       const result = await this.commentSvc.publicCommentControllerUpdate(id, update).toPromise();
       const idx = this.allComments.findIndex(c => c.id === id);
-      if (idx !== -1) this.allComments[idx] = result;
+      if (idx !== -1) this.allComments[ idx ] = result;
       this.selectedItem = result;
       this.loading = false;
       this.applyFilters();
@@ -358,7 +358,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       try {
         const result = await this.commentSvc.publicCommentControllerUpdate(id, update).toPromise();
         const idx = this.allComments.findIndex(c => c.id === id);
-        if (idx !== -1) this.allComments[idx] = result;
+        if (idx !== -1) this.allComments[ idx ] = result;
         if (this.selectedItem?.id === id) {
           this.selectedItem = result;
           this.commentDetailForm.selectedComment = result;
@@ -375,7 +375,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
   // ── Keyboard shortcuts ─────────────────────────────────────────────────────
 
-  @HostListener('document:keydown', ['$event'])
+  @HostListener('document:keydown', [ '$event' ])
   onKeydown(event: KeyboardEvent) {
     const tag = (event.target as HTMLElement)?.tagName?.toLowerCase();
     if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
@@ -401,7 +401,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       ? this.filteredComments.findIndex(c => c.id === this.selectedItem.id)
       : -1;
     const nextIdx = Math.max(0, Math.min(this.filteredComments.length - 1, currentIdx + delta));
-    const next = this.filteredComments[nextIdx];
+    const next = this.filteredComments[ nextIdx ];
     if (!next || next.id === this.selectedItem?.id) return;
 
     const targetPage = Math.floor(nextIdx / this.pageSize) + 1;
@@ -416,7 +416,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
   responseLabel(comment: PublicCommentAdminResponse): string {
     const code = comment.response?.code;
-    return code ? (RESPONSE_DISPLAY[code] ?? code) : 'Unactioned';
+    return code ? (RESPONSE_DISPLAY[ code ] ?? code) : 'Unactioned';
   }
 
   responseClass(comment: PublicCommentAdminResponse): string {
@@ -427,7 +427,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       ADDRESSED: 'badge--addressed',
       IRRELEVANT: 'badge--not-applicable',
     };
-    return map[code] ?? '';
+    return map[ code ] ?? '';
   }
 
   ngOnDestroy() {

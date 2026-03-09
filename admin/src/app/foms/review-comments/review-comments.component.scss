@@ -271,10 +271,25 @@
   white-space: nowrap;
 }
 
-.badge--considered    { background: #cfe2ff; color: #084298; }
-.badge--addressed     { background: #d1e7dd; color: #0a3622; }
-.badge--not-applicable { background: #fff3cd; color: #664d03; }
-.badge--unactioned    { background: #f8d7da; color: #842029; }
+.badge--considered {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.badge--addressed {
+  background: #d1e7dd;
+  color: #0a3622;
+}
+
+.badge--not-applicable {
+  background: #fff3cd;
+  color: #664d03;
+}
+
+.badge--unactioned {
+  background: #f8d7da;
+  color: #842029;
+}
 
 // ─── Inline Action Buttons ────────────────────────────────────────────────────
 
@@ -302,7 +317,10 @@
   color: #084298;
   border-color: #84b2ef;
 
-  &:hover { background: #84b2ef; color: #fff; }
+  &:hover {
+    background: #84b2ef;
+    color: #fff;
+  }
 }
 
 .inline-btn--addressed {
@@ -310,7 +328,10 @@
   color: #0a3622;
   border-color: #75b798;
 
-  &:hover { background: #75b798; color: #fff; }
+  &:hover {
+    background: #75b798;
+    color: #fff;
+  }
 }
 
 .inline-btn--not-applicable {
@@ -318,7 +339,10 @@
   color: #664d03;
   border-color: #ffe08a;
 
-  &:hover { background: #ffe08a; color: #664d03; }
+  &:hover {
+    background: #ffe08a;
+    color: #664d03;
+  }
 }
 
 // ─── Detail pane actions ──────────────────────────────────────────────────────

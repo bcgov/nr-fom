@@ -1,6 +1,7 @@
 <div class="dashboard">
   <div class="dashboard__stats">
-    <div *ngFor="let s of stats" class="stat-card" [ngClass]="s.colorClass">
+    <div *ngFor="let s of stats" class="stat-card stat-card--clickable" [ngClass]="s.colorClass"
+         (click)="filterByStatus.emit(s.filterValue)" role="button" [attr.title]="'Filter: ' + s.label">
       <div class="stat-card__count">{{ s.count }}</div>
       <div class="stat-card__label">{{ s.label }}</div>
     </div>

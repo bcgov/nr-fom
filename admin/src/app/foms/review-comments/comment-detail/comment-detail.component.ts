@@ -31,13 +31,21 @@ export class CommentDetailComponent {
   responseDetailsLimit: number = 4000;
 
   @Input() responseCodes: ResponseCode[];
-  @Input() canReplyComment: boolean;
+
+  private _canReplyComment = false;
+  @Input() set canReplyComment(value: boolean) {
+    this._canReplyComment = value;
+    if (this.commentFormGroup) {
+      value ? this.commentFormGroup.enable() : this.commentFormGroup.disable();
+    }
+  }
+  get canReplyComment(): boolean { return this._canReplyComment; }
 
   @Input() set selectedComment(comment: PublicCommentAdminResponse) {
     this.comment = comment;
-    const commentFormGroup = new CommentDetailForm(comment)
+    const commentFormGroup = new CommentDetailForm(comment);
     this.commentFormGroup = this.formBuilder.formGroup(commentFormGroup) as IFormGroup<CommentDetailForm>;
-    if (!this.canReplyComment) {
+    if (!this._canReplyComment) {
       this.commentFormGroup.disable();
     }
   }

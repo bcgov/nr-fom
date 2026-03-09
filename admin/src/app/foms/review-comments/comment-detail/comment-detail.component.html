@@ -22,12 +22,12 @@
   </div>
   <hr>
   <div class="comment-detail__scope">
-    Commenting On: 
+    Commenting On:
     <span class="scope-desc">
-      {{comment.commentScope.description}} 
-      {{ (commentScopeCodes.CUT_BLOCK.code === comment.commentScope.code)? '#'+ comment.scopeCutBlockId: 
-        ((commentScopeCodes.ROAD_SECTION.code === comment.commentScope.code)? '#'+ comment.scopeRoadSectionId:
-        '')
+      {{comment.commentScope.description}}
+      {{ (commentScopeCodes.CUT_BLOCK.code === comment.commentScope.code)? '#'+ comment.scopeCutBlockId:
+      ((commentScopeCodes.ROAD_SECTION.code === comment.commentScope.code)? '#'+ comment.scopeRoadSectionId:
+      '')
       }}
       {{ comment.scopeFeatureName? ' - '+ comment.scopeFeatureName: ''}}
     </span>
@@ -43,12 +43,10 @@
     </div>
     <div class="row">
       <div class="col-md-4">
-        <select class="sort-comments form-control mb-3" id="responseCode" 
-          name="responseCode"
+        <select class="sort-comments form-control mb-3" id="responseCode" name="responseCode"
           formControlName="responseCode">
           <option [ngValue]="null" disabled>Select a Response</option>
-          <option *ngFor="let code of responseCodes" 
-                  [ngValue]="code.code">{{code.description}}</option>
+          <option *ngFor="let code of responseCodes" [ngValue]="code.code">{{code.description}}</option>
         </select>
       </div>
     </div>
@@ -60,15 +58,14 @@
     </div>
     <div class="row">
       <div class="col-md-12">
-        <textarea class="form-control  mb" rows="3" id="detail" 
-                  name="detail" 
-                  formControlName="responseDetails"
-                  maxlength="{{responseDetailsLimit}}">
+        <textarea class="form-control  mb" rows="3" id="detail" name="detail" formControlName="responseDetails"
+          maxlength="{{responseDetailsLimit}}">
         </textarea>
-        <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails').value?.length}} characters remaining.</small>
+        <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails').value?.length}} characters
+          remaining.</small>
       </div>
     </div>
     <ng-content>
     </ng-content>
-</form>
+  </form>
 </div>

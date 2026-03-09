@@ -14,7 +14,7 @@
 </div>
 
 <!-- Progress Dashboard -->
-<app-progress-dashboard [comments]="allComments"></app-progress-dashboard>
+<app-progress-dashboard [comments]="allComments" (filterByStatus)="selectedStatusFilter = $event; onStatusFilterChange()"></app-progress-dashboard>
 
 <div class="bottom-container">
   <div class="container">
@@ -28,26 +28,24 @@
           <div class="panel-header__row panel-header__row--top">
             <h2>Comments
               <span class="comment-count">({{ filteredComments.length }}
-                <ng-container *ngIf="filteredComments.length !== allComments.length"> of {{ allComments.length }}</ng-container>)
+                <ng-container *ngIf="filteredComments.length !== allComments.length"> of {{ allComments.length
+                  }}</ng-container>)
               </span>
             </h2>
           </div>
 
           <!-- Search bar -->
           <div class="panel-header__row">
-            <input type="search"
-                   class="form-control form-control-sm search-input"
-                   placeholder="Search comments or names…"
-                   [(ngModel)]="searchText"
-                   (input)="onSearchChange()"
-                   aria-label="Search comments">
+            <input type="search" class="form-control form-control-sm search-input"
+              placeholder="Search comments or names…" [(ngModel)]="searchText" (input)="onSearchChange()"
+              aria-label="Search comments">
           </div>
 
           <!-- Filters row -->
           <div class="panel-header__row panel-header__row--filters">
             <mat-form-field class="filter-field">
               <mat-select [(ngModel)]="selectedScope" name="commentScope"
-                  (selectionChange)="onScopeOptionChanged(selectedScope)">
+                (selectionChange)="onScopeOptionChanged(selectedScope)">
                 <mat-option *ngFor="let opt of commentScopeOpts" [value]="opt">
                   <small>{{opt.desc}} {{opt.scopeId}} {{opt.name}}</small>
                 </mat-option>
@@ -56,7 +54,7 @@
 
             <mat-form-field class="filter-field">
               <mat-select [(ngModel)]="selectedStatusFilter" name="statusFilter"
-                  (selectionChange)="onStatusFilterChange()">
+                (selectionChange)="onStatusFilterChange()">
                 <mat-option *ngFor="let opt of statusFilterOpts" [value]="opt.value">
                   {{opt.label}}
                 </mat-option>
@@ -74,9 +72,7 @@
                 <mat-option value="IRRELEVANT">Not Applicable</mat-option>
               </mat-select>
             </mat-form-field>
-            <button class="btn btn-sm btn-primary"
-                    [disabled]="!bulkStatus || bulkLoading"
-                    (click)="applyBulkStatus()">
+            <button class="btn btn-sm btn-primary" [disabled]="!bulkStatus || bulkLoading" (click)="applyBulkStatus()">
               Apply
             </button>
           </div>
@@ -84,9 +80,8 @@
           <!-- Select-all checkbox (only shown when there's data) -->
           <div class="panel-header__row select-all-row" *ngIf="pagedComments.length > 0 && canReplyComment()">
             <label class="select-all-label">
-              <input type="checkbox"
-                     [checked]="allPageSelected"
-                     (change)="toggleSelectAll($any($event.target).checked)">
+              <input type="checkbox" [checked]="allPageSelected"
+                (change)="toggleSelectAll($any($event.target).checked)">
               Select all on page
             </label>
           </div>
@@ -100,19 +95,14 @@
             No comments match the current filters.
           </div>
 
-          <div class="comment-item"
-               *ngFor="let item of pagedComments"
-               [class.active]="item?.id === selectedItem?.id"
-               (click)="onReviewItemClicked(item)">
+          <div class="comment-item" *ngFor="let item of pagedComments" [class.active]="item?.id === selectedItem?.id"
+            (click)="onReviewItemClicked(item)">
 
             <!-- Row header -->
             <div class="comment-item-header">
-              <input *ngIf="canReplyComment()"
-                     type="checkbox"
-                     class="comment-checkbox"
-                     [checked]="selectedIds.has(item.id)"
-                     (change)="toggleSelect(item.id, $any($event.target).checked)"
-                     (click)="$event.stopPropagation()">
+              <input *ngIf="canReplyComment()" type="checkbox" class="comment-checkbox"
+                [checked]="selectedIds.has(item.id)" (change)="toggleSelect(item.id, $any($event.target).checked)"
+                (click)="$event.stopPropagation()">
               <div class="comment-author">{{ item.name || 'Anonymous' }}</div>
               <div class="comment-date">{{ (item.createTimestamp | date) || '-' }}</div>
             </div>
@@ -126,15 +116,12 @@
                 {{ responseLabel(item) }}
               </span>
               <div class="inline-actions" *ngIf="canReplyComment()">
-                <button class="btn btn-xs inline-btn inline-btn--considered"
-                        title="Mark Considered (C)"
-                        (click)="setInlineStatus(item, 'CONSIDERED', $event)">C</button>
-                <button class="btn btn-xs inline-btn inline-btn--addressed"
-                        title="Mark Addressed (A)"
-                        (click)="setInlineStatus(item, 'ADDRESSED', $event)">A</button>
-                <button class="btn btn-xs inline-btn inline-btn--not-applicable"
-                        title="Mark Not Applicable (N)"
-                        (click)="setInlineStatus(item, 'IRRELEVANT', $event)">N</button>
+                <button class="btn btn-xs inline-btn inline-btn--considered" title="Mark Considered (C)"
+                  (click)="setInlineStatus(item, 'CONSIDERED', $event)">C</button>
+                <button class="btn btn-xs inline-btn inline-btn--addressed" title="Mark Addressed (A)"
+                  (click)="setInlineStatus(item, 'ADDRESSED', $event)">A</button>
+                <button class="btn btn-xs inline-btn inline-btn--not-applicable" title="Mark Not Applicable (N)"
+                  (click)="setInlineStatus(item, 'IRRELEVANT', $event)">N</button>
               </div>
             </div>
 
@@ -143,15 +130,12 @@
 
         <!-- Pagination footer -->
         <div class="panel-footer pagination" *ngIf="totalPages > 1">
-          <button class="btn btn-sm btn-outline-secondary pg-btn"
-                  [disabled]="currentPage === 1"
-                  (click)="prevPage()">
+          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === 1" (click)="prevPage()">
             <em class="material-icons md-16">chevron_left</em>
           </button>
           <span class="pg-count">Page {{ currentPage }} of {{ totalPages }}</span>
-          <button class="btn btn-sm btn-outline-secondary pg-btn"
-                  [disabled]="currentPage === totalPages"
-                  (click)="nextPage()">
+          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === totalPages"
+            (click)="nextPage()">
             <em class="material-icons md-16">chevron_right</em>
           </button>
         </div>
@@ -168,20 +152,15 @@
         </div>
 
         <div class="panel-scroll">
-          <app-comment-detail #commentDetailForm="commentForm"
-              [responseCodes]="responseCodes"
-              [canReplyComment]="canReplyComment()">
+          <app-comment-detail #commentDetailForm="commentForm" [responseCodes]="responseCodes"
+            [canReplyComment]="canReplyComment()">
             <div class="detail-actions" *ngIf="canReplyComment() && commentDetailForm.comment">
-              <button type="button"
-                      class="btn btn-sm btn-primary"
-                      [disabled]="loading"
-                      (click)="saveComment(commentDetailForm.commentFormGroup.value, commentDetailForm.comment)">
+              <button type="button" class="btn btn-sm btn-primary" [disabled]="loading"
+                (click)="saveComment(commentDetailForm.commentFormGroup.value, commentDetailForm.comment)">
                 Save response
               </button>
-              <button type="button"
-                      class="btn btn-sm btn-outline-primary"
-                      [disabled]="loading"
-                      (click)="saveCommentAndNext(commentDetailForm.commentFormGroup.value, commentDetailForm.comment)">
+              <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="loading"
+                (click)="saveCommentAndNext(commentDetailForm.commentFormGroup.value, commentDetailForm.comment)">
                 Save &amp; Next Unactioned
               </button>
             </div>
