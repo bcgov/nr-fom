@@ -15,7 +15,7 @@
 
 <!-- Progress Dashboard -->
 <app-progress-dashboard [comments]="allComments"
-  (filterByStatus)="selectedStatusFilter = $event; onStatusFilterChange()"></app-progress-dashboard>
+  (filterByStatus)="onDashboardFilter($event)"></app-progress-dashboard>
 
 <div class="bottom-container">
   <div class="container">

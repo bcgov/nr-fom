@@ -213,6 +213,11 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  onDashboardFilter(status: string) {
+    this.selectedStatusFilter = status;
+    this.onStatusFilterChange();
+  }
+
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
