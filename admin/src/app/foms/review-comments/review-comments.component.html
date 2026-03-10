@@ -69,16 +69,16 @@
           <!-- Bulk action toolbar (visible when items selected) -->
           <div class="panel-header__row bulk-toolbar" *ngIf="selectedIds.size > 0 && canReplyComment()">
             <span class="bulk-label">{{ selectedIds.size }} selected</span>
-            <mat-form-field class="filter-field bulk-status-select">
-              <mat-select [(ngModel)]="bulkStatus" name="bulkStatus" placeholder="Set status…">
-                <mat-option value="CONSIDERED">Considered</mat-option>
-                <mat-option value="ADDRESSED">Addressed</mat-option>
-                <mat-option value="IRRELEVANT">Not Applicable</mat-option>
-              </mat-select>
-            </mat-form-field>
-            <button class="btn btn-sm btn-primary" [disabled]="!bulkStatus || bulkLoading" (click)="applyBulkStatus()">
-              Apply
+            <button class="btn btn-sm bulk-btn bulk-btn--considered" [disabled]="bulkLoading" (click)="applyBulkStatusBtn('CONSIDERED')">
+              Considered
             </button>
+            <button class="btn btn-sm bulk-btn bulk-btn--addressed" [disabled]="bulkLoading" (click)="applyBulkStatusBtn('ADDRESSED')">
+              Addressed
+            </button>
+            <button class="btn btn-sm bulk-btn bulk-btn--not-applicable" [disabled]="bulkLoading" (click)="applyBulkStatusBtn('IRRELEVANT')">
+              Not Applicable
+            </button>
+            <a class="bulk-clear-link" (click)="clearBulkSelection()">Clear selection</a>
           </div>
 
           <!-- Select-all checkbox (only shown when there's data) -->

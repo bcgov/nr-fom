@@ -1,3 +1,35 @@
+.bulk-btn {
+  margin-left: 0.5rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.2rem 1rem;
+  border: 1px solid #ddd;
+  background: #f7f8fa;
+  color: #003366;
+  transition: background 0.15s, border-color 0.15s;
+}
+.bulk-btn--considered {
+  background: #cfe2ff;
+  border-color: #cfe2ff;
+  color: #084298;
+}
+.bulk-btn--addressed {
+  background: #d1e7dd;
+  border-color: #d1e7dd;
+  color: #0a3622;
+}
+.bulk-btn--not-applicable {
+  background: #fff3cd;
+  border-color: #fff3cd;
+  color: #664d03;
+}
+.bulk-clear-link {
+  margin-left: 1rem;
+  color: #888;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.95em;
+}
 .status-tabs {
   display: flex;
   gap: 0.5rem;

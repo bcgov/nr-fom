@@ -379,16 +379,15 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
   // ── Bulk actions ───────────────────────────────────────────────────────────
 
-  async applyBulkStatus() {
-    if (!this.bulkStatus || this.selectedIds.size === 0 || !this.canReplyComment()) return;
-
+  async applyBulkStatusBtn(status: ResponseCodeEnum) {
+    if (!status || this.selectedIds.size === 0 || !this.canReplyComment()) return;
     this.bulkLoading = true;
     const ids = Array.from(this.selectedIds);
     for (const id of ids) {
       const comment = this.allComments.find(c => c.id === id);
       if (!comment) continue;
       const update: PublicCommentAdminUpdateRequest = {
-        responseCode: this.bulkStatus,
+        responseCode: status,
         responseDetails: comment.responseDetails,
         revisionCount: comment.revisionCount,
       };
@@ -409,6 +408,10 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     this.selectedIds.clear();
     this.bulkStatus = null;
     this.applyFilters();
+  }
+
+  clearBulkSelection() {
+    this.selectedIds.clear();
   }
 
   // ── Keyboard shortcuts ─────────────────────────────────────────────────────
