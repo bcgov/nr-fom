@@ -1,3 +1,52 @@
+.detail-pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.pg-btn {
+  background: #f7f8fa;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.9rem;
+  color: #003366;
+  cursor: pointer;
+}
+.pg-count {
+  font-weight: 600;
+  color: #003366;
+}
+.status-toggle-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.status-toggle-btn {
+  background: #f7f8fa;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  padding: 0.2rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.status-toggle--considered.active {
+  background: #cfe2ff;
+  border-color: #cfe2ff;
+  color: #084298;
+}
+.status-toggle--addressed.active {
+  background: #d1e7dd;
+  border-color: #d1e7dd;
+  color: #0a3622;
+}
+.status-toggle--not-applicable.active {
+  background: #fff3cd;
+  border-color: #fff3cd;
+  color: #664d03;
+}
 @use "../../../../assets/styles/base/base.scss";
 @use "../../../../assets/styles/abstracts/mixins.scss" as mixins;
 @use "../../../../assets/styles/themes/default.scss" as theme;
