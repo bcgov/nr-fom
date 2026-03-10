@@ -4,11 +4,13 @@
   color: #007bff;
   display: inline-block;
 }
+
 .location-link {
   color: #007bff;
   text-decoration: underline;
   cursor: pointer;
 }
+
 .bulk-btn {
   margin-left: 0.5rem;
   font-weight: 600;
@@ -19,21 +21,25 @@
   color: #003366;
   transition: background 0.15s, border-color 0.15s;
 }
+
 .bulk-btn--considered {
   background: #cfe2ff;
   border-color: #cfe2ff;
   color: #084298;
 }
+
 .bulk-btn--addressed {
   background: #d1e7dd;
   border-color: #d1e7dd;
   color: #0a3622;
 }
+
 .bulk-btn--not-applicable {
   background: #fff3cd;
   border-color: #fff3cd;
   color: #664d03;
 }
+
 .bulk-clear-link {
   margin-left: 1rem;
   color: #888;
@@ -41,11 +47,13 @@
   text-decoration: underline;
   font-size: 0.95em;
 }
+
 .status-tabs {
   display: flex;
   gap: 0.5rem;
   margin-left: 1rem;
 }
+
 .status-tab-btn {
   background: #f7f8fa;
   border: 1px solid #ddd;
@@ -59,19 +67,23 @@
   gap: 0.3rem;
   transition: background 0.15s, border-color 0.15s;
 }
+
 .status-tab-btn.active {
   background: #fcba19;
   border-color: #fcba19;
   color: #003366;
 }
+
 .status-tab-label {
   font-size: 0.95em;
 }
+
 .status-tab-count {
   font-weight: 700;
   margin-left: 0.2em;
   color: #555;
 }
+
 @use "../../../assets/styles/base/base.scss";
 @use "../../../assets/styles/abstracts/mixins.scss" as mixins;
 

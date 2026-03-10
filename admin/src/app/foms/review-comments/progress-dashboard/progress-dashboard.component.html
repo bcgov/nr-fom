@@ -10,7 +10,8 @@
     </div>
     <!-- Status counts below progress bar -->
     <div class="dashboard__status-counts">
-      <div *ngFor="let s of stats" class="status-count" [ngClass]="s.colorClass" (click)="filterByStatus.emit(s.filterValue)" role="button" [attr.title]="'Filter: ' + s.label">
+      <div *ngFor="let s of stats" class="status-count" [ngClass]="s.colorClass"
+        (click)="filterByStatus.emit(s.filterValue)" role="button" [attr.title]="'Filter: ' + s.label">
         <span class="status-icon" [ngClass]="{
           'icon-completed': s.label === 'Considered' || s.label === 'Addressed',
           'icon-not-actioned': s.label === 'Unactioned',

@@ -54,10 +54,9 @@
 
             <!-- Tab-style status filters -->
             <div class="status-tabs">
-              <button *ngFor="let opt of statusFilterOpts"
-                      class="status-tab-btn"
-                      [class.active]="selectedStatusFilter === opt.value"
-                      (click)="selectedStatusFilter = opt.value; onStatusFilterChange()">
+              <button *ngFor="let opt of statusFilterOpts" class="status-tab-btn"
+                [class.active]="selectedStatusFilter === opt.value"
+                (click)="selectedStatusFilter = opt.value; onStatusFilterChange()">
                 <span class="status-tab-label">{{ opt.label }}</span>
                 <span class="status-tab-count">
                   {{ getStatusCount(opt.value) }}
@@ -69,13 +68,16 @@
           <!-- Bulk action toolbar (visible when items selected) -->
           <div class="panel-header__row bulk-toolbar" *ngIf="selectedIds.size > 0 && canReplyComment()">
             <span class="bulk-label">{{ selectedIds.size }} selected</span>
-            <button class="btn btn-sm bulk-btn bulk-btn--considered" [disabled]="bulkLoading" (click)="applyBulkStatusBtn('CONSIDERED')">
+            <button class="btn btn-sm bulk-btn bulk-btn--considered" [disabled]="bulkLoading"
+              (click)="applyBulkStatusBtn('CONSIDERED')">
               Considered
             </button>
-            <button class="btn btn-sm bulk-btn bulk-btn--addressed" [disabled]="bulkLoading" (click)="applyBulkStatusBtn('ADDRESSED')">
+            <button class="btn btn-sm bulk-btn bulk-btn--addressed" [disabled]="bulkLoading"
+              (click)="applyBulkStatusBtn('ADDRESSED')">
               Addressed
             </button>
-            <button class="btn btn-sm bulk-btn bulk-btn--not-applicable" [disabled]="bulkLoading" (click)="applyBulkStatusBtn('IRRELEVANT')">
+            <button class="btn btn-sm bulk-btn bulk-btn--not-applicable" [disabled]="bulkLoading"
+              (click)="applyBulkStatusBtn('IRRELEVANT')">
               Not Applicable
             </button>
             <a class="bulk-clear-link" (click)="clearBulkSelection()">Clear selection</a>
@@ -149,10 +151,12 @@
             <em class="material-icons md-16">chevron_left</em>
           </button>
           <span class="pg-count">Page {{ currentPage }} of {{ totalPages }}</span>
-          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === totalPages"
+            (click)="nextPage()">
             <em class="material-icons md-16">chevron_right</em>
           </button>
-          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === totalPages" (click)="lastPage()">
+          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === totalPages"
+            (click)="lastPage()">
             <em class="material-icons md-16">last_page</em>
           </button>
         </div>

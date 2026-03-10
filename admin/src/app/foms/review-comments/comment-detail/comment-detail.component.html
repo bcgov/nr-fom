@@ -44,7 +44,8 @@
     <button class="btn btn-xs pg-btn" [disabled]="!canReplyComment || isLastComment()" (click)="selectNextComment()">
       <em class="material-icons md-16">chevron_right</em>
     </button>
-    <button class="btn btn-xs pg-btn" [disabled]="!canReplyComment || isLastUnactioned()" (click)="selectNextUnactioned()">
+    <button class="btn btn-xs pg-btn" [disabled]="!canReplyComment || isLastUnactioned()"
+      (click)="selectNextUnactioned()">
       <em class="material-icons md-16">skip_next</em> Next unactioned
     </button>
   </div>
@@ -59,18 +60,18 @@
       <div class="col-md-12">
         <div class="status-toggle-group">
           <button type="button" class="status-toggle-btn status-toggle--considered"
-                  [class.active]="commentFormGroup.get('responseCode').value === 'CONSIDERED'"
-                  (click)="setResponseCode('CONSIDERED')" [disabled]!canReplyComment>
+            [class.active]="commentFormGroup.get('responseCode').value === 'CONSIDERED'"
+            (click)="setResponseCode('CONSIDERED')" [disabled]!canReplyComment>
             Considered
           </button>
           <button type="button" class="status-toggle-btn status-toggle--addressed"
-                  [class.active]="commentFormGroup.get('responseCode').value === 'ADDRESSED'"
-                  (click)="setResponseCode('ADDRESSED')" [disabled]!canReplyComment>
+            [class.active]="commentFormGroup.get('responseCode').value === 'ADDRESSED'"
+            (click)="setResponseCode('ADDRESSED')" [disabled]!canReplyComment>
             Addressed
           </button>
           <button type="button" class="status-toggle-btn status-toggle--not-applicable"
-                  [class.active]="commentFormGroup.get('responseCode').value === 'IRRELEVANT'"
-                  (click)="setResponseCode('IRRELEVANT')" [disabled]!canReplyComment>
+            [class.active]="commentFormGroup.get('responseCode').value === 'IRRELEVANT'"
+            (click)="setResponseCode('IRRELEVANT')" [disabled]!canReplyComment>
             Not Applicable
           </button>
         </div>

@@ -1,18 +1,18 @@
-  firstPage() {
-    if (this.currentPage !== 1) {
-      this.currentPage = 1;
-      this.updatePage();
-      this.selectedIds.clear();
-    }
+firstPage() {
+  if (this.currentPage !== 1) {
+    this.currentPage = 1;
+    this.updatePage();
+    this.selectedIds.clear();
   }
+}
 
-  lastPage() {
-    if (this.currentPage !== this.totalPages) {
-      this.currentPage = this.totalPages;
-      this.updatePage();
-      this.selectedIds.clear();
-    }
+lastPage() {
+  if (this.currentPage !== this.totalPages) {
+    this.currentPage = this.totalPages;
+    this.updatePage();
+    this.selectedIds.clear();
   }
+}
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -67,21 +67,6 @@ export const RESPONSE_DISPLAY: Record<string, string> = {
 })
 export class ReviewCommentsComponent implements OnInit, OnDestroy {
   // ...existing code...
-  prevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePage();
-      this.selectedIds.clear();
-    }
-  }
-
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePage();
-      this.selectedIds.clear();
-    }
-  }
 
   firstPage() {
     if (this.currentPage !== 1) {
@@ -353,7 +338,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       const result = await this.commentSvc.publicCommentControllerUpdate(comment.id, update).toPromise();
       const idx = this.allComments.findIndex(c => c.id === comment.id);
       if (idx !== -1) this.allComments[ idx ] = result;
-      this.allComments = [...this.allComments]; // new reference triggers dashboard ngOnChanges
+      this.allComments = [ ...this.allComments ]; // new reference triggers dashboard ngOnChanges
       if (this.selectedItem?.id === comment.id) {
         this.selectedItem = result;
         this.commentDetailForm.selectedComment = result;
@@ -382,7 +367,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       const result = await this.commentSvc.publicCommentControllerUpdate(id, update).toPromise();
       const idx = this.allComments.findIndex(c => c.id === id);
       if (idx !== -1) this.allComments[ idx ] = result;
-      this.allComments = [...this.allComments]; // new reference triggers dashboard ngOnChanges
+      this.allComments = [ ...this.allComments ]; // new reference triggers dashboard ngOnChanges
       this.selectedItem = result;
       this.loading = false;
       this.applyFilters();
@@ -450,7 +435,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
         console.error(`Failed to update comment ${id}.`, err);
       }
     }
-    this.allComments = [...this.allComments]; // new reference triggers dashboard ngOnChanges
+    this.allComments = [ ...this.allComments ]; // new reference triggers dashboard ngOnChanges
     this.bulkLoading = false;
     this.selectedIds.clear();
     this.bulkStatus = null;
