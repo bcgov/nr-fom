@@ -1,3 +1,50 @@
+.dashboard__status-counts {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.status-count {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  transition: background 0.15s;
+}
+
+.status-count:hover {
+  background: #f0f4fa;
+}
+
+.status-icon {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: middle;
+}
+.icon-completed {
+  background: url('data:image/svg+xml;utf8,<svg fill="%234caf50" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.29 16.29a1 1 0 0 1-1.42 0l-3.29-3.29a1 1 0 1 1 1.42-1.42l2.58 2.58 6.58-6.58a1 1 0 1 1 1.42 1.42l-7.29 7.29z"/></svg>') center/contain no-repeat;
+}
+.icon-not-actioned {
+  background: url('data:image/svg+xml;utf8,<svg fill="%23888" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/></svg>') center/contain no-repeat;
+}
+.icon-na {
+  background: url('data:image/svg+xml;utf8,<svg fill="%23fcba19" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="11" width="16" height="2"/></svg>') center/contain no-repeat;
+}
+.icon-total {
+  background: url('data:image/svg+xml;utf8,<svg fill="%23343a40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="16"/></svg>') center/contain no-repeat;
+}
+.status-label {
+  font-size: 0.95em;
+}
+.status-count-value {
+  font-weight: 700;
+  margin-left: 0.2em;
+}
 .dashboard {
   padding: 1rem 1.5rem;
   background: #f7f8fa;
@@ -96,12 +143,15 @@
 .seg--considered {
   background: #4caf50;
 }
+
 .seg--addressed {
   background: #008080;
 }
+
 .seg--not-applicable {
   background: #fcba19;
 }
+
 .seg--unactioned {
   background: #888;
 }

@@ -1,22 +1,24 @@
 <div class="dashboard">
-  <div class="dashboard__stats">
-    <div *ngFor="let s of stats" class="stat-card stat-card--clickable" [ngClass]="s.colorClass"
-      (click)="filterByStatus.emit(s.filterValue)" role="button" [attr.title]="'Filter: ' + s.label">
-      <div class="stat-card__count">{{ s.count }}</div>
-      <div class="stat-card__label">{{ s.label }}</div>
-    </div>
-  </div>
-
   <div class="dashboard__progress">
     <div class="progress-label">
       <span>{{ actioned }} of {{ total }} reviewed ({{ completionPct }}%)</span>
     </div>
     <div class="progress progress--segmented" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-      <div *ngFor="let seg of segments"
-           class="progress-segment"
-           [ngClass]="seg.class"
-           [style.width.%]="seg.width"
-           [attr.title]="seg.label + ': ' + seg.count">
+      <div *ngFor="let seg of segments" class="progress-segment" [ngClass]="seg.class" [style.width.%]="seg.width"
+        [attr.title]="seg.label + ': ' + seg.count">
+      </div>
+    </div>
+    <!-- Status counts below progress bar -->
+    <div class="dashboard__status-counts">
+      <div *ngFor="let s of stats" class="status-count" [ngClass]="s.colorClass" (click)="filterByStatus.emit(s.filterValue)" role="button" [attr.title]="'Filter: ' + s.label">
+        <span class="status-icon" [ngClass]="{
+          'icon-completed': s.label === 'Considered' || s.label === 'Addressed',
+          'icon-not-actioned': s.label === 'Unactioned',
+          'icon-na': s.label === 'Not Applicable',
+          'icon-total': s.label === 'Total'
+        }"></span>
+        <span class="status-label">{{ s.label }}</span>
+        <span class="status-count-value">{{ s.count }}</span>
       </div>
     </div>
   </div>
