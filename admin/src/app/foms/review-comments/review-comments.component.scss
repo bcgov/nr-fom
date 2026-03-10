@@ -1,3 +1,34 @@
+.status-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+.status-tab-btn {
+  background: #f7f8fa;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  padding: 0.25rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+.status-tab-btn.active {
+  background: #fcba19;
+  border-color: #fcba19;
+  color: #003366;
+}
+.status-tab-label {
+  font-size: 0.95em;
+}
+.status-tab-count {
+  font-weight: 700;
+  margin-left: 0.2em;
+  color: #555;
+}
 @use "../../../assets/styles/base/base.scss";
 @use "../../../assets/styles/abstracts/mixins.scss" as mixins;
 

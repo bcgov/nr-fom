@@ -77,12 +77,18 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   public searchText = '';
   public selectedStatusFilter: string = 'ALL';
   public statusFilterOpts = [
-    { value: 'ALL', label: 'All Statuses' },
+    { value: 'ALL', label: 'All' },
+    { value: 'UNACTIONED', label: 'Not Actioned' },
     { value: 'CONSIDERED', label: 'Considered' },
     { value: 'ADDRESSED', label: 'Addressed' },
-    { value: 'IRRELEVANT', label: 'Not Applicable' },
-    { value: 'UNACTIONED', label: 'Unactioned' },
+    { value: 'IRRELEVANT', label: 'N/A' },
   ];
+
+  getStatusCount(status: string): number {
+    if (status === 'ALL') return this.allComments.length;
+    if (status === 'UNACTIONED') return this.allComments.filter(c => !c.response?.code).length;
+    return this.allComments.filter(c => c.response?.code === status).length;
+  }
 
   // ── derived lists ─────────────────────────────────────────────────────────
   public filteredComments: PublicCommentAdminResponse[] = [];

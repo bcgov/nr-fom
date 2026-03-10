@@ -52,14 +52,18 @@
               </mat-select>
             </mat-form-field>
 
-            <mat-form-field class="filter-field">
-              <mat-select [(ngModel)]="selectedStatusFilter" name="statusFilter"
-                (selectionChange)="onStatusFilterChange()">
-                <mat-option *ngFor="let opt of statusFilterOpts" [value]="opt.value">
-                  {{opt.label}}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+            <!-- Tab-style status filters -->
+            <div class="status-tabs">
+              <button *ngFor="let opt of statusFilterOpts"
+                      class="status-tab-btn"
+                      [class.active]="selectedStatusFilter === opt.value"
+                      (click)="selectedStatusFilter = opt.value; onStatusFilterChange()">
+                <span class="status-tab-label">{{ opt.label }}</span>
+                <span class="status-tab-count">
+                  {{ getStatusCount(opt.value) }}
+                </span>
+              </button>
+            </div>
           </div>
 
           <!-- Bulk action toolbar (visible when items selected) -->
