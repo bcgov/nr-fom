@@ -38,6 +38,10 @@ on:
         description: Deployment target; usually PR number, test or prod
         default: ${{ github.event.number }}
         type: string
+      replica_count:
+        description: Number of replicas for each component
+        default: 3
+        type: number
       triggers:
         description: Paths to check for changes
         type: string
@@ -147,4 +151,5 @@ jobs:
             -p TAG=${{ needs.init.outputs.tag }}
             -p URL=${{ needs.init.outputs.url }}
             ${{ matrix.parameters }}
+            ${{ matrix.name != 'db' && format('-p REPLICA_COUNT={0}', inputs.replica_count) || '' }}
           triggers: ${{ inputs.triggers }}

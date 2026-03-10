@@ -53,6 +53,7 @@ jobs:
     with:
       db_testdata: true
       email_notify: nonexistent@gov.bc.ca  # lower environment fake email address to send
+      replica_count: 1
       triggers: ('db/' 'libs/' 'api/' 'admin/' 'public/')
 
   results:
