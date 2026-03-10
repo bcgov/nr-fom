@@ -66,6 +66,38 @@ export const RESPONSE_DISPLAY: Record<string, string> = {
   styleUrls: [ './review-comments.component.scss' ]
 })
 export class ReviewCommentsComponent implements OnInit, OnDestroy {
+  // ...existing code...
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePage();
+      this.selectedIds.clear();
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePage();
+      this.selectedIds.clear();
+    }
+  }
+
+  firstPage() {
+    if (this.currentPage !== 1) {
+      this.currentPage = 1;
+      this.updatePage();
+      this.selectedIds.clear();
+    }
+  }
+
+  lastPage() {
+    if (this.currentPage !== this.totalPages) {
+      this.currentPage = this.totalPages;
+      this.updatePage();
+      this.selectedIds.clear();
+    }
+  }
 
   @ViewChild('commentListScrollContainer', { read: ElementRef })
   public commentListScrollContainer: ElementRef;
