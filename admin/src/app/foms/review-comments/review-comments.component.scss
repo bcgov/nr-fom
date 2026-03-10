@@ -1,3 +1,6 @@
+@use "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/abstracts/mixins.scss" as mixins;
+
 .comment-location {
   margin-left: 0.5rem;
   font-size: 0.85em;
@@ -84,9 +87,6 @@
   color: #555;
 }
 
-@use "../../../assets/styles/base/base.scss";
-@use "../../../assets/styles/abstracts/mixins.scss" as mixins;
-
 :host {
   @include mixins.flex-box();
   @include mixins.flex-direction(column);
@@ -101,6 +101,8 @@
   font-size: 0.875rem;
   font-weight: 700;
 
+  @use "../../../assets/styles/base/base.scss";
+  @use "../../../assets/styles/abstracts/mixins.scss" as mixins;
   i {
     display: inline;
     vertical-align: middle;
@@ -109,8 +111,6 @@
 
   a:hover {
     text-decoration: none;
-  }
-}
 
 .top-container {
   padding-right: 0;
