@@ -80,6 +80,16 @@ export class ProjectAuthService {
     return this.isAllowedWorkflowState(project, allowedWorkflowStates);
   }
 
+  /**
+   * Return whether the specified ministry user has access to this project based on allowed workflow states.
+   */
+  async isMinistryAllowedStateAccess(projectId: number, allowedWorkflowStates: WorkflowStateEnum[], user?: User): Promise<boolean> {
+    if (!user?.isMinistry) return false;
+    const project = await this.getProject(projectId);
+    if (!project) return false;
+    return this.isAllowedWorkflowState(project, allowedWorkflowStates);
+  }
+
   private isAllowedWorkflowState(project: Project, allowedWorkflowStates: WorkflowStateEnum[]): boolean {
     return allowedWorkflowStates.includes(project.workflowStateCode as WorkflowStateEnum);
   }
