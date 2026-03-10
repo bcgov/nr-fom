@@ -312,7 +312,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
   canReplyComment(): boolean {
     if (!this.project) return false;
-    const userCanModify = this.user.isAuthorizedForClientId(this.project.forestClient.id);
+    const userCanModify = this.user.isMinistry || this.user.isAuthorizedForClientId(this.project.forestClient.id);
     return userCanModify && (this.project.workflowState[ 'code' ] === 'COMMENT_OPEN'
       || this.project.workflowState[ 'code' ] === 'COMMENT_CLOSED');
   }
