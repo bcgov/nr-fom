@@ -1,3 +1,18 @@
+  firstPage() {
+    if (this.currentPage !== 1) {
+      this.currentPage = 1;
+      this.updatePage();
+      this.selectedIds.clear();
+    }
+  }
+
+  lastPage() {
+    if (this.currentPage !== this.totalPages) {
+      this.currentPage = this.totalPages;
+      this.updatePage();
+      this.selectedIds.clear();
+    }
+  }
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';

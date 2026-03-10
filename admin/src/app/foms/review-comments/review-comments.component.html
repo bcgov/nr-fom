@@ -142,13 +142,18 @@
 
         <!-- Pagination footer -->
         <div class="panel-footer pagination" *ngIf="totalPages > 1">
+          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === 1" (click)="firstPage()">
+            <em class="material-icons md-16">first_page</em>
+          </button>
           <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === 1" (click)="prevPage()">
             <em class="material-icons md-16">chevron_left</em>
           </button>
           <span class="pg-count">Page {{ currentPage }} of {{ totalPages }}</span>
-          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === totalPages"
-            (click)="nextPage()">
+          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
             <em class="material-icons md-16">chevron_right</em>
+          </button>
+          <button class="btn btn-sm btn-outline-secondary pg-btn" [disabled]="currentPage === totalPages" (click)="lastPage()">
+            <em class="material-icons md-16">last_page</em>
           </button>
         </div>
 
