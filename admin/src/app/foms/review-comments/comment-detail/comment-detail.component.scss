@@ -5,17 +5,17 @@
   margin-bottom: 1rem;
 }
 .pg-btn {
-  background: #f7f8fa;
-  border: 1px solid #ddd;
+  background: theme.$aside-bg;
+  border: 1px solid theme.$gray4;
   border-radius: 999px;
   padding: 0.2rem 0.7rem;
   font-size: 0.9rem;
-  color: #003366;
+  color: theme.$primary;
   cursor: pointer;
 }
 .pg-count {
   font-weight: 600;
-  color: #003366;
+  color: theme.$primary;
 }
 .status-toggle-group {
   display: flex;
@@ -23,8 +23,8 @@
   margin-bottom: 1rem;
 }
 .status-toggle-btn {
-  background: #f7f8fa;
-  border: 1px solid #ddd;
+  background: theme.$aside-bg;
+  border: 1px solid theme.$gray4;
   border-radius: 999px;
   padding: 0.2rem 1rem;
   font-size: 0.95rem;
@@ -33,9 +33,9 @@
   transition: background 0.15s, border-color 0.15s;
 }
 .status-toggle--considered.active {
-  background: #cfe2ff;
-  border-color: #cfe2ff;
-  color: #084298;
+  background: theme.$primary1;
+  border-color: theme.$primary1;
+  color: theme.$primary9;
 }
 .status-toggle--addressed.active {
   background: #d1e7dd;
