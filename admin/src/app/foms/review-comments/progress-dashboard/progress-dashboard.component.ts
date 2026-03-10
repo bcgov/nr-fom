@@ -24,6 +24,7 @@ export class ProgressDashboardComponent implements OnChanges {
   actioned = 0;
   completionPct = 0;
   stats: StatusStat[] = [];
+  segments: Array<{ label: string, count: number, width: number, class: string }> = [];
 
   ngOnChanges(): void {
     const total = this.comments.length;
@@ -44,5 +45,24 @@ export class ProgressDashboardComponent implements OnChanges {
       { label: 'Not Applicable', count: notApplicable, colorClass: 'stat--not-applicable', filterValue: 'IRRELEVANT' },
       { label: 'Unactioned', count: unactioned, colorClass: 'stat--unactioned', filterValue: 'UNACTIONED' },
     ];
+
+    // Progress bar segments
+    this.segments = [];
+    if (total > 0) {
+      const segs = [
+        { label: 'Completed', count: considered, class: 'seg--considered' },
+        { label: 'Addressed', count: addressed, class: 'seg--addressed' },
+        { label: 'Not Applicable', count: notApplicable, class: 'seg--not-applicable' },
+        { label: 'Not Actioned', count: unactioned, class: 'seg--unactioned' },
+      ];
+      segs.forEach(s => {
+        this.segments.push({
+          label: s.label,
+          count: s.count,
+          width: Math.round((s.count / total) * 100),
+          class: s.class
+        });
+      });
+    }
   }
 }

@@ -74,26 +74,34 @@
 
 .progress-label {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   font-size: 0.8rem;
   margin-bottom: 0.3rem;
   color: #555;
 }
 
-.progress-pct {
-  font-weight: 700;
-  color: #003366;
-}
-
-.progress {
+.progress--segmented {
+  display: flex;
   height: 0.75rem;
-  background-color: #dee2e6;
   border-radius: 999px;
   overflow: hidden;
+  background-color: #dee2e6;
 }
 
-.progress-bar {
+.progress-segment {
   height: 100%;
-  background-color: #003366;
   transition: width 0.4s ease;
+}
+
+.seg--considered {
+  background: #4caf50;
+}
+.seg--addressed {
+  background: #008080;
+}
+.seg--not-applicable {
+  background: #fcba19;
+}
+.seg--unactioned {
+  background: #888;
 }

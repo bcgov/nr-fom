@@ -9,11 +9,15 @@
 
   <div class="dashboard__progress">
     <div class="progress-label">
-      <span>{{ actioned }} of {{ total }} actioned</span>
-      <span class="progress-pct">{{ completionPct }}%</span>
+      <span>{{ actioned }} of {{ total }} reviewed ({{ completionPct }}%)</span>
     </div>
-    <div class="progress" role="progressbar" [attr.aria-valuenow]="completionPct" aria-valuemin="0" aria-valuemax="100">
-      <div class="progress-bar" [style.width.%]="completionPct"></div>
+    <div class="progress progress--segmented" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+      <div *ngFor="let seg of segments"
+           class="progress-segment"
+           [ngClass]="seg.class"
+           [style.width.%]="seg.width"
+           [attr.title]="seg.label + ': ' + seg.count">
+      </div>
     </div>
   </div>
 </div>
