@@ -108,6 +108,14 @@
                 [checked]="selectedIds.has(item.id)" (change)="toggleSelect(item.id, $any($event.target).checked)"
                 (click)="$event.stopPropagation()">
               <div class="comment-author">{{ item.name || 'Anonymous' }}</div>
+              <div class="comment-location" *ngIf="item.commentScope">
+                <a href="#" class="location-link">
+                  {{ item.commentScope.description }}
+                  <ng-container *ngIf="item.scopeCutBlockId"> #{{ item.scopeCutBlockId }}</ng-container>
+                  <ng-container *ngIf="item.scopeRoadSectionId"> #{{ item.scopeRoadSectionId }}</ng-container>
+                  <ng-container *ngIf="item.scopeFeatureName"> - {{ item.scopeFeatureName }}</ng-container>
+                </a>
+              </div>
               <div class="comment-date">{{ (item.createTimestamp | date) || '-' }}</div>
             </div>
 
