@@ -53,10 +53,6 @@ export const RESPONSE_DISPLAY: Record<string, string> = {
 export class ReviewCommentsComponent implements OnInit, OnDestroy {
   // ...existing code...
 
-  currentPage: number = 1;
-  totalPages: number = 1;
-  selectedIds = new Set<number>();
-
   /** Go to the first page of comments. */
   firstPage() {
     if (this.currentPage !== 1) {
@@ -73,11 +69,6 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       this.updatePage();
       this.selectedIds.clear();
     }
-  }
-
-  /** Update the page state (stub, implement as needed). */
-  updatePage() {
-    // Add logic to update the displayed comments based on currentPage
   }
 
 
