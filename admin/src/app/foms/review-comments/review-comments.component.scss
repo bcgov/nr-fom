@@ -100,9 +100,6 @@
   letter-spacing: 0;
   font-size: 0.875rem;
   font-weight: 700;
-
-  @use "../../../assets/styles/base/base.scss";
-  @use "../../../assets/styles/abstracts/mixins.scss" as mixins;
   i {
     display: inline;
     vertical-align: middle;
@@ -111,6 +108,8 @@
 
   a:hover {
     text-decoration: none;
+  }
+}
 
 .top-container {
   padding-right: 0;
