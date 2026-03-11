@@ -1,6 +1,92 @@
 @use "../../../assets/styles/base/base.scss";
 @use "../../../assets/styles/abstracts/mixins.scss" as mixins;
 
+.comment-location {
+  margin-left: 0.5rem;
+  font-size: 0.85em;
+  color: #007bff;
+  display: inline-block;
+}
+
+.location-link {
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.bulk-btn {
+  margin-left: 0.5rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.2rem 1rem;
+  border: 1px solid #ddd;
+  background: #f7f8fa;
+  color: #003366;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.bulk-btn--considered {
+  background: #cfe2ff;
+  border-color: #cfe2ff;
+  color: #084298;
+}
+
+.bulk-btn--addressed {
+  background: #d1e7dd;
+  border-color: #d1e7dd;
+  color: #0a3622;
+}
+
+.bulk-btn--not-applicable {
+  background: #fff3cd;
+  border-color: #fff3cd;
+  color: #664d03;
+}
+
+.bulk-clear-link {
+  margin-left: 1rem;
+  color: #888;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.95em;
+}
+
+.status-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.status-tab-btn {
+  background: #f7f8fa;
+  border: 1px solid #ddd;
+  border-radius: 999px;
+  padding: 0.25rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.status-tab-btn.active {
+  background: #fcba19;
+  border-color: #fcba19;
+  color: #003366;
+}
+
+.status-tab-label {
+  font-size: 0.95em;
+}
+
+.status-tab-count {
+  font-weight: 700;
+  margin-left: 0.2em;
+  color: #555;
+}
+
 :host {
   @include mixins.flex-box();
   @include mixins.flex-direction(column);
@@ -14,7 +100,6 @@
   letter-spacing: 0;
   font-size: 0.875rem;
   font-weight: 700;
-
   i {
     display: inline;
     vertical-align: middle;
@@ -36,7 +121,7 @@
   overflow: hidden;
 
   .container {
-  @include mixins.flex-box();
+    @include mixins.flex-box();
 
     padding-bottom: 1.5rem;
   }
@@ -46,7 +131,8 @@
   align-items: center;
 }
 
-// Panel Layout
+// ─── Panel Layout ─────────────────────────────────────────────────────────────
+
 .panel {
   @include mixins.flex-box();
   @include mixins.flex-direction(column);
@@ -55,29 +141,83 @@
 }
 
 .panel-header {
-  @include mixins.flex-box();
   @include mixins.flex(0 0 auto);
 
-  flex-direction: column;
-  align-items: baseline;
-
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid #ddd;
 
   h2 {
-  @include mixins.flex(1 1 auto);
-
-    margin-top: 0.75rem;
-    white-space: nowrap;
-    letter-spacing: -0.02rem;
+    margin: 0 0 0.5rem 0;
     font-size: 1rem;
     font-weight: 700;
+    letter-spacing: -0.02rem;
   }
 
-  .form-control {
-    width: 8rem;
-    height: auto;
+  .comment-count {
+    font-weight: 400;
+    color: #666;
   }
+}
+
+.panel-header__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &--top {
+    justify-content: space-between;
+  }
+
+  &--filters {
+    flex-wrap: wrap;
+  }
+}
+
+.search-input {
+  flex: 1 1 auto;
+}
+
+.filter-field {
+  flex: 1 1 140px;
+  font-size: 0.875rem;
+}
+
+// Bulk toolbar
+.bulk-toolbar {
+  background: #e9f0ff;
+  border: 1px solid #bcd;
+  border-radius: 4px;
+  padding: 0.4rem 0.75rem;
+  flex-wrap: wrap;
+}
+
+.bulk-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.bulk-status-select {
+  flex: 0 0 140px;
+}
+
+// Select all row
+.select-all-row {
+  font-size: 0.8rem;
+}
+
+.select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  margin: 0;
+  font-weight: 400;
 }
 
 .panel-scroll {
@@ -93,7 +233,8 @@
   font-size: 0.875rem;
 }
 
-// Layout
+// ─── Review panes ─────────────────────────────────────────────────────────────
+
 .review-comments {
   @include mixins.flex-box();
 
@@ -103,11 +244,11 @@
   box-shadow: 0.02rem 0 0.2rem rgba(0, 0, 0, 0.15);
 }
 
-// Comment Layout
 .review-comments__list {
   @include mixins.flex(0 0 auto);
 
-  width: 27rem;
+  width: 42%;
+  min-width: 22rem;
   border-right: 1px solid #ddd;
   background: #f7f8fa;
 }
@@ -116,63 +257,65 @@
   @include mixins.flex(1 1 auto);
 }
 
-.sort-comments.form-control {
-  height: auto;
-  font-size: 0.875rem;
+// Mobile back button (hidden on desktop)
+.mobile-back {
+  display: none;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #ddd;
 }
 
-// Comment List Items
+// ─── Comment List Items ───────────────────────────────────────────────────────
+
 .comment-item {
   position: relative;
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1rem;
   border: 1px solid transparent;
   border-bottom-color: #ddd;
   font-size: 0.85rem;
-  transition: all ease-out 0.2s;
+  cursor: pointer;
+  transition: background ease-out 0.15s;
 
-  &::after {
+  &::before {
     content: ' ';
     position: absolute;
-    top: -1px;
-    bottom: -1px;
-    left: -2px;
+    top: 0;
+    bottom: 0;
+    left: 0;
     width: 0.25rem;
     background-color: transparent;
-    transition: all ease-out 0.2s;
+    transition: background-color ease-out 0.15s;
   }
 
   &:last-child {
-    border: none;
+    border-bottom: none;
   }
-}
 
-.comment-item.active {
-  background: #fff;
-
-  &::after {
-    background-color: #007bff;
+  &:hover {
+    background: #fff;
   }
-}
 
-.comment-item:hover {
-  background: #fff;
-}
+  &.active {
+    background: #fff;
 
-.comment-item:focus {
-  border-color: #007bff;
-  background: #fff;
+    &::before {
+      background-color: #003366;
+    }
+  }
 }
 
 .comment-item-header {
-  @include mixins.flex-box();
-  @include mixins.flex-direction(row);
-  justify-content: flex-start;
-  align-items: baseline;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.comment-checkbox {
+  flex: 0 0 auto;
+  cursor: pointer;
 }
 
 .comment-author {
-  @include mixins.flex(1 1 auto);
-
+  flex: 1 1 auto;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -180,53 +323,192 @@
 }
 
 .comment-date {
-  @include mixins.flex(0 0 auto);
-
+  flex: 0 0 auto;
   white-space: nowrap;
-  font-size: 90%;
-  margin-left: 0.5rem;
-}
-
-.comment-response {
- @include mixins.flex(0 0 auto);
-
-  white-space: nowrap;
-  font-weight: 90%;
-  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: #888;
 }
 
 .comment-body {
-  @include mixins.flex(1 1 auto);
-
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: #666;
+  color: #555;
+  font-size: 0.8rem;
 }
 
+.comment-item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.4rem;
+}
 
-// pagination
+// ─── Status Badges ────────────────────────────────────────────────────────────
 
-.pagination {
-  text-align: center;
+.status-badge {
+  display: inline-block;
+  padding: 0.15em 0.55em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 999px;
+  white-space: nowrap;
+}
 
-  .btn-group {
-    margin: 0 auto;
+.badge--considered {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.badge--addressed {
+  background: #d1e7dd;
+  color: #0a3622;
+}
+
+.badge--not-applicable {
+  background: #fff3cd;
+  color: #664d03;
+}
+
+.badge--unactioned {
+  background: #f8d7da;
+  color: #842029;
+}
+
+// ─── Inline Action Buttons ────────────────────────────────────────────────────
+
+.inline-actions {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.inline-btn {
+  padding: 0.1rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 3px;
+  line-height: 1.4;
+  border: 1px solid transparent;
+
+  &:focus {
+    outline: 2px solid #fcba19;
+    outline-offset: 1px;
   }
 }
 
+.inline-btn--considered {
+  background: #cfe2ff;
+  color: #084298;
+  border-color: #84b2ef;
+
+  &:hover {
+    background: #84b2ef;
+    color: #fff;
+  }
+}
+
+.inline-btn--addressed {
+  background: #d1e7dd;
+  color: #0a3622;
+  border-color: #75b798;
+
+  &:hover {
+    background: #75b798;
+    color: #fff;
+  }
+}
+
+.inline-btn--not-applicable {
+  background: #fff3cd;
+  color: #664d03;
+  border-color: #ffe08a;
+
+  &:hover {
+    background: #ffe08a;
+    color: #664d03;
+  }
+}
+
+// ─── Detail pane actions ──────────────────────────────────────────────────────
+
+.detail-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0;
+}
+
+// ─── Hints ────────────────────────────────────────────────────────────────────
+
+.loading-hint,
+.empty-hint {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: #888;
+  font-size: 0.875rem;
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  gap: 0.25rem;
+}
+
 .pg-count {
-  padding: 0.75rem;
+  padding: 0 0.5rem;
+  font-size: 0.8rem;
+  color: #555;
 }
 
 .pg-btn {
   border-radius: 0;
+  padding: 0.2rem 0.4rem;
+  line-height: 1;
+}
 
-  i {
-    margin-top: -0.1rem;
+// ─── Responsive ──────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  .review-comments {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .review-comments__list,
+  .review-comments__detail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100% !important;
+    transition: transform 0.25s ease;
+  }
+
+  .review-comments__detail {
+    transform: translateX(100%);
+  }
+
+  .review-comments.mobile-show-detail {
+    .review-comments__list {
+      transform: translateX(-100%);
+    }
+
+    .review-comments__detail {
+      transform: translateX(0);
+    }
+  }
+
+  .mobile-back {
+    display: block;
   }
 }
+
 
 .material-icons {
   vertical-align: middle;

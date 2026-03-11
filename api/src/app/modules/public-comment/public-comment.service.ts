@@ -154,11 +154,11 @@ export class PublicCommentService extends DataService<
     entity: PublicComment,
     user?: User
   ): Promise<boolean> {
-    return this.projectAuthService.isForestClientUserAllowedStateAccess(
-      entity.projectId,
-      [WorkflowStateEnum.COMMENT_OPEN, WorkflowStateEnum.COMMENT_CLOSED],
-      user
-    );
+    const allowedStates = [WorkflowStateEnum.COMMENT_OPEN, WorkflowStateEnum.COMMENT_CLOSED];
+    if (user?.isMinistry) {
+      return this.projectAuthService.isMinistryAllowedStateAccess(entity.projectId, allowedStates, user);
+    }
+    return this.projectAuthService.isForestClientUserAllowedStateAccess(entity.projectId, allowedStates, user);
   }
 
   async isDeleteAuthorized(

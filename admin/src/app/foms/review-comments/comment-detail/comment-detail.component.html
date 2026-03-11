@@ -22,12 +22,12 @@
   </div>
   <hr>
   <div class="comment-detail__scope">
-    Commenting On: 
+    Commenting On:
     <span class="scope-desc">
-      {{comment.commentScope.description}} 
-      {{ (commentScopeCodes.CUT_BLOCK.code === comment.commentScope.code)? '#'+ comment.scopeCutBlockId: 
-        ((commentScopeCodes.ROAD_SECTION.code === comment.commentScope.code)? '#'+ comment.scopeRoadSectionId:
-        '')
+      {{comment.commentScope.description}}
+      {{ (commentScopeCodes.CUT_BLOCK.code === comment.commentScope.code)? '#'+ comment.scopeCutBlockId:
+      ((commentScopeCodes.ROAD_SECTION.code === comment.commentScope.code)? '#'+ comment.scopeRoadSectionId:
+      '')
       }}
       {{ comment.scopeFeatureName? ' - '+ comment.scopeFeatureName: ''}}
     </span>
@@ -35,24 +35,48 @@
   <div class="comment-detail__body" [innerHTML]="comment.feedback | newlines"></div>
   <hr>
 
+  <!-- Pagination controls -->
+  <div class="detail-pagination">
+    <button class="btn btn-xs pg-btn" [disabled]="!canReplyComment || isFirstComment()" (click)="selectPrevComment()">
+      <em class="material-icons md-16">chevron_left</em>
+    </button>
+    <span class="pg-count">{{ getCurrentCommentIndex() + 1 }} of {{ getTotalComments() }}</span>
+    <button class="btn btn-xs pg-btn" [disabled]="!canReplyComment || isLastComment()" (click)="selectNextComment()">
+      <em class="material-icons md-16">chevron_right</em>
+    </button>
+    <button class="btn btn-xs pg-btn" [disabled]="!canReplyComment || isLastUnactioned()"
+      (click)="selectNextUnactioned()">
+      <em class="material-icons md-16">skip_next</em> Next unactioned
+    </button>
+  </div>
+
   <form [formGroup]="commentFormGroup">
     <div class="row">
       <div class="col-md-4">
-        <label>Response to Commment</label>
+        <label>Response to Comment</label>
       </div>
     </div>
     <div class="row">
-      <div class="col-md-4">
-        <select class="sort-comments form-control mb-3" id="responseCode" 
-          name="responseCode"
-          formControlName="responseCode">
-          <option [ngValue]="null" disabled>Select a Response</option>
-          <option *ngFor="let code of responseCodes" 
-                  [ngValue]="code.code">{{code.description}}</option>
-        </select>
+      <div class="col-md-12">
+        <div class="status-toggle-group">
+          <button type="button" class="status-toggle-btn status-toggle--considered"
+            [class.active]="commentFormGroup.get('responseCode').value === 'CONSIDERED'"
+            (click)="setResponseCode('CONSIDERED')" [disabled]!canReplyComment>
+            Considered
+          </button>
+          <button type="button" class="status-toggle-btn status-toggle--addressed"
+            [class.active]="commentFormGroup.get('responseCode').value === 'ADDRESSED'"
+            (click)="setResponseCode('ADDRESSED')" [disabled]!canReplyComment>
+            Addressed
+          </button>
+          <button type="button" class="status-toggle-btn status-toggle--not-applicable"
+            [class.active]="commentFormGroup.get('responseCode').value === 'IRRELEVANT'"
+            (click)="setResponseCode('IRRELEVANT')" [disabled]!canReplyComment>
+            Not Applicable
+          </button>
+        </div>
       </div>
     </div>
-
     <div class="row">
       <div class="col-md-12">
         <label>Response Details</label>
@@ -60,16 +84,14 @@
     </div>
     <div class="row">
       <div class="col-md-12">
-        <textarea class="form-control  mb" rows="3" id="detail" 
-                  name="detail" 
-                  formControlName="responseDetails"
-                  maxlength="{{responseDetailsLimit}}">
+        <textarea class="form-control  mb" rows="3" id="detail" name="detail" formControlName="responseDetails"
+          maxlength="{{responseDetailsLimit}}">
         </textarea>
-        <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails').value?.length}} characters remaining.</small>
+        <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails').value?.length}} characters
+          remaining.</small>
       </div>
     </div>
-    &nbsp;
     <ng-content>
     </ng-content>
-</form>
+  </form>
 </div>
