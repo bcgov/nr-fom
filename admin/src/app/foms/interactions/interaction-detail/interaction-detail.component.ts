@@ -45,7 +45,7 @@ export class InteractionDetailComponent {
   // Note - browser often fails to recognize 'application/vnd.ms-outlook'; for .msg files use '.msg' instead.
   supportingFileTypes: string[] = 
   [ 'image/png', 'image/jpeg', 'image/jpg', 'application/pdf', 'image/tiff',
-    'application/pdf', 'text/plain', 'text/csv', 'application/msword',
+    'text/plain', 'text/csv', 'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/rtf', '.msg'
