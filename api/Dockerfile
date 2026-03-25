@@ -1,5 +1,5 @@
 # RedHat UBI 8 with nodejs 24
-FROM registry.access.redhat.com/ubi8/nodejs-24:latest AS builder
+FROM registry.access.redhat.com/ubi8/nodejs-24@sha256:9a7f9bca7b6355a9bbeeac356b0feb2f9c9d6654b75b5bed727a5292d3450496 AS builder
 
 # Install packages, build and keep only prod packages
 WORKDIR /app
