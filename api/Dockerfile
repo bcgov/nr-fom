@@ -23,6 +23,7 @@ COPY --from=builder /usr/lib64/libssl.so* /usr/lib64/
 COPY --from=builder /usr/lib64/libstdc++.so.6 /usr/lib64/
 COPY --from=builder /usr/lib64/libgcc_s.so.1 /usr/lib64/
 COPY --from=builder /usr/lib64/libbrotlicommon.so.1 /usr/lib64/
+COPY --from=builder /usr/lib64/libnode.so.* /usr/lib64/
 COPY --from=builder /etc/pki /etc/pki
 
 # Copy over app
