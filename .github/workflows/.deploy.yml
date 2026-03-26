@@ -150,6 +150,6 @@ jobs:
             -p ZONE=${{ inputs.target }} 
             -p TAG=${{ needs.init.outputs.tag }}
             -p URL=${{ needs.init.outputs.url }}
+            ${{ matrix.name != 'db' && format('-p REPLICA_COUNT={0}', inputs.replica_count) }}
             ${{ matrix.parameters }}
-            ${{ matrix.name != 'db' && format('-p REPLICA_COUNT={0}', inputs.replica_count) || '' }}
           triggers: ${{ inputs.triggers }}
