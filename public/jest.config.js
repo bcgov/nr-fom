@@ -14,6 +14,10 @@ module.exports = {
       },
     },
   },
+  testMatch: [
+    '<rootDir>/src/**/*.spec.ts',
+    '<rootDir>/src/app/**/*.spec.ts',
+  ],
   coverageDirectory: '../coverage/public',
   snapshotSerializers: [
     'jest-preset-angular/build/AngularNoNgAttributesSnapshotSerializer.js',
