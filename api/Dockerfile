@@ -8,7 +8,6 @@ USER root
 RUN dnf install -y ca-certificates && \
     cd libs && npm ci --ignore-scripts && cd .. && \
     cd api && npm ci --ignore-scripts && npm run build:api && \
-    npm prune --omit=dev && \
     mkdir -p /app/dist && \
     mv dist/* /app/dist/ && \
     mv node_modules /app/node_modules
