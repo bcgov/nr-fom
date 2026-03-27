@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AboutComponent } from './about.component';
+import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 describe('AboutComponent', () => {
   let component: AboutComponent;
@@ -7,7 +8,7 @@ describe('AboutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ AboutComponent ],
+      imports: [AboutComponent],
     }).compileComponents();
     fixture = TestBed.createComponent(AboutComponent);
     component = fixture.componentInstance;
@@ -18,5 +19,19 @@ describe('AboutComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // Add more tests for logic, template, and events as needed
+  it('should have faArrowUpRightFromSquare icon defined', () => {
+    expect(component.faArrowUpRightFromSquare).toBeDefined();
+    expect(component.faArrowUpRightFromSquare).toBe(faArrowUpRightFromSquare);
+  });
+
+  it('should have icon with expected properties', () => {
+    const icon = component.faArrowUpRightFromSquare;
+    expect(icon.iconName).toBe('arrow-up-right-from-square');
+    expect(icon.prefix).toBe('fas');
+  });
+
+  it('should render the about template', () => {
+    const el = fixture.nativeElement;
+    expect(el).toBeTruthy();
+  });
 });
