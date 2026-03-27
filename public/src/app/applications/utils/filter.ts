@@ -1,5 +1,5 @@
 import { DELIMITER } from '@public-core/constants/appConstants';
-import * as hash from 'object-hash';
+import hash from 'object-hash';
 
 /**
  * Basic required filter fields.

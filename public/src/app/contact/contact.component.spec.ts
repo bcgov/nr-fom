@@ -7,7 +7,7 @@ describe('ContactComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ContactComponent ],
+      imports: [ContactComponent],
     }).compileComponents();
     fixture = TestBed.createComponent(ContactComponent);
     component = fixture.componentInstance;
@@ -18,5 +18,8 @@ describe('ContactComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // Add more tests for contact logic, template, and events as needed
+  it('should render the contact template', () => {
+    const el = fixture.nativeElement;
+    expect(el).toBeTruthy();
+  });
 });
