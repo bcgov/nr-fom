@@ -11,6 +11,7 @@ module.exports = {
     '^@api-client$': '<rootDir>/../libs/client/typescript-ng',
     '^@utility/(.*)$': '<rootDir>/../libs/utility/src/$1',
     '^app/(.*)$': '<rootDir>/src/app/$1',
+    '^tslib$': '<rootDir>/node_modules/tslib',
   },
   coverageDirectory: '../coverage/admin',
   snapshotSerializers: [
