@@ -48,7 +48,7 @@ jobs:
             -Dsonar.projectKey=nr-fom
           sonar_token: ${{ secrets.SONAR_TOKEN }}
 
-   tests-public:
+  tests-public:
     name: Unit Tests (public)
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-24.04
