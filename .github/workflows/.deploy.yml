@@ -72,7 +72,7 @@ jobs:
       - name: PR Number
         id: pr
         if: inputs.tag == ''
-        uses: bcgov/action-get-pr@v0.0.1
+        uses: bcgov/action-get-pr@v0.1.1
 
       - name: Vars
         id: vars
@@ -103,7 +103,7 @@ jobs:
           fi
 
       - name: OpenShift Init
-        uses: bcgov/action-deployer-openshift@v3.2.0
+        uses: bcgov/action-deployer-openshift@v4.0.1
         with:
           oc_namespace: ${{ vars.OC_NAMESPACE }}
           oc_server: ${{ vars.OC_SERVER }}
@@ -138,7 +138,7 @@ jobs:
           - name: public
             overwrite: true
     steps:
-      - uses: bcgov/action-deployer-openshift@v3.2.0
+      - uses: bcgov/action-deployer-openshift@v4.0.1
         with:
           file: ${{ matrix.name }}/openshift.deploy.yml
           oc_namespace: ${{ vars.OC_NAMESPACE }}
