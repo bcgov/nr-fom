@@ -36,7 +36,7 @@ describe('FomSubmissionComponent', () => {
         { provide: ModalService, useValue: { openErrorDialog: jest.fn(), openConfirmationDialog: jest.fn() } },
         { provide: CognitoService, useValue: { getUser: jest.fn().mockReturnValue({ isAuthorizedForClientId: jest.fn() }) } },
         { provide: RxFormBuilder, useValue: { formGroup: jest.fn().mockReturnValue({ get: jest.fn().mockReturnValue({ setValue: jest.fn() }), value: {} }) } },
-        MatSnackBar,
+        { provide: MatSnackBar, useValue: { open: jest.fn(), dismiss: jest.fn() } },
       ],
     })
     .compileComponents();
