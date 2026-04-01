@@ -25,6 +25,7 @@ jobs:
         with:
           commands: |
             npm ci --ignore-scripts
+            ln -sf "$(pwd)/node_modules" "$(dirname "$(pwd)")/node_modules"
             npm run test-unit
           dir: admin
           node_version: 18.19.1
@@ -57,6 +58,7 @@ jobs:
         with:
           commands: |
             npm ci --ignore-scripts
+            ln -sf "$(pwd)/node_modules" "$(dirname "$(pwd)")/node_modules"
             npm run test-unit
           dir: public
           node_version: 18.19.1
