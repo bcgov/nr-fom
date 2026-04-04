@@ -1,5 +1,5 @@
-# RedHat UBI 8 with nodejs 20
-FROM registry.access.redhat.com/ubi8/nodejs-20:1-71.1735831626 AS builder
+# RedHat UBI 8 with nodejs 24
+FROM registry.access.redhat.com/ubi8/nodejs-24@sha256:9a7f9bca7b6355a9bbeeac356b0feb2f9c9d6654b75b5bed727a5292d3450496 AS builder
 
 # Install packages, build and keep only prod packages
 WORKDIR /app
@@ -23,6 +23,7 @@ COPY --from=builder /usr/lib64/libssl.so* /usr/lib64/
 COPY --from=builder /usr/lib64/libstdc++.so.6 /usr/lib64/
 COPY --from=builder /usr/lib64/libgcc_s.so.1 /usr/lib64/
 COPY --from=builder /usr/lib64/libbrotlicommon.so.1 /usr/lib64/
+COPY --from=builder /usr/lib64/libnode.so.* /usr/lib64/
 COPY --from=builder /etc/pki /etc/pki
 
 # Copy over app
