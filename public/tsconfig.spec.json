@@ -3,9 +3,16 @@
   "compilerOptions": {
     "outDir": "dist/public",
     "module": "commonjs",
-    "types": ["jest", "node"],
-    "importHelpers": false
+    "types": [
+      "jest",
+      "node"
+    ]
   },
-  "files": ["src/test-setup.ts"],
-  "include": ["**/*.spec.ts", "**/*.d.ts"]
+  "files": [
+    "src/test-setup.ts"
+  ],
+  "include": [
+    "**/*.spec.ts",
+    "**/*.d.ts"
+  ]
 }
