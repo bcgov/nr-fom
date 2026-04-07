@@ -4,9 +4,10 @@
     "outDir": "dist/public",
     "module": "commonjs",
     "types": [
-      "jest",
-      "node"
-    ]
+    "jest",
+    "node",
+    "zone.js"
+  ]
   },
   "files": [
     "src/test-setup.ts"
