@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "dist/admin/spec",
     "module": "commonjs",
-    "types": ["jest", "node", "zone.js"],
+    "types": ["jest", "node"],
     "importHelpers": false
   },
   "files": ["src/test-setup.ts"],

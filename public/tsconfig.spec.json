@@ -3,11 +3,10 @@
   "compilerOptions": {
     "outDir": "dist/public",
     "module": "commonjs",
-    "types": [
-    "jest",
-    "node",
-    "zone.js"
-  ]
+"types": [
+      "jest",
+      "node"
+    ]
   },
   "files": [
     "src/test-setup.ts"
