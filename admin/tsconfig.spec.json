@@ -3,8 +3,7 @@
   "compilerOptions": {
     "outDir": "dist/admin/spec",
     "module": "commonjs",
-    "types": ["jest", "node"],
-    "importHelpers": false
+    "types": ["jest", "node"]
   },
   "files": ["src/test-setup.ts"],
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
