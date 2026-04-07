@@ -6,6 +6,7 @@ module.exports = {
   testMatch: [
     '<rootDir>/src/**/*.spec.ts',
   ],
+  roots: ['<rootDir>/src'],
   moduleNameMapper: {
     '^@admin-core/(.*)$': '<rootDir>/src/core/$1',
     '^@api-client$': '<rootDir>/../libs/client/typescript-ng',

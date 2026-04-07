@@ -25,7 +25,6 @@ jobs:
         with:
           commands: |
             npm ci --ignore-scripts
-            ln -sf ../node_modules admin/node_modules
             npm run test-unit
           dir: admin
           node_version: 18.19.1
@@ -58,7 +57,6 @@ jobs:
         with:
           commands: |
             npm ci --ignore-scripts
-            ln -sf ../node_modules public/node_modules
             npm run test-unit
           dir: public
           node_version: 18.19.1
