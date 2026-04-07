@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { flatDeep } from '../../core/utils';
+import { flatDeep } from '@api-core/utils';
 
 describe('flatDeep', () => {
   it('should flatten nested arrays', () => {

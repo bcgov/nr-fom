@@ -4,37 +4,44 @@ import { ProjectService, SpatialFeatureService } from '@api-client';
 import { of } from 'rxjs';
 
 describe('FOM Resolvers', () => {
-  let projectServiceSpy: jasmine.SpyObj<ProjectService>;
-  let spatialFeatureServiceSpy: jasmine.SpyObj<SpatialFeatureService>;
+  let projectServiceSpy: jest.Mocked<ProjectService>;
+  let spatialFeatureServiceSpy: jest.Mocked<SpatialFeatureService>;
 
   beforeEach(() => {
-    projectServiceSpy = jasmine.createSpyObj('ProjectService', [
-      'projectControllerFindOne',
-      'projectControllerFindProjectMetrics',
-    ]);
-    spatialFeatureServiceSpy = jasmine.createSpyObj('SpatialFeatureService', [
-      'spatialFeatureControllerGetForProject',
-    ]);
+    projectServiceSpy = {
+      projectControllerFindOne: jest.fn(),
+      projectControllerFindProjectMetrics: jest.fn(),
+    } as unknown as jest.Mocked<ProjectService>;
+    spatialFeatureServiceSpy = {
+      spatialFeatureControllerGetForProject: jest.fn(),
+    } as unknown as jest.Mocked<SpatialFeatureService>;
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: ProjectService, useValue: projectServiceSpy },
+        { provide: SpatialFeatureService, useValue: spatialFeatureServiceSpy },
+      ],
+    });
   });
 
   it('should resolve project details', () => {
     const route: any = { paramMap: { get: () => '1' } };
-    projectServiceSpy.projectControllerFindOne.and.returnValue(of({ id: 1 }));
-    const result = projectDetailResolver(route, null);
+    projectServiceSpy.projectControllerFindOne.mockReturnValue(of({ id: 1 }));
+    const result = TestBed.runInInjectionContext(() => projectDetailResolver(route, null));
     expect(result).toBeDefined();
   });
 
   it('should resolve project metrics', () => {
     const route: any = { paramMap: { get: () => '1' } };
-    projectServiceSpy.projectControllerFindProjectMetrics.and.returnValue(of({ metrics: true }));
-    const result = projectMetricsDetailResolver(route, null);
+    projectServiceSpy.projectControllerFindProjectMetrics.mockReturnValue(of({ metrics: true }));
+    const result = TestBed.runInInjectionContext(() => projectMetricsDetailResolver(route, null));
     expect(result).toBeDefined();
   });
 
   it('should resolve project spatial details', () => {
     const route: any = { paramMap: { get: () => '1' } };
-    spatialFeatureServiceSpy.spatialFeatureControllerGetForProject.and.returnValue(of([ { id: 1 } ]));
-    const result = projectSpatialDetailResolver(route, null);
+    spatialFeatureServiceSpy.spatialFeatureControllerGetForProject.mockReturnValue(of([ { id: 1 } ]));
+    const result = TestBed.runInInjectionContext(() => projectSpatialDetailResolver(route, null));
     expect(result).toBeDefined();
   });
 });
