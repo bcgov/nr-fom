@@ -24,6 +24,7 @@ jobs:
       - uses: bcgov/action-test-and-analyse@v1.3.0
         with:
           commands: |
+            cd ../libs && npm ci --ignore-scripts && cd -
             npm ci --ignore-scripts
             npm run test-unit
           dir: admin
@@ -56,6 +57,7 @@ jobs:
       - uses: bcgov/action-test-and-analyse@v1.3.0
         with:
           commands: |
+            cd ../libs && npm ci --ignore-scripts && cd -
             npm ci --ignore-scripts
             npm run test-unit
           dir: public
