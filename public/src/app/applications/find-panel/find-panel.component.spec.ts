@@ -5,7 +5,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { FindPanelComponent } from './find-panel.component';
 import { FOMFiltersService, FOM_FILTER_NAME, COMMENT_STATUS_FILTER_PARAMS } from '@public-core/services/fomFilters.service';
 import { UrlService } from '@public-core/services/url.service';
-import { Filter, MultiFilter, FilterUtils } from '../utils/filter';
+import { Filter, MultiFilter } from '../utils/filter';
 
 describe('FindPanelComponent', () => {
   let component: FindPanelComponent;
