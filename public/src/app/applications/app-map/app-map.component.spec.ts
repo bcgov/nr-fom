@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { AppMapComponent } from './app-map.component';
 import { UrlService } from '@public-core/services/url.service';
 import { MapLayersService } from '@public-core/services/mapLayers.service';
@@ -38,8 +38,9 @@ describe('AppMapComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [AppMapComponent, RouterTestingModule],
+      imports: [AppMapComponent],
       providers: [
+        provideRouter([]),
         { provide: UrlService, useValue: mockUrlService },
         { provide: MapLayersService, useValue: mockMapLayersService },
       ],

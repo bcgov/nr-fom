@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { DetailsPanelComponent } from './details-panel.component';
 import { ProjectService, SpatialFeatureService, AttachmentService } from '@api-client';
 import { UrlService } from '@public-core/services/url.service';
@@ -65,8 +65,9 @@ describe('DetailsPanelComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [DetailsPanelComponent, RouterTestingModule],
+      imports: [DetailsPanelComponent],
       providers: [
+        provideRouter([]),
         { provide: ProjectService, useValue: mockProjectService },
         { provide: SpatialFeatureService, useValue: mockSpatialFeatureService },
         { provide: AttachmentService, useValue: mockAttachmentService },

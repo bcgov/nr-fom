@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { FindPanelComponent } from './find-panel.component';
@@ -49,8 +49,9 @@ describe('FindPanelComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [FindPanelComponent, RouterTestingModule, FormsModule],
+      imports: [FindPanelComponent, FormsModule],
       providers: [
+        provideRouter([]),
         { provide: UrlService, useValue: mockUrlService },
         { provide: FOMFiltersService, useValue: mockFomFiltersSvc },
       ],

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { PublicNoticesPanelComponent } from './public-notices-panel.component';
 import { PublicNoticeService } from '@api-client';
@@ -44,8 +44,9 @@ describe('PublicNoticesPanelComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [PublicNoticesPanelComponent, RouterTestingModule],
+      imports: [PublicNoticesPanelComponent],
       providers: [
+        provideRouter([]),
         { provide: PublicNoticeService, useValue: mockPublicNoticeService },
         { provide: UrlService, useValue: mockUrlService },
       ],

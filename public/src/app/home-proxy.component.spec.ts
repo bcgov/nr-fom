@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Router, provideRouter } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
 import { HomeProxyComponent } from './home-proxy.component';
 
@@ -12,8 +11,9 @@ describe('HomeProxyComponent', () => {
   describe('without showSplashModal param', () => {
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        imports: [HomeProxyComponent, RouterTestingModule],
+        imports: [HomeProxyComponent],
         providers: [
+          provideRouter([]),
           {
             provide: ActivatedRoute,
             useValue: {
@@ -46,8 +46,9 @@ describe('HomeProxyComponent', () => {
   describe('with showSplashModal=true param', () => {
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        imports: [HomeProxyComponent, RouterTestingModule],
+        imports: [HomeProxyComponent],
         providers: [
+          provideRouter([]),
           {
             provide: ActivatedRoute,
             useValue: {

@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { SplashModalComponent, SplashModalResult } from './splash-modal.component';
 import { UrlService } from '@public-core/services/url.service';
@@ -22,8 +21,9 @@ describe('SplashModalComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [SplashModalComponent, RouterTestingModule],
+      imports: [SplashModalComponent],
       providers: [
+        provideRouter([]),
         { provide: NgbActiveModal, useValue: mockActiveModal },
         { provide: UrlService, useValue: mockUrlService },
         {

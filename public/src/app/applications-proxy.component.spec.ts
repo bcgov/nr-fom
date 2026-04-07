@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router, ActivatedRoute } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Router, ActivatedRoute, provideRouter } from '@angular/router';
 import { ApplicationsProxyComponent } from './applications-proxy.component';
 
 describe('ApplicationsProxyComponent', () => {
@@ -10,8 +9,9 @@ describe('ApplicationsProxyComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ApplicationsProxyComponent, RouterTestingModule],
+      imports: [ApplicationsProxyComponent],
       providers: [
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: {

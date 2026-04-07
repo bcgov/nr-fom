@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { Router, provideRouter } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { AppComponent } from './app.component';
@@ -30,8 +29,9 @@ describe('AppComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [AppComponent, RouterTestingModule],
+      imports: [AppComponent],
       providers: [
+        provideRouter([]),
         { provide: StateService, useValue: mockStateService },
         { provide: ModalService, useValue: mockModalService },
         provideNoopAnimations(),

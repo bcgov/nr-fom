@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { HeaderComponent } from './header.component';
-import { RouterTestingModule } from '@angular/router/testing';
 import { ConfigService } from '@utility/services/config.service';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
@@ -15,8 +15,9 @@ describe('HeaderComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [HeaderComponent, RouterTestingModule],
+      imports: [HeaderComponent],
       providers: [
+        provideRouter([]),
         { provide: ConfigService, useValue: mockConfigService },
         provideNoopAnimations(),
       ],
