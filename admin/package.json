@@ -4,7 +4,9 @@
   "license": "MIT",
   "scripts": {
     "start:admin": "ng serve --configuration development --host=0.0.0.0",
-    "build:admin": "ng build --configuration production"
+    "build:admin": "ng build --configuration production",
+    "test-unit": "jest --coverage",
+    "test-unit-watch": "jest --watch=true"
   },
   "private": true,
   "dependencies": {
