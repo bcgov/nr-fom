@@ -24,10 +24,11 @@ jobs:
       - uses: bcgov/action-test-and-analyse@v1.3.0
         with:
           commands: |
+            cd ../libs && npm ci --ignore-scripts && cd -
             npm ci --ignore-scripts
             npm run test-unit
           dir: admin
-          node_version: 18.19.1
+          node_version: 20.18.1
 
   tests-api:
     name: Unit Tests (api)
@@ -56,10 +57,11 @@ jobs:
       - uses: bcgov/action-test-and-analyse@v1.3.0
         with:
           commands: |
+            cd ../libs && npm ci --ignore-scripts && cd -
             npm ci --ignore-scripts
             npm run test-unit
           dir: public
-          node_version: 18.19.1
+          node_version: 20.18.1
 
   # https://github.com/marketplace/actions/aqua-security-trivy
   trivy:
