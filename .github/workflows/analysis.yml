@@ -16,8 +16,22 @@ concurrency:
 permissions: {}
 
 jobs:
-  tests:
-    name: Unit Tests
+  tests-admin:
+    name: Unit Tests (admin)
+    if: (! github.event.pull_request.draft)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: bcgov/action-test-and-analyse@v1.3.0
+        with:
+          commands: |
+            cd ../libs && npm ci --ignore-scripts && cd -
+            npm ci --ignore-scripts
+            npm run test-unit
+          dir: admin
+          node_version: 20.18.1
+
+  tests-api:
+    name: Unit Tests (api)
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-24.04
     steps:
@@ -27,13 +41,27 @@ jobs:
             npm ci --ignore-scripts
             npm run test-unit
           dir: api
-          node_version: 18.18.2
+          node_version: 20.18.1
           sonar_args: >
             -Dsonar.exclusions=**/*.spec.ts
             -Dsonar.javascript.lcov.reportPaths=coverage/api/lcov.info   
             -Dsonar.organization=bcgov-sonarcloud
             -Dsonar.projectKey=nr-fom
           sonar_token: ${{ secrets.SONAR_TOKEN }}
+
+  tests-public:
+    name: Unit Tests (public)
+    if: (! github.event.pull_request.draft)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: bcgov/action-test-and-analyse@v1.3.0
+        with:
+          commands: |
+            cd ../libs && npm ci --ignore-scripts && cd -
+            npm ci --ignore-scripts
+            npm run test-unit
+          dir: public
+          node_version: 20.18.1
 
   # https://github.com/marketplace/actions/aqua-security-trivy
   trivy:
@@ -62,7 +90,7 @@ jobs:
 
   results:
     name: Analysis Results
-    needs: [tests, trivy]
+    needs: [tests-admin, tests-api, tests-public, trivy]
     if: always()
     runs-on: ubuntu-24.04
     steps:
