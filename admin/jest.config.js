@@ -1,29 +1,22 @@
-const config = {
-  verbose: true,
-};
-
-module.exports = config;
-
 module.exports = {
   displayName: 'admin',
   preset: 'jest-preset-angular',
+  setupFiles: ['<rootDir>/src/jest-global-setup.ts'],
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  globals: {
-    'ts-jest': {
-      tsconfig: '<rootDir>/tsconfig.spec.json',
-      stringifyContentPathRegex: '\\.(html|svg)$',
-      astTransformers: {
-        before: [
-          'jest-preset-angular/build/InlineFilesTransformer',
-          'jest-preset-angular/build/StripStylesTransformer',
-        ],
-      },
-    },
+  testMatch: [
+    '<rootDir>/src/**/*.spec.ts',
+  ],
+  modulePaths: ['<rootDir>'],
+  moduleNameMapper: {
+    '^@admin-core/(.*)$': '<rootDir>/src/core/$1',
+    '^@api-client$': '<rootDir>/../libs/client/typescript-ng',
+    '^@utility/(.*)$': '<rootDir>/../libs/utility/src/$1',
+    '^app/(.*)$': '<rootDir>/src/app/$1',
   },
   coverageDirectory: '../coverage/admin',
   snapshotSerializers: [
-    'jest-preset-angular/build/AngularNoNgAttributesSnapshotSerializer.js',
-    'jest-preset-angular/build/AngularSnapshotSerializer.js',
-    'jest-preset-angular/build/HTMLCommentSerializer.js',
+    'jest-preset-angular/build/serializers/no-ng-attributes',
+    'jest-preset-angular/build/serializers/ng-snapshot',
+    'jest-preset-angular/build/serializers/html-comment',
   ],
 };
