@@ -3,7 +3,6 @@ import { SpatialFeatureService } from './spatial-feature.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SpatialFeature } from './spatial-feature.entity';
 import { PinoLogger } from 'nestjs-pino';
-import { Repository } from 'typeorm';
 
 describe('SpatialFeatureService', () => {
   let service: SpatialFeatureService;

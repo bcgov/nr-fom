@@ -3,7 +3,6 @@ import { DistrictService } from './district.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { District } from './district.entity';
 import { PinoLogger } from 'nestjs-pino';
-import { Repository } from 'typeorm';
 
 describe('DistrictService', () => {
   let service: DistrictService;
