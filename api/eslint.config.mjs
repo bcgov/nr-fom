@@ -5,7 +5,7 @@ export default [
   {
     ignores: ['dist/**', 'node_modules/**', 'coverage/**', '.eslintrc.js'],
   },
-  ...tsseslint.configs['recommended'],
+  ...tseslint.configs['recommended'],
   {
     files: ['**/*.ts'],
     languageOptions: {
@@ -21,7 +21,6 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      'prettier/prettier': 'error',
     },
   },
   prettier,

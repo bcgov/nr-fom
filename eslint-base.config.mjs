@@ -22,7 +22,6 @@ export const baseIgnores = [
 ]
 
 export const baseRules = {
-  'prettier/prettier': 'error',
   'no-console': 'off',
   'no-debugger': 'warn',
   'no-unused-vars': 'off',

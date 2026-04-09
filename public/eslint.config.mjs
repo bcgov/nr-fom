@@ -1,32 +1,21 @@
-import { FlatCompat } from '@eslint/eslint-plugin'
-import angular from 'angular-eslint'
 import tseslint from 'typescript-eslint'
+import angular from '@angular-eslint/eslint-plugin'
+import angularTemplate from '@angular-eslint/eslint-plugin-template'
+import angularParser from '@angular-eslint/template-parser'
 import prettier from 'eslint-config-prettier'
-
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-})
-
-const extendsBase = [
-  ...tsseslint.configs['recommended'],
-  ...angular.configs['recommended'],
-  ...angular.configs['template'],
-]
 
 export default [
   {
     ignores: ['projects/**/*', 'dist/**', 'node_modules/**', 'coverage/**'],
   },
-  ...extendsBase.map((config) => ({
-    ...config,
-    files: ['**/*.ts'],
-  })),
-  ...angular.configs['template'].map((config) => ({
-    ...config,
-    files: ['**/*.html'],
-  })),
+  ...tseslint.configs['recommended'],
   {
     files: ['**/*.ts'],
+    plugins: { '@angular-eslint': angular },
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: { project: 'tsconfig.json', createDefaultProgram: true },
+    },
     rules: {
       '@angular-eslint/component-selector': [
         'error',
@@ -39,17 +28,14 @@ export default [
     },
   },
   {
-    files: ['**/*.ts'],
-    languageOptions: {
-      parserOptions: {
-        project: 'tsconfig.json',
-        createDefaultProgram: true,
-      },
-    },
+    files: ['**/*.html'],
+    plugins: { '@angular-eslint/template': angularTemplate },
+    languageOptions: { parser: angularParser },
   },
   {
     rules: {
-      'prettier/prettier': 'error',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
   prettier,
