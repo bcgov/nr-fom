@@ -3,7 +3,7 @@ ARG build_dir=public
 ARG port=4300
 
 # Build container
-FROM node:20.18.1-alpine3.19 AS build
+FROM node:22-alpine AS build
 
 # Install dependencies and build static content
 ARG build_dir
