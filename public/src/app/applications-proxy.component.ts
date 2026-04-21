@@ -7,7 +7,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 //
 
 @Component({
-  // eslint-disable-next-line @angular-eslint/component-selector
+   
   standalone: true,
   selector: 'applications-proxy-component',
   template: ''

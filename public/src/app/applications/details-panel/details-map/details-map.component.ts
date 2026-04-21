@@ -148,14 +148,14 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public addFeatures() {
-    var projectSpatialDetails = this.projectSpatialDetail;
+    let projectSpatialDetails = this.projectSpatialDetail;
     if (this.map) {
       projectSpatialDetails.forEach(spatialDetail => {
         const layer = L.geoJSON(<GeoJsonObject>spatialDetail['geometry']);
         layer.on('click', L.Util.bind(this.onSpatialFeatureClick, this, spatialDetail));
         this.projectFeatures.addLayer(layer);
         this.map.on('zoomend', () => {
-            var style: L.PathOptions = {};
+            let style: L.PathOptions = {};
             style.weight = 5; 
             if (this.map.getZoom() < 14) {
                 style.weight = 2;

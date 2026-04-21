@@ -28,7 +28,7 @@ jobs:
             npm ci --ignore-scripts
             npm run test-unit
           dir: admin
-          node_version: 20.18.1
+          node_version: 22.14.0
 
   tests-api:
     name: Unit Tests (api)
@@ -41,7 +41,7 @@ jobs:
             npm ci --ignore-scripts
             npm run test-unit
           dir: api
-          node_version: 20.18.1
+          node_version: 22.14.0
           sonar_args: >
             -Dsonar.exclusions=**/*.spec.ts
             -Dsonar.javascript.lcov.reportPaths=coverage/api/lcov.info   
@@ -61,7 +61,7 @@ jobs:
             npm ci --ignore-scripts
             npm run test-unit
           dir: public
-          node_version: 20.18.1
+          node_version: 22.14.0
 
   # https://github.com/marketplace/actions/aqua-security-trivy
   trivy:

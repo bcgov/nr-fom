@@ -14,7 +14,7 @@ import { takeUntil } from 'rxjs/operators';
 import { MarkerPopupComponent } from './marker-popup/marker-popup.component';
 
 declare module 'leaflet' {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+   
   export interface Marker<P = any> {
     dispositionId: number;
   }
