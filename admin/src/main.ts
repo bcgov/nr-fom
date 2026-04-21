@@ -45,7 +45,7 @@ const coreProviders = [
         FormsModule, 
         ReactiveFormsModule,
         BrowserAnimationsModule,
-        BsDatepickerModule.forRoot(),
+        BsDatepickerModule,
         NgbModule, 
         ApiModule.forRoot(() => apiConfig),
         RxReactiveFormsModule,

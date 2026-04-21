@@ -69,10 +69,9 @@ describe('ForestClientService', () => {
       );
       configServiceGetPageSizeSpy.mockReturnValue(PAGE_SIZE_DEFAULT)
       await service.batchClientDataRefresh();
-      expect(fetchClientNonIndividualsSpy).toHaveBeenCalled();
-      expect(fetchClientNonIndividualsSpy).toBeCalledTimes(stopAtPage + 1);
+      expect(fetchClientNonIndividualsSpy).toHaveBeenCalledTimes(stopAtPage + 1);
       expect(repositoryUpsertSpy).toHaveBeenCalled();
-      expect(repositoryUpsertSpy).toBeCalledTimes(1*stopAtPage);
+      expect(repositoryUpsertSpy).toHaveBeenCalledTimes(1*stopAtPage);
     });
 
   });

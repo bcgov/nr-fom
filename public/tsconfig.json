@@ -3,7 +3,7 @@
   "compilerOptions": {
     "sourceMap": true,
     "declaration": false,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -12,7 +12,7 @@
     "target": "ES2022",
     "module": "esnext",
     "lib": [
-      "es2017",
+      "es2022",
       "dom"
     ],
     "skipLibCheck": true,
@@ -20,17 +20,14 @@
     "outDir": "dist/public",
     "baseUrl": "./src",
     "paths": {
-      "@public-core/*": [
-        "core/*"
-      ],
       "@api-client": [
         "../../libs/client/typescript-ng"
       ],
       "@utility/*": [
         "../../libs/utility/src/*"
       ],
-      "@angular/*": [
-        "../node_modules/@angular/*"
+      "@public-core/*": [
+        "core/*"
       ]
     },
     "useDefineForClassFields": false,

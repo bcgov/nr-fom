@@ -7,7 +7,7 @@ import {
 } from '@api-client';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap/modal';
 import { periodOperationsTxt, woodlotOperationsTxt } from '@public-core/constants/appConstants';
 import { UrlService } from '@public-core/services/url.service';
 import { getCommentingClosingDate } from '@public-core/utils/appUtils';

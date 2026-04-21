@@ -9,6 +9,7 @@ import { ErrorInterceptor } from '@public-core/interceptors/http-error.intercept
 import { retrieveApiBasePath } from '@utility/services/config.service';
 import { AppComponent } from 'app/app.component';
 import { AppRoutes } from 'app/app.routes';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap/modal';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { environment } from './environments/environment';
 
@@ -25,7 +26,7 @@ const coreProviders = [
     provideHttpClient(withInterceptorsFromDi()),
     importProvidersFrom(
         ApiModule.forRoot(() => apiConfig),
-        BsDatepickerModule.forRoot(),
+        BsDatepickerModule,
         BrowserAnimationsModule,
         MatDialogModule
     ),
