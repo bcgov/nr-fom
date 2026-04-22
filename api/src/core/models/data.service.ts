@@ -135,7 +135,6 @@ export abstract class DataService<
   protected addCommonRelationsToFindOptions(options?: FindOneOptions<E>): FindOneOptions<E> {
     const revisedOptions = options ? options : {};
     revisedOptions.relations = options?.relations ? options.relations : {};
-    // @ts-expect-error
     // this.getCommonRelations() is an 'array', but options.relations is 'object'
     this.getCommonRelations().forEach(cRelation => {
       if (! (cRelation in revisedOptions.relations)) { 

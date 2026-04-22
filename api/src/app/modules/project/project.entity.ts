@@ -7,8 +7,7 @@ import { Submission } from '../submission/submission.entity';
 import { FomPoint } from './project.dto';
 import { PublicNotice } from './public-notice.entity';
 import { WorkflowStateCode } from './workflow-state-code.entity';
-import { CutBlock } from '../submission/cut-block.entity';
-import { RoadSection } from '../submission/road-section.entity';
+
 
 @Entity('project', {schema: 'app_fom'})
 export class Project extends ApiBaseEntity<Project> {
@@ -71,16 +70,6 @@ export class Project extends ApiBaseEntity<Project> {
   @Column({ name: 'project_plan_code'})
   @RelationId((project: Project) => project.projectPlan)
   projectPlanCode: string;
-
-  @OneToMany((_type) => CutBlock, (cutBlock) => cutBlock.project, {
-    cascade: true,
-  })
-  cutBlocks: CutBlock[];
-
-  @OneToMany((_type) => RoadSection, (roadSection) => roadSection.project, {
-    cascade: true,
-  })
-  roadSections: RoadSection[];
 
   @OneToMany((_type) => Submission, (submission) => submission.project) 
   submissions: Submission[];

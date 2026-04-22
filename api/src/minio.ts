@@ -7,19 +7,17 @@ export const minioClient =  new Minio.Client({
     secretKey: process.env.OBJECT_STORAGE_SECRET
 });
 
-export function verifyObjectStorageConnection() {
+export async function verifyObjectStorageConnection() {
     if (!process.env.OBJECT_STORAGE_ACCESS_ID || !process.env.OBJECT_STORAGE_SECRET) {
         console.error("Object storage credentials not provided.");
         return;
     }
-    minioClient.listBuckets(function(err, buckets) {
-        if (err) { 
-         console.error("Error connecting to object storage", err);
-         return;
-        } 
-        
+    try {
+        const buckets = await minioClient.listBuckets();
         console.log('Succssful connection to object storage. Buckets accessible = ' + buckets.length);
-      });
+    } catch (err) {
+        console.error("Error connecting to object storage", err);
+    }
 }
 
 verifyObjectStorageConnection();
