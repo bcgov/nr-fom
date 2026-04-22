@@ -4,7 +4,7 @@ import { baseIgnores, baseRules, typescriptRules } from '../eslint-base.config.m
 
 export default [
   {
-    ignores: [...baseIgnores, '.eslintrc.js'],
+    ignores: baseIgnores,
   },
   ...tseslint.configs.recommended,
   {
@@ -18,7 +18,6 @@ export default [
     rules: {
       ...baseRules,
       ...typescriptRules,
-      '@typescript-eslint/interface-name-prefix': 'off',
     },
   },
   prettier,

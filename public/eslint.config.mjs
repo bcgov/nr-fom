@@ -3,12 +3,13 @@ import angular from '@angular-eslint/eslint-plugin'
 import angularTemplate from '@angular-eslint/eslint-plugin-template'
 import angularParser from '@angular-eslint/template-parser'
 import prettier from 'eslint-config-prettier'
+import { baseIgnores, baseRules, typescriptRules } from '../eslint-base.config.mjs'
 
 export default [
   {
-    ignores: ['projects/**/*', 'dist/**', 'node_modules/**', 'coverage/**'],
+    ignores: ['projects/**/*', ...baseIgnores],
   },
-  ...tseslint.configs['recommended'],
+  ...tseslint.configs.recommended,
   {
     files: ['**/*.ts'],
     plugins: { '@angular-eslint': angular },
@@ -17,6 +18,8 @@ export default [
       parserOptions: { project: 'tsconfig.json', createDefaultProgram: true },
     },
     rules: {
+      ...baseRules,
+      ...typescriptRules,
       '@angular-eslint/component-selector': [
         'error',
         { prefix: 'app', style: 'kebab-case', type: 'element' },
@@ -31,12 +34,7 @@ export default [
     files: ['**/*.html'],
     plugins: { '@angular-eslint/template': angularTemplate },
     languageOptions: { parser: angularParser },
-  },
-  {
-    rules: {
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-    },
+    rules: {},
   },
   prettier,
 ]
