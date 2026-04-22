@@ -61,8 +61,8 @@ services:
     image: node:18 # need update to node 20
     ports:
       - 3333:3333
-    links:
-      - db:database
+    env_file:
+      - .env
     volumes:
       - .:/app:z
     working_dir: /app
