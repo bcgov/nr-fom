@@ -16,8 +16,9 @@ import * as R from 'remeda';
 import { Brackets, Repository } from 'typeorm';
 import { PublicNotice } from '@api-modules/project/public-notice.entity';
 import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.entity';
-import NodeCache from 'node-cache';
+import * as NodeCacheModule from 'node-cache';
 import * as _ from 'lodash';
+const NodeCache = (NodeCacheModule as any).default || NodeCacheModule;
 
 @Injectable()
 export class PublicNoticeService extends DataService<PublicNotice, Repository<PublicNotice>, PublicNoticeResponse> {

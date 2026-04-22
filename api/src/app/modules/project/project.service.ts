@@ -29,8 +29,9 @@ import {
 } from './project.dto';
 import { Project } from './project.entity';
 import { WorkflowStateEnum } from './workflow-state-code.entity';
-import NodeCache from 'node-cache';
+import * as NodeCacheModule from 'node-cache';
 import * as _ from 'lodash';
+const NodeCache = (NodeCacheModule as any).default || NodeCacheModule;
 export class ProjectFindCriteria {
   includeWorkflowStateCodes: string[] = [];
   likeForestClientName?: string;
