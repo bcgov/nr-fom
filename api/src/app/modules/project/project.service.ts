@@ -30,7 +30,7 @@ import {
 import { Project } from './project.entity';
 import { WorkflowStateEnum } from './workflow-state-code.entity';
 import NodeCache from 'node-cache';
-import _ from 'lodash';
+import * as _ from 'lodash';
 export class ProjectFindCriteria {
   includeWorkflowStateCodes: string[] = [];
   likeForestClientName?: string;

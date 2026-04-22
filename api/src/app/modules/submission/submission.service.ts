@@ -20,7 +20,7 @@ import { SubmissionTypeCodeEnum } from './submission-type-code.entity';
 import { FomSpatialJson, SpatialCoordSystemEnum, SpatialObjectCodeEnum, SubmissionDetailResponse, SubmissionRequest } from './submission.dto';
 import { Submission } from './submission.entity';
 
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 type SpatialObject = CutBlock | RoadSection | RetentionArea;
 

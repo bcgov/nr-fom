@@ -2,7 +2,7 @@ import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc';
 import * as timezone from 'dayjs/plugin/timezone';
 import * as advancedFormat from 'dayjs/plugin/advancedFormat'
-import _ from 'lodash';
+import * as _ from 'lodash';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 
 /**

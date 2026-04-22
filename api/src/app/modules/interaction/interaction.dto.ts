@@ -1,7 +1,7 @@
 import { DateTimeUtil } from '@api-core/dateTimeUtil';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsNotEmpty, IsPositive, MaxLength, Min, MinLength, ValidationArguments, ValidationOptions, registerDecorator } from 'class-validator';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 // Ref - class-validator: custom validator.
 export function IsISODateOnlyString(validationOptions?: ValidationOptions) {

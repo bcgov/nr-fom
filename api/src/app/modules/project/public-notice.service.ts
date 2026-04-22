@@ -17,7 +17,7 @@ import { Brackets, Repository } from 'typeorm';
 import { PublicNotice } from '@api-modules/project/public-notice.entity';
 import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.entity';
 import NodeCache from 'node-cache';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 @Injectable()
 export class PublicNoticeService extends DataService<PublicNotice, Repository<PublicNotice>, PublicNoticeResponse> {
