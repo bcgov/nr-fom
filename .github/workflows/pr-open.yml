@@ -24,7 +24,7 @@ jobs:
             build_file: admin/Dockerfile
             triggers: ('admin/' 'libs/')
           - package: api
-            build_context: ./
+            build_context: .
             build_file: api/Dockerfile
             triggers: ('api/' 'libs/')
           - package: db
