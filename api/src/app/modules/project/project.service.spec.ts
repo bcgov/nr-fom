@@ -173,11 +173,11 @@ describe('ProjectService', () => {
 
   describe('validateWorkflowTransitionRules', () => {
     let user: User;
-    let entity: Partial<Project> = getSampleProjectEntityData();
+    const entity: Partial<Project> = getSampleProjectEntityData();
     let districtSpy: jest.SpyInstance<Promise<boolean>>;
     let postdateOnOrBeforeCommentingOpenDateSpy: jest.SpyInstance<boolean>;
     const stateTransition = WorkflowStateEnum.PUBLISHED;
-    let openingDateInFutureDays = 10;
+    const openingDateInFutureDays = 10;
     const closeDateAfterOpeningDateDays = 30;
 
     describe('"PUBLISHED" transition', () => {

@@ -29,8 +29,8 @@ import {
 } from './project.dto';
 import { Project } from './project.entity';
 import { WorkflowStateEnum } from './workflow-state-code.entity';
-import NodeCache = require('node-cache');
-import _ = require('lodash');
+import NodeCache from 'node-cache';
+import _ from 'lodash';
 export class ProjectFindCriteria {
   includeWorkflowStateCodes: string[] = [];
   likeForestClientName?: string;
@@ -471,8 +471,8 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
         await this.mailService.sendDistrictNotification(updatedEntity);
         this.logger.debug('FOM finalized notification mail Sent!');
       }
-      catch (error) {
-        this.logger.error(`Problem sending notification email: ${error}`);
+      catch (_error) {
+        this.logger.error(`Problem sending notification email: ${_error}`);
         throw new InternalServerErrorException('Problem sending FOM finalized notification email.');
       }
     }

@@ -73,7 +73,7 @@ export class PublicCommentService extends DataService<
     return found;
   }
 
-  protected convertEntity(entity: PublicComment): PublicCommentAdminResponse {
+  protected convertEntity(entity: PublicComment, _options?: any): PublicCommentAdminResponse {
     const response = new PublicCommentAdminResponse();
     response.commentScope = entity.commentScope;
     response.createTimestamp = entity.createTimestamp.toISOString();
@@ -150,7 +150,7 @@ export class PublicCommentService extends DataService<
   }
 
   async isUpdateAuthorized(
-    dto: PublicCommentAdminUpdateRequest,
+    _dto: PublicCommentAdminUpdateRequest,
     entity: PublicComment,
     user?: User
   ): Promise<boolean> {
@@ -162,8 +162,8 @@ export class PublicCommentService extends DataService<
   }
 
   async isDeleteAuthorized(
-    entity: PublicComment,
-    user?: User
+    _entity: PublicComment,
+    _user?: User
   ): Promise<boolean> {
     return false; // Comments cannot be deleted.
   }

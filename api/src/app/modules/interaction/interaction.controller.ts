@@ -11,8 +11,7 @@ import fetch from 'node-fetch';
 import { maxFileSizeBytes } from '../attachment/attachment.controller';
 import { InteractionCreateRequest, InteractionResponse, InteractionUpdateRequest } from './interaction.dto';
 import { InteractionService } from './interaction.service';
-import _ = require('lodash');
-import dayjs = require('dayjs');
+import dayjs from 'dayjs';
 // initialize dayjs extensions
 dayjs.extend(utc);
 dayjs.extend(timezone);

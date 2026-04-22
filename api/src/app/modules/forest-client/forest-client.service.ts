@@ -80,7 +80,7 @@ export class ForestClientService extends DataService<ForestClient, Repository<Fo
   }
 
   convertEntity(entity: ForestClient):ForestClientResponse {
-    var dto = new ForestClientResponse();
+    const dto = new ForestClientResponse();
     // Read-only so don't bother returning audit columns
     dto.id = entity.id;
     dto.name = entity.name;

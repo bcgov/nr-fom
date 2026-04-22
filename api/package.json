@@ -65,7 +65,7 @@
     "@types/lodash": "^4.14.194",
     "@typescript-eslint/eslint-plugin": "^8.24.1",
     "@typescript-eslint/parser": "^8.24.1",
-    "eslint": "^10.2.1",
+    "eslint": "^9.21.0",
     "eslint-config-prettier": "^10.0.1",
     "jest": "^29.7.0",
     "jest-sonar-reporter": "^2.0.0",
@@ -74,8 +74,5 @@
     "ts-node": "~10.9.2",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.24.1"
-  },
-  "overrides": {
-    "pino": "^8.21.0"
   }
 }

@@ -1,6 +1,7 @@
 import { DataService } from '@core';
 import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Multer as _Multer } from 'multer'; // This is needed, don't know why Visual Studio Code thinks it isn't.
 import { User } from "@utility/security/user";
 import { PinoLogger } from 'nestjs-pino';
 import { Stream } from 'node:stream';
@@ -68,7 +69,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
 
     const objectName = this.createObjectUrl(request.projectId, primaryKey, request.fileName);
 
-    minioClient.putObject(process.env.OBJECT_STORAGE_BUCKET, objectName, request.fileContents, function(error, objInfo) {
+    minioClient.putObject(process.env.OBJECT_STORAGE_BUCKET, objectName, request.fileContents, function(error, _objInfo) {
       if(error) {
         throw new InternalServerErrorException(error, 
           `Minio Client encountered problem while uploading file to storage to ${process.env.OBJECT_STORAGE_BUCKET},
@@ -87,7 +88,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
     }
   }
   
-  async isUpdateAuthorized(dto: any, entity: Attachment, user?: User):Promise<boolean> {
+  async isUpdateAuthorized(_dto: any, _entity: Attachment, _user?: User):Promise<boolean> {
     return false; // Updates not allowed.
   }
 

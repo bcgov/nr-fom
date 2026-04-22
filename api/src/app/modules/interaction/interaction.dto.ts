@@ -1,12 +1,11 @@
 import { DateTimeUtil } from '@api-core/dateTimeUtil';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsNotEmpty, IsPositive, MaxLength, Min, MinLength, ValidationArguments, ValidationOptions, registerDecorator } from 'class-validator';
-import dayjs = require('dayjs');
-import _ = require('lodash');
+import _ from 'lodash';
 
 // Ref - class-validator: custom validator.
 export function IsISODateOnlyString(validationOptions?: ValidationOptions) {
-    return function (object: Object, propertyName: string) {
+    return function (object: object, propertyName: string) {
         registerDecorator({
             name: 'isISODateOnlyString',
             target: object.constructor,

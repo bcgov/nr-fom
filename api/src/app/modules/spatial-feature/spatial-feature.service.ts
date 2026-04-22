@@ -6,7 +6,7 @@ import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
 import { FeatureTypeCode } from './feature-type-code';
 import { SpatialFeatureBcgwResponse, SpatialFeaturePublicResponse } from './spatial-feature.dto';
 import { SpatialFeature } from './spatial-feature.entity';
-import dayjs = require('dayjs');
+import dayjs from 'dayjs';
 
 @Injectable()
 export class SpatialFeatureService {

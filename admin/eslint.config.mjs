@@ -9,7 +9,7 @@ export default [
   {
     ignores: ['projects/**/*', ...baseIgnores],
   },
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommended.map(config => ({ ...config, files: ['**/*.ts'] })),
   {
     files: ['**/*.ts'],
     plugins: { '@angular-eslint': angular },

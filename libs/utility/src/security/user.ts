@@ -54,11 +54,11 @@ export class User {
     static convertAwsCognitoDecodedTokenToUser(decodedToken: any): User {
         const user = new User();
         const idToken = decodedToken['decodedIdToken'];
-        const accessToken = decodedToken['decodedAccessToken']
+        const accessToken = decodedToken['decodedAccessToken'];
         user.userName = idToken['custom:idp_username'];
         user.displayName = idToken['custom:idp_display_name'];
-        let roles: string[];
-        roles = accessToken['cognito:groups'];
+        const roles: string[] = accessToken['cognito:groups'];
+        user.roles = roles || [];
 
         if (roles) {
             const FOM_REVIEWER_ROLE = 'FOM_REVIEWER';

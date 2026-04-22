@@ -2,31 +2,39 @@ import { PinoLogger } from "nestjs-pino";
 
 class MockLogger extends PinoLogger {
   constructor() {
-    super({});
+    super({} as any);
   }
-  trace(...args: any) {
-    // Do nothing
+
+  trace(..._args: any[]) {
+    // This is intentional for empty body.
   }
-  debug(...args: any) {
-    // Do nothing
+
+  debug(..._args: any[]) {
+    // This is intentional for empty body.
   }
-  info(...args: any) {
-    // Do nothing
+
+  info(..._args: any[]) {
+    // This is intentional for empty body.
   }
-  warn(...args: any) {
-    // Do nothing
+
+  warn(..._args: any[]) {
+    // This is intentional for empty body.
   }
-  error(...args: any) {
-    // Do nothing
+
+  error(..._args: any[]) {
+    // This is intentional for empty body.
   }
-  fatal(...args: any) {
-    // Do nothing
+
+  fatal(..._args: any[]) {
+    // This is intentional for empty body.
   }
-  setContext(...args: any) {
-    // Do nothing
+
+  setContext(_context: string) {
+    // This is intentional for empty body.
   }
-  private(...args: any) {
-    // Do nothing
+
+  assign(_props: object) {
+    // This is intentional for empty body.
   }
 }
 

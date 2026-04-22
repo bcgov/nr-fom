@@ -1,4 +1,4 @@
-var Minio = require('minio')
+import * as Minio from 'minio';
 
 // Default URL if not defined to avoid startup errors in unit tests, batch, etc.
 export const minioClient =  new Minio.Client({
@@ -23,5 +23,3 @@ export function verifyObjectStorageConnection() {
 }
 
 verifyObjectStorageConnection();
-
-

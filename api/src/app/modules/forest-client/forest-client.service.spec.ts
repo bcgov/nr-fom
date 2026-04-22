@@ -86,8 +86,8 @@ describe('ForestClientService', () => {
 async function mockFetchClientNonIndividualsStopAtPage(
   stopAtPage: number, 
   page: number, 
-  _pageSize, 
-  _sortedColumn): Promise<ClientAppIntegrationResponse[]> 
+  _pageSize: any, 
+  _sortedColumn: any): Promise<ClientAppIntegrationResponse[]> 
 {
   if (page >= 0 && page < stopAtPage && stopAtPage <= sampleClientAppIntegrationResponseList.length) {
     return [sampleClientAppIntegrationResponseList[page]];
@@ -96,7 +96,7 @@ async function mockFetchClientNonIndividualsStopAtPage(
 }
 
 class ForestClientRepositoryFake {
-  public findOne(options: FindOneOptions<ForestClient>): Promise<ForestClient | null> {
+  public findOne(_options: FindOneOptions<ForestClient>): Promise<ForestClient | null> {
     return null;
   }
   public upsert(): void {

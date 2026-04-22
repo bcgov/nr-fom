@@ -13,19 +13,19 @@ import { ProjectAuthService } from '../project/project-auth.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
 import { InteractionCreateRequest, InteractionResponse, InteractionUpdateRequest } from './interaction.dto';
 import { Interaction } from './interaction.entity';
-import _ = require('lodash');
+import _ from 'lodash';
 
 @Injectable()
 export class InteractionService extends DataService<Interaction, Repository<Interaction>, InteractionResponse> {
   constructor(
     @InjectRepository(Interaction)
-    repository: Repository<Interaction>,
-    logger: PinoLogger,
-    private projectAuthService: ProjectAuthService,
-    private attachmentService: AttachmentService,
-    private projectService: ProjectService
+    _repository: Repository<Interaction>,
+    _logger: PinoLogger,
+    private _projectAuthService: ProjectAuthService,
+    private _attachmentService: AttachmentService,
+    private _projectService: ProjectService
   ) {
-    super(repository, new Interaction(), logger);
+    super(_repository, new Interaction(), _logger);
   }
 
   async create(request: InteractionCreateRequest, user: User): Promise<InteractionResponse> {
@@ -61,7 +61,7 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
           throw new InternalServerErrorException("Error removing previous attachment");
         }
     
-        await this.attachmentService.delete(prviousAttachmentId, user);
+        await this._attachmentService.delete(prviousAttachmentId, user);
       }
       updateRequest.attachmentId = await this.addNewAttachment(updateRequest.projectId, fileName, file, user);
     }
@@ -80,7 +80,7 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
 
     await super.delete(id, user);
     if (attachmentId) {
-      await this.attachmentService.delete(attachmentId, user);
+      await this._attachmentService.delete(attachmentId, user);
     }
   }
 
@@ -90,14 +90,14 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
     attachmentCreateRequest.fileName = fileName;
     attachmentCreateRequest.fileContents = file;
     attachmentCreateRequest.attachmentTypeCode = AttachmentTypeEnum.INTERACTION;
-    const attachmentId = (await this.attachmentService.create(attachmentCreateRequest, user)).id;
+    const attachmentId = (await this._attachmentService.create(attachmentCreateRequest, user)).id;
     return attachmentId;
   }
 
   // basic fields validation is done using 'class-validator' on request dto, this is further business validation.
   private async businessValidate(request: InteractionCreateRequest | InteractionUpdateRequest) {
     // communication_date: >= commenting_open_date
-    const project = await this.projectService.findOne(request.projectId);
+    const project = await this._projectService.findOne(request.projectId);
     const commentingOpenDate = project.commentingOpenDate;
     const communicationDate = request.communicationDate;
 
@@ -109,7 +109,7 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
 
   async findByProjectId(projectId: number, user: User): Promise<InteractionResponse[]> {
     if (!user.isMinistry) {
-      if (! await this.projectAuthService.isForestClientUserAccess(projectId, user)) {
+      if (! await this._projectAuthService.isForestClientUserAccess(projectId, user)) {
         throw new ForbiddenException();
       }
     }
@@ -132,7 +132,7 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
     // include attachment meta info(if any)
     for (const interaction of interactionResponses) {
       if (interaction.attachmentId) {
-        const attachment = await this.attachmentService.findOne(interaction.attachmentId, user);
+        const attachment = await this._attachmentService.findOne(interaction.attachmentId, user);
         interaction.fileName = attachment.fileName;
       }
     }
@@ -140,17 +140,17 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
   }
   
   async isCreateAuthorized(dto: InteractionCreateRequest, user?: User): Promise<boolean> {
-    return this.projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId, 
+    return this._projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId, 
       [WorkflowStateEnum.COMMENT_OPEN, WorkflowStateEnum.COMMENT_CLOSED], user);
   }
   
   async isUpdateAuthorized(dto: InteractionCreateRequest, entity: Interaction, user?: User): Promise<boolean> {
-    return this.projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId, 
+    return this._projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId, 
       [WorkflowStateEnum.COMMENT_OPEN, WorkflowStateEnum.COMMENT_CLOSED], user);
   }
 
   async isDeleteAuthorized(entity: Interaction, user?: User): Promise<boolean> {
-    return this.projectAuthService.isForestClientUserAllowedStateAccess(entity.projectId, 
+    return this._projectAuthService.isForestClientUserAllowedStateAccess(entity.projectId, 
       [WorkflowStateEnum.COMMENT_OPEN, WorkflowStateEnum.COMMENT_CLOSED], user);
   }
 
@@ -164,7 +164,7 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
     }
 
     // We ignore workflow state for viewing.
-    return this.projectAuthService.isForestClientUserAccess(entity.projectId, user);
+    return this._projectAuthService.isForestClientUserAccess(entity.projectId, user);
   }
 
   protected convertEntity(entity: Interaction): InteractionResponse {

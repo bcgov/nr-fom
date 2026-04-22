@@ -4,7 +4,7 @@ import { CodeTableService } from '@core';
 
 @Controller()
 export class CodeTableController<E> {
-  // @ts-ignore
+  // @ts-expect-error
   constructor(protected readonly service: CodeTableService<E, Repository<E>>) {}
 
   @Get()

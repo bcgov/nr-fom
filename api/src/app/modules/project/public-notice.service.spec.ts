@@ -183,7 +183,7 @@ describe('PublicNoticeService', () => {
 
       it('return cache Public Notices when cache still presents', async () => {
         const cacheResult: Array<PublicNoticePublicFrontEndResponse> = getSimplePublicNoticePublicFrontEndResponseData();
-        const cacheSpy = jest.spyOn((service as any).cache, 'get').mockImplementation(jest.fn((x) => cacheResult));
+        const cacheSpy = jest.spyOn((service as any).cache, 'get').mockImplementation(jest.fn((_x) => cacheResult));
 
         const testResult = await service.findForPublicFrontEnd();
 
@@ -192,7 +192,7 @@ describe('PublicNoticeService', () => {
       });
 
       it('return new Public Notices when no cache', async () => {
-        const cacheSpy = jest.spyOn((service as any).cache, 'get').mockImplementation(jest.fn((x) => null)); // no cache.
+        const cacheSpy = jest.spyOn((service as any).cache, 'get').mockImplementation(jest.fn((_x) => null)); // no cache.
         const publicNoticeEntityData = getSamplePublicNoticeEntity();
         const projectResponseData = getSimpleProjectResponseData();
         const createQueryBuilder: any = {
@@ -204,7 +204,7 @@ describe('PublicNoticeService', () => {
           getMany: () => [publicNoticeEntityData],
         };
         const createQueryBuilderSpy = jest.spyOn(repository, 'createQueryBuilder').mockImplementation(() => createQueryBuilder);
-        const serviceSpy = jest.spyOn(service, 'convertEntity').mockImplementation((x) => x);
+        const serviceSpy = jest.spyOn(service, 'convertEntity').mockImplementation((_x) => _x);
         const projectServiceSpy = jest.spyOn(projectService, 'convertEntity').mockReturnValue(projectResponseData);
 
         const testResult = await service.findForPublicFrontEnd();
@@ -236,8 +236,8 @@ function provideDependencyMock(): Array<any> {
       {
         provide: PinoLogger,
         useValue: {
-          info: jest.fn((x) => x),
-          setContext: jest.fn((x) => x),
+          info: jest.fn((_x) => _x),
+          setContext: jest.fn((_x) => _x),
         }
       },
       {

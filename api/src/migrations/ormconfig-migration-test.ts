@@ -1,7 +1,7 @@
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import * as config from "../ormconfig";
 
-var ormConfig = { 
+const ormConfig = { 
   ...config, 
   schema: '', // Use default (public) schema for migration table to avoid bootstrapping error where the app_fom schema doesn't exist yet to check the migration table.
   migrations: [

@@ -20,7 +20,7 @@ import { SubmissionTypeCodeEnum } from './submission-type-code.entity';
 import { FomSpatialJson, SpatialCoordSystemEnum, SpatialObjectCodeEnum, SubmissionDetailResponse, SubmissionRequest } from './submission.dto';
 import { Submission } from './submission.entity';
 
-import _ = require('lodash');
+import _ from 'lodash';
 
 type SpatialObject = CutBlock | RoadSection | RetentionArea;
 
@@ -701,7 +701,7 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     this.logger.debug(`Simplify geometry for submittion: ${submissionID}, spatial object type: ${spatialObjectCode}`);
 
     const buildUpdateQuery = (submissionID: number, spatialObjectCode: SpatialObjectCodeEnum) => {
-      let targetSpatialTable = this.getSpatialTableNameBySpatialObjectCode(spatialObjectCode);
+      const targetSpatialTable = this.getSpatialTableNameBySpatialObjectCode(spatialObjectCode);
       return `
         UPDATE app_fom.${targetSpatialTable} SET geometry=ST_SimplifyPreserveTopology(geometry, 2.5) where submission_id = ${submissionID};
       ` 

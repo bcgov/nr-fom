@@ -19,7 +19,7 @@ export class Submission extends ApiBaseEntity<Submission> {
   @Column({name: 'project_id'})
   projectId: number;
 
-  @ManyToOne(() => Project, project => project.submissions)
+  @ManyToOne((_type) => Project, project => project.submissions)
   @JoinColumn({ name: 'project_id' })
   project: Project;
 
@@ -31,12 +31,12 @@ export class Submission extends ApiBaseEntity<Submission> {
   @RelationId((submission: Submission) => submission.submissionType)
   submissionTypeCode: string;
 
-  @OneToMany(type => CutBlock, (cutBlock) => cutBlock.submission, {cascade: true})
+  @OneToMany(_type => CutBlock, (cutBlock) => cutBlock.submission, {cascade: true})
   cutBlocks: CutBlock[];
 
-  @OneToMany(type => RetentionArea, (retentionArea) => retentionArea.submission, {cascade: true})
+  @OneToMany(_type => RetentionArea, (retentionArea) => retentionArea.submission, {cascade: true})
   retentionAreas: RetentionArea[];
 
-  @OneToMany(type => RoadSection, (roadSection) => roadSection.submission, {cascade: true})
+  @OneToMany(_type => RoadSection, (roadSection) => roadSection.submission, {cascade: true})
   roadSections: RoadSection[];
 }

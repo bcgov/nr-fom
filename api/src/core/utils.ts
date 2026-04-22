@@ -21,7 +21,7 @@ export const deepMapKeys = (
     const originalValue = originalObject[key];
     let newValue = originalValue;
     if (Array.isArray(originalValue)) {
-      newValue = originalValue.map((item) => deepMapKeys(item, callback));
+      newValue = originalValue.map((item, _idx) => deepMapKeys(item, callback));
     } else if (
       typeof originalValue === 'object' &&
       originalValue &&
@@ -40,7 +40,7 @@ export const deepMapKeys = (
 };
 
 export const mapToEntity = (dto, entity) => {
-  Object.keys(dto).forEach((dtoKey, idx) => {
+  Object.keys(dto).forEach((dtoKey, _idx) => {
     const modelKey = dtoKey;
     entity[modelKey] = dto[dtoKey];
   });
@@ -49,7 +49,7 @@ export const mapToEntity = (dto, entity) => {
 };
 
 export const mapFromEntity = (entity, dto) => {
-  Object.keys(entity).forEach((modelKey, idx) => {
+  Object.keys(entity).forEach((modelKey, _idx) => {
     const dtoKey = (modelKey);
     dto[dtoKey] = entity[modelKey];
   });

@@ -7,6 +7,8 @@ import { Submission } from '../submission/submission.entity';
 import { FomPoint } from './project.dto';
 import { PublicNotice } from './public-notice.entity';
 import { WorkflowStateCode } from './workflow-state-code.entity';
+import { CutBlock } from '../submission/cut-block.entity';
+import { RoadSection } from '../submission/road-section.entity';
 
 @Entity('project', {schema: 'app_fom'})
 export class Project extends ApiBaseEntity<Project> {
@@ -70,13 +72,23 @@ export class Project extends ApiBaseEntity<Project> {
   @RelationId((project: Project) => project.projectPlan)
   projectPlanCode: string;
 
-  @OneToMany(type => Submission, (submission) => submission.project) 
+  @OneToMany((_type) => CutBlock, (cutBlock) => cutBlock.project, {
+    cascade: true,
+  })
+  cutBlocks: CutBlock[];
+
+  @OneToMany((_type) => RoadSection, (roadSection) => roadSection.project, {
+    cascade: true,
+  })
+  roadSections: RoadSection[];
+
+  @OneToMany((_type) => Submission, (submission) => submission.project) 
   submissions: Submission[];
   
   @Column({ name: 'comment_classification_mandatory', default: true, nullable: false})
   commentClassificationMandatory: boolean;
   
-  @OneToMany(type => PublicNotice, (publicNotice) => publicNotice.project, {cascade: true}) 
+  @OneToMany((_type) => PublicNotice, (publicNotice) => publicNotice.project, {cascade: true}) 
   publicNotices: PublicNotice[];
 
   @Column({ name: 'operation_start_year'})

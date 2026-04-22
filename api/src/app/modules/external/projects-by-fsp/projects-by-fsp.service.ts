@@ -7,7 +7,7 @@ import { ForestClientService } from "@src/app/modules/forest-client/forest-clien
 import { ProjectFindCriteria } from "@src/app/modules/project/project.service";
 import { PinoLogger } from "nestjs-pino";
 import { Repository } from "typeorm";
-import _ = require('lodash');
+import _ from 'lodash';
 
 @Injectable()
 export class ProjectsByFspService extends DataService<Project, Repository<Project>, ProjectByFspResponse> {

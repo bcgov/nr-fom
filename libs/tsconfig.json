@@ -11,6 +11,5 @@
     "noImplicitThis": true
   },
   "include": ["**/*.ts"],
-  "exclude": ["**/*.spec.ts"],
   "references": []
 }

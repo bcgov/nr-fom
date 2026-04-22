@@ -62,19 +62,19 @@ export abstract class DataService<
    * @param user May be null if anonymous. 
    * @param dto 
    */
-  async isCreateAuthorized(dto: unknown, user?: User): Promise<boolean> {
+  async isCreateAuthorized(_dto: unknown, _user?: User): Promise<boolean> {
     return false;
   }
   
-  async isUpdateAuthorized(dto: unknown, entity: E, user?: User): Promise<boolean> {
+  async isUpdateAuthorized(_dto: unknown, _entity: E, _user?: User): Promise<boolean> {
     return false;
   }
 
-  async isDeleteAuthorized(entity: E, user?: User): Promise<boolean> {
+  async isDeleteAuthorized(_entity: E, _user?: User): Promise<boolean> {
     return false;
   }
 
-  async isViewAuthorized(entity: E, user?: User): Promise<boolean> {
+  async isViewAuthorized(_entity: E, _user?: User): Promise<boolean> {
     return false;
   }
 
@@ -135,6 +135,7 @@ export abstract class DataService<
   protected addCommonRelationsToFindOptions(options?: FindOneOptions<E>): FindOneOptions<E> {
     const revisedOptions = options ? options : {};
     revisedOptions.relations = options?.relations ? options.relations : {};
+    // @ts-expect-error
     // this.getCommonRelations() is an 'array', but options.relations is 'object'
     this.getCommonRelations().forEach(cRelation => {
       if (! (cRelation in revisedOptions.relations)) { 

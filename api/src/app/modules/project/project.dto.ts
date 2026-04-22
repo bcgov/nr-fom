@@ -212,7 +212,7 @@ export class ProjectMetricsResponse {
 
 // Need to do this to get to compile, rather than using Point directly. Not sure why...
 export interface FomPoint extends Point {
-
+  // empty interface
 }
 export class ProjectCommentClassificationMandatoryChangeRequest {
     @ApiProperty()
@@ -263,7 +263,7 @@ export class ProjectCountByForestClientResponse {
 * Custom validation decorator: @IsGreaterOrEqualTo - check number_1 >= number_2
 */
 export function IsGreaterOrEqualTo(property: string, validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isGreaterOrEqualTo',
       target: object.constructor,

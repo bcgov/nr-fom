@@ -8,9 +8,6 @@
  *   import { baseIgnores, baseRules } from '../../eslint-base.config.mjs'
  */
 
-import tseslint from 'typescript-eslint'
-import prettier from 'eslint-config-prettier'
-
 export const baseIgnores = [
   '**/dist/**',
   '**/node_modules/**',
@@ -19,6 +16,7 @@ export const baseIgnores = [
   '**/*.js.map',
   '**/.eslintrc.json',
   '**/.eslintrc.js',
+  '**/client/typescript-ng/**',
 ]
 
 export const baseRules = {

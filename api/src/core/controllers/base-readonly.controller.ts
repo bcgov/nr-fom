@@ -5,7 +5,7 @@ import { DataReadOnlyService } from '@core';
 @Controller()
 export class BaseReadOnlyController<E, C> {
   constructor(
-    // @ts-ignore
+    // @ts-expect-error
     protected readonly service: DataReadOnlyService<E, Repository<E>>
   ) {}
 

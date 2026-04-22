@@ -76,7 +76,7 @@ async function bootstrap():Promise<INestApplication> {
     contentSecurityPolicy: true
   }));
 
-  let cacheMiddleware = (_req, res, next) => {
+  const cacheMiddleware = (_req, res, next) => {
     // Disable caching entirely by default for all APIs.
     res.set('Cache-control', 'no-store, max-age=0');
     res.set('Pragma', 'no-cache');

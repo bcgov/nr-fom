@@ -17,7 +17,7 @@ export class DistrictService extends DataReadOnlyService<District, Repository<Di
   }
   
   convertEntity(entity: District):DistrictResponse {
-    var dto = new DistrictResponse();
+    const dto = new DistrictResponse();
     dto.id = entity.id;
     dto.name = entity.name;
     // Do not return email - keep it within API back-end.
