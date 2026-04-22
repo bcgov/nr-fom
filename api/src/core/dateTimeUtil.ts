@@ -1,9 +1,9 @@
-import * as dayjs from 'dayjs';
-import * as utc from 'dayjs/plugin/utc';
-import * as timezone from 'dayjs/plugin/timezone';
-import * as advancedFormat from 'dayjs/plugin/advancedFormat'
 import * as _ from 'lodash';
-import * as customParseFormat from 'dayjs/plugin/customParseFormat';
+import dayjs from 'dayjs';
+import 'dayjs/plugin/utc';
+import 'dayjs/plugin/timezone';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 /**
  * This util acts as a wrapper for some date/time munipulation functions, especially for timezone related transform.
@@ -112,9 +112,9 @@ export class DateTimeUtil {
     }
 
     private static init() {
-        // dayjs requres additional plugin for timezone/utc mode.
-        dayjs.extend(utc);
-        dayjs.extend(timezone);
+        // dayjs plugins are self-registering when imported
         dayjs.extend(advancedFormat);
+        dayjs.extend(customParseFormat);
+        // utc and timezone plugins are already registered via side-effect imports
     }
 }

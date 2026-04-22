@@ -4,17 +4,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from "@utility/security/user";
 import { validate } from 'class-validator';
-import * as timezone from 'dayjs/plugin/timezone';
-import * as utc from 'dayjs/plugin/utc';
-import { PinoLogger } from 'nestjs-pino';
-import fetch from 'node-fetch';
-import { maxFileSizeBytes } from '../attachment/attachment.controller';
-import { InteractionCreateRequest, InteractionResponse, InteractionUpdateRequest } from './interaction.dto';
-import { InteractionService } from './interaction.service';
 import dayjs from 'dayjs';
-// initialize dayjs extensions
-dayjs.extend(utc);
-dayjs.extend(timezone);
+import 'dayjs/plugin/utc';
+import 'dayjs/plugin/timezone';
+import { maxFileSizeBytes } from '../attachment/attachment.controller';
 
 // From https://github.com/nestjs/swagger/issues/417#issuecomment-562869578 and https://swagger.io/docs/specification/describing-request-body/file-upload/
 const AttachmentPostBody = (file: string = 'file'): MethodDecorator => (
@@ -151,7 +144,7 @@ export class InteractionController {
     @UserHeader() user: User,
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile('file') file: Express.Multer.File,
-    @Req() request: fetch.Request): Promise<InteractionResponse> {     
+    @Req() request: fetch.Request): Promise<InteractionResponse> {      
       const updateRequest = new InteractionUpdateRequest(
         await new ParseIntPipe().transform(request.body['projectId'], null),
         request.body['stakeholder'],

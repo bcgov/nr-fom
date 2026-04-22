@@ -3,8 +3,9 @@ import { DataService } from '@core';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from "@utility/security/user";
-import * as dayjs from 'dayjs';
-import * as customParseFormat from 'dayjs/plugin/customParseFormat';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { GeoJsonProperties, Geometry, LineString, Polygon, Position } from 'geojson';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
@@ -35,7 +36,8 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     private projectAuthService: ProjectAuthService
   ) {
     super(repository, new Submission(), logger);
-    dayjs.extend(customParseFormat);
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
   }
 
   /**

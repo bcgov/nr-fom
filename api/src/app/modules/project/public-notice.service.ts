@@ -10,7 +10,9 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { Cron } from "@nestjs/schedule";
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from "@utility/security/user";
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
+import 'dayjs/plugin/utc';
+import 'dayjs/plugin/timezone';
 import { PinoLogger } from 'nestjs-pino';
 import * as R from 'remeda';
 import { Brackets, Repository } from 'typeorm';
