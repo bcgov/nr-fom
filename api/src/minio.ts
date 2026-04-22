@@ -20,4 +20,6 @@ export async function verifyObjectStorageConnection() {
     }
 }
 
-verifyObjectStorageConnection();
+if (process.env.OBJECT_STORAGE_ACCESS_ID && process.env.OBJECT_STORAGE_SECRET) {
+    verifyObjectStorageConnection();
+}
