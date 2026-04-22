@@ -30,6 +30,10 @@ jobs:
              build_context: .
              build_file: public/Dockerfile
              triggers: ('public/' 'libs/')
+           - package: admin
+             build_context: .
+             build_file: admin/Dockerfile
+             triggers: ('admin/' 'libs/')
     steps:
       - uses: actions/checkout@v6
       - uses: bcgov/action-builder-ghcr@v4.2.1
