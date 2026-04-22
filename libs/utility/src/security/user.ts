@@ -6,6 +6,7 @@ export class User {
     isForestClient: boolean = false;
     isAdmin: boolean = false;
     clientIds: string[] = [];
+    roles: string[] = [];
 
     isAuthorizedForAdminSite():boolean {
       // A user is authorized for FOM admin site if it has any of the roles (ministry, forest client, or admin).
