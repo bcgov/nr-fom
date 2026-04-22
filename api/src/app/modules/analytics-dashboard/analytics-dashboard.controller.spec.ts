@@ -8,7 +8,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { AnalyticsDashboardController } from './analytics-dashboard.controller';
 
 describe('AnalyticsDashboardController - Guard Enforcement', () => {
-  let _module: TestingModule;
+  let module: TestingModule;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
