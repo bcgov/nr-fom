@@ -20,7 +20,7 @@ jobs:
         package: [admin, api, db, public]
         include:
           - package: admin
-            build_context: ./
+            build_context: .
             build_file: admin/Dockerfile
             triggers: ('admin/' 'libs/')
           - package: api
@@ -30,7 +30,7 @@ jobs:
           - package: db
             triggers: ('db')
           - package: public
-            build_context: ./
+            build_context: .
             build_file: public/Dockerfile
             triggers: ('public/' 'libs/')
     steps:
