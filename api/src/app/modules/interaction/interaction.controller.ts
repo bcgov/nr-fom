@@ -8,6 +8,10 @@ import dayjs from 'dayjs';
 import 'dayjs/plugin/utc';
 import 'dayjs/plugin/timezone';
 import { maxFileSizeBytes } from '../attachment/attachment.controller';
+import { InteractionCreateRequest, InteractionResponse, InteractionUpdateRequest } from './interaction.dto';
+import { InteractionService } from './interaction.service';
+import * as fetch from 'node-fetch';
+import { PinoLogger } from 'nestjs-pino';
 
 // From https://github.com/nestjs/swagger/issues/417#issuecomment-562869578 and https://swagger.io/docs/specification/describing-request-body/file-upload/
 const AttachmentPostBody = (file: string = 'file'): MethodDecorator => (
@@ -85,9 +89,9 @@ const AttachmentUpdateBody = (file: string = 'file'): MethodDecorator => (
 export class InteractionController {
 
   constructor(
-    private readonly service: InteractionService, 
-    private logger: PinoLogger) {
-  }
+    private readonly service: InteractionService,
+    private logger: PinoLogger
+  ) {}
 
   // note, for @UploadedFile('file') file field:
   // Using formData posted, we can obtain fileContent/filename directly from post body, as long as
