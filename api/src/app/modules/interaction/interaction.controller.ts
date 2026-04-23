@@ -10,7 +10,7 @@ import 'dayjs/plugin/timezone';
 import { maxFileSizeBytes } from '../attachment/attachment.controller';
 import { InteractionCreateRequest, InteractionResponse, InteractionUpdateRequest } from './interaction.dto';
 import { InteractionService } from './interaction.service';
-import * as fetch from 'node-fetch';
+import fetch from 'node-fetch';
 import { PinoLogger } from 'nestjs-pino';
 
 // From https://github.com/nestjs/swagger/issues/417#issuecomment-562869578 and https://swagger.io/docs/specification/describing-request-body/file-upload/
@@ -107,7 +107,7 @@ export class InteractionController {
   async create(
     @UserHeader() user: User,
     @UploadedFile('file') file: Express.Multer.File,
-    @Req() request: fetch.Request): Promise<InteractionResponse> {
+    @Req() request: Request): Promise<InteractionResponse> {
       const createRequest = new InteractionCreateRequest(
         await new ParseIntPipe().transform(request.body['projectId'], null),
         request.body['stakeholder'],
@@ -148,7 +148,7 @@ export class InteractionController {
     @UserHeader() user: User,
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile('file') file: Express.Multer.File,
-    @Req() request: fetch.Request): Promise<InteractionResponse> {      
+    @Req() request: Request): Promise<InteractionResponse> {      
       const updateRequest = new InteractionUpdateRequest(
         await new ParseIntPipe().transform(request.body['projectId'], null),
         request.body['stakeholder'],

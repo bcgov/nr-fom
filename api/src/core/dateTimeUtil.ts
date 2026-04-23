@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import dayjs from 'dayjs';
-import 'dayjs/plugin/utc';
-import 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
@@ -113,8 +113,9 @@ export class DateTimeUtil {
 
     private static init() {
         // dayjs plugins are self-registering when imported
+        dayjs.extend(utc);
+        dayjs.extend(timezone);
         dayjs.extend(advancedFormat);
         dayjs.extend(customParseFormat);
-        // utc and timezone plugins are already registered via side-effect imports
     }
 }
