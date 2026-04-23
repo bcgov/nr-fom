@@ -9,6 +9,9 @@
     "test-unit-watch": "jest --watch=true"
   },
   "private": true,
+  "overrides": {
+    "lodash": "^4.18.1"
+  },
   "dependencies": {
     "@angular/animations": "^19.0.0",
     "@angular/cdk": "^19.0.0",
