@@ -25,7 +25,7 @@ const coreProviders = [
     provideHttpClient(withInterceptorsFromDi()),
     importProvidersFrom(
         ApiModule.forRoot(() => apiConfig),
-        BsDatepickerModule.forRoot(),
+        BsDatepickerModule,
         BrowserAnimationsModule,
         MatDialogModule
     ),

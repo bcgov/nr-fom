@@ -4,7 +4,7 @@
 
 To install the required dependencies and to build the typescript sources run:
 ```
-npm install --ignore-scripts
+npm install
 npm run build
 ```
 
@@ -19,13 +19,13 @@ Navigate to the folder of your consuming project and run one of next commands.
 _published:_
 
 ```
-npm install @ --save --ignore-scripts
+npm install @ --save
 ```
 
 _without publishing (not recommended):_
 
 ```
-npm install PATH_TO_GENERATED_PACKAGE/dist.tgz --save --ignore-scripts
+npm install PATH_TO_GENERATED_PACKAGE/dist.tgz --save
 ```
 
 _It's important to take the tgz file, otherwise you'll get trouble with links on windows_
