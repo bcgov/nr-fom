@@ -1,8 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist/public",
+    "outDir": "./dist/public/",
     "module": "commonjs",
+    "moduleResolution": "bundler",
     "types": ["jest", "node"]
   },
   "files": [

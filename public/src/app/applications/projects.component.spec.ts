@@ -1,4 +1,4 @@
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { ProjectsComponent } from './projects.component';
 import { ProjectService } from '@api-client';
