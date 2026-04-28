@@ -4,7 +4,7 @@
 
 To install the required dependencies and to build the typescript sources run:
 ```
-npm install
+npm install --ignore-scripts
 npm run build
 ```
 
