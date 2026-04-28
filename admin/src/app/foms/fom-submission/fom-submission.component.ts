@@ -157,18 +157,39 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
 
   onFileEmit(newFile: File) {
     this.file = newFile;
-    try {
-      if (this.file) {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.originalSubmissionRequest.jsonSpatialSubmission = JSON.parse(e.target.result);
-        };
-        reader.readAsText(this.file);
-      }
-    }catch (e) {
-      this.modalSvc.openErrorDialog('The file is not in a valid JSON format. Please fix your file and try again.');
+    if (!this.file) {
+      this.modalSvc.openErrorDialog('Please select a JSON file to continue.');
+      return;
     }
-    this.fg.get('jsonSpatialSubmission').setValue(this.originalSubmissionRequest.jsonSpatialSubmission);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        if (reader.readyState !== FileReader.DONE) {
+          return;
+        }
+
+        try {
+          const content = e.target?.result;
+          if (typeof content !== 'string') {
+            throw new Error('File content is not text.');
+          }
+
+          this.originalSubmissionRequest.jsonSpatialSubmission = JSON.parse(content);
+          this.fg.get('jsonSpatialSubmission').setValue(this.originalSubmissionRequest.jsonSpatialSubmission);
+        } catch (_parseError) {
+          this.modalSvc.openErrorDialog('The selected file is not valid JSON. Please fix the file and try again.');
+        }
+      };
+
+      reader.onerror = () => {
+        this.modalSvc.openErrorDialog('Could not read the selected file. Please try again.');
+      };
+
+      reader.readAsText(this.file);
+    } catch (_readSetupError) {
+      this.modalSvc.openErrorDialog('Could not process the selected file. Please try again.');
+    }
   }
 
   submit() {
