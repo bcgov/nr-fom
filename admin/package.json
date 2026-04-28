@@ -67,6 +67,7 @@
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^10.1.0",
     "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
     "jest-preset-angular": "^16.0.0",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
