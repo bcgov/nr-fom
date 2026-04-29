@@ -202,8 +202,8 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
       } else {
         this.fitBounds(); // default bounds
       }
-      // Ensure map renders correctly after initial layout
-      this.map.invalidateSize();
+      // Defer invalidateSize to ensure container dimensions are fully computed
+      Promise.resolve().then(() => this.map.invalidateSize());
     } else {
       setTimeout(this.fixMap.bind(this), 50);
     }
