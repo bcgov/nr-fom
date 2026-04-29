@@ -51,20 +51,20 @@ export class CognitoService {
         this.initialized = true;
         return null;
       }
-        return new Promise<any>((resolve) => {
-          return getCurrentUser()
-            .then(async () => {
-                console.log("Signed in...");
-                await this.refreshToken();
-                this.initialized = true;
-                resolve(null)
-            })
-            .catch((error) => {
-                console.log(error);
-                this.login();
-                resolve(null);
-            })            
-        });
+      return new Promise<any>((resolve) => {
+        return getCurrentUser()
+          .then(async () => {
+              console.log("Signed in...");
+              await this.refreshToken();
+              this.initialized = true;
+              resolve(null)
+          })
+          .catch((error) => {
+              console.log(error);
+              this.login();
+              // resolve(null) no need for resolve as it will gets redirected.
+          })            
+      });
     }
   }
 

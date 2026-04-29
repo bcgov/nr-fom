@@ -27,12 +27,8 @@ function cognitoFactory(cognitoService: CognitoService) {
   return () => cognitoService.init();
 }
 
-const apiBasePath = retrieveApiBasePath();
-if (!apiBasePath) {
-  console.error('API base path is not configured! Check window.localStorage or localhost setup.');
-}
 const apiConfig = new Configuration({
-  basePath: apiBasePath
+  basePath: retrieveApiBasePath()
 })
 
 const routesProviders = [
@@ -81,11 +77,4 @@ bootstrapApplication(AppComponent, {
         ...routesProviders
     ]
 })
-.catch((err) => {
-    console.error('Bootstrap failed:', err);
-    console.error('Stack:', err?.stack);
-    const root = document.querySelector('app-root');
-    if (root) {
-        root.innerHTML = `<div style="padding: 20px; color: red; font-family: monospace;"><strong>Bootstrap Error:</strong><pre>${err?.message || err}</pre></div>`;
-    }
-});
+.catch((err) => console.error(err));
