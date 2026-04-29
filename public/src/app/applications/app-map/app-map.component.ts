@@ -209,38 +209,40 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     }
   }
 
-  // called when projects list changes
-  public ngOnChanges(changes: SimpleChanges) {
-    if (changes.projectsSummary && changes.projectsSummary.currentValue) {
-      const ppsEqComparator = (a: ProjectPublicSummaryResponse, b: ProjectPublicSummaryResponse) => a.id == b.id;
-      const deletedProjects = differenceWith(
-        changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse> || [],
-        changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
-        ppsEqComparator
-      );
+   // called when projects list changes
+   public ngOnChanges(changes: SimpleChanges) {
+     if (changes.projectsSummary && changes.projectsSummary.currentValue) {
+       const ppsEqComparator = (a: ProjectPublicSummaryResponse, b: ProjectPublicSummaryResponse) => a.id == b.id;
+       const deletedProjects = differenceWith(
+         changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse> || [],
+         changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
+         ppsEqComparator
+       );
 
-      const addedProjects = differenceWith(
-        changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
-        changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse> || [],
-        ppsEqComparator
-      );
+       const addedProjects = differenceWith(
+         changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
+         changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse> || [],
+         ppsEqComparator
+       );
 
-      // (re)draw the matching projects
-      this.drawMap(deletedProjects, addedProjects);
+       // (re)draw the matching projects
+       this.drawMap(deletedProjects, addedProjects);
+       this.fitBounds();
+     }
+   }
+
+    // when map becomes visible, draw all apps (rejected option to emit current bounds and cause a reload)
+    public onMapVisible() {
+        // delete any old apps
+        this.markerList.forEach(marker => {
+            this.markerClusterGroup.removeLayer(marker);
+        });
+        this.markerList = []; // empty the list 
+
+        // draw all new apps
+        this.drawMap([], this.projectsSummary);
+        this.fitBounds();
     }
-  }
-
-  // when map becomes visible, draw all apps (rejected option to emit current bounds and cause a reload)
-  public onMapVisible() {
-    // delete any old apps
-    this.markerList.forEach(marker => {
-      this.markerClusterGroup.removeLayer(marker);
-    });
-    this.markerList = []; // empty the list 
-
-    // draw all new apps
-    this.drawMap([], this.projectsSummary);
-  }
 
   public ngOnDestroy() {
     if (this.map) {
