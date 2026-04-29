@@ -118,7 +118,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   ngOnInit() {
+    console.log('ProjectsComponent ngOnInit - subscribing to filters');
     this.fomFiltersSvc.filters$.pipe(takeUntil(this.ngUnsubscribe)).subscribe((filters) => {
+      console.log('Filters updated, fetching FOMs');
       this.fetchFOMs(filters);
       this.commentStatusFilters = filters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>;
     });
@@ -171,6 +173,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     const commentClosedParam = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_CLOSED)[0].value;
     const openedOnOrAfterParam = (fomFilters.get(FOM_FILTER_NAME.POSTED_ON_AFTER) as Filter<Date>).filter.value?.toISOString().substring(0, 10);
 
+    console.log('fetchFOMs called with filters:', { fomNumberParam, forestClientNameParam, commentOpenParam, commentClosedParam, openedOnOrAfterParam });
     this.loading = true;
     this.projectService
         .projectControllerFindPublicSummary(
@@ -180,12 +183,19 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           forestClientNameParam, 
           openedOnOrAfterParam)
         .subscribe((results) => {
+          console.log('FOMs fetched successfully:', results?.length, 'results');
           this.projectsSummary = results;
           this.totalNumber = results.length;
           this.loading = false;
           },
-          () => this.loading = false,
-          () => this.loading = false
+          (error) => {
+            console.error('Error fetching FOMs:', error);
+            this.loading = false;
+          },
+          () => {
+            console.log('FOMs fetch completed');
+            this.loading = false;
+          }
         );
   }
 
