@@ -15,7 +15,7 @@ services:
         cd ../admin && npm ci --ignore-scripts &&
         npm run start:admin
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4200/admin"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4200/admin', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
       retries: 3
       start_period: 60s
@@ -51,7 +51,7 @@ services:
       - OBJECT_STORAGE_URL=nrs.objectstore.gov.bc.ca
       - OBJECT_STORAGE_ACCESS_ID=nr-fom-dev
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3333/api"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3333/api', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
       retries: 3
       start_period: 60s
@@ -104,7 +104,7 @@ services:
         cd ../public && npm ci --ignore-scripts &&
         npm run start:public
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4300/public"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4300/public', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
       retries: 3
       start_period: 60s
