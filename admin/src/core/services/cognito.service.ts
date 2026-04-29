@@ -62,7 +62,7 @@ export class CognitoService {
           .catch((error) => {
               console.log(error);
               this.login();
-              // resolve(null) no need for resolve as it will gets redirected.
+              resolve(null);
           })            
       });
     }

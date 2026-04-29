@@ -10,7 +10,12 @@ import { BehaviorSubject, forkJoin } from 'rxjs';
 export class StateService {
   private _loading = false;
   private _isReadySub = new BehaviorSubject(false);
-  private _codeTables: CodeTables;
+  private _codeTables: CodeTables = {
+    responseCode: [],
+    district: [],
+    workflowResponseCode: [],
+    commentScopeCode: []
+  };
   setReady() {
     this._isReadySub.next(true);
   }
