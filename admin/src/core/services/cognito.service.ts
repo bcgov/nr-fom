@@ -39,7 +39,13 @@ export class CognitoService {
       return null;
     }
     else {
-      await this.loadRemoteConfig()
+      try {
+        await this.loadRemoteConfig()
+      } catch (error) {
+        console.error("Failed to load remote Cognito config:", error);
+        this.awsCognitoConfig = { enabled: false } as AwsCognitoConfig;
+      }
+      
       if (!this.awsCognitoConfig.enabled) {
         this.fakeUser = getFakeUser();
         this.initialized = true;
