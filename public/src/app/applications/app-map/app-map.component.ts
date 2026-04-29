@@ -202,6 +202,8 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
       } else {
         this.fitBounds(); // default bounds
       }
+      // Ensure map renders correctly after initial layout
+      this.map.invalidateSize();
     } else {
       setTimeout(this.fixMap.bind(this), 50);
     }
@@ -209,17 +211,17 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
   // called when projects list changes
   public ngOnChanges(changes: SimpleChanges) {
-    if (changes.projectsSummary && !changes.projectsSummary.firstChange && changes.projectsSummary.currentValue) {
+    if (changes.projectsSummary && changes.projectsSummary.currentValue) {
       const ppsEqComparator = (a: ProjectPublicSummaryResponse, b: ProjectPublicSummaryResponse) => a.id == b.id;
       const deletedProjects = differenceWith(
-        changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse>,
+        changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse> || [],
         changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
         ppsEqComparator
       );
 
       const addedProjects = differenceWith(
         changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
-        changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse>,
+        changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse> || [],
         ppsEqComparator
       );
 
