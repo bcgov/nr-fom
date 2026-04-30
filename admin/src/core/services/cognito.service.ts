@@ -74,8 +74,10 @@ export class CognitoService {
    * Automatically logout if unable to get currentSession().
    */
   async refreshToken() {
+    console.log("CognitoService.refreshToken() - starting...");
     try {
       this.cognitoAuthToken = await this.refreshAndObtainAwsCognitoUserSession();
+      console.log("CognitoService.refreshToken() - completed.");
     } catch (error) {
       console.error("Problem refreshing token or token is invalidated:", error);
       // logout and redirect to login.
@@ -194,7 +196,9 @@ export class CognitoService {
    * @returns newly fetched session converted into Promise<CognitoAuthToken> type.
    */
   private async refreshAndObtainAwsCognitoUserSession(): Promise<CognitoAuthToken> {
+    console.log("CognitoService.refreshAndObtainAwsCognitoUserSession() - calling fetchAuthSession...");
     const authSession = await fetchAuthSession({ forceRefresh: true });
+    console.log("CognitoService.refreshAndObtainAwsCognitoUserSession() - fetchAuthSession completed.");
     const idToken = authSession.tokens.idToken.toString();
     const accessToken = authSession.tokens.accessToken.toString();
     return {
