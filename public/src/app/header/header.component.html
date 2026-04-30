@@ -1,5 +1,5 @@
 <header class="app-header" id="header"
-  [ngClass]="{'app-header--flex': (router.url.startsWith('/projects'))}">
+  [ngClass]="{'app-header--flex': (currentUrl.startsWith('/projects'))}">
   <nav class="navbar navbar-expand-md justify-content-between">
     <a class="navbar-brand" title="Forest Operations Map" routerLink="/home/true">
       <span class="navbar-brand__title">Forest Operations Map</span>

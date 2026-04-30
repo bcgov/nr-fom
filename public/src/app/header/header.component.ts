@@ -1,7 +1,8 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterLink, NavigationEnd } from '@angular/router';
+import { distinctUntilChanged, filter } from 'rxjs/operators';
 import { ConfigService } from '@utility/services/config.service';
 
 @Component({
@@ -19,12 +20,23 @@ import { ConfigService } from '@utility/services/config.service';
     ])
   ]
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   environmentDisplay: string;
   isNavMenuOpen = false; 
+  currentUrl = '';
 
   constructor(private configService: ConfigService, public router: Router) {
     this.environmentDisplay = this.configService.getEnvironmentDisplay();
+    this.currentUrl = this.router.url;
+  }
+
+  ngOnInit(): void {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.currentUrl = this.router.url;
+    });
   }
 
   toggleNav() {
