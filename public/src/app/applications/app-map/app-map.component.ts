@@ -75,8 +75,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
   // create map after view (which contains map id) is initialized
   ngAfterViewInit() {
-    this.onMapVisible();
-
     // custom control to reset map view
     const resetViewControl = L.Control.extend({
       options: {
@@ -163,8 +161,9 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
       );
     });
 
-    this.fixMap();
-  }
+     this.fixMap();
+     this.onMapVisible();
+   }
 
   // for creating custom cluster icon
   private clusterCreate(cluster): L.Icon | L.DivIcon {
