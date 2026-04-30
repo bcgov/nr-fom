@@ -39,15 +39,25 @@ export class CognitoTokenInterceptor implements HttpInterceptor {
       return next.handle(request);
     }
 
-    request = this.addAuthHeader(request);
+    const authToken = this.cognitoService.getToken();
+    if (authToken) {
+      request = request.clone({
+        setHeaders: { Authorization: "Bearer " + authToken },
+      });
+    }
 
     return next.handle(request).pipe(
       catchError((error) => {
-        if (error.status === 403) {
+        if (error.status === 403 && this.cognitoService.awsCognitoConfig.enabled) {
           console.log("Caught 403, refreshing token");
           return this.refreshToken().pipe(
             switchMap(() => {
-              request = this.addAuthHeader(request);
+              const newAuthToken = this.cognitoService.getToken();
+              if (newAuthToken) {
+                request = request.clone({
+                  setHeaders: { Authorization: "Bearer " + newAuthToken },
+                });
+              }
               return next.handle(request);
             }),
             catchError((err) => {
@@ -64,28 +74,6 @@ export class CognitoTokenInterceptor implements HttpInterceptor {
         throw error;
       })
     );
-  }
-
-  /**
-   * Fetches and adds the bearer auth token to the request.
-   *
-   * @private
-   * @param {HttpRequest<any>} request to modify
-   * @returns {HttpRequest<any>}
-   * @memberof CognitoTokenInterceptor
-   */
-  private addAuthHeader(request: HttpRequest<any>): HttpRequest<any> {
-    let authToken: any = this.cognitoService.getToken();
-
-    if (this.cognitoService.awsCognitoConfig.enabled) {
-      authToken = JSON.stringify(authToken['jwtToken']);
-    }
-
-    request = request.clone({
-      setHeaders: { Authorization: "Bearer " + authToken },
-    });
-
-    return request;
   }
 
   /**

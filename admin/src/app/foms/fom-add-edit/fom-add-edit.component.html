@@ -18,9 +18,9 @@
           type="button"
           title="Create FOM"
           (click)="submit()"
-          [disabled]="!fg.isModified"
-        >{{ isLoading ? "Submitting" : "Submit" }}
-          <em class="spinner rotating" [hidden]="!stateSvc.loading"></em>
+          [disabled]="!fg.isModified || isSubmitSaveClicked"
+        >{{ isSubmitSaveClicked ? "Submitting" : "Submit" }}
+          <em class="spinner rotating" [hidden]="!isSubmitSaveClicked"></em>
         </button>
       </div>
     </div>
@@ -578,9 +578,9 @@
           type="button"
           title="Save your changes"
           (click)="saveApplication()"
-          [disabled]="isPublishState"
-  >{{ isLoading ? "Saving" : "Save" }}
-    <em class="spinner rotating" [hidden]="!stateSvc.loading"></em>
+          [disabled]="isPublishState || isSubmitSaveClicked"
+  >{{ isSubmitSaveClicked ? "Saving" : "Save" }}
+    <em class="spinner rotating" [hidden]="!isSubmitSaveClicked"></em>
   </button>
 
 </ng-template>

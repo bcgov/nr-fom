@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -118,7 +118,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     private modalSvc: ModalService,
     private datePipe: DatePipe,
     private forestSvc: ForestClientService,
-    private cognitoService: CognitoService
+    private cognitoService: CognitoService,
+    private cd: ChangeDetectorRef
   ) {
     this.user = this.cognitoService.getUser();
   }
@@ -244,11 +245,16 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.fg.valid;
   }
 
-  submit() {
+  async submit() {
     this.isSubmitSaveClicked = true;
+    this.cd.detectChanges();
     this.validate();
-    if (!this.fg.valid) return;
-    if (this.stateSvc.loading) return;
+    if (!this.fg.valid) {
+      this.isSubmitSaveClicked = false;
+      this.cd.detectChanges();
+      return;
+    }
+    
     let projectCreate = this.fg.value as ProjectCreateRequest
     projectCreate['districtId'] = this.districtIdSelect;
     projectCreate.forestClientNumber = this.fg.get('forestClient').value.id;
@@ -258,17 +264,20 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     projectCreate.commentingClosedDate = cmcDateIsoVal? cmcDateIsoVal: null;
     projectCreate.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
     projectCreate.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
-    lastValueFrom(
-      this.projectSvc.projectControllerCreate(projectCreate).pipe(
-        tap((result) => {
-          this.onSuccess(result.id);
-        }),
-        catchError((error) => {
-          console.error(error);
-          return of(null);
-        })
-      )
-    );
+    
+    try {
+      await lastValueFrom(
+        this.projectSvc.projectControllerCreate(projectCreate).pipe(
+          tap((result) => {
+            this.onSuccess(result.id);
+          })
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      this.isSubmitSaveClicked = false;
+      this.cd.detectChanges();
+    }
   }
 
   onSuccess(id: number) {
@@ -277,12 +286,18 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async saveApplication() {
     this.isSubmitSaveClicked = true;
+    this.cd.detectChanges();
     this.validate();
+    if (!this.fg.valid) {
+      this.isSubmitSaveClicked = false;
+      this.cd.detectChanges();
+      return;
+    }
+    
     const {id, forestClient, workflowState, ...rest} = this.originalProjectResponse;
     let projectUpdateRequest = {...rest, ...this.fg.value}
     projectUpdateRequest['districtId'] = projectUpdateRequest.district;
 
-    if (!this.fg.valid) return;
     try {
       const cmoDateIsoVal = this.getformatedDate('commentingOpenDate', this.DEFAULT_ISO_DATE_FORMAT);
       const cmcDateIsoVal = this.getformatedDate('commentingClosedDate', this.DEFAULT_ISO_DATE_FORMAT);
@@ -311,8 +326,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       return this.onSuccess(id);
     } catch (err) {
       console.error(err);
+      this.isSubmitSaveClicked = false;
+      this.cd.detectChanges();
     }
-
   }
 
   changeDistrictId(e) {

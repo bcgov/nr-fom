@@ -53,14 +53,14 @@ export class CognitoService {
       }
       return new Promise<any>((resolve) => {
         return getCurrentUser()
-          .then(async () => {
-              console.log("Signed in...");
+          .then(async (user) => {
+              console.log("Signed in as:", user.username);
               await this.refreshToken();
               this.initialized = true;
               resolve(null)
           })
           .catch((error) => {
-              console.log(error);
+              console.log("Not signed in:", error);
               this.login();
               resolve(null);
           })            
@@ -137,7 +137,7 @@ export class CognitoService {
     if (!this.awsCognitoConfig.enabled) {
       return JSON.stringify(this.fakeUser);
     }
-    return this.cognitoAuthToken;
+    return this.cognitoAuthToken?.jwtToken?.idToken;
   }
 
   private async loadRemoteConfig() {
