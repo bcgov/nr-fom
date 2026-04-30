@@ -52,13 +52,10 @@ export class CognitoService {
         return null;
       }
       return new Promise<any>((resolve) => {
-        console.log("CognitoService.init() - starting...");
         this.loadRemoteConfig()
           .then(() => {
-            console.log("CognitoService.init() - calling getCurrentUser()...");
             return getCurrentUser()
               .then(async (user) => {
-                  console.log("CognitoService.init() - Signed in as:", user.username);
                   try {
                     // Don't let a hanging refresh block the entire app boot
                     await Promise.race([
@@ -66,20 +63,18 @@ export class CognitoService {
                       new Promise((_, reject) => setTimeout(() => reject(new Error("Refresh timeout")), 10000))
                     ]);
                     this.initialized = true;
-                    console.log("CognitoService.init() - initialized.");
                   } catch (refreshErr) {
-                    console.error("CognitoService.init() - Token refresh failed or timed out:", refreshErr);
+                    console.error("Token refresh failed or timed out:", refreshErr);
                   }
                   resolve(null)
               })
               .catch((error) => {
-                  console.log("CognitoService.init() - Not signed in or error:", error);
                   this.login();
                   resolve(null);
               })
           })
           .catch((err) => {
-            console.error("CognitoService.init() - FAILED to load remote config:", err);
+            console.error("Failed to load remote config:", err);
             resolve(null);
           });
       });
@@ -90,12 +85,10 @@ export class CognitoService {
    * Automatically logout if unable to get currentSession().
    */
   async refreshToken() {
-    console.log("CognitoService.refreshToken() - starting...");
     try {
       this.cognitoAuthToken = await this.refreshAndObtainAwsCognitoUserSession();
-      console.log("CognitoService.refreshToken() - completed.");
     } catch (error) {
-      console.error("CognitoService.refreshToken() - FAILED:", error);
+      console.error("Problem refreshing token or token is invalidated:", error);
       // logout and redirect to login.
       await this.logout();
     }
@@ -123,12 +116,10 @@ export class CognitoService {
   }
 
   public async login() {
-    console.log("CognitoService.login() - calling signInWithRedirect()...");
     try {
       await signInWithRedirect();
-      console.log("CognitoService.login() - signInWithRedirect() call returned.");
     } catch (err) {
-      console.error("CognitoService.login() - FAILED:", err);
+      console.error("Login failed:", err);
     }
   }
 
