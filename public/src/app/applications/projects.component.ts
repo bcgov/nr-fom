@@ -67,6 +67,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<void> = new Subject<void>();
   private splashModal: NgbModalRef = null;
+  private fragmentTimeout: any;
 
   // necessary to allow referencing the enum in the html
   public Panel = Panel;
@@ -113,7 +114,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   private handleFragment(fragment: string) {
-    setTimeout(() => {
+    this.fragmentTimeout = setTimeout(() => {
       this.urlTree = this.router.parseUrl(this.router.url);
       switch (fragment) {
         case 'splash':
@@ -192,7 +193,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           commentOpenParam.toString(), 
           commentClosedParam.toString(), 
           forestClientNameParam, 
-          openedOnOrAfterParam)
+          openedOnOrAfterParam).pipe(takeUntil(this.ngUnsubscribe))
         .subscribe((results) => {
           this.projectsSummary = results;
           this.totalNumber = results.length;
@@ -279,6 +280,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   ngOnDestroy() {
+    if (this.fragmentTimeout) clearTimeout(this.fragmentTimeout);
     if (this.splashModal) {
       this.splashModal.dismiss();
     }

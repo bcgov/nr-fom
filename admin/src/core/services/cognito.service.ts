@@ -52,10 +52,8 @@ export class CognitoService {
         return null;
       }
       return new Promise<any>((resolve) => {
-        this.loadRemoteConfig()
-          .then(() => {
-            return getCurrentUser()
-              .then(async (user) => {
+        return getCurrentUser()
+          .then(async (user) => {
                   try {
                     // Don't let a hanging refresh block the entire app boot
                     await Promise.race([
@@ -72,11 +70,6 @@ export class CognitoService {
                   this.login();
                   resolve(null);
               })
-          })
-          .catch((err) => {
-            console.error("Failed to load remote config:", err);
-            resolve(null);
-          });
       });
     }
   }
