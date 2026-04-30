@@ -150,11 +150,10 @@ export class CognitoService {
       return this.fakeUser;
     }
 
-    const token = this.getToken();
-    if (!token) {
+    if (!this.cognitoAuthToken) {
       return null;
     }
-    const user = User.convertAwsCognitoDecodedTokenToUser(token);
+    const user = User.convertAwsCognitoDecodedTokenToUser(this.cognitoAuthToken);
     console.log("User " + JSON.stringify(user));
     return user;
   }
