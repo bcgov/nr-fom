@@ -145,7 +145,7 @@ export class CognitoService {
   }
 
   private async loadRemoteConfig() {
-    let url: string = this.configService.getApiBasePath() + "/api/awsCognitoConfig";
+    let url: string = this.configService.getApiBasePath() + "/api/aws-cognito-config";
     this.awsCognitoConfig = await lastValueFrom(
       this.http.get(url, { observe: "body", responseType: "json" })
     ) as AwsCognitoConfig;
