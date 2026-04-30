@@ -56,6 +56,14 @@ describe('ProjectsComponent', () => {
       updateFilterSelection: jest.fn(),
     };
 
+    const mockChangeDetectorRef = {
+      detectChanges: jest.fn(),
+      markForCheck: jest.fn(),
+      detach: jest.fn(),
+      reattach: jest.fn(),
+      checkNoChanges: jest.fn(),
+    };
+
     // Instantiate directly to avoid child component DI issues
     component = new ProjectsComponent(
       mockModalService as any,
@@ -63,6 +71,7 @@ describe('ProjectsComponent', () => {
       mockProjectService as any,
       mockUrlService as any,
       mockFomFiltersSvc as any,
+      mockChangeDetectorRef as any,
     );
   });
 
