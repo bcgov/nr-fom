@@ -52,17 +52,15 @@ export class CognitoService {
         return null;
       }
       return new Promise<any>((resolve) => {
-        console.log("CognitoService.init() - calling getCurrentUser()...");
         return getCurrentUser()
           .then(async (user) => {
-              console.log("CognitoService.init() - Signed in as:", user.username);
+              console.log("Signed in as:", user.username);
               await this.refreshToken();
               this.initialized = true;
-              console.log("CognitoService.init() - initialized.");
               resolve(null)
           })
           .catch((error) => {
-              console.log("CognitoService.init() - Not signed in or error:", error);
+              console.log("Not signed in:", error);
               this.login();
               resolve(null);
           })            
@@ -74,10 +72,8 @@ export class CognitoService {
    * Automatically logout if unable to get currentSession().
    */
   async refreshToken() {
-    console.log("CognitoService.refreshToken() - starting...");
     try {
       this.cognitoAuthToken = await this.refreshAndObtainAwsCognitoUserSession();
-      console.log("CognitoService.refreshToken() - completed.");
     } catch (error) {
       console.error("Problem refreshing token or token is invalidated:", error);
       // logout and redirect to login.
@@ -145,7 +141,7 @@ export class CognitoService {
   }
 
   private async loadRemoteConfig() {
-    let url: string = this.configService.getApiBasePath() + "/api/aws-cognito-config";
+    let url: string = this.configService.getApiBasePath() + "/api/awsCognitoConfig";
     this.awsCognitoConfig = await lastValueFrom(
       this.http.get(url, { observe: "body", responseType: "json" })
     ) as AwsCognitoConfig;
@@ -196,9 +192,7 @@ export class CognitoService {
    * @returns newly fetched session converted into Promise<CognitoAuthToken> type.
    */
   private async refreshAndObtainAwsCognitoUserSession(): Promise<CognitoAuthToken> {
-    console.log("CognitoService.refreshAndObtainAwsCognitoUserSession() - calling fetchAuthSession...");
     const authSession = await fetchAuthSession({ forceRefresh: true });
-    console.log("CognitoService.refreshAndObtainAwsCognitoUserSession() - fetchAuthSession completed.");
     const idToken = authSession.tokens.idToken.toString();
     const accessToken = authSession.tokens.accessToken.toString();
     return {

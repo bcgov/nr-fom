@@ -28,9 +28,7 @@ export class AppComponent implements OnInit {
 
   async ngOnInit() {
     try {
-      console.log('AppComponent.ngOnInit() - loading code tables...');
       const codeTables = await lastValueFrom(this.stateSvc.getCodeTables());
-      console.log('AppComponent.ngOnInit() - code tables loaded.');
       this.stateSvc.setCodeTables(codeTables);
     } catch (error) {
       console.error('Failed to load code tables:', error);
