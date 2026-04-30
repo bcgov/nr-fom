@@ -77,7 +77,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   public urlTree: UrlTree;
   public observablesSub: Subscription = null;
   public coordinates: string = null;
-   public projectsSummary: Array<ProjectPublicSummaryResponse> = [];
+   public projectsSummary: Array<ProjectPublicSummaryResponse>;
   public projectsSummary$: Observable<Array<ProjectPublicSummaryResponse>>;
   public totalNumber: number;
   public commentStatusFilters: MultiFilter<boolean>;

@@ -75,7 +75,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
   // create map after view (which contains map id) is initialized
   ngAfterViewInit() {
-    // custom control to reset map view
+    this.onMapVisible();
     const resetViewControl = L.Control.extend({
       options: {
         position: 'bottomright'
@@ -161,9 +161,8 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
       );
     });
 
-     this.fixMap();
-     this.onMapVisible();
-   }
+    this.fixMap();
+  }
 
   // for creating custom cluster icon
   private clusterCreate(cluster): L.Icon | L.DivIcon {
@@ -191,7 +190,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   // ref: https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
   private fixMap() {
     if (this.elementRef.nativeElement.offsetParent) {
-      // try to restore map state
       const lat = this.urlService.getQueryParam('lat');
       const lng = this.urlService.getQueryParam('lng');
       const zoom = this.urlService.getQueryParam('zoom');
@@ -199,10 +197,13 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
       if (lat && lng && zoom) {
         this.map.setView(L.latLng(+lat, +lng), +zoom); // NOTE: unary operators
       } else {
-        this.fitBounds(); // default bounds
+        // Invalidate size first so Leaflet knows the real container dimensions,
+        // then fit bounds — fixes blank map on Angular 21 initial render.
+        Promise.resolve().then(() => {
+          this.map.invalidateSize();
+          this.fitBounds();
+        });
       }
-      // Defer invalidateSize to ensure container dimensions are fully computed
-      Promise.resolve().then(() => this.map.invalidateSize());
     } else {
       setTimeout(this.fixMap.bind(this), 50);
     }
@@ -210,40 +211,36 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
    // called when projects list changes
    public ngOnChanges(changes: SimpleChanges) {
-     if (changes.projectsSummary && changes.projectsSummary.currentValue) {
+     if (changes.projectsSummary && !changes.projectsSummary.firstChange && changes.projectsSummary.currentValue) {
        const ppsEqComparator = (a: ProjectPublicSummaryResponse, b: ProjectPublicSummaryResponse) => a.id == b.id;
        const deletedProjects = differenceWith(
-         changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse> || [],
+         changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse>,
          changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
          ppsEqComparator
        );
 
        const addedProjects = differenceWith(
          changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
-         changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse> || [],
+         changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse>,
          ppsEqComparator
        );
 
-        this.fitBounds();
        // (re)draw the matching projects
        this.drawMap(deletedProjects, addedProjects);
-       this.fitBounds();
      }
    }
 
-    // when map becomes visible, draw all apps (rejected option to emit current bounds and cause a reload)
-    public onMapVisible() {
-        // delete any old apps
-        this.markerList.forEach(marker => {
-            this.markerClusterGroup.removeLayer(marker);
-        });
-        this.markerList = []; // empty the list 
-        this.fitBounds();
+  // when map becomes visible, draw all apps (rejected option to emit current bounds and cause a reload)
+  public onMapVisible() {
+    // delete any old apps
+    this.markerList.forEach(marker => {
+      this.markerClusterGroup.removeLayer(marker);
+    });
+    this.markerList = []; // empty the list
 
-        // draw all new apps
-        this.drawMap([], this.projectsSummary);
-        this.fitBounds();
-    }
+    // draw all new apps
+    this.drawMap([], this.projectsSummary);
+  }
 
   public ngOnDestroy() {
     if (this.map) {
