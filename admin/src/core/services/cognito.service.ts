@@ -52,15 +52,17 @@ export class CognitoService {
         return null;
       }
       return new Promise<any>((resolve) => {
+        console.log("CognitoService.init() - calling getCurrentUser()...");
         return getCurrentUser()
           .then(async (user) => {
-              console.log("Signed in as:", user.username);
+              console.log("CognitoService.init() - Signed in as:", user.username);
               await this.refreshToken();
               this.initialized = true;
+              console.log("CognitoService.init() - initialized.");
               resolve(null)
           })
           .catch((error) => {
-              console.log("Not signed in:", error);
+              console.log("CognitoService.init() - Not signed in or error:", error);
               this.login();
               resolve(null);
           })            
