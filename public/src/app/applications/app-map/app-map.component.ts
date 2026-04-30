@@ -214,15 +214,18 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
    public ngOnChanges(changes: SimpleChanges) {
      if (changes.projectsSummary && changes.projectsSummary.currentValue) {
        const ppsEqComparator = (a: ProjectPublicSummaryResponse, b: ProjectPublicSummaryResponse) => a.id == b.id;
+       const previousValue = (changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse>) || [];
+       const currentValue = (changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>) || [];
+
        const deletedProjects = differenceWith(
-         changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse>,
-         changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
+         previousValue,
+         currentValue,
          ppsEqComparator
        );
 
        const addedProjects = differenceWith(
-         changes.projectsSummary.currentValue as Array<ProjectPublicSummaryResponse>,
-         changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse>,
+         currentValue,
+         previousValue,
          ppsEqComparator
        );
 
