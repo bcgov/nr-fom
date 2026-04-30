@@ -225,6 +225,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
          ppsEqComparator
        );
 
+        this.fitBounds();
        // (re)draw the matching projects
        this.drawMap(deletedProjects, addedProjects);
        this.fitBounds();
@@ -238,6 +239,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
             this.markerClusterGroup.removeLayer(marker);
         });
         this.markerList = []; // empty the list 
+        this.fitBounds();
 
         // draw all new apps
         this.drawMap([], this.projectsSummary);
@@ -301,6 +303,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   // NB: do not animate fitBounds() as it can lead to getting
   // the latest apps BEFORE the final coordinates are set
   private fitBounds(bounds: L.LatLngBounds = null) {
+    if (!this.map) return; // map not yet initialized
     const fitBoundsOptions: L.FitBoundsOptions = {
       animate: false,
       paddingTopLeft: [0, 100],
