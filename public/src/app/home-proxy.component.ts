@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 //
@@ -12,8 +12,10 @@ import { Router, ActivatedRoute } from '@angular/router';
   selector: 'home-proxy-component',
   template: ''
 })
-export class HomeProxyComponent {
-  constructor(private router: Router, private route: ActivatedRoute) {
+export class HomeProxyComponent implements OnInit {
+  constructor(private router: Router, private route: ActivatedRoute) { }
+
+  ngOnInit() {
     const showSplashModal = this.route.snapshot.paramMap.get('showSplashModal');
     if (showSplashModal === 'true') {
       this.router.navigate(['/projects'], {fragment: 'splash' });

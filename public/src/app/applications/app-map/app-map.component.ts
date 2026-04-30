@@ -75,7 +75,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
   // create map after view (which contains map id) is initialized
   ngAfterViewInit() {
-    this.onMapVisible();
     const resetViewControl = L.Control.extend({
       options: {
         position: 'bottomright'
@@ -109,6 +108,8 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
     // identify when map has initialized with a view
     this.map.whenReady(() => (this.isMapReady = true));
+
+    this.onMapVisible();
 
     // map state change events
     // NB: moveend is called after zoomstart, movestart and resize
@@ -211,7 +212,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
    // called when projects list changes
    public ngOnChanges(changes: SimpleChanges) {
-     if (changes.projectsSummary && !changes.projectsSummary.firstChange && changes.projectsSummary.currentValue) {
+     if (changes.projectsSummary && changes.projectsSummary.currentValue) {
        const ppsEqComparator = (a: ProjectPublicSummaryResponse, b: ProjectPublicSummaryResponse) => a.id == b.id;
        const deletedProjects = differenceWith(
          changes.projectsSummary.previousValue as Array<ProjectPublicSummaryResponse>,

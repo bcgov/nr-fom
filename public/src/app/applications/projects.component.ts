@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
@@ -77,7 +77,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   public urlTree: UrlTree;
   public observablesSub: Subscription = null;
   public coordinates: string = null;
-   public projectsSummary: Array<ProjectPublicSummaryResponse>;
+  public projectsSummary: Array<ProjectPublicSummaryResponse>;
   public projectsSummary$: Observable<Array<ProjectPublicSummaryResponse>>;
   public totalNumber: number;
   public commentStatusFilters: MultiFilter<boolean>;
@@ -87,40 +87,51 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     private router: Router,
     private projectService: ProjectService,
     public urlService: UrlService,
-    private fomFiltersSvc: FOMFiltersService
-  ) {
-    // watch for URL param changes
-    this.urlService.onNavEnd$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(event => {
-      this.urlTree = this.router.parseUrl(event.url);
-
-      if (this.urlTree) {
-        switch (this.urlTree.fragment) {
-          case 'splash':
-            this.displaySplashModal();
-            break;
-          case Panel.find:
-            this.closeSplashModal();
-            this.activePanel = Panel.find;
-            break;
-          case Panel.details:
-            this.closeSplashModal();
-            this.activePanel = Panel.details;
-            break;
-          default:
-            this.closeSplashModal();
-            break;
-        }
-      }
-    });
-  }
+    private fomFiltersSvc: FOMFiltersService,
+    private cd: ChangeDetectorRef
+  ) { }
 
   /**
    * @memberof ProjectsComponent
    */
   ngOnInit() {
+    // watch for URL param changes
+    this.urlService.onNavEnd$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(event => {
+      this.handleFragment(this.router.parseUrl(event.url).fragment);
+    });
+
+    // Check initial fragment
+    const initialFragment = this.router.parseUrl(this.router.url).fragment;
+    if (initialFragment) {
+      this.handleFragment(initialFragment);
+    }
+
     this.fomFiltersSvc.filters$.pipe(takeUntil(this.ngUnsubscribe)).subscribe((filters) => {
       this.fetchFOMs(filters);
       this.commentStatusFilters = filters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>;
+    });
+  }
+
+  private handleFragment(fragment: string) {
+    setTimeout(() => {
+      this.urlTree = this.router.parseUrl(this.router.url);
+      switch (fragment) {
+        case 'splash':
+          this.displaySplashModal();
+          break;
+        case Panel.find:
+          this.closeSplashModal();
+          this.activePanel = Panel.find;
+          break;
+        case Panel.details:
+          this.closeSplashModal();
+          this.activePanel = Panel.details;
+          break;
+        default:
+          this.closeSplashModal();
+          break;
+      }
+      this.cd.detectChanges();
     });
   }
 
@@ -130,13 +141,16 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   public displaySplashModal(): void {
+    if (this.splashModal) return; // already open
     this.splashModal = this.modalService.open(SplashModalComponent, {
       backdrop: 'static',
       windowClass: 'splash-modal'
     });
 
     this.splashModal.result.then(() => {
-      this.splashModal.dismiss();
+      this.splashModal = null;
+    }, () => {
+      this.splashModal = null;
     });
   }
 
@@ -183,9 +197,16 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           this.projectsSummary = results;
           this.totalNumber = results.length;
           this.loading = false;
+          this.cd.detectChanges();
           },
-          () => this.loading = false,
-          () => this.loading = false
+          () => {
+            this.loading = false;
+            this.cd.detectChanges();
+          },
+          () => {
+            this.loading = false;
+            this.cd.detectChanges();
+          }
         );
   }
 
