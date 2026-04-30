@@ -1,7 +1,7 @@
 import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Observable, lastValueFrom } from 'rxjs';
+import { Observable, lastValueFrom, timeout } from 'rxjs';
 import { StateService } from '@admin-core/services/state.service';
 import { FooterComponent } from './footer/footer.component';
 import { HeaderComponent } from './header/header.component';
@@ -28,7 +28,10 @@ export class AppComponent implements OnInit {
 
   async ngOnInit() {
     try {
-      const codeTables = await lastValueFrom(this.stateSvc.getCodeTables());
+      // Don't let hanging code table requests block the entire UI indefinitely
+      const codeTables = await lastValueFrom(
+        this.stateSvc.getCodeTables().pipe(timeout(10000))
+      );
       this.stateSvc.setCodeTables(codeTables);
     } catch (error) {
       console.error('Failed to load code tables:', error);
