@@ -59,9 +59,17 @@ export class CognitoService {
             return getCurrentUser()
               .then(async (user) => {
                   console.log("CognitoService.init() - Signed in as:", user.username);
-                  await this.refreshToken();
-                  this.initialized = true;
-                  console.log("CognitoService.init() - initialized.");
+                  try {
+                    // Don't let a hanging refresh block the entire app boot
+                    await Promise.race([
+                      this.refreshToken(),
+                      new Promise((_, reject) => setTimeout(() => reject(new Error("Refresh timeout")), 10000))
+                    ]);
+                    this.initialized = true;
+                    console.log("CognitoService.init() - initialized.");
+                  } catch (refreshErr) {
+                    console.error("CognitoService.init() - Token refresh failed or timed out:", refreshErr);
+                  }
                   resolve(null)
               })
               .catch((error) => {
