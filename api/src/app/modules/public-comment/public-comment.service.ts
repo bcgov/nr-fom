@@ -19,6 +19,7 @@ import {
     PublicCommentCreateRequest,
 } from './public-comment.dto';
 import { PublicComment } from './public-comment.entity';
+import { ResponseCodeEnum } from './response-code.entity';
 
 @Injectable()
 export class PublicCommentService extends DataService<
@@ -281,6 +282,23 @@ export class PublicCommentService extends DataService<
         publicCommentCount: Number(row.publicCommentCount),
       });
       district.totalPublicCommentCount += Number(row.publicCommentCount);
+    });
+
+    // Ensure that for each district, we have a count for every response code, even if has no comment on that response code.
+    const allResponseCodes = [
+      ...Object.values(ResponseCodeEnum),
+      'NOT_CATEGORIZED'
+    ];
+    districtMap.forEach(district => {
+      allResponseCodes.forEach(code => {
+        if (!district.commentCountByCategory.some(c => c.responseCode === code)) {
+          // If a response code has no comments for this district, add it with count 0
+          district.commentCountByCategory.push({
+            responseCode: code,
+            publicCommentCount: 0,
+          });
+        }
+      });
     });
 
     return Array.from(districtMap.values());

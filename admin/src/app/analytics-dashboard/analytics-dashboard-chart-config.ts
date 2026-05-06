@@ -1,4 +1,4 @@
-import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexGrid, ApexLegend, ApexPlotOptions, ApexTheme, ApexTitleSubtitle, ApexXAxis, ApexYAxis, ChartType } from 'ng-apexcharts';
+import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexGrid, ApexLegend, ApexPlotOptions, ApexStroke, ApexTheme, ApexTitleSubtitle, ApexXAxis, ApexYAxis, ChartType } from 'ng-apexcharts';
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
@@ -12,6 +12,8 @@ export type ChartOptions = {
   theme: ApexTheme;
   grid: ApexGrid;
   legend: ApexLegend;
+  stroke?: ApexStroke;
+  tooltip?: ApexTooltip;
 };
 
 const COLOR_LABEL = "#304758";
@@ -243,7 +245,8 @@ export const commentsByDistrictChartOptions = {
     enabled: true,
     position: 'right',
     formatter: function(val: number) {
-      return '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0' + val;
+      //'offsetX' does not work well so using non-breaking spaces \u00A0 for manual offset for label position.
+      return val === 0 ? '' : '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0' + val; 
     },
     style: {
       fontSize: "12px",
@@ -286,6 +289,23 @@ export const commentsByDistrictChartOptions = {
     show: true,
     position: 'top' as const,
     horizontalAlign: 'left' as const,
+    // use custom legends with markers for all categories than default to prevent missing legends when some categories have 0 comments in all districts.
+    customLegendItems: [
+      'Considered',
+      'Addressed',
+      'Not Applicable',
+      'Not Categorized',
+      'Total'
+    ],
+    markers: {
+      fillColors: [
+        RESPONSE_CODE_COLORS['CONSIDERED'],
+        RESPONSE_CODE_COLORS['ADDRESSED'],
+        RESPONSE_CODE_COLORS['IRRELEVANT'],
+        RESPONSE_CODE_COLORS['NOT_CATEGORIZED'],
+        RESPONSE_CODE_COLORS['TOTAL']
+      ]
+    }
   }
 };
 

@@ -7,7 +7,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
-import { ChartOptions, commentsByDistrictChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions, fomsCountByForestClientChartOptions, maxAxis, maxAxis as maxxAxis, RESPONSE_CODE_COLORS, RESPONSE_CODE_LABELS, topCommentedProjectsChartOptions } from 'app/analytics-dashboard/analytics-dashboard-chart-config';
+import {
+  ChartOptions, commentsByDistrictChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions,
+  fomsCountByForestClientChartOptions, maxAxis, maxAxis as maxxAxis, RESPONSE_CODE_COLORS, RESPONSE_CODE_LABELS,
+  topCommentedProjectsChartOptions
+} from 'app/analytics-dashboard/analytics-dashboard-chart-config';
 import { AnalyticsDashboardData, AnalyticsDashboardDataService, ApiError } from 'app/analytics-dashboard/analytics-dashboard-data.service';
 import { DateTime } from 'luxon';
 import {
@@ -227,9 +231,10 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   }
 
   applyCommentsByDistrictChartOptions() {
+    // apiData example: [{"districtId":43,"districtName":"Campbell River","totalPublicCommentCount":1110,"commentCountByCategory":[{"responseCode":"NOT_CATEGORIZED","publicCommentCount":19},{"responseCode":"CONSIDERED","publicCommentCount":1},{"responseCode":"IRRELEVANT","publicCommentCount":0},{"responseCode":"ADDRESSED","publicCommentCount":0}]}]
     const apiData = this.analyticsData().commentCountByDistrict;
     if (apiData && !(apiData instanceof ApiError)) {
-      // Update district filter options
+      // Update district select filter options
       this.districtFilterOptions = [
         { value: null, label: 'All districts' },
         ...apiData.map(item => ({ value: item.districtId, label: item.districtName }))
@@ -261,10 +266,10 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
           return category ? category.publicCommentCount : 0;
         });
         series.push({
-          name: RESPONSE_CODE_LABELS[responseCode] || responseCode,
+          name: RESPONSE_CODE_LABELS[responseCode as keyof typeof RESPONSE_CODE_LABELS] || responseCode,
           data: data
         });
-        seriesColors.push(RESPONSE_CODE_COLORS[responseCode] || '#999999');
+        seriesColors.push(RESPONSE_CODE_COLORS[responseCode as keyof typeof RESPONSE_CODE_COLORS] || '#999999');
       });
 
       // Add Total series
@@ -290,6 +295,11 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         colors: seriesColors,
         chart: {
           height: Math.max(300, filteredData.length * 80)
+        },
+        stroke: {
+          show: true,
+          width: 1,
+          colors: ['#fff']
         }
       });
     }
