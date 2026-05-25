@@ -18,9 +18,18 @@
       <div class="review-comments">
         <div class="review-comments__list panel">
           <div class="panel-header">
-            <h2 style="margin: 0;">Comments ({{data?.length}})</h2>
-            <div>
-              <mat-form-field [style.width.px]=320>
+            <div class="panel-header_top">
+              <h2 style="margin: 0;">Comments ({{data?.length}})</h2>
+              <button *ngIf="data?.length"
+                      class="btn btn-sm btn-primary export-comments-btn"
+                      type="button"
+                      title="Export all comments">
+                <em class="material-icons md-18">file_download</em>
+                <span>Export All Comments</span>
+              </button>
+            </div>
+            <div class="panel-header_bottom">
+              <mat-form-field>
                 <mat-select [(ngModel)]="selectedScope" name="commentScope"
                     (selectionChange)="onScopeOptionChanged(selectedScope)">
                   <mat-option *ngFor="let opt of commentScopeOpts" [value]="opt">
