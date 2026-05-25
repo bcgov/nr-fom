@@ -1,12 +1,12 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, firstValueFrom } from 'rxjs';
 
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { StateService } from '@admin-core/services/state.service';
 import { CommonUtil } from '@admin-core/utils/commonUtil';
 import { COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
-import { AsyncPipe, DatePipe, NgFor, NgIf } from '@angular/common';
+import { DatePipe, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -40,8 +40,7 @@ export const ERROR_DIALOG = {
         FormsModule, 
         NgFor, 
         MatOptionModule, 
-        CommentDetailComponent, 
-        AsyncPipe, 
+        CommentDetailComponent,
         DatePipe
     ],
     selector: 'app-review-comments',
@@ -50,20 +49,20 @@ export const ERROR_DIALOG = {
 })
 export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
-  @ViewChild('commentListScrollContainer', {read: ElementRef})
-  public commentListScrollContainer: ElementRef;
+  @ViewChild('commentListScrollContainer', { read: ElementRef })
+  public commentListScrollContainer!: ElementRef;
   @ViewChild('commentDetailForm') 
-  commentDetailForm: CommentDetailComponent;
+  commentDetailForm!: CommentDetailComponent;
 
   public responseCodes = this.stateSvc.getCodeTable('responseCode')
   public commentScopeCodes = indexBy(this.stateSvc.getCodeTable('commentScopeCode'), (x) => x.code);
   public loading = false;
-  public projectId: number;
-  public project: ProjectResponse;
-  public selectedItem: PublicCommentAdminResponse;
+  public projectId!: number;
+  public project!: ProjectResponse;
+  public selectedItem: PublicCommentAdminResponse | null = null;
   public user: User;
   public commentScopeOpts :Array<CommentScopeOpt> = [];
-  public selectedScope: CommentScopeOpt;
+  public selectedScope!: CommentScopeOpt;
 
   public allPublicComments: PublicCommentAdminResponse[] = [];
   public filteredPublicComments: PublicCommentAdminResponse[] = [];
@@ -79,7 +78,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     private spatialFeatureService: SpatialFeatureService,
     private cognitoService: CognitoService
   ) {
-    this.user = this.cognitoService.getUser();
+    this.user = this.cognitoService.getUser()!;
   }
 
   ngOnInit() {
@@ -88,15 +87,14 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     }
     
     this.projectId = this.route.snapshot.params.appId;
-    this.projectSvc.projectControllerFindOne(this.projectId).toPromise()
-        .then((result) => {this.project = result;});
+    firstValueFrom(this.projectSvc.projectControllerFindOne(this.projectId))
+      .then((result) => {this.project = result;});
 
-    this.spatialFeatureService.spatialFeatureControllerGetForProject(this.projectId)
-        .toPromise()
-        .then((spatialDetails) => {
-            this.commentScopeOpts =  CommonUtil.buildCommentScopeOptions(spatialDetails);
-            this.selectedScope = this.commentScopeOpts.filter(opt => opt.commentScopeCode == null)[0]; // allOpt;
-        });
+    firstValueFrom(this.spatialFeatureService.spatialFeatureControllerGetForProject(this.projectId))
+      .then((spatialDetails) => {
+        this.commentScopeOpts =  CommonUtil.buildCommentScopeOptions(spatialDetails);
+        this.selectedScope = this.commentScopeOpts.filter(opt => opt.commentScopeCode == null)[0]; // allOpt;
+      });
 
     this.triggered$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
       this.commentSvc.publicCommentControllerFind(this.projectId).pipe(takeUntil(this.ngUnsubscribe)).subscribe((comments) => {
@@ -159,7 +157,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
     try {
       this.loading = true;
-      const result = await this.commentSvc.publicCommentControllerUpdate(id, update).toPromise();
+      const result = await firstValueFrom(this.commentSvc.publicCommentControllerUpdate(id, update));
 
       // scroll position, important to get it first!!
       const pos = this.commentListScrollContainer.nativeElement.scrollTop;
