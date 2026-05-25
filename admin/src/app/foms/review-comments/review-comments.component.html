@@ -1,5 +1,4 @@
-<ng-container *ngIf="publicComments$ | async as data">
-  <div class="top-container">
+<div class="top-container">
     <div class="container">
       <div class="breadcrumb-container">
         <a [routerLink]="['/a', projectId]">
@@ -19,8 +18,8 @@
         <div class="review-comments__list panel">
           <div class="panel-header">
             <div class="panel-header_top">
-              <h2 style="margin: 0;">Comments ({{data?.length}})</h2>
-              <button *ngIf="data?.length"
+                    <h2 style="margin: 0;">Comments ({{filteredPublicComments?.length}})</h2>
+                    <button *ngIf="hasAnyPublicComments"
                       class="btn btn-sm btn-primary export-comments-btn"
                       type="button"
                       title="Export all comments">
@@ -40,8 +39,8 @@
             </div>
           </div>
           <div class="panel-scroll" #commentListScrollContainer>
-            <ng-container *ngIf="data">
-              <div class="comment-item" *ngFor="let item of data" [class.active]="item?.id === selectedItem?.id"
+            <ng-container *ngIf="hasAnyPublicComments; else noComments">
+              <div class="comment-item" *ngFor="let item of filteredPublicComments" [class.active]="item?.id === selectedItem?.id"
                     (click)="onReviewItemClicked(item, null)">
                 <div class="comment-item-header">
                   <div class="comment-author">
@@ -87,8 +86,9 @@
       </div>
     </div>
   </div>
-</ng-container>
 
 <ng-template #noComments>
-  No comments available for the application.
+  <div class="container">
+    No comments available for the application.
+  </div>
 </ng-template>

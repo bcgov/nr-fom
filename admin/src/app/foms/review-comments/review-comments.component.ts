@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { StateService } from '@admin-core/services/state.service';
@@ -17,7 +17,7 @@ import {
 } from '@api-client';
 import { User } from "@utility/security/user";
 import { indexBy } from 'remeda';
-import { map, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { CommentDetailComponent } from './comment-detail/comment-detail.component';
 
 export const ERROR_DIALOG = {
@@ -65,7 +65,9 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   public commentScopeOpts :Array<CommentScopeOpt> = [];
   public selectedScope: CommentScopeOpt;
 
-  public publicComments$: Observable<PublicCommentAdminResponse[]>;
+  public allPublicComments: PublicCommentAdminResponse[] = [];
+  public filteredPublicComments: PublicCommentAdminResponse[] = [];
+  public hasAnyPublicComments = false;
   private ngUnsubscribe: Subject<void> = new Subject<void>();
   private triggered$ = new Subject<void>(); // To notify when 'save' or scope 'select' happen.
 
@@ -97,31 +99,28 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
         });
 
     this.triggered$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
-      this.publicComments$ = this.getProjectComments();
+      this.commentSvc.publicCommentControllerFind(this.projectId).pipe(takeUntil(this.ngUnsubscribe)).subscribe((comments) => {
+        this.allPublicComments = comments ?? [];
+        this.hasAnyPublicComments = this.allPublicComments.length > 0;
+        this.filteredPublicComments = this.filterProjectComments(this.allPublicComments, this.selectedScope);
+      });
     });
 
     this.triggered$.next();
   }
 
-  getProjectComments() {
-    const filterData = (scope: CommentScopeOpt) => map((comments: PublicCommentAdminResponse[]) => {
-      let fPublicComments: PublicCommentAdminResponse[];
-      fPublicComments = comments.filter((comment) => {
-        if (!scope || scope.commentScopeCode == null) {
-          return true; // No filtering on scope. everything.
-        }
-        else if (scope.commentScopeCode === COMMENT_SCOPE_CODE.OVERALL) {
-          return comment.commentScope.code === scope.commentScopeCode;
-        }
-        return comment.commentScope.code === scope.commentScopeCode &&
-                ((comment.scopeCutBlockId && comment.scopeCutBlockId == scope.scopeId) ||
-                (comment.scopeRoadSectionId && comment.scopeRoadSectionId == scope.scopeId));
-      });
-      return fPublicComments;
+  filterProjectComments(comments: PublicCommentAdminResponse[], scope: CommentScopeOpt): PublicCommentAdminResponse[] {
+    return comments.filter((comment) => {
+      if (!scope || scope.commentScopeCode == null) {
+        return true; // No filtering on scope. everything.
+      }
+      else if (scope.commentScopeCode === COMMENT_SCOPE_CODE.OVERALL) {
+        return comment.commentScope.code === scope.commentScopeCode;
+      }
+      return comment.commentScope.code === scope.commentScopeCode &&
+              ((comment.scopeCutBlockId && comment.scopeCutBlockId == scope.scopeId) ||
+              (comment.scopeRoadSectionId && comment.scopeRoadSectionId == scope.scopeId));
     });
-
-    return this.commentSvc.publicCommentControllerFind(this.projectId)
-               .pipe(filterData(this.selectedScope));
   }
 
   onScopeOptionChanged(_selection: CommentScopeOpt) {
