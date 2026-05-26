@@ -18,14 +18,14 @@
         <div class="review-comments__list panel">
           <div class="panel-header">
             <div class="panel-header_top">
-                    <h2 style="margin: 0;">Comments ({{filteredPublicComments?.length}})</h2>
-                    <button *ngIf="hasAnyPublicComments"
-                      class="btn btn-sm btn-primary export-comments-btn"
-                      [class.export-comments-btn--success]="exportSuccess || exportInProgress"
-                      [disabled]="exportInProgress || !allPublicComments?.length"
-                      (click)="exportAllComments()"
-                      type="button"
-                      title="Export all comments">
+              <h2 style="margin: 0;">Comments ({{filteredPublicComments?.length}})</h2>
+              <button *ngIf="hasAnyPublicComments"
+                class="btn btn-sm btn-primary export-comments-btn"
+                [class.export-comments-btn--success]="exportSuccess || exportInProgress"
+                [disabled]="exportInProgress || !allPublicComments?.length"
+                (click)="exportAllComments()"
+                type="button"
+                title="Export all comments">
                 <em class="material-symbols-outlined md-18">download</em>
                 <span>{{ (exportSuccess || exportInProgress) ? 'Comments exported!' : 'Export All Comments' }}</span>
               </button>
