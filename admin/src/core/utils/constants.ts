@@ -12,13 +12,19 @@ export enum COMMENT_SCOPE_CODE {
 }
 
 export type CommentScopeOpt = {
-  commentScopeCode: COMMENT_SCOPE_CODE,
+  commentScopeCode: COMMENT_SCOPE_CODE | null,
   desc: string,
-  name: string, 
-  scopeId: number
+  name: string | null,
+  scopeId: number | null
 };
 
-export const SpatialTypeMap = new Map<SpatialObjectCodeEnum, object>([
+export interface SpatialObjectType {
+  source: string;
+  type: string;
+  desc: string;
+}
+
+export const SpatialTypeMap = new Map<SpatialObjectCodeEnum, SpatialObjectType>([
   [SpatialObjectCodeEnum.CutBlock, {
     source: 'cut_block',
     type: 'Polygon',
