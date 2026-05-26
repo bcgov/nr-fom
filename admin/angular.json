@@ -19,7 +19,8 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": [
-                "leaflet"
+                "leaflet",
+                "json-2-csv"
             ],
             "baseHref": "/admin/",
             "outputPath": "dist/admin",

@@ -37,6 +37,7 @@ export const SpatialTypeMap = new Map<SpatialObjectCodeEnum, object>([
 ]);
 
 export const PROJECT_ID_PARAM_KEY: string = 'appId';
+export const BC_TIME_ZONE = 'America/Vancouver';
 
 export const DEFAULT_ISO_DATE_FORMAT = "yyyy-MM-dd";
 export const FOM_GO_LIVE_DATE = '2024-04-01';

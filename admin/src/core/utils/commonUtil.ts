@@ -1,4 +1,5 @@
 import { SpatialFeaturePublicResponse, SpatialObjectCodeEnum } from '@api-client';
+import { json2csv, Json2CsvOptions } from 'json-2-csv';
 import { COMMENT_SCOPE_CODE, CommentScopeOpt, SpatialTypeMap } from './constants';
 
 export class CommonUtil {
@@ -47,5 +48,21 @@ export class CommonUtil {
       default:
         return forCode? COMMENT_SCOPE_CODE.OVERALL: 'Overall FOM';
     }
+  }
+
+  static downloadCsvFromJson(rows: object[], fileName: string, options?: Json2CsvOptions): void {
+    const csv = json2csv(rows, {
+      excelBOM: true,
+      ...options
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const objectUrl = URL.createObjectURL(blob);
+
+    const anchor = document.createElement('a');
+    anchor.href = objectUrl;
+    anchor.download = fileName;
+    anchor.click();
+
+    URL.revokeObjectURL(objectUrl);
   }
 }

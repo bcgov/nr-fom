@@ -5,7 +5,7 @@ import { Subject, firstValueFrom } from 'rxjs';
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { StateService } from '@admin-core/services/state.service';
 import { CommonUtil } from '@admin-core/utils/commonUtil';
-import { COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
+import { BC_TIME_ZONE, COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
 import { DatePipe, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
@@ -67,8 +67,16 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   public allPublicComments: PublicCommentAdminResponse[] = [];
   public filteredPublicComments: PublicCommentAdminResponse[] = [];
   public hasAnyPublicComments = false;
+  public exportInProgress = false;
+  public exportSuccess = false;
   private ngUnsubscribe: Subject<void> = new Subject<void>();
   private triggered$ = new Subject<void>(); // To notify when 'save' or scope 'select' happen.
+  private exportFeedbackTimeout: ReturnType<typeof setTimeout> | null = null;
+  private readonly exportDateTimeFormatter = new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'long',
+    timeStyle: 'long',
+    timeZone: BC_TIME_ZONE
+  });
 
   constructor(
     private route: ActivatedRoute,
@@ -168,7 +176,9 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       this.selectedItem = result; // updated selected.
       this.loading = false;
       setTimeout(() => {
-        this.onReviewItemClicked(this.selectedItem, pos);
+        if (this.selectedItem) {
+          this.onReviewItemClicked(this.selectedItem, pos);
+        }
       }, 300);
 
     } catch (err) {
@@ -177,7 +187,65 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     }
   }
 
+  exportAllComments(): void {
+    if (!this.allPublicComments.length || this.exportInProgress) {
+      return;
+    }
+
+    this.exportInProgress = true;
+    this.exportSuccess = false;
+
+    try {
+      const exportRows = this.allPublicComments.map((comment) => ({
+        "Comment Scope": comment.commentScope?.description ?? '',
+        "Comment Date/Time": this.formatCreateTimeForExport(comment.createTimestamp),
+        "From": comment.name ?? 'Anonymous',
+        "Email": comment.email ?? '',
+        "Phone Number": comment.phoneNumber ?? '',
+        "Location": comment.location ?? '',
+        "Comment": comment.feedback ?? '',
+        "Response": comment.response?.description ?? '',
+        "Response Details": comment.responseDetails ?? '',
+        "Scope Feature Name": comment.scopeFeatureName ?? '',
+        "Scope Cut Block ID": comment.scopeCutBlockId ?? '',
+        "Scope Road Section ID": comment.scopeRoadSectionId ?? ''
+      }));
+
+      const filename = `public-comments-${this.projectId}-${Date.now()}.csv`;
+
+      CommonUtil.downloadCsvFromJson(exportRows, filename);
+
+      this.exportSuccess = true;
+      if (this.exportFeedbackTimeout) {
+        clearTimeout(this.exportFeedbackTimeout);
+      }
+      this.exportFeedbackTimeout = setTimeout(() => {
+        this.exportSuccess = false;
+      }, 3000);
+    } catch (err) {
+      console.error('Failed to export comments.', err);
+    } finally {
+      this.exportInProgress = false;
+    }
+  }
+
+  private formatCreateTimeForExport(createTimestamp?: string): string {
+    if (!createTimestamp) {
+      return '';
+    }
+
+    const parsedDate = new Date(createTimestamp);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '';
+    }
+
+    return this.exportDateTimeFormatter.format(parsedDate);
+  }
+
   ngOnDestroy() {
+    if (this.exportFeedbackTimeout) {
+      clearTimeout(this.exportFeedbackTimeout);
+    }
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }
