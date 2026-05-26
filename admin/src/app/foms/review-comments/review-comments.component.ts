@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject, firstValueFrom } from 'rxjs';
 
 import { CognitoService } from "@admin-core/services/cognito.service";
+import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { CommonUtil } from '@admin-core/utils/commonUtil';
 import { BC_TIME_ZONE, COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
@@ -84,7 +85,8 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     private stateSvc: StateService,
     private projectSvc: ProjectService,
     private spatialFeatureService: SpatialFeatureService,
-    private cognitoService: CognitoService
+    private cognitoService: CognitoService,
+    private modalSvc: ModalService
   ) {
     this.user = this.cognitoService.getUser()!;
   }
@@ -185,6 +187,17 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       console.error("Failed to save comment.", err)
       this.loading = false;
     }
+  }
+
+  confirmExportAllComments(): void {
+    const disclaimerMessage = 'This export may include personal information. By proceeding, you confirm that you are authorized to access and handle this information in accordance with applicable privacy and records management requirements.';
+    const dialogRef = this.modalSvc.openConfirmationDialog(disclaimerMessage, 'Export Public Comments');
+
+    dialogRef.afterClosed().subscribe((confirm) => {
+      if (confirm) {
+        this.exportAllComments();
+      }
+    });
   }
 
   exportAllComments(): void {
