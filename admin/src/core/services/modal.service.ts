@@ -56,13 +56,17 @@ export class ModalService {
     });
   }
 
-  openConfirmationDialog(message: string, title: string): MatDialogRef<any> {
+  openConfirmationDialog(
+    message: string,
+    title: string,
+    options?: { width?: string; height?: string }
+  ): MatDialogRef<any> {
     return this.openDialog({
       data: {
         message: message,
         title: title,
-        width: '340px',
-        height: '200px',
+        width: options?.width ?? '340px',
+        height: options?.height ?? '200px',
         buttons: {confirm: {text: 'OK'}, cancel: { text: 'Cancel' }}
       }
     });

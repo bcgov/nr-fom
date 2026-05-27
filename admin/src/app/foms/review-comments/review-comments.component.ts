@@ -179,8 +179,12 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   }
 
   confirmExportAllComments(): void {
-    const disclaimerMessage = 'This export may include personal information. By proceeding, you confirm that you are authorized to access and handle this information in accordance with applicable privacy and records management requirements.';
-    const dialogRef = this.modalSvc.openConfirmationDialog(disclaimerMessage, 'Export Public Comments');
+    const disclaimerMessage = 'Comments in this export file were submitted through the Forest Operations Map (FOM) portal and are reproduced as submitted for convenience and informational purposes. This export is an informational extract only and may not include all associated context, metadata, attachments, subsequent corrections, or withdrawals. It is not an official record and the agency responsible, does not verify or endorse the accuracy, completeness, or reliability of any comments contained within. The authoritative source record is the original submission maintained in the FOM portal. Any collection, use, disclosure, severing, retention, and protection of personal information must be carried out in accordance with the Freedom of Information and Protection of Privacy Act (British Columbia). Disclosure of this export remains subject to FOIPPA and any other applicable legal requirements. This export is not to be shared with any person who does not have access to the original record in the FOM Software. Users are responsible for assessing the suitability and applicability of information in this file format. Questions about access to records or privacy should be directed to <a href="mailto:FOI.Requests@gov.bc.ca">FOI.Requests@gov.bc.ca</a>.';
+    const dialogRef = this.modalSvc.openConfirmationDialog(
+      disclaimerMessage,
+      'Export Public Comments',
+      { width: '760px', height: 'auto' }
+    );
 
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
