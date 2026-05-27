@@ -103,3 +103,7 @@ node_modules/
 
 ## Temporary scripts
 tmp*.sh
+
+## Agentic/System temporary files
+.kilo/
+.tmp/
