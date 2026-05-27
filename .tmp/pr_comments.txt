@@ -1,0 +1,108 @@
+author:	Copilot (AI)
+association:	contributor
+edited:	false
+status:	commented
+--
+## Pull request overview
+
+Upgrades the FOM frontends (admin/public) and shared libs to Angular v21-era dependencies, with related TypeScript/config tweaks and a small bootstrap/module integration change to accommodate updated third-party libraries.
+
+**Changes:**
+- Bumped Angular, Angular tooling (DevKit/CLI), and various frontend dependencies in `admin/` and `public/`.
+- Updated TypeScript module resolution to `bundler` and adjusted `ngx-bootstrap` datepicker module wiring (remove `.forRoot()` usage).
+- Updated shared `libs/` and `api/` package manifests/lockfiles to align with the new dependency ecosystem.
+
+### Reviewed changes
+
+Copilot reviewed 9 out of 13 changed files in this pull request and generated 4 comments.
+
+<details>
+<summary>Show a summary per file</summary>
+
+| File | Description |
+| ---- | ----------- |
+| public/tsconfig.json | Switches TS module resolution to `bundler` for Angular 21 compatibility. |
+| public/src/main.ts | Updates `ngx-bootstrap` datepicker module import to match v21+ API expectations. |
+| public/package.json | Frontend dependency/tooling bumps for Angular 21 ecosystem. |
+| libs/package.json | Shared libs dependency bumps (Angular, TS toolchain, etc.). |
+| libs/package-lock.json | Lockfile refresh reflecting updated dependency graph. |
+| libs/client/typescript-ng/README.md | Updated generated client README install instructions. |
+| api/package.json | Backend dev-tooling version bumps (TS/Jest/eslint/types). |
+| api/package-lock.json | Lockfile updates reflecting backend dependency graph changes. |
+| admin/tsconfig.json | Switches TS module resolution to `bundler` for Angular 21 compatibility. |
+| admin/src/main.ts | Updates `ngx-bootstrap` datepicker module import to match v21+ API expectations. |
+| admin/package.json | Frontend dependency/tooling bumps for Angular 21 ecosystem. |
+</details>
+
+
+<details>
+<summary>Files not reviewed (2)</summary>
+
+* **api/package-lock.json**: Language not supported
+* **libs/package-lock.json**: Language not supported
+</details>
+
+
+
+
+---
+
+💡 <a href="/bcgov/nr-fom/new/main?filename=.github/instructions/*.instructions.md" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">Add Copilot custom instructions</a> for smarter, more guided reviews. <a href="https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">Learn how to get started</a>.
+--
+author:	Copilot (AI)
+association:	contributor
+edited:	false
+status:	commented
+--
+## Pull request overview
+
+Copilot reviewed 34 out of 38 changed files in this pull request and generated 7 comments.
+
+<details>
+<summary>Files not reviewed (1)</summary>
+
+* **libs/package-lock.json**: Language not supported
+</details>
+
+<details>
+<summary>Comments suppressed due to low confidence (1)</summary>
+
+**admin/src/core/utils/cognito-token-interceptor.ts:75**
+* Inside `catchError`, the code uses `throw error;` / `throw` inside nested `catchError`. In RxJS operators this should return an error observable (e.g., `return throwError(() => error)`), otherwise you risk synchronous exceptions escaping operator chains and it’s harder to type/compose. Update the error paths to return `throwError` consistently.
+```
+    return next.handle(request).pipe(
+      catchError((error) => {
+        if (error.status === 403 && this.cognitoService.awsCognitoConfig.enabled) {
+          console.log("Caught 403, refreshing token");
+          return this.refreshToken().pipe(
+            switchMap(() => {
+              const newAuthToken = this.cognitoService.getToken();
+              if (newAuthToken) {
+                request = request.clone({
+                  setHeaders: { Authorization: "Bearer " + newAuthToken },
+                });
+              }
+              return next.handle(request);
+            }),
+            catchError((err) => {
+              // If the user really isn't authorized, every attempt will fail even after token refresh.
+              console.error(
+                "Caught error after refresh, rethowing original. New error is",
+                err
+              );
+              // Rethrow original forbidden error as throwning new err isn't working. A bit of a hack...
+              throw error;
+            })
+          );
+        }
+        throw error;
+      })
+```
+</details>
+
+
+
+---
+
+💡 <a href="/bcgov/nr-fom/new/main?filename=.github/instructions/*.instructions.md" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">Add Copilot custom instructions</a> for smarter, more guided reviews. <a href="https://docs.github.com/en/copilot/customizing-copilot/adding-repository-custom-instructions-for-github-copilot" class="Link--inTextBlock" target="_blank" rel="noopener noreferrer">Learn how to get started</a>.
+--

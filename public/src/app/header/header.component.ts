@@ -1,8 +1,9 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
-import { distinctUntilChanged, filter } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { ConfigService } from '@utility/services/config.service';
 
 @Component({
@@ -24,6 +25,7 @@ export class HeaderComponent implements OnInit {
   environmentDisplay: string;
   isNavMenuOpen = false; 
   currentUrl = '';
+  private destroyRef = inject(DestroyRef);
 
   constructor(private configService: ConfigService, public router: Router) {
     this.environmentDisplay = this.configService.getEnvironmentDisplay();
@@ -33,9 +35,11 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
-      distinctUntilChanged()
-    ).subscribe(() => {
-      this.currentUrl = this.router.url;
+      map(() => this.router.url),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((url) => {
+      this.currentUrl = url;
     });
   }
 

@@ -5,7 +5,7 @@ import {
     HttpRequest,
 } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable, Subject } from "rxjs";
+import { Observable, Subject, throwError } from "rxjs";
 import { catchError, switchMap, tap } from "rxjs/operators";
 
 /**
@@ -67,11 +67,11 @@ export class CognitoTokenInterceptor implements HttpInterceptor {
                 err
               );
               // Rethrow original forbidden error as throwning new err isn't working. A bit of a hack...
-              throw error;
+              return throwError(() => error);
             })
           );
         }
-        throw error;
+        return throwError(() => error);
       })
     );
   }

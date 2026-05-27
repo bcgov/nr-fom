@@ -52,30 +52,23 @@ export class CognitoService {
         return null;
       }
       return new Promise<any>((resolve) => {
-        this.loadRemoteConfig()
-          .then(() => {
-            return getCurrentUser()
-              .then(async (user) => {
-                  try {
-                    // Don't let a hanging refresh block the entire app boot
-                    await Promise.race([
-                      this.refreshToken(),
-                      new Promise((_, reject) => setTimeout(() => reject(new Error("Refresh timeout")), 10000))
-                    ]);
-                    this.initialized = true;
-                  } catch (refreshErr) {
-                    console.error("Token refresh failed or timed out:", refreshErr);
-                  }
-                  resolve(null)
-              })
-              .catch((error) => {
-                  this.login();
-                  resolve(null);
-              })
+        return getCurrentUser()
+          .then(async (user) => {
+              try {
+                // Don't let a hanging refresh block the entire app boot
+                await Promise.race([
+                  this.refreshToken(),
+                  new Promise((_, reject) => setTimeout(() => reject(new Error("Refresh timeout")), 10000))
+                ]);
+                this.initialized = true;
+              } catch (refreshErr) {
+                console.error("Token refresh failed or timed out:", refreshErr);
+              }
+              resolve(null)
           })
-          .catch((err) => {
-            console.error("Failed to load remote config:", err);
-            resolve(null);
+          .catch((error) => {
+              this.login();
+              resolve(null);
           });
       });
     }

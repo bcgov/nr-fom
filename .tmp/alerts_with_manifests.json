@@ -1,0 +1,744 @@
+{
+  "number": 610,
+  "severity": "medium",
+  "package": "follow-redirects",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 609,
+  "severity": "medium",
+  "package": "follow-redirects",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 603,
+  "severity": "medium",
+  "package": "fast-xml-parser",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 596,
+  "severity": "medium",
+  "package": "vite",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 595,
+  "severity": "medium",
+  "package": "vite",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 594,
+  "severity": "high",
+  "package": "vite",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 593,
+  "severity": "high",
+  "package": "vite",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 592,
+  "severity": "medium",
+  "package": "@nestjs/core",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 590,
+  "severity": "high",
+  "package": "lodash",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 588,
+  "severity": "medium",
+  "package": "lodash",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 586,
+  "severity": "medium",
+  "package": "serialize-javascript",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 579,
+  "severity": "medium",
+  "package": "serialize-javascript",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 574,
+  "severity": "medium",
+  "package": "handlebars",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 573,
+  "severity": "medium",
+  "package": "handlebars",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 572,
+  "severity": "medium",
+  "package": "handlebars",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 570,
+  "severity": "low",
+  "package": "handlebars",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 569,
+  "severity": "low",
+  "package": "handlebars",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 568,
+  "severity": "low",
+  "package": "handlebars",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 566,
+  "severity": "medium",
+  "package": "path-to-regexp",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 565,
+  "severity": "high",
+  "package": "path-to-regexp",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 562,
+  "severity": "high",
+  "package": "handlebars",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 561,
+  "severity": "high",
+  "package": "handlebars",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 560,
+  "severity": "high",
+  "package": "handlebars",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 558,
+  "severity": "high",
+  "package": "handlebars",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 557,
+  "severity": "high",
+  "package": "handlebars",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 556,
+  "severity": "high",
+  "package": "handlebars",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 550,
+  "severity": "high",
+  "package": "handlebars",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 549,
+  "severity": "high",
+  "package": "handlebars",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 548,
+  "severity": "high",
+  "package": "handlebars",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 546,
+  "severity": "critical",
+  "package": "handlebars",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 545,
+  "severity": "critical",
+  "package": "handlebars",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 544,
+  "severity": "critical",
+  "package": "handlebars",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 542,
+  "severity": "medium",
+  "package": "handlebars",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 541,
+  "severity": "high",
+  "package": "node-forge",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 540,
+  "severity": "high",
+  "package": "node-forge",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 539,
+  "severity": "high",
+  "package": "node-forge",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 537,
+  "severity": "medium",
+  "package": "handlebars",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 534,
+  "severity": "medium",
+  "package": "handlebars",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 533,
+  "severity": "high",
+  "package": "node-forge",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 532,
+  "severity": "high",
+  "package": "node-forge",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 531,
+  "severity": "high",
+  "package": "node-forge",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 525,
+  "severity": "medium",
+  "package": "picomatch",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 523,
+  "severity": "medium",
+  "package": "picomatch",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 522,
+  "severity": "medium",
+  "package": "picomatch",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 521,
+  "severity": "high",
+  "package": "picomatch",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 519,
+  "severity": "high",
+  "package": "picomatch",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 517,
+  "severity": "medium",
+  "package": "picomatch",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 516,
+  "severity": "medium",
+  "package": "picomatch",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 510,
+  "severity": "high",
+  "package": "fast-xml-parser",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 505,
+  "severity": "high",
+  "package": "flatted",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 504,
+  "severity": "high",
+  "package": "flatted",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 499,
+  "severity": "high",
+  "package": "@angular/core",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 498,
+  "severity": "high",
+  "package": "@angular/core",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 497,
+  "severity": "high",
+  "package": "@angular/core",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 496,
+  "severity": "high",
+  "package": "@angular/compiler",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 495,
+  "severity": "high",
+  "package": "@angular/compiler",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 486,
+  "severity": "medium",
+  "package": "file-type",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 484,
+  "severity": "medium",
+  "package": "file-type",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 482,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 481,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 478,
+  "severity": "low",
+  "package": "fast-xml-parser",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 476,
+  "severity": "low",
+  "package": "@tootallnate/once",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 475,
+  "severity": "low",
+  "package": "@tootallnate/once",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 474,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 473,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 472,
+  "severity": "high",
+  "package": "immutable",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 471,
+  "severity": "high",
+  "package": "immutable",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 465,
+  "severity": "high",
+  "package": "serialize-javascript",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 464,
+  "severity": "high",
+  "package": "@angular/core",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 463,
+  "severity": "high",
+  "package": "minimatch",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 461,
+  "severity": "high",
+  "package": "@angular/core",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 455,
+  "severity": "high",
+  "package": "serialize-javascript",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 454,
+  "severity": "high",
+  "package": "@angular/core",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 453,
+  "severity": "critical",
+  "package": "fast-xml-parser",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 452,
+  "severity": "high",
+  "package": "fast-xml-parser",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 451,
+  "severity": "high",
+  "package": "minimatch",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 443,
+  "severity": "high",
+  "package": "minimatch",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 441,
+  "severity": "high",
+  "package": "minimatch",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 440,
+  "severity": "high",
+  "package": "minimatch",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 435,
+  "severity": "high",
+  "package": "rollup",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 432,
+  "severity": "high",
+  "package": "rollup",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 420,
+  "severity": "high",
+  "package": "@angular/compiler",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 408,
+  "severity": "high",
+  "package": "@angular/compiler",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 407,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 406,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 399,
+  "severity": "low",
+  "package": "qs",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 398,
+  "severity": "low",
+  "package": "qs",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 394,
+  "severity": "low",
+  "package": "webpack",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 393,
+  "severity": "low",
+  "package": "webpack",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 392,
+  "severity": "low",
+  "package": "webpack",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 391,
+  "severity": "low",
+  "package": "webpack",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 383,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 382,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 381,
+  "severity": "medium",
+  "package": "lodash",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 379,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 378,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 373,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 372,
+  "severity": "high",
+  "package": "tar",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 367,
+  "severity": "high",
+  "package": "@angular/core",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 366,
+  "severity": "high",
+  "package": "@angular/core",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 365,
+  "severity": "high",
+  "package": "@angular/core",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 364,
+  "severity": "high",
+  "package": "@angular/compiler",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 363,
+  "severity": "high",
+  "package": "@angular/compiler",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 362,
+  "severity": "low",
+  "package": "@smithy/config-resolver",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 360,
+  "severity": "medium",
+  "package": "qs",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 359,
+  "severity": "medium",
+  "package": "qs",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 352,
+  "severity": "high",
+  "package": "@angular/common",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 351,
+  "severity": "high",
+  "package": "@angular/common",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 350,
+  "severity": "high",
+  "package": "@angular/common",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 349,
+  "severity": "high",
+  "package": "node-forge",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 348,
+  "severity": "high",
+  "package": "node-forge",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 345,
+  "severity": "medium",
+  "package": "node-forge",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 344,
+  "severity": "medium",
+  "package": "node-forge",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 342,
+  "severity": "high",
+  "package": "glob",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 341,
+  "severity": "high",
+  "package": "glob",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 332,
+  "severity": "medium",
+  "package": "js-yaml",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 330,
+  "severity": "medium",
+  "package": "js-yaml",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 329,
+  "severity": "medium",
+  "package": "js-yaml",
+  "manifest": "libs/package-lock.json"
+}
+{
+  "number": 328,
+  "severity": "medium",
+  "package": "js-yaml",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 326,
+  "severity": "medium",
+  "package": "js-yaml",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 321,
+  "severity": "medium",
+  "package": "tar",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 320,
+  "severity": "medium",
+  "package": "tar",
+  "manifest": "admin/package-lock.json"
+}
+{
+  "number": 319,
+  "severity": "medium",
+  "package": "vite",
+  "manifest": "public/package-lock.json"
+}
+{
+  "number": 318,
+  "severity": "medium",
+  "package": "vite",
+  "manifest": "admin/package-lock.json"
+}

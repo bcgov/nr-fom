@@ -86,6 +86,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     const fspIdArg = (isNaN(this.fFspId) || isNullish(this.fFspId))? null : this.fFspId.toString();
     const projectIdArg = (isNaN(this.fNumber) || isNullish(this.fNumber))? null : this.fNumber.toString();
     this.searchProjectService.projectControllerFind(projectIdArg, fspIdArg , districtArg, workFlowStateCodeArg, this.fHolder)
+      .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(
         projects => {
           this.projects = projects;
