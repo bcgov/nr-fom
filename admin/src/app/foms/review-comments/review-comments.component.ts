@@ -134,7 +134,6 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
    */
   onReviewItemClicked(item: PublicCommentAdminResponse, pos: number) {
     this.selectedItem = item;
-    this.commentDetailForm.selectedComment = item;
     if (pos) {
       // !! important to wait or will not see the effect.
       setTimeout(() => {
