@@ -5,8 +5,6 @@ import { DialogData } from '@admin-core/models/dialog';
 import { DialogComponent } from '@admin-core/components/dialog/dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-export const dialogTypes = ['cancel'] as const;
-
 @Injectable({
   providedIn: 'root',
 })
