@@ -24,10 +24,12 @@ export class ModalService {
 
   openDialog(config: { data: DialogData }): MatDialogRef<any> {
     const { data } = config;
-    const { width = null } = data;
+    const { width = null, height = null, maxWidth } = data;
     return this.dialog.open(DialogComponent, {
       data,
       width,
+      height,
+      maxWidth,
     });
   }
 
@@ -59,7 +61,7 @@ export class ModalService {
   openConfirmationDialog(
     message: string,
     title: string,
-    options?: { width?: string; height?: string }
+    options?: { width?: string; height?: string; maxWidth?: string }
   ): MatDialogRef<any> {
     return this.openDialog({
       data: {
@@ -67,6 +69,7 @@ export class ModalService {
         title: title,
         width: options?.width ?? '340px',
         height: options?.height ?? '200px',
+        maxWidth: options?.maxWidth,
         buttons: {confirm: {text: 'OK'}, cancel: { text: 'Cancel' }}
       }
     });

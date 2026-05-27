@@ -183,7 +183,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     const dialogRef = this.modalSvc.openConfirmationDialog(
       disclaimerMessage,
       'Export Public Comments',
-      { width: '760px', height: 'auto' }
+      { width: '760px', height: 'auto', maxWidth: '90vw' }
     );
 
     dialogRef.afterClosed().subscribe((confirm) => {
