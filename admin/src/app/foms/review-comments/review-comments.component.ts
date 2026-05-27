@@ -13,23 +13,13 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import {
-    ProjectResponse, ProjectService, PublicCommentAdminResponse,
-    PublicCommentAdminUpdateRequest, PublicCommentService, SpatialFeatureService
+  ProjectResponse, ProjectService, PublicCommentAdminResponse,
+  PublicCommentAdminUpdateRequest, PublicCommentService, SpatialFeatureService
 } from '@api-client';
 import { User } from "@utility/security/user";
 import { indexBy } from 'remeda';
 import { takeUntil } from 'rxjs/operators';
 import { CommentDetailComponent } from './comment-detail/comment-detail.component';
-
-export const ERROR_DIALOG = {
-  width: '340px',
-  height: '200px',
-  buttons: {
-    cancel: {
-      text: 'Close'
-    }
-  }
-};
 
 @Component({
     standalone: true,
