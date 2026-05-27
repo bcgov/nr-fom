@@ -146,7 +146,7 @@ export class CognitoService {
     if (!this.awsCognitoConfig.enabled) {
       return JSON.stringify(this.fakeUser);
     }
-    return this.cognitoAuthToken?.jwtToken?.idToken;
+    return JSON.stringify(this.cognitoAuthToken?.jwtToken);
   }
 
   private async loadRemoteConfig() {
