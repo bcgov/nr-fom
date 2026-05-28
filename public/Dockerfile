@@ -10,10 +10,13 @@ ARG build_dir
 WORKDIR /app
 COPY ./libs ./libs
 COPY ./${build_dir} ./${build_dir}
-RUN npm install -g npm@10.9.4 && \
-    cd libs && npm ci --ignore-scripts && cd .. && \
-    cd ${build_dir} && npm ci --ignore-scripts && npm run build:${build_dir} && cd .. && \
-    rm -rf libs/node_modules ${build_dir}/node_modules
+RUN npm install -g npm@10.9.4
+WORKDIR /app/libs
+RUN npm ci --ignore-scripts
+WORKDIR /app/${build_dir}
+RUN npm ci --ignore-scripts && npm run build:${build_dir}
+WORKDIR /app
+RUN rm -rf libs/node_modules ${build_dir}/node_modules
 
 
 # Deploy container

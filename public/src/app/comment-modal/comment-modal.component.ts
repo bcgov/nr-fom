@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { PublicCommentCreateRequest, PublicCommentService, SpatialFeaturePublicResponse, SpatialObjectCodeEnum } from '@api-client';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { SpatialTypeMap } from '@public-core/constants/appConstants';
+import { firstValueFrom } from 'rxjs';
 
 enum COMMENT_SCOPE_CODE {
   OVERALL = 'OVERALL',
@@ -39,7 +40,8 @@ export class CommentModalComponent implements OnInit {
 
   constructor(
     public activeModal: NgbActiveModal,
-    private commentService: PublicCommentService
+    private commentService: PublicCommentService,
+    private cd: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +68,9 @@ export class CommentModalComponent implements OnInit {
                                 scopeId: detail.featureId});
       });
     }
+    // Modal is rendered outside the host component's change-detection tree by
+    // ng-bootstrap; force an explicit CD pass so the initial form is painted.
+    this.cd.detectChanges();
   }
 
   public dismiss(reason: string) {
@@ -74,22 +79,27 @@ export class CommentModalComponent implements OnInit {
 
   public p1_next() {
     this.currentPage++;
+    this.cd.detectChanges();
   }
 
   public p2_back() {
     this.currentPage--;
+    this.cd.detectChanges();
   }
 
   public p2_next() {
     this.currentPage++;
+    this.cd.detectChanges();
   }
 
   public p3_back() {
     this.currentPage--;
+    this.cd.detectChanges();
   }
 
-  public p3_next() {
+  public async p3_next() {
     this.submitting = true;
+    this.cd.detectChanges();
 
     this.publicComment.commentScopeCode = this.selectedScope.commentScopeCode;
     if (this.selectedScope.commentScopeCode === COMMENT_SCOPE_CODE.CUT_BLOCK) {
@@ -99,16 +109,15 @@ export class CommentModalComponent implements OnInit {
       this.publicComment.scopeRoadSectionId = this.selectedScope.scopeId;
     }
 
-    this.commentService.publicCommentControllerCreate(this.publicComment)
-        .toPromise()
-        .then(() => {
-          this.submitting = false;
-          this.currentPage++;
-        })
-        .catch((err) => {
-          console.error(err)
-          this.submitting = false;
-        });
+    try {
+      await firstValueFrom(this.commentService.publicCommentControllerCreate(this.publicComment));
+      this.currentPage++;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.submitting = false;
+      this.cd.detectChanges();
+    }
   }
 
   private getCommentScopeCodeOrDesc(source: string, forCode: boolean) {
