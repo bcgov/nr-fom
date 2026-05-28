@@ -7,6 +7,8 @@ $eyebrow-text: #888780;
 $icon-bg: #ecf3ff;
 $icon-color: #2d5ea0;
 $focus-ring: #4f9ef9;
+$subtitle-color: #3a3a37;
+$contact-link: #185fa5;
 $spacing-xs: 0.5rem;
 $spacing-sm: 0.75rem;
 $spacing-md: 1rem;
@@ -16,13 +18,14 @@ $spacing-xl: 2rem;
 .export-terms-modal {
   background: $modal-bg;
   color: $text-primary;
+  font-family: 'DM Sans', sans-serif;
   border: 1px solid $modal-border;
   border-radius: 12px;
   box-shadow: $modal-shadow;
   overflow: hidden;
 
   &__header {
-    padding: $spacing-xl $spacing-xl $spacing-md;
+    padding: $spacing-md $spacing-xl $spacing-md;
     border-bottom: 1px solid $modal-border;
   }
 
@@ -41,19 +44,19 @@ $spacing-xl: 2rem;
 }
 
 .eyebrow {
-  margin: 0 0 0;
+  margin: 0 0 6px;
   color: $eyebrow-text;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .header_title {
-  margin: 0 0 0;
+  margin: 0 0 4px;
   padding: 0 0 0;
   color: $text-primary;
-  font-size: 1.125rem;
+  font-size: 17px;
   font-weight: 500;
   line-height: 1.35;
   text-align: left;
@@ -61,7 +64,9 @@ $spacing-xl: 2rem;
 
 .subtitle {
   margin: 0 0 0;
-  color: $text-secondary;
+  color: $subtitle-color;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .term-item {
@@ -84,15 +89,17 @@ $spacing-xl: 2rem;
 
 .term-copy {
   h6 {
-    margin: 0 0 $spacing-xs;
-    font-weight: 600;
+    margin: 0 0 3px;
+    font-size: 14px;
+    font-weight: 700;
     color: $text-primary;
   }
 
   p {
     margin: 0;
-    color: $text-secondary;
-    line-height: 1.45;
+    font-size: 14px;
+    color: $subtitle-color;
+    line-height: 1.55;
   }
 }
 
@@ -103,12 +110,13 @@ $spacing-xl: 2rem;
 
   p {
     margin: 0;
-    color: $text-secondary;
+    font-size: 13px;
+    color: $subtitle-color;
     line-height: 1.5;
   }
 
   a {
-    color: #185fa5;
+    color: $contact-link;
     text-decoration: none;
 
     &:hover {
