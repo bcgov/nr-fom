@@ -98,7 +98,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // watch for URL param changes
     this.urlService.onNavEnd$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(event => {
-      this.handleFragment(this.router.parseUrl(event.url).fragment);
+      const fragment = this.router.parseUrl(event.url).fragment || this.router.parseUrl(this.router.url).fragment;
+      this.handleFragment(fragment);
     });
 
     // Check initial fragment

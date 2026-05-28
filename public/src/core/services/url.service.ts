@@ -39,9 +39,10 @@ export class UrlService {
     // keep url fragment and query params up to date on navigation end
     this.onNavEnd$.subscribe(event => {
       const urlTree = this.router.parseUrl(event.url);
+      const activeUrlTree = this.router.parseUrl(this.router.url);
 
       if (urlTree) {
-        this.panel = urlTree.fragment;
+        this.panel = urlTree.fragment || activeUrlTree.fragment;
         this.queryParams = { ...urlTree.queryParams };
       }
     });
