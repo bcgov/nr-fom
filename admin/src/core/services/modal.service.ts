@@ -1,9 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Type } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { DialogData } from '@admin-core/models/dialog';
 import { DialogComponent } from '@admin-core/components/dialog/dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+
+export interface DialogOptions {
+  width?: string;
+  height?: string;
+  maxWidth?: string;
+  panelClass?: string | string[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -70,6 +77,21 @@ export class ModalService {
         maxWidth: options?.maxWidth,
         buttons: {confirm: {text: 'OK'}, cancel: { text: 'Cancel' }}
       }
+    });
+  }
+
+  openComponentDialog<T>(
+    component: Type<T>,
+    data: any,
+    options?: DialogOptions
+  ): MatDialogRef<T> {
+    const { width, height, maxWidth, panelClass } = options ?? {};
+    return this.dialog.open(component, {
+      data,
+      width,
+      height,
+      maxWidth,
+      panelClass,
     });
   }
 
