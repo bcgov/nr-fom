@@ -1,9 +1,9 @@
 $modal-bg: #ffffff;
 $modal-border: #dde2e8;
 $modal-shadow: 0 14px 32px rgba(19, 45, 73, 0.18);
-$text-primary: #223654;
-$text-secondary: #4a607d;
-$eyebrow-text: #3866a6;
+$text-primary: #1a1a18;
+$text-secondary: #1a1a18;
+$eyebrow-text: #888780;
 $icon-bg: #ecf3ff;
 $icon-color: #2d5ea0;
 $focus-ring: #4f9ef9;
@@ -49,11 +49,12 @@ $spacing-xl: 2rem;
   text-transform: uppercase;
 }
 
-.title {
+.header_title {
   margin: 0 0 0;
   padding: 0 0 0;
   color: $text-primary;
-  font-weight: bold;
+  font-size: 1.125rem;
+  font-weight: 500;
   line-height: 1.35;
   text-align: left;
 }
@@ -84,7 +85,7 @@ $spacing-xl: 2rem;
 .term-copy {
   h6 {
     margin: 0 0 $spacing-xs;
-    font-weight: 700;
+    font-weight: 600;
     color: $text-primary;
   }
 
