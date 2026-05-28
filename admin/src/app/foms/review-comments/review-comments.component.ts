@@ -183,7 +183,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     const dialogRef = this.modalSvc.openComponentDialog(
       ExportTermsModalComponent,
       null,
-      { width: '760px', maxWidth: '90vw' }
+      { width: '760px', maxWidth: '90vw', autoFocus: false }
     );
 
     dialogRef.afterClosed().subscribe((confirm) => {

@@ -10,6 +10,7 @@ export interface DialogOptions {
   height?: string;
   maxWidth?: string;
   panelClass?: string | string[];
+  autoFocus?: boolean;
 }
 
 @Injectable({
@@ -85,13 +86,14 @@ export class ModalService {
     data: any,
     options?: DialogOptions
   ): MatDialogRef<T> {
-    const { width, height, maxWidth, panelClass } = options ?? {};
+    const { width, height, maxWidth, panelClass, autoFocus } = options ?? {};
     return this.dialog.open(component, {
       data,
       width,
       height,
       maxWidth,
       panelClass,
+      autoFocus,
     });
   }
 
