@@ -29,19 +29,21 @@ export class UrlService {
       share()
     );
 
-    // keep url fragment up to date
+    // Initialize fragment and query params from initial URL
+    const initialUrlTree = this.router.parseUrl(this.router.url);
+    if (initialUrlTree) {
+      this.panel = initialUrlTree.fragment;
+      this.queryParams = { ...initialUrlTree.queryParams };
+    }
+
+    // keep url fragment and query params up to date on navigation end
     this.onNavEnd$.subscribe(event => {
-      const urlTree = router.parseUrl(event.url);
+      const urlTree = this.router.parseUrl(event.url);
 
       if (urlTree) {
         this.panel = urlTree.fragment;
+        this.queryParams = { ...urlTree.queryParams };
       }
-    });
-
-    // keep query params up to date
-    this.route.queryParamMap.subscribe(paramMap => {
-      this.queryParams = {}; // reset query params
-      paramMap.keys.forEach(key => (this.queryParams[key] = paramMap.get(key)));
     });
   }
 
