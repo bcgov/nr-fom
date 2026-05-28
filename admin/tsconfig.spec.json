@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "dist/admin/spec",
-    "module": "commonjs",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "types": ["jest", "node"]
   },
   "files": ["src/test-setup.ts"],

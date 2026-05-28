@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist/public/",
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "bundler",
     "types": ["jest", "node"]
   },
