@@ -1,34 +1,26 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
+import { Subject, firstValueFrom } from 'rxjs';
 
 import { CognitoService } from "@admin-core/services/cognito.service";
+import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { CommonUtil } from '@admin-core/utils/commonUtil';
-import { COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
-import { AsyncPipe, DatePipe, NgFor, NgIf } from '@angular/common';
+import { BC_TIME_ZONE, COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
+import { DatePipe, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import {
-    ProjectResponse, ProjectService, PublicCommentAdminResponse,
-    PublicCommentAdminUpdateRequest, PublicCommentService, SpatialFeatureService
+  ProjectResponse, ProjectService, PublicCommentAdminResponse,
+  PublicCommentAdminUpdateRequest, PublicCommentService, SpatialFeatureService
 } from '@api-client';
 import { User } from "@utility/security/user";
 import { indexBy } from 'remeda';
-import { map, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { CommentDetailComponent } from './comment-detail/comment-detail.component';
-
-export const ERROR_DIALOG = {
-  width: '340px',
-  height: '200px',
-  buttons: {
-    cancel: {
-      text: 'Close'
-    }
-  }
-};
+import { ExportTermsModalComponent } from './export-terms-modal/export-terms-modal.component';
 
 @Component({
     standalone: true,
@@ -40,8 +32,7 @@ export const ERROR_DIALOG = {
         FormsModule, 
         NgFor, 
         MatOptionModule, 
-        CommentDetailComponent, 
-        AsyncPipe, 
+        CommentDetailComponent,
         DatePipe
     ],
     selector: 'app-review-comments',
@@ -50,24 +41,34 @@ export const ERROR_DIALOG = {
 })
 export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
-  @ViewChild('commentListScrollContainer', {read: ElementRef})
-  public commentListScrollContainer: ElementRef;
+  @ViewChild('commentListScrollContainer', { read: ElementRef })
+  public commentListScrollContainer!: ElementRef;
   @ViewChild('commentDetailForm') 
-  commentDetailForm: CommentDetailComponent;
+  commentDetailForm!: CommentDetailComponent;
 
   public responseCodes = this.stateSvc.getCodeTable('responseCode')
   public commentScopeCodes = indexBy(this.stateSvc.getCodeTable('commentScopeCode'), (x) => x.code);
   public loading = false;
-  public projectId: number;
-  public project: ProjectResponse;
-  public selectedItem: PublicCommentAdminResponse;
+  public projectId!: number;
+  public project!: ProjectResponse;
+  public selectedItem: PublicCommentAdminResponse | null = null;
   public user: User;
   public commentScopeOpts :Array<CommentScopeOpt> = [];
-  public selectedScope: CommentScopeOpt;
+  public selectedScope!: CommentScopeOpt;
 
-  public publicComments$: Observable<PublicCommentAdminResponse[]>;
+  public allPublicComments: PublicCommentAdminResponse[] = [];
+  public filteredPublicComments: PublicCommentAdminResponse[] = [];
+  public hasAnyPublicComments = false;
+  public exportInProgress = false;
+  public exportSuccess = false;
   private ngUnsubscribe: Subject<void> = new Subject<void>();
   private triggered$ = new Subject<void>(); // To notify when 'save' or scope 'select' happen.
+  private exportFeedbackTimeout: ReturnType<typeof setTimeout> | null = null;
+  private readonly exportDateTimeFormatter = new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'long',
+    timeStyle: 'long',
+    timeZone: BC_TIME_ZONE
+  });
 
   constructor(
     private route: ActivatedRoute,
@@ -75,9 +76,10 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     private stateSvc: StateService,
     private projectSvc: ProjectService,
     private spatialFeatureService: SpatialFeatureService,
-    private cognitoService: CognitoService
+    private cognitoService: CognitoService,
+    private modalSvc: ModalService
   ) {
-    this.user = this.cognitoService.getUser();
+    this.user = this.cognitoService.getUser()!;
   }
 
   ngOnInit() {
@@ -86,42 +88,38 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     }
     
     this.projectId = this.route.snapshot.params.appId;
-    this.projectSvc.projectControllerFindOne(this.projectId).toPromise()
-        .then((result) => {this.project = result;});
+    firstValueFrom(this.projectSvc.projectControllerFindOne(this.projectId))
+      .then((result) => {this.project = result;});
 
-    this.spatialFeatureService.spatialFeatureControllerGetForProject(this.projectId)
-        .toPromise()
-        .then((spatialDetails) => {
-            this.commentScopeOpts =  CommonUtil.buildCommentScopeOptions(spatialDetails);
-            this.selectedScope = this.commentScopeOpts.filter(opt => opt.commentScopeCode == null)[0]; // allOpt;
-        });
+    firstValueFrom(this.spatialFeatureService.spatialFeatureControllerGetForProject(this.projectId))
+      .then((spatialDetails) => {
+        this.commentScopeOpts =  CommonUtil.buildCommentScopeOptions(spatialDetails);
+        this.selectedScope = this.commentScopeOpts.filter(opt => opt.commentScopeCode == null)[0]; // allOpt;
+      });
 
     this.triggered$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
-      this.publicComments$ = this.getProjectComments();
+      this.commentSvc.publicCommentControllerFind(this.projectId).pipe(takeUntil(this.ngUnsubscribe)).subscribe((comments) => {
+        this.allPublicComments = comments ?? [];
+        this.hasAnyPublicComments = this.allPublicComments.length > 0;
+        this.filteredPublicComments = this.filterProjectComments(this.allPublicComments, this.selectedScope);
+      });
     });
 
     this.triggered$.next();
   }
 
-  getProjectComments() {
-    const filterData = (scope: CommentScopeOpt) => map((comments: PublicCommentAdminResponse[]) => {
-      let fPublicComments: PublicCommentAdminResponse[];
-      fPublicComments = comments.filter((comment) => {
-        if (!scope || scope.commentScopeCode == null) {
-          return true; // No filtering on scope. everything.
-        }
-        else if (scope.commentScopeCode === COMMENT_SCOPE_CODE.OVERALL) {
-          return comment.commentScope.code === scope.commentScopeCode;
-        }
-        return comment.commentScope.code === scope.commentScopeCode &&
-                ((comment.scopeCutBlockId && comment.scopeCutBlockId == scope.scopeId) ||
-                (comment.scopeRoadSectionId && comment.scopeRoadSectionId == scope.scopeId));
-      });
-      return fPublicComments;
+  filterProjectComments(comments: PublicCommentAdminResponse[], scope: CommentScopeOpt): PublicCommentAdminResponse[] {
+    return comments.filter((comment) => {
+      if (!scope || scope.commentScopeCode == null) {
+        return true; // No filtering on scope. everything.
+      }
+      else if (scope.commentScopeCode === COMMENT_SCOPE_CODE.OVERALL) {
+        return comment.commentScope.code === scope.commentScopeCode;
+      }
+      return comment.commentScope.code === scope.commentScopeCode &&
+              ((comment.scopeCutBlockId && comment.scopeCutBlockId == scope.scopeId) ||
+              (comment.scopeRoadSectionId && comment.scopeRoadSectionId == scope.scopeId));
     });
-
-    return this.commentSvc.publicCommentControllerFind(this.projectId)
-               .pipe(filterData(this.selectedScope));
   }
 
   onScopeOptionChanged(_selection: CommentScopeOpt) {
@@ -137,7 +135,6 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
    */
   onReviewItemClicked(item: PublicCommentAdminResponse, pos: number) {
     this.selectedItem = item;
-    this.commentDetailForm.selectedComment = item;
     if (pos) {
       // !! important to wait or will not see the effect.
       setTimeout(() => {
@@ -160,7 +157,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
     try {
       this.loading = true;
-      const result = await this.commentSvc.publicCommentControllerUpdate(id, update).toPromise();
+      const result = await firstValueFrom(this.commentSvc.publicCommentControllerUpdate(id, update));
 
       // scroll position, important to get it first!!
       const pos = this.commentListScrollContainer.nativeElement.scrollTop;
@@ -171,7 +168,9 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       this.selectedItem = result; // updated selected.
       this.loading = false;
       setTimeout(() => {
-        this.onReviewItemClicked(this.selectedItem, pos);
+        if (this.selectedItem) {
+          this.onReviewItemClicked(this.selectedItem, pos);
+        }
       }, 300);
 
     } catch (err) {
@@ -180,7 +179,79 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     }
   }
 
+  confirmExportAllComments(): void {
+    const dialogRef = this.modalSvc.openComponentDialog(
+      ExportTermsModalComponent,
+      null,
+      { width: '760px', maxWidth: '90vw', autoFocus: false }
+    );
+
+    dialogRef.afterClosed().subscribe((confirm) => {
+      if (confirm) {
+        this.exportAllComments();
+      }
+    });
+  }
+
+  exportAllComments(): void {
+    if (!this.allPublicComments.length || this.exportInProgress) {
+      return;
+    }
+
+    this.exportInProgress = true;
+    this.exportSuccess = false;
+
+    try {
+      const exportRows = this.allPublicComments.map((comment) => ({
+        "Comment Scope": comment.commentScope?.description ?? '',
+        "Comment Date/Time": this.formatCreateTimeForExport(comment.createTimestamp),
+        "From": comment.name ?? 'Anonymous',
+        "Email": comment.email ?? '',
+        "Phone Number": comment.phoneNumber ?? '',
+        "Location": comment.location ?? '',
+        "Comment": comment.feedback ?? '',
+        "Response": comment.response?.description ?? '',
+        "Response Details": comment.responseDetails ?? '',
+        "Scope Feature Name": comment.scopeFeatureName ?? '',
+        "Scope Cut Block ID": comment.scopeCutBlockId ?? '',
+        "Scope Road Section ID": comment.scopeRoadSectionId ?? ''
+      }));
+
+      const filename = `public-comments-${this.projectId}-${Date.now()}.csv`;
+
+      CommonUtil.downloadCsvFromJson(exportRows, filename);
+
+      this.exportSuccess = true;
+      if (this.exportFeedbackTimeout) {
+        clearTimeout(this.exportFeedbackTimeout);
+      }
+      this.exportFeedbackTimeout = setTimeout(() => {
+        this.exportSuccess = false;
+      }, 3000);
+    } catch (err) {
+      console.error('Failed to export comments.', err);
+    } finally {
+      this.exportInProgress = false;
+    }
+  }
+
+  private formatCreateTimeForExport(createTimestamp?: string): string {
+    if (!createTimestamp) {
+      return '';
+    }
+
+    const parsedDate = new Date(createTimestamp);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '';
+    }
+
+    return this.exportDateTimeFormatter.format(parsedDate);
+  }
+
   ngOnDestroy() {
+    if (this.exportFeedbackTimeout) {
+      clearTimeout(this.exportFeedbackTimeout);
+    }
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }
