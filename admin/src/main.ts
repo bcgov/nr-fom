@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, enableProdMode, importProvidersFrom } from '@angular/core';
+import { APP_INITIALIZER, enableProdMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -36,6 +36,10 @@ const routesProviders = [
 ]
 
 const coreProviders = [
+    provideZoneChangeDetection({
+        eventCoalescing: true,
+        runCoalescing: true,
+    }),
     // Note! - Prefer `withInterceptors` and functional interceptors instead, as support for DI-provided
     // interceptors may be phased out in a later release.
     provideHttpClient(withInterceptorsFromDi()),
