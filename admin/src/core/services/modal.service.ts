@@ -1,11 +1,17 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Type } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { DialogData } from '@admin-core/models/dialog';
 import { DialogComponent } from '@admin-core/components/dialog/dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-export const dialogTypes = ['cancel'] as const;
+export interface DialogOptions {
+  width?: string;
+  height?: string;
+  maxWidth?: string;
+  panelClass?: string | string[];
+  autoFocus?: boolean;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -24,10 +30,12 @@ export class ModalService {
 
   openDialog(config: { data: DialogData }): MatDialogRef<any> {
     const { data } = config;
-    const { width = null } = data;
+    const { width = null, height = null, maxWidth } = data;
     return this.dialog.open(DialogComponent, {
       data,
       width,
+      height,
+      maxWidth,
     });
   }
 
@@ -56,15 +64,36 @@ export class ModalService {
     });
   }
 
-  openConfirmationDialog(message: string, title: string): MatDialogRef<any> {
+  openConfirmationDialog(
+    message: string,
+    title: string,
+    options?: { width?: string; height?: string; maxWidth?: string }
+  ): MatDialogRef<any> {
     return this.openDialog({
       data: {
         message: message,
         title: title,
-        width: '340px',
-        height: '200px',
+        width: options?.width ?? '340px',
+        height: options?.height ?? '200px',
+        maxWidth: options?.maxWidth,
         buttons: {confirm: {text: 'OK'}, cancel: { text: 'Cancel' }}
       }
+    });
+  }
+
+  openComponentDialog<T>(
+    component: Type<T>,
+    data: any,
+    options?: DialogOptions
+  ): MatDialogRef<T> {
+    const { width, height, maxWidth, panelClass, autoFocus } = options ?? {};
+    return this.dialog.open(component, {
+      data,
+      width,
+      height,
+      maxWidth,
+      panelClass,
+      autoFocus,
     });
   }
 

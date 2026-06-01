@@ -12,13 +12,19 @@ export enum COMMENT_SCOPE_CODE {
 }
 
 export type CommentScopeOpt = {
-  commentScopeCode: COMMENT_SCOPE_CODE,
+  commentScopeCode: COMMENT_SCOPE_CODE | null,
   desc: string,
-  name: string, 
-  scopeId: number
+  name: string | null,
+  scopeId: number | null
 };
 
-export const SpatialTypeMap = new Map<SpatialObjectCodeEnum, object>([
+export interface SpatialObjectType {
+  source: string;
+  type: string;
+  desc: string;
+}
+
+export const SpatialTypeMap = new Map<SpatialObjectCodeEnum, SpatialObjectType>([
   [SpatialObjectCodeEnum.CutBlock, {
     source: 'cut_block',
     type: 'Polygon',
@@ -37,6 +43,7 @@ export const SpatialTypeMap = new Map<SpatialObjectCodeEnum, object>([
 ]);
 
 export const PROJECT_ID_PARAM_KEY: string = 'appId';
+export const BC_TIME_ZONE = 'America/Vancouver';
 
 export const DEFAULT_ISO_DATE_FORMAT = "yyyy-MM-dd";
 export const FOM_GO_LIVE_DATE = '2024-04-01';

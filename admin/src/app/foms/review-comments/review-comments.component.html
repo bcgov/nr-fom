@@ -1,5 +1,4 @@
-<ng-container *ngIf="publicComments$ | async as data">
-  <div class="top-container">
+<div class="top-container">
     <div class="container">
       <div class="breadcrumb-container">
         <a [routerLink]="['/a', projectId]">
@@ -18,9 +17,21 @@
       <div class="review-comments">
         <div class="review-comments__list panel">
           <div class="panel-header">
-            <h2 style="margin: 0;">Comments ({{data?.length}})</h2>
-            <div>
-              <mat-form-field [style.width.px]=320>
+            <div class="panel-header_top">
+              <h2 style="margin: 0;">Comments ({{filteredPublicComments?.length}})</h2>
+              <button *ngIf="hasAnyPublicComments"
+                class="btn btn-sm btn-primary export-comments-btn"
+                [class.export-comments-btn--success]="exportSuccess || exportInProgress"
+                [disabled]="exportInProgress || !allPublicComments?.length"
+                (click)="confirmExportAllComments()"
+                type="button"
+                title="Export all comments">
+                <em class="material-symbols-outlined md-18">download</em>
+                <span>{{ (exportSuccess || exportInProgress) ? 'Comments exported!' : 'Export All Comments' }}</span>
+              </button>
+            </div>
+            <div class="panel-header_bottom">
+              <mat-form-field>
                 <mat-select [(ngModel)]="selectedScope" name="commentScope"
                     (selectionChange)="onScopeOptionChanged(selectedScope)">
                   <mat-option *ngFor="let opt of commentScopeOpts" [value]="opt">
@@ -31,8 +42,8 @@
             </div>
           </div>
           <div class="panel-scroll" #commentListScrollContainer>
-            <ng-container *ngIf="data">
-              <div class="comment-item" *ngFor="let item of data" [class.active]="item?.id === selectedItem?.id"
+            <ng-container *ngIf="hasAnyPublicComments; else noComments">
+              <div class="comment-item" *ngFor="let item of filteredPublicComments" [class.active]="item?.id === selectedItem?.id"
                     (click)="onReviewItemClicked(item, null)">
                 <div class="comment-item-header">
                   <div class="comment-author">
@@ -58,9 +69,10 @@
           </div>
 
         </div>
-        <div class="review-comments__detail panel">
+        <div class="review-comments__detail panel" *ngIf="selectedItem as activeComment; else noCommentSelected">
           <div class="panel-scroll">
             <app-comment-detail #commentDetailForm="commentForm"
+                [selectedComment]="activeComment"
                 [responseCodes]="responseCodes"
                 [canReplyComment]="canReplyComment()">
               <div class="row">
@@ -78,8 +90,19 @@
       </div>
     </div>
   </div>
-</ng-container>
+
+<ng-template #noCommentSelected>
+  <div class="review-comments__detail panel">
+    <div class="panel-scroll">
+      <div class="container">
+        No comment selected.
+      </div>
+    </div>
+  </div>
+</ng-template>
 
 <ng-template #noComments>
-  No comments available for the application.
+  <div class="container">
+    No comments available for the application.
+  </div>
 </ng-template>

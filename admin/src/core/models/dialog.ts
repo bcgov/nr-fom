@@ -4,6 +4,7 @@ export interface DialogData {
   message: string;
   width?: string;
   height?: string;
+  maxWidth?: string;
   isWarning?: boolean;
   buttons: {
     cancel?: {

@@ -1,5 +1,7 @@
-@use "../../../assets/styles/base/base.scss";
+@use "../../../assets/styles/base/base.scss" as base;
+@use "../../../assets/styles/themes/default.scss" as theme;
 @use "../../../assets/styles/abstracts/mixins.scss" as mixins;
+@use "@angular/material" as mat;
 
 :host {
   @include mixins.flex-box();
@@ -61,7 +63,7 @@
   flex-direction: column;
   align-items: baseline;
 
-  padding: 1rem;
+  padding: 1rem 1rem 0rem 1rem;
   border-bottom: 1px solid #ddd;
 
   h2 {
@@ -77,6 +79,53 @@
   .form-control {
     width: 8rem;
     height: auto;
+  }
+}
+
+.panel-header_top {
+  @include mixins.flex-box();
+
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+}
+
+.panel-header_bottom {
+  width: 100%;
+
+  mat-form-field {
+    width: 100%;
+    @include mat.form-field-density(-3);
+  }
+}
+
+.export-comments-btn {
+  @include mixins.flex-box();
+
+  @include mixins.flex(0 0 auto);
+
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  padding: 0.25rem 0.6rem;
+
+  span {
+    white-space: nowrap;
+  }
+
+  .material-icons,
+  .material-symbols-outlined {
+    vertical-align: middle;
+    font-size: 1rem;
+  }
+
+  &.export-comments-btn--success {
+    background-color: theme.$dark-moderate-lime-green;
+    border-color: theme.$dark-moderate-lime-green;
+    color: theme.$white;
   }
 }
 
