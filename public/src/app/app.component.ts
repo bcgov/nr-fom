@@ -36,14 +36,12 @@ export class AppComponent implements OnInit, OnDestroy {
     try {
       const codeTables = await this.stateSvc.getCodeTables().toPromise();
       this.stateSvc.setCodeTables(codeTables);
+      this.stateSvc.setReady();
+      this.isReady$ = this.stateSvc.isReady$;
     }
     catch(err) {
       this.modalSvc.showFOMinitFailure();
-      console.error('Failed to load code tables:', err);
-    }
-    finally {
-      this.stateSvc.setReady();
-      this.isReady$ = this.stateSvc.isReady$;
+      console.error(err);
     }
   }
 
