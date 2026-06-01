@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
     AttachmentResponse, AttachmentService, ProjectPlanCodeEnum, ProjectResponse, ProjectService,
@@ -69,7 +69,6 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     private spatialFeatureService: SpatialFeatureService,
     private attachmentService: AttachmentService,
     private fss: FeatureSelectService,
-    private cd: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -78,7 +77,6 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     this.projectService.workflowStateCodeControllerFindAll()
     .pipe(take(1), takeUntil(this.ngUnsubscribe)).subscribe((data) => {
       this.workflowStatus = indexBy(data, (x) => x.code);
-      this.cd.detectChanges();
     });
     // First time component init. The `urlService.onNavEnd$` already ends, so 
     // do this initially first since queryParam is ready from route. 
@@ -104,12 +102,10 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     if (!projectId) {
       // no project to display
       this.project = null;
-      this.cd.detectChanges();
       return;
     }
 
     this.isAppLoading = true;
-    this.cd.detectChanges();
     forkJoin({
       project: this.projectService.projectControllerFindOne(projectId),
       spatialDetail: this.spatialFeatureService.spatialFeatureControllerGetForProject(projectId),
@@ -127,12 +123,10 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
         this.projectIdFilter.filter.value = this.project.id.toString();
         this.saveQueryParameters();
         this.update.emit(this.project);
-        this.cd.detectChanges();
       },
       error: (err) => {
         console.error(err);
         this.isAppLoading = false;
-        this.cd.detectChanges();
       }
     });
   }

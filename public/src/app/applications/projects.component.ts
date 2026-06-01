@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
@@ -88,8 +88,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     private router: Router,
     private projectService: ProjectService,
     public urlService: UrlService,
-    private fomFiltersSvc: FOMFiltersService,
-    private cd: ChangeDetectorRef
+    private fomFiltersSvc: FOMFiltersService
   ) { }
 
   /**
@@ -133,7 +132,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           this.closeSplashModal();
           break;
       }
-      this.cd.detectChanges();
     });
   }
 
@@ -200,15 +198,12 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           this.projectsSummary = results;
           this.totalNumber = results.length;
           this.loading = false;
-          this.cd.detectChanges();
           },
           () => {
             this.loading = false;
-            this.cd.detectChanges();
           },
           () => {
             this.loading = false;
-            this.cd.detectChanges();
           }
         );
   }

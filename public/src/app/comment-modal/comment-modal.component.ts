@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -40,8 +40,7 @@ export class CommentModalComponent implements OnInit {
 
   constructor(
     public activeModal: NgbActiveModal,
-    private commentService: PublicCommentService,
-    private cd: ChangeDetectorRef
+    private commentService: PublicCommentService
   ) {}
 
   ngOnInit(): void {
@@ -68,9 +67,6 @@ export class CommentModalComponent implements OnInit {
                                 scopeId: detail.featureId});
       });
     }
-    // Modal is rendered outside the host component's change-detection tree by
-    // ng-bootstrap; force an explicit CD pass so the initial form is painted.
-    this.cd.detectChanges();
   }
 
   public dismiss(reason: string) {
@@ -79,27 +75,22 @@ export class CommentModalComponent implements OnInit {
 
   public p1_next() {
     this.currentPage++;
-    this.cd.detectChanges();
   }
 
   public p2_back() {
     this.currentPage--;
-    this.cd.detectChanges();
   }
 
   public p2_next() {
     this.currentPage++;
-    this.cd.detectChanges();
   }
 
   public p3_back() {
     this.currentPage--;
-    this.cd.detectChanges();
   }
 
   public async p3_next() {
     this.submitting = true;
-    this.cd.detectChanges();
 
     this.publicComment.commentScopeCode = this.selectedScope.commentScopeCode;
     if (this.selectedScope.commentScopeCode === COMMENT_SCOPE_CODE.CUT_BLOCK) {
@@ -116,7 +107,6 @@ export class CommentModalComponent implements OnInit {
       console.error(err);
     } finally {
       this.submitting = false;
-      this.cd.detectChanges();
     }
   }
 

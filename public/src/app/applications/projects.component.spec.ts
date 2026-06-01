@@ -57,14 +57,6 @@ describe('ProjectsComponent', () => {
       updateFilterSelection: jest.fn(),
     };
 
-    const mockChangeDetectorRef = {
-      detectChanges: jest.fn(),
-      markForCheck: jest.fn(),
-      detach: jest.fn(),
-      reattach: jest.fn(),
-      checkNoChanges: jest.fn(),
-    };
-
     mockRouter = {
       url: '/apps',
       parseUrl: jest.fn().mockImplementation((urlStr) => {
@@ -80,7 +72,6 @@ describe('ProjectsComponent', () => {
       mockProjectService as any,
       mockUrlService as any,
       mockFomFiltersSvc as any,
-      mockChangeDetectorRef as any,
     );
   });
 
