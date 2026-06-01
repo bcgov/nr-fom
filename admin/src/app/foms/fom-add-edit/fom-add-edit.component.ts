@@ -244,14 +244,11 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.fg.valid;
   }
 
-  async submit() {
+  submit() {
     this.isSubmitSaveClicked = true;
     this.validate();
-    if (!this.fg.valid) {
-      this.isSubmitSaveClicked = false;
-      return;
-    }
-    
+    if (!this.fg.valid) return;
+    if (this.stateSvc.loading) return;
     let projectCreate = this.fg.value as ProjectCreateRequest
     projectCreate['districtId'] = this.districtIdSelect;
     projectCreate.forestClientNumber = this.fg.get('forestClient').value.id;
@@ -262,18 +259,17 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     projectCreate.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
     projectCreate.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
     
-    try {
-      await lastValueFrom(
-        this.projectSvc.projectControllerCreate(projectCreate).pipe(
-          tap((result) => {
-            this.onSuccess(result.id);
-          })
-        )
-      );
-    } catch (error) {
-      console.error(error);
-      this.isSubmitSaveClicked = false;
-    }
+    lastValueFrom(
+      this.projectSvc.projectControllerCreate(projectCreate).pipe(
+        tap((result) => {
+          this.onSuccess(result.id);
+        }),
+        catchError((error) => {
+          console.error(error);
+          return of(null);
+        })
+      )
+    );
   }
 
   onSuccess(id: number) {
@@ -283,14 +279,11 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   async saveApplication() {
     this.isSubmitSaveClicked = true;
     this.validate();
-    if (!this.fg.valid) {
-      this.isSubmitSaveClicked = false;
-      return;
-    }
-    
     const {id, forestClient, workflowState, ...rest} = this.originalProjectResponse;
     let projectUpdateRequest = {...rest, ...this.fg.value}
     projectUpdateRequest['districtId'] = projectUpdateRequest.district;
+
+    if (!this.fg.valid) return;
 
     try {
       const cmoDateIsoVal = this.getformatedDate('commentingOpenDate', this.DEFAULT_ISO_DATE_FORMAT);
@@ -320,7 +313,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       return this.onSuccess(id);
     } catch (err) {
       console.error(err);
-      this.isSubmitSaveClicked = false;
     }
   }
 
