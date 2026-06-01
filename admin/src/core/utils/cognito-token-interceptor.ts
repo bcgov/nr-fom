@@ -5,7 +5,7 @@ import {
     HttpRequest,
 } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable, Subject, throwError } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { catchError, switchMap, tap } from "rxjs/operators";
 
 /**
@@ -39,25 +39,15 @@ export class CognitoTokenInterceptor implements HttpInterceptor {
       return next.handle(request);
     }
 
-    const authToken = this.cognitoService.getToken();
-    if (authToken) {
-      request = request.clone({
-        setHeaders: { Authorization: "Bearer " + authToken },
-      });
-    }
+    request = this.addAuthHeader(request);
 
     return next.handle(request).pipe(
       catchError((error) => {
-        if (error.status === 403 && this.cognitoService.awsCognitoConfig.enabled) {
+        if (error.status === 403) {
           console.log("Caught 403, refreshing token");
           return this.refreshToken().pipe(
             switchMap(() => {
-              const newAuthToken = this.cognitoService.getToken();
-              if (newAuthToken) {
-                request = request.clone({
-                  setHeaders: { Authorization: "Bearer " + newAuthToken },
-                });
-              }
+              request = this.addAuthHeader(request);
               return next.handle(request);
             }),
             catchError((err) => {
@@ -67,13 +57,35 @@ export class CognitoTokenInterceptor implements HttpInterceptor {
                 err
               );
               // Rethrow original forbidden error as throwning new err isn't working. A bit of a hack...
-              return throwError(() => error);
+              throw error;
             })
           );
         }
-        return throwError(() => error);
+        throw error;
       })
     );
+  }
+
+  /**
+   * Fetches and adds the bearer auth token to the request.
+   *
+   * @private
+   * @param {HttpRequest<any>} request to modify
+   * @returns {HttpRequest<any>}
+   * @memberof CognitoTokenInterceptor
+   */
+  private addAuthHeader(request: HttpRequest<any>): HttpRequest<any> {
+    let authToken: any = this.cognitoService.getToken();
+
+    if (this.cognitoService.awsCognitoConfig.enabled) {
+      authToken = JSON.stringify(authToken['jwtToken']);
+    }
+
+    request = request.clone({
+      setHeaders: { Authorization: "Bearer " + authToken },
+    });
+
+    return request;
   }
 
   /**

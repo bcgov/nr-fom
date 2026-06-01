@@ -39,13 +39,7 @@ export class CognitoService {
       return null;
     }
     else {
-      try {
-        await this.loadRemoteConfig()
-      } catch (error) {
-        console.error("Failed to load remote Cognito config:", error);
-        this.awsCognitoConfig = { enabled: false } as AwsCognitoConfig;
-      }
-      
+      await this.loadRemoteConfig()
       if (!this.awsCognitoConfig.enabled) {
         this.fakeUser = getFakeUser();
         this.initialized = true;
@@ -53,23 +47,17 @@ export class CognitoService {
       }
       return new Promise<any>((resolve) => {
         return getCurrentUser()
-          .then(async (user) => {
-              try {
-                // Don't let a hanging refresh block the entire app boot
-                await Promise.race([
-                  this.refreshToken(),
-                  new Promise((_, reject) => setTimeout(() => reject(new Error("Refresh timeout")), 10000))
-                ]);
-                this.initialized = true;
-              } catch (refreshErr) {
-                console.error("Token refresh failed or timed out:", refreshErr);
-              }
+          .then(async () => {
+              console.log("Signed in...");
+              await this.refreshToken();
+              this.initialized = true;
               resolve(null)
           })
           .catch((error) => {
+              console.log(error);
               this.login();
-              resolve(null);
-          });
+              // resolve(null) no need for resolve as it will gets redirected.
+          })            
       });
     }
   }
@@ -109,11 +97,7 @@ export class CognitoService {
   }
 
   public async login() {
-    try {
-      await signInWithRedirect();
-    } catch (err) {
-      console.error("Login failed:", err);
-    }
+    await signInWithRedirect();
   }
 
   public async logout() {
@@ -134,10 +118,11 @@ export class CognitoService {
       return this.fakeUser;
     }
 
-    if (!this.cognitoAuthToken) {
+    const token = this.getToken();
+    if (!token) {
       return null;
     }
-    const user = User.convertAwsCognitoDecodedTokenToUser(this.cognitoAuthToken);
+    const user = User.convertAwsCognitoDecodedTokenToUser(token);
     console.log("User " + JSON.stringify(user));
     return user;
   }
@@ -146,7 +131,7 @@ export class CognitoService {
     if (!this.awsCognitoConfig.enabled) {
       return JSON.stringify(this.fakeUser);
     }
-    return JSON.stringify(this.cognitoAuthToken?.jwtToken);
+    return this.cognitoAuthToken;
   }
 
   private async loadRemoteConfig() {
