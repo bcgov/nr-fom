@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -118,8 +118,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     private modalSvc: ModalService,
     private datePipe: DatePipe,
     private forestSvc: ForestClientService,
-    private cognitoService: CognitoService,
-    private cd: ChangeDetectorRef
+    private cognitoService: CognitoService
   ) {
     this.user = this.cognitoService.getUser();
   }
@@ -247,11 +246,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async submit() {
     this.isSubmitSaveClicked = true;
-    this.cd.detectChanges();
     this.validate();
     if (!this.fg.valid) {
       this.isSubmitSaveClicked = false;
-      this.cd.detectChanges();
       return;
     }
     
@@ -276,7 +273,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch (error) {
       console.error(error);
       this.isSubmitSaveClicked = false;
-      this.cd.detectChanges();
     }
   }
 
@@ -286,11 +282,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async saveApplication() {
     this.isSubmitSaveClicked = true;
-    this.cd.detectChanges();
     this.validate();
     if (!this.fg.valid) {
       this.isSubmitSaveClicked = false;
-      this.cd.detectChanges();
       return;
     }
     
@@ -327,7 +321,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch (err) {
       console.error(err);
       this.isSubmitSaveClicked = false;
-      this.cd.detectChanges();
     }
   }
 

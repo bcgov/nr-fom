@@ -2,7 +2,7 @@ import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DatePipe, Location, NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, ParamMap, Params, Router, RouterLink } from '@angular/router';
@@ -58,8 +58,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     private cognitoService: CognitoService,
     public snackBar: MatSnackBar,
     public searchProjectService: ProjectService,
-    private modalSvc: ModalService,
-    private cd: ChangeDetectorRef
+    private modalSvc: ModalService
   ) {
     this.user = this.cognitoService.getUser();
   }
@@ -96,19 +95,16 @@ export class SearchComponent implements OnInit, OnDestroy {
             this.modalSvc.openSnackBar({message: `Warning: Maximum of ${limit} search results exceeded -
             not all results have been displayed. Please refine your search criteria.`, button: 'OK'});
           }
-          this.cd.detectChanges();
         },
         error => {
           console.error('SearchComponent.doSearch() - error =', error);
           this.searched = true;
           this.searching = false;
           this.snackBarRef = this.snackBar.open('Error searching foms ...', null, {duration: 3000});
-          this.cd.detectChanges();
         },
         () => {
           this.searched = true;
           this.searching = false;
-          this.cd.detectChanges();
         });
   }
 
