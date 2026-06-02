@@ -258,6 +258,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     projectCreate.commentingClosedDate = cmcDateIsoVal? cmcDateIsoVal: null;
     projectCreate.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
     projectCreate.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
+    
     lastValueFrom(
       this.projectSvc.projectControllerCreate(projectCreate).pipe(
         tap((result) => {
@@ -283,6 +284,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     projectUpdateRequest['districtId'] = projectUpdateRequest.district;
 
     if (!this.fg.valid) return;
+
     try {
       const cmoDateIsoVal = this.getformatedDate('commentingOpenDate', this.DEFAULT_ISO_DATE_FORMAT);
       const cmcDateIsoVal = this.getformatedDate('commentingClosedDate', this.DEFAULT_ISO_DATE_FORMAT);
@@ -312,7 +314,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch (err) {
       console.error(err);
     }
-
   }
 
   changeDistrictId(e) {

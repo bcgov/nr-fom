@@ -67,6 +67,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<void> = new Subject<void>();
   private splashModal: NgbModalRef = null;
+  private fragmentTimeout: any;
 
   // necessary to allow referencing the enum in the html
   public Panel = Panel;
@@ -88,39 +89,49 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     public urlService: UrlService,
     private fomFiltersSvc: FOMFiltersService
-  ) {
-    // watch for URL param changes
-    this.urlService.onNavEnd$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(event => {
-      this.urlTree = this.router.parseUrl(event.url);
-
-      if (this.urlTree) {
-        switch (this.urlTree.fragment) {
-          case 'splash':
-            this.displaySplashModal();
-            break;
-          case Panel.find:
-            this.closeSplashModal();
-            this.activePanel = Panel.find;
-            break;
-          case Panel.details:
-            this.closeSplashModal();
-            this.activePanel = Panel.details;
-            break;
-          default:
-            this.closeSplashModal();
-            break;
-        }
-      }
-    });
-  }
+  ) { }
 
   /**
    * @memberof ProjectsComponent
    */
   ngOnInit() {
+    // watch for URL param changes
+    this.urlService.onNavEnd$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(event => {
+      const fragment = this.router.parseUrl(event.url).fragment || this.router.parseUrl(this.router.url).fragment;
+      this.handleFragment(fragment);
+    });
+
+    // Check initial fragment
+    const initialFragment = this.router.parseUrl(this.router.url).fragment;
+    if (initialFragment) {
+      this.handleFragment(initialFragment);
+    }
+
     this.fomFiltersSvc.filters$.pipe(takeUntil(this.ngUnsubscribe)).subscribe((filters) => {
       this.fetchFOMs(filters);
       this.commentStatusFilters = filters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>;
+    });
+  }
+
+  private handleFragment(fragment: string) {
+    this.fragmentTimeout = setTimeout(() => {
+      this.urlTree = this.router.parseUrl(this.router.url);
+      switch (fragment) {
+        case 'splash':
+          this.displaySplashModal();
+          break;
+        case Panel.find:
+          this.closeSplashModal();
+          this.activePanel = Panel.find;
+          break;
+        case Panel.details:
+          this.closeSplashModal();
+          this.activePanel = Panel.details;
+          break;
+        default:
+          this.closeSplashModal();
+          break;
+      }
     });
   }
 
@@ -130,13 +141,16 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   public displaySplashModal(): void {
+    if (this.splashModal) return; // already open
     this.splashModal = this.modalService.open(SplashModalComponent, {
       backdrop: 'static',
       windowClass: 'splash-modal'
     });
 
     this.splashModal.result.then(() => {
-      this.splashModal.dismiss();
+      this.splashModal = null;
+    }, () => {
+      this.splashModal = null;
     });
   }
 
@@ -179,13 +193,18 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           commentClosedParam.toString(), 
           forestClientNameParam, 
           openedOnOrAfterParam)
+        .pipe(takeUntil(this.ngUnsubscribe))
         .subscribe((results) => {
           this.projectsSummary = results;
           this.totalNumber = results.length;
           this.loading = false;
           },
-          () => this.loading = false,
-          () => this.loading = false
+          () => {
+            this.loading = false;
+          },
+          () => {
+            this.loading = false;
+          }
         );
   }
 
@@ -258,6 +277,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   ngOnDestroy() {
+    if (this.fragmentTimeout) {
+      clearTimeout(this.fragmentTimeout);
+    }
     if (this.splashModal) {
       this.splashModal.dismiss();
     }

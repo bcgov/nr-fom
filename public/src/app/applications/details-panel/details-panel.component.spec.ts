@@ -5,7 +5,7 @@ import { ProjectService, SpatialFeatureService, AttachmentService } from '@api-c
 import { UrlService } from '@public-core/services/url.service';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 import { ConfigService } from '@utility/services/config.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { of, Subject } from 'rxjs';
 
 describe('DetailsPanelComponent', () => {

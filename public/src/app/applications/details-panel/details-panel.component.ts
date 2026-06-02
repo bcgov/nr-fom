@@ -75,7 +75,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     // Note, can't seem to get stateService.ts to get codeTable working here. Instead, subscribe to it.
     // Subscribe to this first, seems to be slower and can cause minor page render issue due to no code.
     this.projectService.workflowStateCodeControllerFindAll()
-    .pipe(take(1)).subscribe((data) => {
+    .pipe(take(1), takeUntil(this.ngUnsubscribe)).subscribe((data) => {
       this.workflowStatus = indexBy(data, (x) => x.code);
     });
     // First time component init. The `urlService.onNavEnd$` already ends, so 

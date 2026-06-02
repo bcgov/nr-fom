@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { CommentModalComponent } from './comment-modal.component';
 import { PublicCommentService } from '@api-client';
+import { Observable, of, throwError } from 'rxjs';
 
 describe('CommentModalComponent', () => {
   let component: CommentModalComponent;
@@ -10,22 +11,13 @@ describe('CommentModalComponent', () => {
   let mockActiveModal: Partial<NgbActiveModal>;
   let mockCommentService: Partial<PublicCommentService>;
 
-  // Helper to create an observable-like with toPromise()
-  function observableWithPromise(value: any) {
-    return { toPromise: () => Promise.resolve(value) };
-  }
-
-  function observableWithError(err: any) {
-    return { toPromise: () => Promise.reject(err) };
-  }
-
   beforeEach(async () => {
     mockActiveModal = {
       dismiss: jest.fn(),
     };
 
     mockCommentService = {
-      publicCommentControllerCreate: jest.fn().mockReturnValue(observableWithPromise({})),
+      publicCommentControllerCreate: jest.fn().mockReturnValue(of({})),
     };
 
     await TestBed.configureTestingModule({
@@ -157,7 +149,7 @@ describe('CommentModalComponent', () => {
 
     it('should set submitting to true when submitting', () => {
       (mockCommentService.publicCommentControllerCreate as jest.Mock).mockReturnValue(
-        { toPromise: () => new Promise(() => {}) } // never resolves
+        new Observable<unknown>(() => {}) // never emits
       );
       component.p3_next();
       expect(component.submitting).toBe(true);
@@ -190,23 +182,22 @@ describe('CommentModalComponent', () => {
       expect(component.publicComment.scopeRoadSectionId).toBe(20);
     });
 
-    it('should set up success callback to advance page and reset submitting', () => {
-      const thenSpy = jest.fn().mockReturnValue({ catch: jest.fn() });
+    it('should advance page and reset submitting on success', async () => {
       (mockCommentService.publicCommentControllerCreate as jest.Mock).mockReturnValue(
-        { toPromise: () => ({ then: thenSpy }) }
+        of({})
       );
-      component.p3_next();
-      expect(thenSpy).toHaveBeenCalled();
+      const startingPage = component.currentPage;
+      await component.p3_next();
+      expect(component.currentPage).toBe(startingPage + 1);
+      expect(component.submitting).toBe(false);
     });
 
     it('should set submitting to false on error', async () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       (mockCommentService.publicCommentControllerCreate as jest.Mock).mockReturnValue(
-        observableWithError(new Error('submit error'))
+        throwError(() => new Error('submit error'))
       );
-      component.p3_next();
-      await Promise.resolve();
-      await fixture.whenStable();
+      await component.p3_next();
       expect(component.submitting).toBe(false);
       consoleSpy.mockRestore();
     });

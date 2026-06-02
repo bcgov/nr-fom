@@ -56,6 +56,33 @@ jobs:
       replica_count: 1
       triggers: ('db/' 'libs/' 'api/' 'admin/' 'public/')
 
+  smoke:
+    name: Smoke Test
+    needs: [deploy]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Wait for App to respond
+        run: |
+          URL_HOST="${{ needs.deploy.outputs.url }}"
+          if [ -z "$URL_HOST" ]; then
+            PR_NUM=${{ github.event.number }}
+            MOD_TAG=$(( PR_NUM % 50 ))
+            URL_HOST="fom-$MOD_TAG.apps.silver.devops.gov.bc.ca"
+          fi
+          URL="https://$URL_HOST/api"
+          echo "Smoke testing endpoint: $URL"
+          for i in {1..30}; do
+            HTTP_STATUS=$(curl -s -k -o /dev/null -w "%{http_code}" "$URL" || true)
+            if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "302" ] || [ "$HTTP_STATUS" = "404" ]; then
+              echo "✅ App is alive! Status: $HTTP_STATUS"
+              exit 0
+            fi
+            echo "Waiting for app to start (Status: $HTTP_STATUS)... attempt $i/30"
+            sleep 10
+          done
+          echo "❌ Smoke test failed! App returned status: $HTTP_STATUS"
+          exit 1
+
   # ==========================================================================
   # WARNING: This job acts as the required merge gate for this workflow.
   # If you add a new job to this workflow, you MUST add its ID to the 'needs'
@@ -63,7 +90,7 @@ jobs:
   # ==========================================================================
   results:
     name: PR Results
-    needs: [build, deploy]
+    needs: [build, deploy, smoke]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 1

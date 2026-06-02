@@ -85,6 +85,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     const fspIdArg = (isNaN(this.fFspId) || isNullish(this.fFspId))? null : this.fFspId.toString();
     const projectIdArg = (isNaN(this.fNumber) || isNullish(this.fNumber))? null : this.fNumber.toString();
     this.searchProjectService.projectControllerFind(projectIdArg, fspIdArg , districtArg, workFlowStateCodeArg, this.fHolder)
+      .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(
         projects => {
           this.projects = projects;
@@ -96,7 +97,7 @@ export class SearchComponent implements OnInit, OnDestroy {
           }
         },
         error => {
-          console.error('error =', error);
+          console.error('SearchComponent.doSearch() - error =', error);
           this.searched = true;
           this.searching = false;
           this.snackBarRef = this.snackBar.open('Error searching foms ...', null, {duration: 3000});

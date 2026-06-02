@@ -103,3 +103,13 @@ node_modules/
 
 ## Temporary scripts
 tmp*.sh
+
+## Agentic/System temporary files
+.kilo/
+.tmp/
+.github/**-instructions.md
+**.instructions.md
+.github/agents/**
+.github/skills/**
+.github/references
+analysis

@@ -1,5 +1,5 @@
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { enableProdMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -20,12 +20,16 @@ const apiConfig = new Configuration({
 });
 
 const coreProviders = [
+    provideZoneChangeDetection({
+        eventCoalescing: true,
+        runCoalescing: true,
+    }),
     // Note! - Prefer `withInterceptors` and functional interceptors instead, as support for DI-provided
     // interceptors may be phased out in a later release.
     provideHttpClient(withInterceptorsFromDi()),
     importProvidersFrom(
         ApiModule.forRoot(() => apiConfig),
-        BsDatepickerModule.forRoot(),
+        BsDatepickerModule,
         BrowserAnimationsModule,
         MatDialogModule
     ),
@@ -47,3 +51,5 @@ bootstrapApplication(AppComponent, {
         ...routesProviders
     ]
 })
+.catch((err) => console.error(err));
+

@@ -6,6 +6,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { PublicCommentCreateRequest, PublicCommentService, SpatialFeaturePublicResponse, SpatialObjectCodeEnum } from '@api-client';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { SpatialTypeMap } from '@public-core/constants/appConstants';
+import { firstValueFrom } from 'rxjs';
 
 enum COMMENT_SCOPE_CODE {
   OVERALL = 'OVERALL',
@@ -88,7 +89,7 @@ export class CommentModalComponent implements OnInit {
     this.currentPage--;
   }
 
-  public p3_next() {
+  public async p3_next() {
     this.submitting = true;
 
     this.publicComment.commentScopeCode = this.selectedScope.commentScopeCode;
@@ -99,16 +100,14 @@ export class CommentModalComponent implements OnInit {
       this.publicComment.scopeRoadSectionId = this.selectedScope.scopeId;
     }
 
-    this.commentService.publicCommentControllerCreate(this.publicComment)
-        .toPromise()
-        .then(() => {
-          this.submitting = false;
-          this.currentPage++;
-        })
-        .catch((err) => {
-          console.error(err)
-          this.submitting = false;
-        });
+    try {
+      await firstValueFrom(this.commentService.publicCommentControllerCreate(this.publicComment));
+      this.currentPage++;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.submitting = false;
+    }
   }
 
   private getCommentScopeCodeOrDesc(source: string, forCode: boolean) {

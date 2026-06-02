@@ -1,4 +1,4 @@
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { ProjectsComponent } from './projects.component';
 import { ProjectService } from '@api-client';
@@ -10,6 +10,7 @@ import { Panel } from './utils/panel.enum';
 describe('ProjectsComponent', () => {
   let component: ProjectsComponent;
   let mockModalService: Partial<NgbModal>;
+  let mockRouter: any;
   let mockProjectService: Partial<ProjectService>;
   let mockFomFiltersSvc: Partial<FOMFiltersService>;
   let mockUrlService: Partial<UrlService>;
@@ -56,10 +57,18 @@ describe('ProjectsComponent', () => {
       updateFilterSelection: jest.fn(),
     };
 
+    mockRouter = {
+      url: '/apps',
+      parseUrl: jest.fn().mockImplementation((urlStr) => {
+        const fragment = urlStr.split('#')[1] || null;
+        return { fragment };
+      })
+    };
+
     // Instantiate directly to avoid child component DI issues
     component = new ProjectsComponent(
       mockModalService as any,
-      null as any, // Router
+      mockRouter as any,
       mockProjectService as any,
       mockUrlService as any,
       mockFomFiltersSvc as any,
@@ -178,6 +187,64 @@ describe('ProjectsComponent', () => {
       component.activePanel = Panel.publicNotices;
       component.handlePublicNoticesUpdate({ hidePanel: true });
       expect(component.activePanel).toBeNull();
+    });
+  });
+
+  describe('fragment handling', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('should open splash modal when fragment is "splash"', () => {
+      const displaySpy = jest.spyOn(component, 'displaySplashModal');
+      (component as any).handleFragment('splash');
+      jest.runAllTimers();
+      expect(displaySpy).toHaveBeenCalled();
+    });
+
+    it('should close splash modal and set activePanel to Panel.find when fragment is Panel.find', () => {
+      const closeSpy = jest.spyOn(component, 'closeSplashModal');
+      (component as any).handleFragment(Panel.find);
+      jest.runAllTimers();
+      expect(closeSpy).toHaveBeenCalled();
+      expect(component.activePanel).toBe(Panel.find);
+    });
+
+    it('should close splash modal and set activePanel to Panel.details when fragment is Panel.details', () => {
+      const closeSpy = jest.spyOn(component, 'closeSplashModal');
+      (component as any).handleFragment(Panel.details);
+      jest.runAllTimers();
+      expect(closeSpy).toHaveBeenCalled();
+      expect(component.activePanel).toBe(Panel.details);
+    });
+
+    it('should close splash modal and clear activePanel when fragment is unknown or empty', () => {
+      const closeSpy = jest.spyOn(component, 'closeSplashModal');
+      (component as any).handleFragment('unknown');
+      jest.runAllTimers();
+      expect(closeSpy).toHaveBeenCalled();
+    });
+
+    it('should check initial URL fragment in ngOnInit and call handleFragment if present', () => {
+      mockRouter.url = '/apps#splash';
+      const handleFragmentSpy = jest.spyOn(component as any, 'handleFragment').mockImplementation();
+      component.ngOnInit();
+      expect(handleFragmentSpy).toHaveBeenCalledWith('splash');
+    });
+
+    it('should watch URL param changes in ngOnInit and handle fragment changes', () => {
+      const onNavEndSubject = new Subject<any>();
+      mockUrlService.onNavEnd$ = onNavEndSubject.asObservable();
+      const handleFragmentSpy = jest.spyOn(component as any, 'handleFragment').mockImplementation();
+      
+      component.ngOnInit();
+      
+      onNavEndSubject.next({ url: '/apps#find' });
+      expect(handleFragmentSpy).toHaveBeenCalledWith('find');
     });
   });
 });

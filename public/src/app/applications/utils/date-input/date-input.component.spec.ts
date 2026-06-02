@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap/datepicker';
 import { DateInputComponent } from './date-input.component';
 
 describe('DateInputComponent', () => {

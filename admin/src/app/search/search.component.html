@@ -1,6 +1,6 @@
 <form #searchForm="ngForm" (ngSubmit)="onSubmit()">
   <div class="top-container" style="overflow-y: hidden;">
-    <div class="container">
+    <div class="container-fluid">
       <div class="title-container">
         <div class="title-container__title">
           <h1 class="text-muted">Search FOMs</h1>
@@ -13,8 +13,8 @@
             Clear
           </button>
           <button type="submit" class="filter-btn-search btn btn-primary"
-                  [disabled]="searching" title="Search for FOMs">
-                  Search
+            [disabled]="searching" title="Search for FOMs">
+            Search
             <em class="spinner-border" [hidden]="!searching"></em>
           </button>
         </div>
@@ -23,7 +23,7 @@
   </div>
 
   <div class="bottom-container scroll">
-    <div class="container" style="background: #f7f8fa; padding-bottom: 0;">
+    <div class="container-fluid" style="background: #f7f8fa; padding-bottom: 0;">
       <div class="row">
         <div class="form-group col-md-2">
           <label for="fomNumberInput" style="white-space: nowrap;">

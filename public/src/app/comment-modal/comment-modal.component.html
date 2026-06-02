@@ -92,7 +92,7 @@
         [ngClass]="{'is-invalid': (phone.invalid)}"
         [(ngModel)]="publicComment.phoneNumber"
         #phone="ngModel"
-        pattern="^(?:\+?1[-. ]?)?\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$" />
+        pattern="^(?:\+?1[\-. ]?)?\(?([0-9]{3})\)?[\-. ]?([0-9]{3})[\-. ]?([0-9]{4})$" />
       <div class="invalid-feedback" *ngIf="phone.invalid && (phone.dirty || phone.touched)">
         <div *ngIf="phone.invalid">Enter a valid phone number (e.g. 123-456-7890 or 123.456.7890)</div>
       </div>
