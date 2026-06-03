@@ -27,6 +27,8 @@ export class ErrorInterceptor implements HttpInterceptor {
         });
 
         this.modalSvc.openDialog({
+          disableClose: true,
+          autoFocus: true,
           data: {
             message: `The request failed to process due to an error. Please try again later.`,
             title: `Error`,
@@ -34,7 +36,7 @@ export class ErrorInterceptor implements HttpInterceptor {
           }
         });
 
-        return throwError(err);
+        return throwError(() => err);
       })
     );
   }
