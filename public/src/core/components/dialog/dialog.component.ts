@@ -38,9 +38,11 @@ export interface DialogData {
         {{ data['buttons']['cancel']['text'] | titlecase }}
       </button>
 
-      <app-button  [mat-dialog-close]="true" *ngIf="data.buttons.confirm">
+      <button [mat-dialog-close]="true" *ngIf="data.buttons.confirm"
+            class="btn btn-primary confirm"
+            type="button">
         {{ data['buttons']['confirm']['text'] | titlecase }}
-      </app-button>
+      </button>
     </mat-dialog-actions>
   `,
   styleUrls: ['./dialog.component.scss'],
