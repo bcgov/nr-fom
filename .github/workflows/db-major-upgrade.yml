@@ -38,6 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
+      id-token: write
+      attestations: write
 
     steps:
     - name: Checkout

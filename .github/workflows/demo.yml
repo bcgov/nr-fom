@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       packages: write
+      id-token: write
+      attestations: write
     strategy:
       matrix:
         package: [admin, api, db, public]
