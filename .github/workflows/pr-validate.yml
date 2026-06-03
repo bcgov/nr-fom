@@ -26,7 +26,7 @@ jobs:
     needs: [init]
     permissions:
       pull-requests: write
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.pr-validate.yml@v1.2.0
+    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.pr-validate.yml@v1.2.1
     with:
       markdown_links: |
         - [api](https://fom-${{ needs.init.outputs.mod-tag }}.apps.silver.devops.gov.bc.ca/api)
