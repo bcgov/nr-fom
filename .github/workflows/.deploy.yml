@@ -56,6 +56,9 @@ on:
       url:
         description: URL for deployment
         value: ${{ jobs.init.outputs.url }}
+      triggered:
+        description: Did a deployment trigger?
+        value: ${{ jobs.init.outputs.triggered }}
 
 permissions: {}
 
@@ -66,6 +69,7 @@ jobs:
     outputs:
       tag: ${{ steps.vars.outputs.tag }}
       url: ${{ steps.vars.outputs.url }}
+      triggered: ${{ steps.openshift-init.outputs.triggered }}
     runs-on: ubuntu-24.04
     steps:
       # Get PR number - requires squash merges to main
@@ -103,6 +107,7 @@ jobs:
           fi
 
       - name: OpenShift Init
+        id: openshift-init
         uses: bcgov/action-deployer-openshift@v4.1.0
         with:
           oc_namespace: ${{ vars.OC_NAMESPACE }}
