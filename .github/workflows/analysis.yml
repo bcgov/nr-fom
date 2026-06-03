@@ -29,6 +29,7 @@ jobs:
             npm run test-unit
           dir: admin
           node_version: 20.18.1
+          knip_config: .github/knip.json
 
   tests-api:
     name: Unit Tests (api)
@@ -42,6 +43,7 @@ jobs:
             npm run test-unit
           dir: api
           node_version: 20.18.1
+          knip_config: .github/knip.json
           sonar_args: >
             -Dsonar.exclusions=**/*.spec.ts
             -Dsonar.javascript.lcov.reportPaths=coverage/api/lcov.info   
@@ -62,6 +64,7 @@ jobs:
             npm run test-unit
           dir: public
           node_version: 20.18.1
+          knip_config: .github/knip.json
 
   # https://github.com/marketplace/actions/aqua-security-trivy
   trivy:

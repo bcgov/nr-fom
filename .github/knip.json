@@ -1,0 +1,24 @@
+{
+  "entry": "src/main.ts",
+  "ignoreDependencies": [
+    "jsonwebtoken",
+    "joi",
+    "dayjs",
+    "@types/multer",
+    "@types/geojson",
+    "@nestjs/typeorm",
+    "@nestjs/schedule",
+    "@nestjs/config",
+    "@nestjs/axios",
+    "@nestjs-modules/mailer",
+    "leaflet.markercluster",
+    "jquery",
+    "bootstrap",
+    "@angular-eslint/schematics",
+    "@angular-devkit/core",
+    "@angular-devkit/architect",
+    "@fortawesome/fontawesome-svg-core",
+    "@typescript-eslint/parser",
+    "@typescript-eslint/eslint-plugin"
+  ]
+}
