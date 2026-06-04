@@ -211,8 +211,8 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
         "Email": comment.email ?? '',
         "Phone Number": comment.phoneNumber ?? '',
         "Location": comment.location ?? '',
-        "Comment": comment.feedback ?? '',
-        "Response Category": comment.response?.description ?? '',
+        "Comment Details": comment.feedback ?? '',
+        "Comment Category": comment.response?.description ?? '',
         "Response Details": comment.responseDetails ?? ''
       }));
 
