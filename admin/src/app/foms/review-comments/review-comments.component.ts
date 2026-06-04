@@ -203,18 +203,17 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
     try {
       const exportRows = this.allPublicComments.map((comment) => ({
-        "Comment Scope": comment.commentScope?.description ?? '',
+        "Feature Type": comment.commentScope?.description ?? '',
+        "Feature Name": comment.scopeFeatureName ?? '',
+        "Feature ID": comment.scopeCutBlockId ?? comment.scopeRoadSectionId ?? '',
         "Comment Date/Time": this.formatCreateTimeForExport(comment.createTimestamp),
         "From": comment.name ?? 'Anonymous',
         "Email": comment.email ?? '',
         "Phone Number": comment.phoneNumber ?? '',
         "Location": comment.location ?? '',
         "Comment": comment.feedback ?? '',
-        "Response": comment.response?.description ?? '',
-        "Response Details": comment.responseDetails ?? '',
-        "Scope Feature Name": comment.scopeFeatureName ?? '',
-        "Scope Cut Block ID": comment.scopeCutBlockId ?? '',
-        "Scope Road Section ID": comment.scopeRoadSectionId ?? ''
+        "Response Category": comment.response?.description ?? '',
+        "Response Details": comment.responseDetails ?? ''
       }));
 
       const filename = `public-comments-${this.projectId}-${Date.now()}.csv`;
