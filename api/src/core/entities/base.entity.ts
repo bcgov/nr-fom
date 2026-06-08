@@ -30,18 +30,18 @@ export abstract class ApiBaseEntity<M> extends ApiBaseReadOnlyEntity<M> {
 
   // Metadata columns
   @VersionColumn({ name: 'revision_count' })
-  public revisionCount: number;
+  public revisionCount!: number;
 
   @CreateDateColumn({ name: 'create_timestamp', type: 'timestamptz' })
-  public createTimestamp: Date;
+  public createTimestamp!: Date;
 
   @Column({ name: 'create_user'})
-  public createUser: string;
+  public createUser!: string;
 
   @UpdateDateColumn({ name: 'update_timestamp', type: 'timestamptz' })
-  public updateTimestamp: Date;
+  public updateTimestamp!: Date;
 
   @Column({ name: 'update_user'})
-  public updateUser: string;
+  public updateUser!: string;
 
 }

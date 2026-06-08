@@ -10,7 +10,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { Cron } from "@nestjs/schedule";
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from "@utility/security/user";
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { PinoLogger } from 'nestjs-pino';
 import * as R from 'remeda';
 import { Brackets, Repository } from 'typeorm';
@@ -150,7 +150,7 @@ export class PublicNoticeService extends DataService<PublicNotice, Repository<Pu
     return results;
   }
 
-  async findLatestPublicNotice(forestClientId: string, user: User): Promise<PublicNoticeResponse> {
+  async findLatestPublicNotice(forestClientId: string, user: User): Promise<PublicNoticeResponse | null> {
     if (!user || !user.isAuthorizedForAdminSite() || !user.isAuthorizedForClientId(forestClientId)) {
       throw new ForbiddenException();
     }
@@ -191,11 +191,12 @@ export class PublicNoticeService extends DataService<PublicNotice, Repository<Pu
 	async convertDto(dto: PublicNoticeCreateRequest) {
 
 		// find project info
-		const commentingOpenDate: string = dayjs((await this.getDataSource().getRepository(Project)
+		const rawResult = await this.getDataSource().getRepository(Project)
 			.createQueryBuilder()
 			.select("commenting_open_date")
 			.where("project_id = :projectId", {projectId: dto.projectId})
-			.getRawOne())['commenting_open_date']).format(DateTimeUtil.DATE_FORMAT);
+			.getRawOne();
+		const commentingOpenDate: string = dayjs(rawResult?.['commenting_open_date']).format(DateTimeUtil.DATE_FORMAT);
 		const postDate = dto.postDate;
 		
 		// postDate validation: on or before commenting start date.

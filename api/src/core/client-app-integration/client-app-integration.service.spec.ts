@@ -70,7 +70,7 @@ describe('ClientAppIntegrationService', () => {
       const callParams_1 = sampleParams;
       const callParams_2 = {...sampleParams, "page": callParams_1.page + 1};
       // custom http mocked implementation for this case.
-      httpGetSpy.mockImplementation((_url, config) => {
+      httpGetSpy.mockImplementation((_url: any, config: any) => {
         const params = config.params;
         if (params["page"] == callParams_1.page) { // page 0
           return of<AxiosResponse>(sampleAxiosResponse);
@@ -125,7 +125,7 @@ describe('ClientAppIntegrationService', () => {
         'You cannot consume this service', // CLIENT message for 403.
         '403'
       );
-      httpGetSpy.mockImplementation((_url, _config) => {
+      httpGetSpy.mockImplementation((_url: any, _config: any) => {
         throw failed403Error;
       });
 
@@ -194,7 +194,7 @@ const sampleAxiosResponse: AxiosResponse = {
     status: 200,
     statusText: 'OK',
     config: {
-        headers: undefined
+        headers: undefined as any
     },
     headers: {},
 };

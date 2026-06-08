@@ -35,7 +35,7 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
     const {file, fileName} = request;
     // save attachment first.
     if (!_.isNil(fileName) && !_.isEmpty(fileName)) {
-      request.attachmentId = await this.addNewAttachment(request.projectId, fileName, file, user);
+      request.attachmentId = await this.addNewAttachment(request.projectId!, fileName, file!, user);
     }
 
     const response = await super.create(request, user) as InteractionResponse;
@@ -63,7 +63,7 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
     
         await this.attachmentService.delete(prviousAttachmentId, user);
       }
-      updateRequest.attachmentId = await this.addNewAttachment(updateRequest.projectId, fileName, file, user);
+      updateRequest.attachmentId = await this.addNewAttachment(updateRequest.projectId!, fileName, file!, user);
     }
 
     // update interaction.
@@ -97,12 +97,12 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
   // basic fields validation is done using 'class-validator' on request dto, this is further business validation.
   private async businessValidate(request: InteractionCreateRequest | InteractionUpdateRequest) {
     // communication_date: >= commenting_open_date
-    const project = await this.projectService.findOne(request.projectId);
+    const project = await this.projectService.findOne(request.projectId!);
     const commentingOpenDate = project.commentingOpenDate;
     const communicationDate = request.communicationDate;
 
     if (DateTimeUtil.getBcDate(commentingOpenDate).startOf('day')
-        .isAfter(DateTimeUtil.getBcDate(communicationDate).startOf('day'))) {
+        .isAfter(DateTimeUtil.getBcDate(communicationDate!).startOf('day'))) {
       throw new BadRequestException("Engagement Date should be on or after commenting start date.");
     }
   }
@@ -140,12 +140,12 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
   }
   
   async isCreateAuthorized(dto: InteractionCreateRequest, user?: User): Promise<boolean> {
-    return this.projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId, 
+    return this.projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId!, 
       [WorkflowStateEnum.COMMENT_OPEN, WorkflowStateEnum.COMMENT_CLOSED], user);
   }
   
   async isUpdateAuthorized(dto: InteractionCreateRequest, entity: Interaction, user?: User): Promise<boolean> {
-    return this.projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId, 
+    return this.projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId!, 
       [WorkflowStateEnum.COMMENT_OPEN, WorkflowStateEnum.COMMENT_CLOSED], user);
   }
 

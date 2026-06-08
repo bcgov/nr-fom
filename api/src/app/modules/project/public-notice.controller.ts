@@ -33,7 +33,7 @@ export class PublicNoticeController {
   async findLatestPublicNotice(
     @UserHeader() user: User,
     @Param('forestClientId') forestClientId: string  
-    ): Promise<PublicNoticeResponse> {
+    ): Promise<PublicNoticeResponse | null> {
       return this.service.findLatestPublicNotice(forestClientId, user);
   }
 

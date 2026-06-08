@@ -8,20 +8,20 @@ export class Interaction extends ApiBaseEntity<Interaction> {
   }
 
   @PrimaryGeneratedColumn('increment', {name: 'interaction_id'})
-  public id: number;
+  public id!: number;
 
   @Column()
-  stakeholder: string;
+  stakeholder!: string;
 
   @Column({ name: 'communication_date', type: 'date'})
-  communicationDate: string; // timestamp
+  communicationDate!: string; // timestamp
 
   @Column({ name: 'communication_details'})
-  communicationDetails: string;
+  communicationDetails!: string;
 
   @Column({ name: 'project_id'})
-  projectId: number;
+  projectId!: number;
 
   @Column({ name: 'attachment_id'})
-  attachmentId: number;
+  attachmentId!: number;
 }

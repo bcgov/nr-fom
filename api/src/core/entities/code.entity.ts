@@ -5,10 +5,10 @@ import { DeepPartial } from './base.entity';
 export abstract class ApiCodeTableEntity<M> {
 
   @ApiProperty()
-  @PrimaryColumn() code: string;
+  @PrimaryColumn() code!: string;
 
   @ApiProperty()
-  @Column() description: string;
+  @Column() description!: string;
 
   // No need for metadata columns as the app only reads from code tables.
 

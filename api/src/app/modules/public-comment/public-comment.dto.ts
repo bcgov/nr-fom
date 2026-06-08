@@ -18,11 +18,11 @@ import { ResponseCode, ResponseCodeEnum } from './response-code.entity';
 export class PublicCommentCreateRequest {
   @ApiProperty()
   @IsNumber()
-  projectId: number;
+  projectId!: number;
 
   @ApiProperty()
   @IsEnum(CommentScopeCodeEnum)
-  commentScopeCode: string;
+  commentScopeCode!: string;
 
   @ApiProperty()
   @IsOptional()
@@ -35,7 +35,7 @@ export class PublicCommentCreateRequest {
   @ApiProperty()
   @MaxLength(4000) // Confirmed by business
   @MinLength(1)
-  feedback: string;
+  feedback!: string;
 
   @ApiProperty()
   @MaxLength(50)
@@ -62,11 +62,11 @@ export class PublicCommentCreateRequest {
 export class PublicCommentAdminUpdateRequest {
   @ApiProperty()
   @IsNumber()
-  revisionCount: number;
+  revisionCount!: number;
 
   @ApiProperty({ enum: ResponseCodeEnum, enumName: 'ResponseCodeEnum' })
   @IsEnum(ResponseCodeEnum)
-  responseCode: string;
+  responseCode!: string;
 
   @ApiProperty()
   @IsOptional()
@@ -79,16 +79,16 @@ export class PublicCommentAdminResponse extends OmitType(
   ['commentScopeCode']
 ) {
   @ApiProperty()
-  id: number;
+  id!: number;
 
   @ApiProperty()
-  revisionCount: number;
+  revisionCount!: number;
 
   @ApiProperty({ description: 'ISO-formatted timestamp' })
-  createTimestamp: string;
+  createTimestamp!: string;
 
   @ApiProperty()
-  commentScope: CommentScopeCode;
+  commentScope!: CommentScopeCode;
 
   @ApiProperty()
   response?: ResponseCode;
@@ -102,58 +102,58 @@ export class PublicCommentAdminResponse extends OmitType(
 
 export class PublicCommentCountByDistrictResponse {
   @ApiProperty()
-  districtId: number;
+  districtId!: number;
 
   @ApiProperty()
-  districtName: string;
+  districtName!: string;
 
   @ApiProperty()
   @IsNumber()
-  totalPublicCommentCount: number;
+  totalPublicCommentCount!: number;
 
   @ApiProperty({ type: () => [PublicCommentCountByCategoryResponse] })
   @IsArray()
-  commentCountByCategory: PublicCommentCountByCategoryResponse[];
+  commentCountByCategory!: PublicCommentCountByCategoryResponse[];
 }
 
 export class PublicCommentCountByForestClientResponse {
   @ApiProperty()
   @IsNumberString()
-  forestClientNumber: string;
+  forestClientNumber!: string;
 
   @ApiProperty()
-  forestClientName: string;
+  forestClientName!: string;
 
   @ApiProperty()
   @IsNumber()
-  publicCommentCount: number;
+  publicCommentCount!: number;
 }
 
 export class PublicCommentCountByCategoryResponse {
   @ApiProperty({
     enum: [...Object.values(ResponseCodeEnum), 'NOT_CATEGORIZED'],
   })
-  responseCode: string;
+  responseCode!: string;
 
   @ApiProperty()
   @IsNumber()
-  publicCommentCount: number;
+  publicCommentCount!: number;
 }
 
 export class PublicCommentCountByProjectResponse {
   @ApiProperty()
-  projectId: string;
+  projectId!: string;
 
   @ApiProperty()
-  projectName: string;
+  projectName!: string;
 
   @ApiProperty()
-  forestClientName: string;
+  forestClientName!: string;
 
   @ApiProperty()
-  districtName: string;
+  districtName!: string;
 
   @ApiProperty()
   @IsNumber()
-  publicCommentCount: number;
+  publicCommentCount!: number;
 }

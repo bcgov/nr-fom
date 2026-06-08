@@ -58,19 +58,18 @@ export class ForestClientService extends DataService<ForestClient, Repository<Fo
         ClientAppIntegrationService.SORT_BY_CLIENT_NUMBER
       );
       fetchedData.forEach(async (item) => {
-        let entity = await this.repository.findOne({ where: { id: item.id } })
+        const entity = await this.repository.findOne({ where: { id: item.id } })
         if (!entity) {
-          entity = mapToEntity(item, new ForestClient());
-          entity.createUser = USER_SYSTEM;
+          const newEntity = mapToEntity(item, new ForestClient()) as ForestClient;
+          newEntity.createUser = USER_SYSTEM;
+          await this.repository.upsert(newEntity, ["id"]);
         }
         else {
           entity.revisionCount++;
           entity.updateUser = USER_SYSTEM;
           entity.updateTimestamp = new Date();
+          await this.repository.upsert(entity, ["id"]);
         }
-
-        // Insert or Update to app_fom.forest_client table using TypeORM-"upsert".
-        await this.repository.upsert(entity, ["id"]);
       });
 
       totalRecordsCount+=fetchedData.length;

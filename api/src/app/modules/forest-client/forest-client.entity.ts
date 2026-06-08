@@ -10,11 +10,11 @@ export class ForestClient extends ApiBaseEntity<ForestClient> {
 
   @ApiProperty()
   @PrimaryColumn({name: 'forest_client_number'})
-  public id: string;
+  public id!: string;
 
   @ApiProperty()
   @Column()
-  name: string;
+  name!: string;
 
 
 }

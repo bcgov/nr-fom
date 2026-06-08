@@ -21,7 +21,7 @@ export class ProjectsByFspService extends DataService<Project, Repository<Projec
     super(repository, new Project(), logger);
   }
 
-  async findByFspId(fspId: number):Promise<ProjectByFspResponse[]> {
+  async findByFspId(fspId: number | null | undefined):Promise<ProjectByFspResponse[]> {
     if (_.isNil(fspId)) {
         return []
     }

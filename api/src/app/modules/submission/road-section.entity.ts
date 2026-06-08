@@ -19,25 +19,25 @@ export class RoadSection extends ApiBaseEntity<RoadSection> {
   }
 
   @PrimaryGeneratedColumn('increment', { name: 'road_section_id' })
-  public id: number;
+  public id!: number;
 
   @Column({ type: 'geometry', spatialFeatureType: 'LineString', srid: 3005 })
-  geometry: any;
+  geometry!: any;
 
   @Column({ name: 'planned_development_date'})
-  plannedDevelopmentDate: string; // timestamp
+  plannedDevelopmentDate!: string; // timestamp
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column({ name: 'planned_length_km'})
-  plannedLengthKm: number;
+  plannedLengthKm!: number;
 
   @ManyToOne(() => Submission, (submission) => submission.roadSections, {onDelete: 'CASCADE', orphanedRowAction:'delete'})
   @JoinColumn({ name: 'submission_id', referencedColumnName: 'id' })
-  submission: Submission;
+  submission!: Submission;
 
   @Column({ name: 'submission_id'})
   @RelationId((roadSection: RoadSection) => roadSection.submission)
-  submissionId: number;
+  submissionId!: number;
 }

@@ -34,7 +34,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
       allowedExtensions = allowedExtensionsForPublicNotice;
     }
 
-    const fileExtension:string = request.fileName.split('.').pop();
+    const fileExtension:string = request.fileName.split('.').pop() || '';
     if (!allowedExtensions.includes(fileExtension.toLowerCase())) {
       throw new BadRequestException(`Attachment of ${fileExtension} extension not permitted for ${attachmentTypeCode} attachment.`);
     }
@@ -50,7 +50,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
         }
         await this.repository.delete(founds[0].id);
         const objectName = this.createObjectUrl(founds[0].projectId, founds[0].id, founds[0].fileName);
-        await this.deleteObject(process.env.OBJECT_STORAGE_BUCKET, objectName);
+        await this.deleteObject(process.env.OBJECT_STORAGE_BUCKET || '', objectName);
 
         // Now that the public notice is deleted, we can proceed with the regular creation.
       }
@@ -68,7 +68,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
 
     const objectName = this.createObjectUrl(request.projectId, primaryKey, request.fileName);
 
-    minioClient.putObject(process.env.OBJECT_STORAGE_BUCKET, objectName, request.fileContents, function(error, objInfo) {
+    minioClient.putObject(process.env.OBJECT_STORAGE_BUCKET || '', objectName, request.fileContents, function(error: any, objInfo: any) {
       if(error) {
         throw new InternalServerErrorException(error, 
           `Minio Client encountered problem while uploading file to storage to ${process.env.OBJECT_STORAGE_BUCKET},
@@ -147,7 +147,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
     const objectName = this.createObjectUrl(attachmentFileResponse.projectId, attachmentFileResponse.id, attachmentFileResponse.fileName )
 
     //Reading the object from Object Storage
-    const dataStream  = await this.getObjectStream(process.env.OBJECT_STORAGE_BUCKET, objectName );
+    const dataStream  = await this.getObjectStream(process.env.OBJECT_STORAGE_BUCKET || '', objectName );
 
     //Reading the content of the object from Object Storage
     const finalBuffer = await this.stream2buffer(dataStream);
@@ -161,7 +161,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
   async findFileDatabase(id: number, user?: User): Promise<AttachmentFileResponse> {
     // Works, but fileContents being treated as a Buffer...
 
-    const entity:Attachment = await this.findEntityWithCommonRelations(id);
+    const entity = await this.findEntityWithCommonRelations(id);
     if (!entity) {
       throw new BadRequestException("No entity for the specified id.");
     }
@@ -234,7 +234,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
       const objectName = this.createObjectUrl(projectId, attachmentId, fileName )
 
       //Deleting the object
-      await this.deleteObject(process.env.OBJECT_STORAGE_BUCKET, objectName);
+      await this.deleteObject(process.env.OBJECT_STORAGE_BUCKET || '', objectName);
   }
 
   /* This function only returns attachments of the following types:

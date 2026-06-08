@@ -10,24 +10,24 @@ export class Attachment extends ApiBaseEntity<Attachment> {
   }
 
   @PrimaryGeneratedColumn('increment', {name: 'attachment_id'})
-  public id: number;
+  public id!: number;
 
   @Column({ name: 'file_name'})
-  fileName: string;
+  fileName!: string;
 
   @ManyToOne(() => Project, { eager: true })
   @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })
-  project: Project;
+  project!: Project;
 
   @Column({ name: 'project_id'})
   @RelationId((attachment: Attachment) => attachment.project)
-  projectId: number;
+  projectId!: number;
 
   @ManyToOne(() => AttachmentTypeCode)
   @JoinColumn({ name: 'attachment_type_code', referencedColumnName: 'code' })
-  attachmentType: AttachmentTypeCode;
+  attachmentType!: AttachmentTypeCode;
 
   @Column({ name: 'attachment_type_code'})
   @RelationId((attachment: Attachment) => attachment.attachmentType)
-  attachmentTypeCode: string;
+  attachmentTypeCode!: string;
 }

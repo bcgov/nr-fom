@@ -1,5 +1,5 @@
 import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.entity';
-import { SelectQueryBuilder } from 'typeorm';
+import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 
 export enum ProjectPlanCodeFilterEnum {
   FSP = 'FSP',
@@ -7,7 +7,7 @@ export enum ProjectPlanCodeFilterEnum {
   ALL = 'ALL'
 }
 
-export function applyFomDateAndStateFilters<T>(
+export function applyFomDateAndStateFilters<T extends ObjectLiteral>(
   qb: SelectQueryBuilder<T>,
   startDate: string,
   endDate: string,
@@ -21,7 +21,7 @@ export function applyFomDateAndStateFilters<T>(
     });
 }
 
-export function applyCommentCreateDateFilter<T>(
+export function applyCommentCreateDateFilter<T extends ObjectLiteral>(
   qb: SelectQueryBuilder<T>,
   startDate: string, // YYYY-MM-DD
   endDate: string, // YYYY-MM-DD
@@ -35,7 +35,7 @@ export function applyCommentCreateDateFilter<T>(
     .andWhere(`DATE_TRUNC('day', ${alias}.create_timestamp) <= :endDate`, { endDate });
 }
 
-export function applyProjectPlanCodeFilter<T>(
+export function applyProjectPlanCodeFilter<T extends ObjectLiteral>(
   qb: SelectQueryBuilder<T>,
   projectPlanCode: ProjectPlanCodeFilterEnum,
   alias: string

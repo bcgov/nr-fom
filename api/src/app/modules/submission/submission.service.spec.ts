@@ -7,7 +7,7 @@ describe('SubmissionService', () => {
   let service: SubmissionService;
 
   beforeEach(async () => {
-    service = new SubmissionService(null, mockLoggerFactory(), null, null);
+    service = new SubmissionService(null as any, mockLoggerFactory(), null as any, null as any);
   });
 
   describe('detectSpatialSubmissionCoordRef', () => {
@@ -16,7 +16,7 @@ describe('SubmissionService', () => {
     const geometry_WGS84 = {"type":"Polygon","coordinates":[[[-119.397280854,49.815298833],[-119.394459294,49.815127941],[-119.394863101,49.812334408],[-119.39768449,49.812505292],[-119.397280854,49.815298833]]]};
 
     beforeEach(async () => {
-      simpleOneFeatureSpatialSubmission  = {"type":"FeatureCollection", "features":[{"type":"Feature","geometry":null,"properties":{"DEVELOPMENT_DATE":"2022-03-30","NAME":"Nature's valley"}}]} as FomSpatialJson;
+      simpleOneFeatureSpatialSubmission  = {"type":"FeatureCollection", "features":[{"type":"Feature","geometry":null,"properties":{"DEVELOPMENT_DATE":"2022-03-30","NAME":"Nature's valley"}}]} as unknown as FomSpatialJson;
     })
 
     it ('spatial submission contains crs field (EPSG:3005) should return 3005', async () => {

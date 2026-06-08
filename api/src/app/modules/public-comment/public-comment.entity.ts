@@ -20,62 +20,62 @@ export class PublicComment extends ApiBaseEntity<PublicComment> {
   }
 
   @PrimaryGeneratedColumn('increment', { name: 'public_comment_id' })
-  public id: number;
+  public id!: number;
 
   @Column()
-  feedback: string;
+  feedback!: string;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  location: string;
+  location!: string;
 
   @Column()
-  email: string;
+  email!: string;
 
   @Column({ name: 'phone_number'})
-  phoneNumber: string;
+  phoneNumber!: string;
 
   @Column({ name: 'response_details'})
-  responseDetails: string;
+  responseDetails!: string;
 
   @ManyToOne(() => Project)
   @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })
-  project: Project;
+  project!: Project;
 
   @Column({ name: 'project_id'})
-  projectId: number;
+  projectId!: number;
 
   @ManyToOne(() => ResponseCode)
   @JoinColumn({ name: 'response_code', referencedColumnName: 'code' })
-  response: ResponseCode;
+  response!: ResponseCode;
 
   @Column({ name: 'response_code'})
   @RelationId((comment: PublicComment) => comment.response)
-  responseCode: string;
+  responseCode!: string;
 
   @ManyToOne(() => CommentScopeCode)
   @JoinColumn({ name: 'comment_scope_code', referencedColumnName: 'code' })
-  commentScope: CommentScopeCode;
+  commentScope!: CommentScopeCode;
 
   @Column({ name: 'comment_scope_code'})
   @RelationId((comment: PublicComment) => comment.commentScope)
-  commentScopeCode: string;
+  commentScopeCode!: string;
 
   @Column({ name: 'scope_cut_block_id'})
   @RelationId((comment: PublicComment) => comment.cutBlock)
-  scopeCutBlockId: number;
+  scopeCutBlockId!: number;
 
   @ManyToOne(() => CutBlock)
   @JoinColumn({ name: 'scope_cut_block_id', referencedColumnName: 'id' })
-  cutBlock: CutBlock;
+  cutBlock!: CutBlock;
 
   @Column({ name: 'scope_road_section_id'})
   @RelationId((comment: PublicComment) => comment.roadSection)
-  scopeRoadSectionId: number;
+  scopeRoadSectionId!: number;
 
   @ManyToOne(() => RoadSection)
   @JoinColumn({ name: 'scope_road_section_id', referencedColumnName: 'id' })
-  roadSection: RoadSection;
+  roadSection!: RoadSection;
 }

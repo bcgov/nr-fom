@@ -17,7 +17,7 @@ import { USER_SYSTEM } from '@src/app-constants';
 import { applyFomDateAndStateFilters, applyProjectPlanCodeFilter, ProjectPlanCodeFilterEnum } from '@src/app/modules/analytics-dashboard/analytics-dashboard-data-filter';
 import { ProjectPlanCodeEnum } from '@src/app/modules/project/project-plan-code.entity';
 import { User } from "@utility/security/user";
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { isEmpty, isNil } from 'lodash';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository, SelectQueryBuilder } from 'typeorm';
@@ -41,10 +41,10 @@ export class ProjectFindCriteria {
   projectId?: number;
 
   applyFindCriteria(query: SelectQueryBuilder<Project>) {
-    if (this.projectId >= 0) {
+    if (this.projectId !== undefined && this.projectId >= 0) {
       query.andWhere("p.id = :projectId", {projectId: this.projectId})
     }
-    if (this.fspId >= 0) {
+    if (this.fspId !== undefined && this.fspId >= 0) {
       query.andWhere("p.fsp_id = :fspId", {fspId: `${this.fspId}`});
     }
     if (this.districtId) {
@@ -127,7 +127,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 
     // When commenting open, can change closed date but can't make it shorter.
     if (WorkflowStateEnum.COMMENT_OPEN == entity.workflowStateCode) {
-      if (DateTimeUtil.getBcDate(dto.commentingClosedDate).startOf('day').isBefore(
+      if (DateTimeUtil.getBcDate(dto.commentingClosedDate!).startOf('day').isBefore(
           DateTimeUtil.getBcDate(entity.commentingOpenDate).startOf('day').add(30, 'day'))) {        
         this.logger.debug(`Not allowed to make commenting closed date shorter.`);
         return false;
@@ -199,12 +199,12 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     request.workflowStateCode = WorkflowStateEnum.INITIAL;
     request.forestClientId = request.forestClientNumber;
     this.validateProjectPlan(request.projectPlanCode, request.fspId, request.woodlotLicenseNumber);
-    await this.validateTimberSalesManager(request.bctsMgrName, request.forestClientNumber, null);
+    await this.validateTimberSalesManager(request.bctsMgrName, request.forestClientNumber, undefined);
     return super.create(request, user);
   }
 
   async update(projectId: number, request: any, user: User): Promise<ProjectResponse> {
-    await this.validateTimberSalesManager(request.bctsMgrName, null, projectId);
+    await this.validateTimberSalesManager(request.bctsMgrName, undefined, projectId);
     return super.update(projectId, request, user);
   }
 
@@ -212,12 +212,14 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     let forestClientName = null;
     if (projectId) {
       const projectEntity = await this.findEntityWithCommonRelations(projectId)
-      forestClientName = projectEntity.forestClient.name;
+      forestClientName = projectEntity?.forestClient?.name ?? null;
     }
     else {
-      const fcl = await this.forestClientService.find([forestClientNumber]);
-      if (fcl && fcl.length == 1) {
-          forestClientName = fcl[0].name;
+      if (forestClientNumber) {
+        const fcl = await this.forestClientService.find([forestClientNumber]);
+        if (fcl && fcl.length == 1) {
+            forestClientName = fcl[0].name;
+        }
       }
     }
 
@@ -379,8 +381,8 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
       const response = project as (ProjectPublicSummaryResponse & Project);
       response.forestClientName = project.forestClient.name;
       response.workflowStateName = project.workflowState.description;
-      delete response.forestClient;
-      delete response.workflowState;
+      delete (response as any).forestClient;
+      delete (response as any).workflowState;
       return response;
     });
 
@@ -396,10 +398,10 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 
     this.logger.debug(`${this.constructor.name}.workflowStateChange projectId %o request %o`, projectId, request);
 
-    const options = {relations: []};
+    const options = {relations: [] as string[]};
     options.relations.push('submissions'); // add this extra relation for later use.
 		options.relations.push('publicNotices');
-    const entity:Project = await this.findEntityWithCommonRelations(projectId, options);
+    const entity = await this.findEntityWithCommonRelations(projectId, options);
     if (! entity) {
       throw new BadRequestException("Entity not found.");
     }
@@ -463,6 +465,9 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     }
 
     const updatedEntity = await this.findEntityWithCommonRelations(projectId);
+    if (!updatedEntity) {
+      throw new InternalServerErrorException("Updated entity not found");
+    }
     this.logger.debug(`${this.constructor.name}.update result entity %o`, updatedEntity);
 
     if (request.workflowStateCode == WorkflowStateEnum.FINALIZED) {
@@ -484,7 +489,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 
     this.logger.debug(`${this.constructor.name}.CommentClassificationMandatoryChange projectId %o request %o`, projectId, request);
 
-    const entity:Project = await this.findEntityWithCommonRelations(projectId);
+    const entity = await this.findEntityWithCommonRelations(projectId);
     if (! entity) {
       throw new BadRequestException("Entity not found.");
     }
@@ -518,6 +523,9 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     }
 
     const updatedEntity = await this.findEntityWithCommonRelations(projectId);
+    if (!updatedEntity) {
+      throw new InternalServerErrorException("Updated entity not found");
+    }
     this.logger.debug(`${this.constructor.name}.update result entity %o`, updatedEntity);
 
     return this.convertEntity(updatedEntity);
@@ -742,7 +750,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 
     this.logger.debug(`${this.constructor.name}.commentingClosedDateChange projectId %o request %o`, projectId, request);
 
-    const entity:Project = await this.findEntityWithCommonRelations(projectId);
+    const entity = await this.findEntityWithCommonRelations(projectId);
     if (isNil(entity)) {
       throw new BadRequestException("Entity not found.");
     }
@@ -824,7 +832,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     }
 
     this.logger.debug(`Updating FOM for ${projectIds} to ${workflowStateCode}`);
-    const updateFields = 
+    const updateFields: any = 
       {
         workflowStateCode: workflowStateCode,
         updateUser: USER_SYSTEM,

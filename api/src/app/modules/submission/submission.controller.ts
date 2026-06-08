@@ -27,7 +27,7 @@ export class SubmissionController {
   @ApiResponse({ status: HttpStatus.OK, type: SubmissionDetailResponse })
   async findSubmissionDetailForCurrentSubmissionType(
     @UserHeader() user: User,
-    @Param('projectId', ParseIntPipe) projectId: number): Promise<SubmissionDetailResponse> {
+    @Param('projectId', ParseIntPipe) projectId: number): Promise<SubmissionDetailResponse | null> {
     return this.service.findSubmissionDetailForCurrentSubmissionType(projectId, user);
   }
 

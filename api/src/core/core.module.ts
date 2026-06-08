@@ -9,7 +9,7 @@ export class CoreModule {
     database?: string;
   }): DynamicModule {
     const { database = '' } = options;
-    const providers = [];
+    const providers: any[] = [];
 
     return { module: CoreModule, providers, exports: providers };
   }

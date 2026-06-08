@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, HttpStatus, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 import { AuthGuard, AuthGuardMeta, GUARD_OPTIONS, UserHeader } from '@api-core/security/auth.guard';
 import { User } from "@utility/security/user";
@@ -39,7 +39,7 @@ export class ProjectController {
       const findCriteria: ProjectFindCriteria = new ProjectFindCriteria();
 
       if (projectId) {
-        findCriteria.projectId = await new ParseIntPipe().transform(projectId, null);
+        findCriteria.projectId = await new ParseIntPipe().transform(projectId, { type: 'query' });
       }
 
       if (forestClientName) {
@@ -107,13 +107,13 @@ export class ProjectController {
       const findCriteria: ProjectFindCriteria = new ProjectFindCriteria();
 
       if (projectId) {
-        findCriteria.projectId = await new ParseIntPipe().transform(projectId, null);
+        findCriteria.projectId = await new ParseIntPipe().transform(projectId, { type: 'query' });
       }
       if (fspId) {
-        findCriteria.fspId = await new ParseIntPipe().transform(fspId, null);
+        findCriteria.fspId = await new ParseIntPipe().transform(fspId, { type: 'query' });
       }
       if (districtId) {
-        findCriteria.districtId = await new ParseIntPipe().transform(districtId, null);
+        findCriteria.districtId = await new ParseIntPipe().transform(districtId, { type: 'query' });
       }
       if (workflowStateCode) {
         findCriteria.includeWorkflowStateCodes.push(workflowStateCode);

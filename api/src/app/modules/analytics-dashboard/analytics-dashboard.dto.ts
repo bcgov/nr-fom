@@ -7,11 +7,11 @@ import { ProjectPlanCodeFilterEnum } from './analytics-dashboard-data-filter';
 export class AnalyticsDashboarQuaryRequest {
   @ApiProperty({ description: 'Start date in YYYY-MM-DD format' })
   @IsISODateOnlyString({message: `"$property" must be ISO-formatted date. (Required format: ${DateTimeUtil.DATE_FORMAT})`})
-  startDate: string;
+  startDate!: string;
 
   @ApiProperty({ description: 'End date in YYYY-MM-DD format' })
   @IsISODateOnlyString({message: `"$property" must be ISO-formatted date. (Required format: ${DateTimeUtil.DATE_FORMAT})`})
-  endDate: string;
+  endDate!: string;
 
   @ApiProperty({
     description: 'Project plan code filter (FSP, WOODLOT, ALL). Default to FSP',

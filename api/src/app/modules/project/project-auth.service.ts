@@ -84,7 +84,7 @@ export class ProjectAuthService {
     return allowedWorkflowStates.includes(project.workflowStateCode as WorkflowStateEnum);
   }
 
-  private async getProject(projectId: number): Promise<Project> {
+  private async getProject(projectId: number): Promise<Project | null> {
     return this.repository.findOne({ where: { id: projectId } } as FindOneOptions);
   }
 

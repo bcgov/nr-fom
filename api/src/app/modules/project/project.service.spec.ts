@@ -7,14 +7,14 @@ import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.enti
 import { Submission } from "@api-modules/submission/submission.entity";
 import { BadRequestException } from "@nestjs/common";
 import { User } from "@utility/security/user";
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { mockLoggerFactory } from '../../factories/mock-logger.factory';
 
 describe('ProjectService', () => {
   let service: ProjectService;
 
   beforeEach(async () => {
-    service = new ProjectService(null, mockLoggerFactory(), null, null, null, null, null);
+    service = new ProjectService(null as any, mockLoggerFactory(), null as any, null as any, null as any, null as any, null as any);
   });
 
   describe('isCreateAuthorized', () => {
@@ -29,7 +29,7 @@ describe('ProjectService', () => {
     })
 
     it ('public user cannot create', async () => {
-      expect(await service.isCreateAuthorized(request, null)).toBe(false);
+      expect(await service.isCreateAuthorized(request, undefined)).toBe(false);
     });
 
     it ('forest client user with matching forest client can create', async () => {
@@ -41,7 +41,7 @@ describe('ProjectService', () => {
     it ('request forest client undefined cannot create', async () => {
       user.isForestClient = true;
       user.clientIds.push(TEST_CLIENT_ID);
-      delete request.forestClientNumber;
+      delete (request as any).forestClientNumber;
       expect(await service.isCreateAuthorized(request, user)).toBe(false);
     });
     
@@ -60,7 +60,7 @@ describe('ProjectService', () => {
     })
 
     it ('public user cannot update', async () => {
-      expect(await service.isUpdateAuthorized(request, entity, null)).toBe(false);
+      expect(await service.isUpdateAuthorized(request, entity, undefined)).toBe(false);
     });
     it ('ministry user cannot update when commenting open', async () => {
       user.isMinistry = true;
@@ -114,7 +114,7 @@ describe('ProjectService', () => {
     })
 
     it ('public user can view', async () => {
-      expect(await service.isViewAuthorized(entity, null)).toBe(true);
+      expect(await service.isViewAuthorized(entity, undefined)).toBe(true);
     });
     it ('ministry user can view', async () => {
       user.isMinistry = true;
@@ -138,7 +138,7 @@ describe('ProjectService', () => {
     })
 
     it ('public user can not delete', async () => {
-      expect(await service.isDeleteAuthorized(entity, null)).toBe(false);
+      expect(await service.isDeleteAuthorized(entity, undefined)).toBe(false);
     });
 
     it ('forest client user can delete when client matches and state initial', async () => {
@@ -172,10 +172,10 @@ describe('ProjectService', () => {
   });
 
   describe('validateWorkflowTransitionRules', () => {
-    let user: User;
+    let user: User = undefined as any;
     let entity: Partial<Project> = getSampleProjectEntityData();
     let districtSpy: jest.SpyInstance<Promise<boolean>>;
-    let postdateOnOrBeforeCommentingOpenDateSpy: jest.SpyInstance<boolean>;
+    let postdateOnOrBeforeCommentingOpenDateSpy: any;
     const stateTransition = WorkflowStateEnum.PUBLISHED;
     let openingDateInFutureDays = 10;
     const closeDateAfterOpeningDateDays = 30;
@@ -196,7 +196,7 @@ describe('ProjectService', () => {
         entity.commentingClosedDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
             .add(closeDateAfterOpeningDateDays, 'day')
             .format(DateTimeUtil.DATE_FORMAT);
-        entity.publicNotices = null; // no public-notice.
+        entity.publicNotices = undefined; // no public-notice.
 
         // note, validator is a void.
         await service.validateWorkflowTransitionRules(entity as Project, stateTransition, user)
@@ -212,7 +212,7 @@ describe('ProjectService', () => {
         entity.commentingClosedDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
             .add(closeDateAfterOpeningDateDays, 'day')
             .format(DateTimeUtil.DATE_FORMAT);
-        entity.publicNotices[0].postDate = null; // User leaves post_date empty.
+        entity.publicNotices![0].postDate = null as any; // User leaves post_date empty.
 
         // note, validator is a void.
         await service.validateWorkflowTransitionRules(entity as Project, stateTransition, user)
@@ -228,7 +228,7 @@ describe('ProjectService', () => {
           .add(closeDateAfterOpeningDateDays, 'day')
           .format(DateTimeUtil.DATE_FORMAT);
         // post_date same as commenting_open_date
-        entity.publicNotices[0].postDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
+        entity.publicNotices![0].postDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
 
         // note, validator is a void.
         await service.validateWorkflowTransitionRules(entity as Project, stateTransition, user)
@@ -242,7 +242,7 @@ describe('ProjectService', () => {
         expect(districtSpy).toHaveBeenCalledWith(entity.districtId);
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalled();
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalledWith(
-        entity.publicNotices[0].postDate, entity.commentingOpenDate);
+        entity.publicNotices![0].postDate, entity.commentingOpenDate);
       });
       
       it('with public-notice post_date before commenting_open_date and one day after PUBLISH (today) pass', async () => {
@@ -251,7 +251,7 @@ describe('ProjectService', () => {
           .add(closeDateAfterOpeningDateDays, 'day')
           .format(DateTimeUtil.DATE_FORMAT);
         // set and test on: post_date = commenting_open_date
-        entity.publicNotices[0].postDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
+        entity.publicNotices![0].postDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
           .subtract(openingDateInFutureDays - 5, 'days')
           .format(DateTimeUtil.DATE_FORMAT);
 
@@ -259,14 +259,14 @@ describe('ProjectService', () => {
 
         expect(DateTimeUtil.diff(
             DateTimeUtil.nowBC().format(DateTimeUtil.DATE_FORMAT),
-            entity.publicNotices[0].postDate,
+            entity.publicNotices![0].postDate,
             DateTimeUtil.TIMEZONE_VANCOUVER, 'day')
         ).toBeGreaterThan(1);
         expect(districtSpy).toHaveBeenCalled();
         expect(districtSpy).toHaveBeenCalledWith(entity.districtId);
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalled();
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalledWith(
-          entity.publicNotices[0].postDate, entity.commentingOpenDate
+          entity.publicNotices![0].postDate, entity.commentingOpenDate
         );
       });
 
@@ -279,7 +279,7 @@ describe('ProjectService', () => {
           .add(closeDateAfterOpeningDateDays, 'day')
           .format(DateTimeUtil.DATE_FORMAT);
         // set and test on: post_date = PUBLISH pushed date (today)
-        entity.publicNotices[0].postDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
+        entity.publicNotices![0].postDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
           .add(1, 'days')
           .format(DateTimeUtil.DATE_FORMAT);
 
@@ -290,14 +290,14 @@ describe('ProjectService', () => {
 
         expect(DateTimeUtil.diff(
           entity.commentingOpenDate,
-          entity.publicNotices[0].postDate,
+          entity.publicNotices![0].postDate,
           DateTimeUtil.TIMEZONE_VANCOUVER, 'day')
         ).toBeGreaterThan(0);
         expect(districtSpy).toHaveBeenCalled();
         expect(districtSpy).toHaveBeenCalledWith(entity.districtId);
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalledTimes(1);
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalledWith(
-          entity.publicNotices[0].postDate, entity.commentingOpenDate);
+          entity.publicNotices![0].postDate, entity.commentingOpenDate);
       });
 
       it('with public-notice post_date before PUBLISH date (today) fail', async () => {
@@ -306,7 +306,7 @@ describe('ProjectService', () => {
           .add(closeDateAfterOpeningDateDays, 'day')
           .format(DateTimeUtil.DATE_FORMAT);
         // set and test on: post_date < PUBLISH pushed date (today)
-        entity.publicNotices[0].postDate = dayjs.tz(DateTimeUtil.nowBC().subtract(5, 'days'), DateTimeUtil.TIMEZONE_VANCOUVER)
+        entity.publicNotices![0].postDate = dayjs.tz(DateTimeUtil.nowBC().subtract(5, 'days'), DateTimeUtil.TIMEZONE_VANCOUVER)
         .format(DateTimeUtil.DATE_FORMAT);
 
         // Note, to expect an error from async fuction, use ".rejects" before ".toThrow" (strange in jest)
@@ -316,14 +316,14 @@ describe('ProjectService', () => {
 
         expect(DateTimeUtil.diff(
           DateTimeUtil.nowBC().format(DateTimeUtil.DATE_FORMAT),
-          entity.publicNotices[0].postDate,
+          entity.publicNotices![0].postDate,
           DateTimeUtil.TIMEZONE_VANCOUVER, 'day')
         ).toBeLessThan(0);
         expect(districtSpy).toHaveBeenCalled();
         expect(districtSpy).toHaveBeenCalledWith(entity.districtId);
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalledTimes(1);
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalledWith(
-          entity.publicNotices[0].postDate, entity.commentingOpenDate
+          entity.publicNotices![0].postDate, entity.commentingOpenDate
         );
       });
 
@@ -337,7 +337,7 @@ describe('ProjectService', () => {
           .add(closeDateAfterOpeningDateDays, 'day')
           .format(DateTimeUtil.DATE_FORMAT);
         // set and test on: post_date = mocked PUBLISH pushed date (mock PST today)
-        entity.publicNotices[0].postDate = mockPSTDate;
+        entity.publicNotices![0].postDate = mockPSTDate;
 
         await expect(() => service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
           .rejects
@@ -345,14 +345,14 @@ describe('ProjectService', () => {
 
         expect(DateTimeUtil.diff(
           mockPSTDate,
-          entity.publicNotices[0].postDate,
+          entity.publicNotices![0].postDate,
           DateTimeUtil.TIMEZONE_VANCOUVER, 'day')
         ).toEqual(0);
         expect(districtSpy).toHaveBeenCalled();
         expect(districtSpy).toHaveBeenCalledWith(entity.districtId);
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalledTimes(1);
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalledWith(
-          entity.publicNotices[0].postDate, entity.commentingOpenDate);
+          entity.publicNotices![0].postDate, entity.commentingOpenDate);
         jest.restoreAllMocks();
       });
     });
@@ -372,7 +372,7 @@ describe('ProjectService', () => {
       "districtId": 10,
       "forestClientId": "00001012",
       "workflowState": {
-        "factory": null, // Temporarily added here but not used for testing, without this ts will have complaint.
+        "factory": null as any, // Temporarily added here but not used for testing, without this ts will have complaint.
         "code": "COMMENT_OPEN",
         "description": "Commenting Open"
       },

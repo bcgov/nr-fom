@@ -10,13 +10,13 @@ export class District extends ApiBaseEntity<District> {
 
   @ApiProperty()
   @PrimaryColumn({name: 'district_id'})
-  public id: number;
+  public id!: number;
 
   @ApiProperty()
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  email: string;
+  email!: string;
 
 }

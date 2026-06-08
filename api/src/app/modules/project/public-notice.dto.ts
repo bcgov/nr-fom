@@ -8,37 +8,37 @@ export class PublicNoticeCreateRequest {
 
   @ApiProperty()
   @IsNumber()
-  projectId: number;
+  projectId!: number;
 
   @ApiProperty()
   @MaxLength(500) 
-  reviewAddress: string;
+  reviewAddress!: string;
 
   @ApiProperty()
   @MaxLength(100) 
-  reviewBusinessHours: string;
+  reviewBusinessHours!: string;
 
   @ApiProperty()
   @MaxLength(500) 
   @IsOptional()
-  receiveCommentsAddress: string;
+  receiveCommentsAddress!: string;
 
   @ApiProperty()
   @MaxLength(100) 
   @IsOptional()
-  receiveCommentsBusinessHours: string;
+  receiveCommentsBusinessHours!: string;
 
   @ApiProperty()
   @IsBoolean()
-  isReceiveCommentsSameAsReview: boolean;
+  isReceiveCommentsSameAsReview!: boolean;
 
   @ApiProperty()
   @MaxLength(100) 
-  mailingAddress: string;
+  mailingAddress!: string;
 
   @ApiProperty()
   @MaxLength(100) 
-  email: string;
+  email!: string;
 
   @ApiProperty({ description: 'Date planed for online public notice posted.'})
   @IsOptional()
@@ -50,20 +50,20 @@ export class PublicNoticeUpdateRequest extends PublicNoticeCreateRequest {
 
   @ApiProperty()
   @IsNumber()
-  revisionCount: number;
+  revisionCount!: number;
 
 }
 
 export class PublicNoticeResponse extends PublicNoticeUpdateRequest {
 
   @ApiProperty()
-  id: number;
+  id!: number;
 
 }
 
 export class PublicNoticePublicFrontEndResponse extends PublicNoticeCreateRequest {
 
   @ApiProperty()
-  project: ProjectResponse;
+  project!: ProjectResponse;
 
 }

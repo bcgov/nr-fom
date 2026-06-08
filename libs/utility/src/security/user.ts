@@ -1,7 +1,7 @@
 // Represents a user's information extracted from Keycloak JWT.
 export class User {
-    userName: string; 
-    displayName: string;
+    userName!: string; 
+    displayName!: string;
     isMinistry: boolean = false;
     isForestClient: boolean = false;
     isAdmin: boolean = false;
@@ -28,7 +28,7 @@ export class User {
       const user = new User();
       user.userName = jwt['username'];
       user.displayName = jwt['displayName'];
-      let roles: string[];
+      let roles: string[] | undefined = undefined;
       if (jwt['resource_access'] && jwt['resource_access']['fom']) {
         roles = jwt['resource_access']['fom']['roles'];
       }
@@ -53,8 +53,13 @@ export class User {
 
     static convertAwsCognitoDecodedTokenToUser(decodedToken: any): User {
         const user = new User();
-        const idToken = decodedToken['decodedIdToken'];
-        const accessToken = decodedToken['decodedAccessToken']
+        const idToken = decodedToken['decodedIdToken'] || decodedToken['id_token'];
+        const accessToken = decodedToken['decodedAccessToken'] || decodedToken['access_token'];
+
+        if (!idToken || !accessToken) {
+            throw new TypeError("Decoded token is missing idToken or accessToken properties");
+        }
+
         user.userName = idToken['custom:idp_username'];
         user.displayName = idToken['custom:idp_display_name'];
         let roles: string[];

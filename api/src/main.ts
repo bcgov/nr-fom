@@ -31,7 +31,7 @@ async function createApp():Promise<INestApplication>  {
   return app;
 }
 
-async function bootstrap():Promise<INestApplication> {
+async function bootstrap():Promise<INestApplication | null> {
 
   try {
     console.log("Running DB Main Migrations...");
@@ -76,7 +76,7 @@ async function bootstrap():Promise<INestApplication> {
     contentSecurityPolicy: true
   }));
 
-  let cacheMiddleware = (_req, res, next) => {
+  let cacheMiddleware = (_req: any, res: any, next: any) => {
     // Disable caching entirely by default for all APIs.
     res.set('Cache-control', 'no-store, max-age=0');
     res.set('Pragma', 'no-cache');
@@ -85,7 +85,7 @@ async function bootstrap():Promise<INestApplication> {
   httpAdapter.use(cacheMiddleware);
 
   // Only meant for running locally, not accessible via /api route.
-  httpAdapter.get('/health-check', (_req, res) => {
+  httpAdapter.get('/health-check', (_req: any, res: any) => {
     res.send('Health check passed');
   });
 
@@ -112,8 +112,9 @@ async function runTestDataMigrations(app: INestApplication) {
     logger.log("Running DB Test Data Migrations...");
     // Need different name from default connection that is already active.
     // We don't change ormConfigTest's actual definition because when run via 'npm run' needs to use default connection.
-    ormConfigTest['name'] = 'test-migration'; 
-    await dbmigrate(ormConfigTest as ConnectionOptions);
+    const testConfig = { ...ormConfigTest } as any;
+    testConfig['name'] = 'test-migration'; 
+    await dbmigrate(testConfig as ConnectionOptions);
   }
 }
 
@@ -140,6 +141,9 @@ async function postStartup(app: INestApplication) {
 async function startApi() {
   try {
     const app = await bootstrap();
+    if (!app) {
+      process.exit(1);
+    }
     app.get(Logger).log("Done regular startup.");
     // Don't await so non-blocking - allows OpenShift container (pod) to be marked ready for traffic.
     postStartup(app).catch((postError) => {

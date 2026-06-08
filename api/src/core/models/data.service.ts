@@ -1,6 +1,6 @@
 import { ApiBaseEntity, DeepPartial } from '@entities';
 import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { PinoLogger } from 'nestjs-pino';
 import { DataSource, FindOptionsWhere, Repository, UpdateResult } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
@@ -43,7 +43,7 @@ export abstract class DataService<
 > {
 
   @Inject(DataSource)
-  private readonly dataSource: DataSource;
+  dataSource!: DataSource;
 
   protected constructor(
     protected repository: R,
@@ -85,11 +85,11 @@ export abstract class DataService<
    * @return {*}
    * @memberof DataService
    */
-  async create(requestDto: any, user: User): Promise<O> {
+  async create(requestDto: any, user?: User): Promise<O> {
     this.logger.debug(`${this.constructor.name}.create dto %o`, requestDto);
 
     if (! await this.isCreateAuthorized(requestDto, user)) {
-      throw new ForbiddenException(`User ${user.userName} is not granted for 'create' action.`);
+      throw new ForbiddenException(`User ${user ? user.userName : 'Anonymous'} is not granted for 'create' action.`);
     }
 
     requestDto.createUser = user ? user.userName : 'Anonymous';
@@ -122,23 +122,26 @@ export abstract class DataService<
 
   // Deliberately exclude loading relations for updates. TypeORM gets confused if an entity has both the id field and the relation field populated on update.
   protected async findEntityForUpdate(id: string | number): Promise<E|undefined> {
-    return this.repository.findOne({ where: { id } } as FindOneOptions);
+    return (await this.repository.findOne({ where: { id } } as FindOneOptions)) ?? undefined;
   }
 
   // A hook on find entity for other service to override if it needs extra operation, like db column decryption.
   protected async findEntityWithCommonRelations(id: string | number, options?: FindOneOptions<E> | undefined): Promise<E|undefined> {
     const revisedOptions = this.addCommonRelationsToFindOptions(options);
     revisedOptions.where = {...revisedOptions.where, id } as unknown as FindOptionsWhere<E>;
-    return this.repository.findOne(revisedOptions);
+    return (await this.repository.findOne(revisedOptions)) ?? undefined;
   }
 
   protected addCommonRelationsToFindOptions(options?: FindOneOptions<E>): FindOneOptions<E> {
     const revisedOptions = options ? options : {};
-    revisedOptions.relations = options?.relations ? options.relations : {};
+    if (!revisedOptions.relations) {
+      revisedOptions.relations = {};
+    }
+    const relations: any = revisedOptions.relations;
     // this.getCommonRelations() is an 'array', but options.relations is 'object'
     this.getCommonRelations().forEach(cRelation => {
-      if (! (cRelation in revisedOptions.relations)) { 
-        revisedOptions.relations[cRelation] = true;
+      if (! (cRelation in relations)) { 
+        relations[cRelation] = true;
       }
     });
     return revisedOptions;
@@ -164,7 +167,7 @@ export abstract class DataService<
 
     this.logger.debug(`${this.constructor.name}.update dto %o`, requestDto);
 
-    const entity:E = await this.findEntityForUpdate(id)
+    const entity = await this.findEntityForUpdate(id);
     if (! entity) {
       throw new BadRequestException("Entity not found.");
     }
@@ -183,6 +186,9 @@ export abstract class DataService<
     }
 
     const updatedEntity = await this.findEntityWithCommonRelations(id);
+    if (!updatedEntity) {
+      throw new InternalServerErrorException("Updated entity not found");
+    }
     this.logger.debug(`${this.constructor.name}.update result entity %o`, updatedEntity);
 
     return this.convertEntity(updatedEntity);
@@ -198,7 +204,7 @@ export abstract class DataService<
   async delete(id: number | string, user?: User): Promise<void> {
     this.logger.debug(`${this.constructor.name}.delete id %o`, id);
 
-    const entity:(E|undefined) = await this.repository.findOne({ where: { id } } as FindOneOptions);
+    const entity = (await this.repository.findOne({ where: { id } } as FindOneOptions)) ?? undefined;
     if (entity == undefined) {
       throw new BadRequestException("Entity does not exist.");
     }

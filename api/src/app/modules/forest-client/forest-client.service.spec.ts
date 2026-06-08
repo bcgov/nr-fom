@@ -29,10 +29,10 @@ describe('ForestClientService', () => {
   });
 
   describe('batchClientDataRefresh', () => {
-    let repositoryFindOneSpy;
-    let repositoryUpsertSpy;
-    let fetchClientNonIndividualsSpy;
-    let configServiceGetPageSizeSpy;
+    let repositoryFindOneSpy: any;
+    let repositoryUpsertSpy: any;
+    let fetchClientNonIndividualsSpy: any;
+    let configServiceGetPageSizeSpy: any;
     const PAGE_SIZE_DEFAULT = 1000;
     beforeEach(async () => {
       repositoryFindOneSpy = jest.spyOn(repository, 'findOne');
@@ -65,7 +65,7 @@ describe('ForestClientService', () => {
       // Make fetching calls for max length times.
       const stopAtPage = sampleClientAppIntegrationResponseList.length; // Note, API starts at "page" 0.
       fetchClientNonIndividualsSpy.mockImplementation(
-        (page, pageSize, sortedColumn) => mockFetchClientNonIndividualsStopAtPage(stopAtPage, page, pageSize, sortedColumn)
+        (page: any, pageSize: any, sortedColumn: any) => mockFetchClientNonIndividualsStopAtPage(stopAtPage, page, pageSize, sortedColumn)
       );
       configServiceGetPageSizeSpy.mockReturnValue(PAGE_SIZE_DEFAULT)
       await service.batchClientDataRefresh();
@@ -86,8 +86,8 @@ describe('ForestClientService', () => {
 async function mockFetchClientNonIndividualsStopAtPage(
   stopAtPage: number, 
   page: number, 
-  _pageSize, 
-  _sortedColumn): Promise<ClientAppIntegrationResponse[]> 
+  _pageSize: any, 
+  _sortedColumn: any): Promise<ClientAppIntegrationResponse[]> 
 {
   if (page >= 0 && page < stopAtPage && stopAtPage <= sampleClientAppIntegrationResponseList.length) {
     return [sampleClientAppIntegrationResponseList[page]];
@@ -96,7 +96,7 @@ async function mockFetchClientNonIndividualsStopAtPage(
 }
 
 class ForestClientRepositoryFake {
-  public findOne(options: FindOneOptions<ForestClient>): Promise<ForestClient | null> {
+  public async findOne(options: FindOneOptions<ForestClient>): Promise<ForestClient | null> {
     return null;
   }
   public upsert(): void {

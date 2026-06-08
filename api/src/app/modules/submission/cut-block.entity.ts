@@ -19,25 +19,25 @@ export class CutBlock extends ApiBaseEntity<CutBlock> {
   }
 
   @PrimaryGeneratedColumn('increment', { name: 'cut_block_id' })
-  public id: number;
+  public id!: number;
 
   @Column({ type: 'geometry', spatialFeatureType: 'Polygon', srid: 3005 })
-  geometry: any;
+  geometry!: any;
 
   @Column({ name: 'planned_development_date'})
-  plannedDevelopmentDate: string; // timestamp
+  plannedDevelopmentDate!: string; // timestamp
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column({ name: 'planned_area_ha'})
-  plannedAreaHa: number;
+  plannedAreaHa!: number;
 
   @ManyToOne(() => Submission, (submission) => submission.cutBlocks, {onDelete: 'CASCADE', orphanedRowAction:'delete'})
   @JoinColumn({ name: 'submission_id', referencedColumnName: 'id' })
-  submission: Submission;
+  submission!: Submission;
 
   @Column({name: 'submission_id'})
   @RelationId((cutBlock: CutBlock) => cutBlock.submission)
-  submissionId: number;
+  submissionId!: number;
 }
