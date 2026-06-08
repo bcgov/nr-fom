@@ -4,15 +4,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from "@utility/security/user";
 import { validate } from 'class-validator';
-import * as timezone from 'dayjs/plugin/timezone';
-import * as utc from 'dayjs/plugin/utc';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { PinoLogger } from 'nestjs-pino';
 import fetch from 'node-fetch';
 import { maxFileSizeBytes } from '../attachment/attachment.controller';
 import { InteractionCreateRequest, InteractionResponse, InteractionUpdateRequest } from './interaction.dto';
 import { InteractionService } from './interaction.service';
 import _ = require('lodash');
-import dayjs = require('dayjs');
 // initialize dayjs extensions
 dayjs.extend(utc);
 dayjs.extend(timezone);

@@ -1,6 +1,12 @@
 {
   "compilerOptions": {
     "outDir": "./dist/libs",
+    "ignoreDeprecations": "6.0",
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "esModuleInterop": true,
     "experimentalDecorators":true,
     "declaration": true,
     "declarationMap": true,
@@ -8,7 +14,8 @@
     "skipLibCheck": true,
     "module": "commonjs",
     "target": "es2015",
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "types": ["jest", "node"]
   },
   "include": ["**/*.ts"],
   "exclude": ["**/*.spec.ts"],
