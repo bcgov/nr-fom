@@ -196,7 +196,10 @@ export class PublicNoticeService extends DataService<PublicNotice, Repository<Pu
 			.select("commenting_open_date")
 			.where("project_id = :projectId", {projectId: dto.projectId})
 			.getRawOne();
-		const commentingOpenDate: string = dayjs(rawResult?.['commenting_open_date']).format(DateTimeUtil.DATE_FORMAT);
+		if (!rawResult) {
+			throw new BadRequestException("Project not found.");
+		}
+		const commentingOpenDate: string = dayjs(rawResult['commenting_open_date']).format(DateTimeUtil.DATE_FORMAT);
 		const postDate = dto.postDate;
 		
 		// postDate validation: on or before commenting start date.

@@ -23,6 +23,14 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
     super(repository, new Attachment(), logger);
   }
 
+  private getBucketName(): string {
+    const bucket = process.env.OBJECT_STORAGE_BUCKET;
+    if (!bucket) {
+      throw new InternalServerErrorException("OBJECT_STORAGE_BUCKET environment variable is not defined");
+    }
+    return bucket;
+  }
+
   async create(request: AttachmentCreateRequest, user: User): Promise<AttachmentResponse> {
 
     const allowedExtensionsForPublicNotice: string[] = ['jpg', 'jpeg', 'png', 'tif', 'pdf'];
@@ -50,7 +58,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
         }
         await this.repository.delete(founds[0].id);
         const objectName = this.createObjectUrl(founds[0].projectId, founds[0].id, founds[0].fileName);
-        await this.deleteObject(process.env.OBJECT_STORAGE_BUCKET || '', objectName);
+        await this.deleteObject(this.getBucketName(), objectName);
 
         // Now that the public notice is deleted, we can proceed with the regular creation.
       }
@@ -67,11 +75,12 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
   uploadFileObjectStorage(request: AttachmentCreateRequest, primaryKey: number){
 
     const objectName = this.createObjectUrl(request.projectId, primaryKey, request.fileName);
+    const bucketName = this.getBucketName();
 
-    minioClient.putObject(process.env.OBJECT_STORAGE_BUCKET || '', objectName, request.fileContents, function(error: any, objInfo: any) {
+    minioClient.putObject(bucketName, objectName, request.fileContents, function(error: any, objInfo: any) {
       if(error) {
         throw new InternalServerErrorException(error, 
-          `Minio Client encountered problem while uploading file to storage to ${process.env.OBJECT_STORAGE_BUCKET},
+          `Minio Client encountered problem while uploading file to storage to ${bucketName},
            location: ${objectName}`);
       }
     });
@@ -147,7 +156,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
     const objectName = this.createObjectUrl(attachmentFileResponse.projectId, attachmentFileResponse.id, attachmentFileResponse.fileName )
 
     //Reading the object from Object Storage
-    const dataStream  = await this.getObjectStream(process.env.OBJECT_STORAGE_BUCKET || '', objectName );
+    const dataStream  = await this.getObjectStream(this.getBucketName(), objectName );
 
     //Reading the content of the object from Object Storage
     const finalBuffer = await this.stream2buffer(dataStream);
@@ -234,7 +243,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
       const objectName = this.createObjectUrl(projectId, attachmentId, fileName )
 
       //Deleting the object
-      await this.deleteObject(process.env.OBJECT_STORAGE_BUCKET || '', objectName);
+      await this.deleteObject(this.getBucketName(), objectName);
   }
 
   /* This function only returns attachments of the following types:

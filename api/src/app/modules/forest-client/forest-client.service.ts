@@ -57,8 +57,8 @@ export class ForestClientService extends DataService<ForestClient, Repository<Fo
         this.configService.get("fcApiBatchSearchPageSize"),
         ClientAppIntegrationService.SORT_BY_CLIENT_NUMBER
       );
-      fetchedData.forEach(async (item) => {
-        const entity = await this.repository.findOne({ where: { id: item.id } })
+      for (const item of fetchedData) {
+        const entity = await this.repository.findOne({ where: { id: item.id } });
         if (!entity) {
           const newEntity = mapToEntity(item, new ForestClient()) as ForestClient;
           newEntity.createUser = USER_SYSTEM;
@@ -70,7 +70,7 @@ export class ForestClientService extends DataService<ForestClient, Repository<Fo
           entity.updateTimestamp = new Date();
           await this.repository.upsert(entity, ["id"]);
         }
-      });
+      }
 
       totalRecordsCount+=fetchedData.length;
       currentPage++;

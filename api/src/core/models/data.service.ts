@@ -43,7 +43,7 @@ export abstract class DataService<
 > {
 
   @Inject(DataSource)
-  dataSource!: DataSource;
+  private readonly dataSource!: DataSource;
 
   protected constructor(
     protected repository: R,

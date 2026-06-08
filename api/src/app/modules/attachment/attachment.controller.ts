@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Delete, Param, HttpStatus, Query, UseInterceptors, UploadedFile, Req, Request, Res, ParseIntPipe, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, HttpStatus, Query, UseInterceptors, UploadedFile, Req, Res, ParseIntPipe, BadRequestException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiProduces, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Express } from 'express';
-import { Multer } from 'multer'; // This is needed, don't know why Visual Studio Code thinks it isn't.
+import 'multer';
 
 import { AttachmentService } from './attachment.service';
 import { AttachmentCreateRequest, AttachmentResponse } from './attachment.dto';
