@@ -10,18 +10,19 @@ import 'dotenv/config';
 import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
-import { ConnectionOptions, createConnection } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { AppModule } from './app/app.module';
 import * as ormConfigMain from './migrations/ormconfig-migration-main';
 import * as ormConfigTest from './migrations/ormconfig-migration-test';
 import * as v8 from 'v8';
 
-async function dbmigrate(config: ConnectionOptions) {
-    const connection = await createConnection(config);
+async function dbmigrate(config: DataSourceOptions) {
+    const dataSource = new DataSource(config);
+    await dataSource.initialize();
     try {
-      await connection.runMigrations({ transaction: "each"});
+      await dataSource.runMigrations({ transaction: "each"});
     } finally {
-      await connection.close();
+      await dataSource.destroy();
     }
 }
 
@@ -35,7 +36,7 @@ async function bootstrap():Promise<INestApplication | null> {
 
   try {
     console.log("Running DB Main Migrations...");
-    await dbmigrate(ormConfigMain as ConnectionOptions);
+    await dbmigrate(ormConfigMain as DataSourceOptions);
     console.log("Done DB Migrations.");
   } catch (error) {
     console.error('Error during database migration: ' + JSON.stringify(error));
@@ -114,7 +115,7 @@ async function runTestDataMigrations(app: INestApplication) {
     // We don't change ormConfigTest's actual definition because when run via 'npm run' needs to use default connection.
     const testConfig = { ...ormConfigTest } as any;
     testConfig['name'] = 'test-migration'; 
-    await dbmigrate(testConfig as ConnectionOptions);
+    await dbmigrate(testConfig as DataSourceOptions);
   }
 }
 
