@@ -25,7 +25,7 @@ export class PublicCommentController {
   async create(
     @Body() request: PublicCommentCreateRequest): Promise<void> {
       // Due to limited budget we are not performing additional validation that the request makes sense (e.g. if scope not overall, valid feature has been selected).
-      await this.service.create(request, undefined); 
+      await this.service.create(request); 
   }
 
   @Put(':id')

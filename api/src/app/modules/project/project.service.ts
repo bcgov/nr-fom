@@ -199,7 +199,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     request.workflowStateCode = WorkflowStateEnum.INITIAL;
     request.forestClientId = request.forestClientNumber;
     this.validateProjectPlan(request.projectPlanCode, request.fspId, request.woodlotLicenseNumber);
-    await this.validateTimberSalesManager(request.bctsMgrName, request.forestClientNumber, undefined);
+    await this.validateTimberSalesManager(request.bctsMgrName, request.forestClientNumber);
     return super.create(request, user);
   }
 
@@ -214,12 +214,10 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
       const projectEntity = await this.findEntityWithCommonRelations(projectId)
       forestClientName = projectEntity?.forestClient?.name ?? null;
     }
-    else {
-      if (forestClientNumber) {
-        const fcl = await this.forestClientService.find([forestClientNumber]);
-        if (fcl && fcl.length == 1) {
-            forestClientName = fcl[0].name;
-        }
+    else if (forestClientNumber) {
+      const fcl = await this.forestClientService.find([forestClientNumber]);
+      if (fcl && fcl.length == 1) {
+          forestClientName = fcl[0].name;
       }
     }
 
