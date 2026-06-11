@@ -9,36 +9,36 @@ export class PublicNotice extends ApiBaseEntity<PublicNotice> {
   }
 
   @PrimaryGeneratedColumn('increment', {name: 'public_notice_id'})
-  public id: number;
+  public id!: number;
 
   @Column({name: 'project_id'})
-  projectId: number;
+  projectId!: number;
 
   @ManyToOne(() => Project, (project) => project.publicNotices, {onDelete: 'CASCADE', orphanedRowAction:'delete'})
   @JoinColumn({ name: 'project_id' })
-  project: Project;
+  project!: Project;
 
   @Column({name: 'review_address'})
-  reviewAddress: string;
+  reviewAddress!: string;
 
   @Column({name: 'review_business_hours'})
-  reviewBusinessHours: string;
+  reviewBusinessHours!: string;
 
   @Column({name: 'is_receive_comments_same_as_review'})
-  isReceiveCommentsSameAsReview: boolean;
+  isReceiveCommentsSameAsReview!: boolean;
 
   @Column({ name: 'receive_comments_address'})
-  receiveCommentsAddress: string;
+  receiveCommentsAddress!: string;
 
   @Column({ name: 'receive_comments_business_hours'})
-  receiveCommentsBusinessHours: string;
+  receiveCommentsBusinessHours!: string;
 
   @Column({ name: 'mailing_address'})
-  mailingAddress: string;
+  mailingAddress!: string;
 
   @Column()
-  email: string
+  email!: string;
 
   @Column({ name: 'post_date', type: 'date'})
-  postDate: string; 
+  postDate!: string;
 }

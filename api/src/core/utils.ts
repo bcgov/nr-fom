@@ -1,4 +1,3 @@
-
 /**
  * Function to recursively map a dto or entity structure's keys.
  * We use this to either camelCase properties when mapping an entity to a DTO,
@@ -8,15 +7,15 @@
  * @param mapDate
  */
 export const deepMapKeys = (
-  originalObject,
-  callback,
-  mapDate = (timeValue) => timeValue
-) => {
-  if (typeof originalObject !== 'object') {
+  originalObject: any,
+  callback: (key: string) => string,
+  mapDate: (value: Date) => any = (timeValue: any) => timeValue
+): any => {
+  if (typeof originalObject !== 'object' || originalObject === null) {
     return originalObject;
   }
 
-  return Object.keys(originalObject || {}).reduce((newObject, key) => {
+  return Object.keys(originalObject).reduce((newObject: any, key: string) => {
     const newKey = callback(key);
     const originalValue = originalObject[key];
     let newValue = originalValue;
@@ -39,8 +38,8 @@ export const deepMapKeys = (
   }, {});
 };
 
-export const mapToEntity = (dto, entity) => {
-  Object.keys(dto).forEach((dtoKey, idx) => {
+export const mapToEntity = (dto: any, entity: any): any => {
+  Object.keys(dto).forEach((dtoKey) => {
     const modelKey = dtoKey;
     entity[modelKey] = dto[dtoKey];
   });
@@ -48,22 +47,22 @@ export const mapToEntity = (dto, entity) => {
   return entity;
 };
 
-export const mapFromEntity = (entity, dto) => {
-  Object.keys(entity).forEach((modelKey, idx) => {
+export const mapFromEntity = (entity: any, dto: any): any => {
+  Object.keys(entity).forEach((modelKey) => {
     const dtoKey = (modelKey);
     dto[dtoKey] = entity[modelKey];
   });
 
   return deepMapKeys(
     dto,
-    (key) => key,
+    (key: string) => key,
     (value: Date) => value.toISOString()
   );
 };
 
 // flat multidimensional array down. d = # of level you want to reduce it.
-export const flatDeep = (arr, d = 1) => {
-  return d > 0 ? arr.reduce((acc, val) => acc.concat(Array.isArray(val) ? flatDeep(val, d - 1) : val), [])
+export const flatDeep = (arr: any[], d = 1): any[] => {
+  return d > 0 ? arr.reduce((acc: any[], val: any) => acc.concat(Array.isArray(val) ? flatDeep(val, d - 1) : val), [])
                 : arr.slice();
 };
 

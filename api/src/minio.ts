@@ -12,7 +12,7 @@ export function verifyObjectStorageConnection() {
         console.error("Object storage credentials not provided.");
         return;
     }
-    minioClient.listBuckets(function(err, buckets) {
+    minioClient.listBuckets(function(err: any, buckets: any) {
         if (err) { 
          console.error("Error connecting to object storage", err);
          return;

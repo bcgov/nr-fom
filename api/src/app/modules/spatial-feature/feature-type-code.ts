@@ -5,13 +5,13 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 export class FeatureTypeCode {
 
-  static codeToInstanceMap = {};
+  static codeToInstanceMap: { [key: string]: FeatureTypeCode } = {};
 
   @ApiProperty()
-  public code: string;
+  public code!: string;
 
   @ApiProperty()
-  public description: string;
+  public description!: string;
 
   protected constructor(code: string, description: string) {
     this.code = code;

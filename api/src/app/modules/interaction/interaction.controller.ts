@@ -4,15 +4,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from "@utility/security/user";
 import { validate } from 'class-validator';
-import * as timezone from 'dayjs/plugin/timezone';
-import * as utc from 'dayjs/plugin/utc';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { PinoLogger } from 'nestjs-pino';
-import fetch from 'node-fetch';
 import { maxFileSizeBytes } from '../attachment/attachment.controller';
 import { InteractionCreateRequest, InteractionResponse, InteractionUpdateRequest } from './interaction.dto';
 import { InteractionService } from './interaction.service';
 import _ = require('lodash');
-import dayjs = require('dayjs');
+
 // initialize dayjs extensions
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -20,7 +20,7 @@ dayjs.extend(timezone);
 // From https://github.com/nestjs/swagger/issues/417#issuecomment-562869578 and https://swagger.io/docs/specification/describing-request-body/file-upload/
 const AttachmentPostBody = (file: string = 'file'): MethodDecorator => (
   target: any,
-  propertyKey: string,
+  propertyKey: string | symbol,
   descriptor: PropertyDescriptor,
 ) => {
   ApiBody({
@@ -53,7 +53,7 @@ const AttachmentPostBody = (file: string = 'file'): MethodDecorator => (
 
 const AttachmentUpdateBody = (file: string = 'file'): MethodDecorator => (
   target: any,
-  propertyKey: string,
+  propertyKey: string | symbol,
   descriptor: PropertyDescriptor,
 ) => {
   ApiBody({
@@ -111,9 +111,9 @@ export class InteractionController {
   async create(
     @UserHeader() user: User,
     @UploadedFile('file') file: Express.Multer.File,
-    @Req() request: fetch.Request): Promise<InteractionResponse> {
+    @Req() request: any): Promise<InteractionResponse> {
       const createRequest = new InteractionCreateRequest(
-        await new ParseIntPipe().transform(request.body['projectId'], null),
+        await new ParseIntPipe().transform(request.body['projectId'], { type: 'body' }),
         request.body['stakeholder'],
         request.body['communicationDate'],
         request.body['communicationDetails'],
@@ -126,7 +126,7 @@ export class InteractionController {
       // Validate fields.
       const vErrors = await validate(createRequest, { forbidUnknownValues: true, validationError: { target: false } });
       if (vErrors && vErrors.length >=1) {
-        const errMsgs = vErrors.map(oErr => Object.values(oErr.constraints)[0]);
+        const errMsgs = vErrors.map(oErr => Object.values(oErr.constraints || {})[0]);
         this.logger.debug('Create Interaction validation errors: %o', errMsgs);
         throw new BadRequestException(`Validation failed (${errMsgs})`);
       }
@@ -152,22 +152,22 @@ export class InteractionController {
     @UserHeader() user: User,
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile('file') file: Express.Multer.File,
-    @Req() request: fetch.Request): Promise<InteractionResponse> {     
+    @Req() request: any): Promise<InteractionResponse> {     
       const updateRequest = new InteractionUpdateRequest(
-        await new ParseIntPipe().transform(request.body['projectId'], null),
+        await new ParseIntPipe().transform(request.body['projectId'], { type: 'body' }),
         request.body['stakeholder'],
         request.body['communicationDate'],
         request.body['communicationDetails'],
         file?.originalname?.includes(".")? file.originalname: request.body['filename'],
         file? file.buffer: request.body['file']['buffer'],
         id,
-        await new ParseIntPipe().transform(request.body['revisionCount'], null)
+        await new ParseIntPipe().transform(request.body['revisionCount'], { type: 'body' })
       );
 
       // Validate fields.
       const vErrors = await validate(updateRequest, { forbidUnknownValues: true, validationError: { target: false } });
       if (vErrors && vErrors.length >=1) {
-        const errMsgs = vErrors.map(oErr => Object.values(oErr.constraints)[0]);
+        const errMsgs = vErrors.map(oErr => Object.values(oErr.constraints || {})[0]);
         this.logger.debug('Update Interaction validation errors: %o', errMsgs);
         throw new BadRequestException(`Validation failed (${errMsgs})`);
       }

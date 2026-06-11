@@ -7,7 +7,7 @@ import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { AuthService } from '@src/core/security/auth.service';
 import { PinoLogger } from 'nestjs-pino';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AnalyticsDashboardController } from './analytics-dashboard.controller';
 
 const mockProjectService = {

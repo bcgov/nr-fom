@@ -8,45 +8,45 @@ import { SubmissionTypeCode } from '../submission/submission-type-code.entity';
 export class SpatialFeature {
 
   @ViewColumn({name: 'feature_id'})
-  featureId: number;
+  featureId!: number;
 
   @ViewColumn({name: 'feature_type'})
-  featureType: string;
+  featureType!: string;
 
   @ViewColumn()
-  name: string;
+  name!: string;
 
   @ViewColumn({name: 'create_timestamp'})
-  createTimestamp: string;
+  createTimestamp!: string;
 
   // Loaded from DB as geojson string, converted to geojson object 
   @ViewColumn({name:"geojson"})
-  geometry: string;
+  geometry!: string;
 
   // Loaded from DB as geojson string, converted to geojson object 
   @ViewColumn({ name: 'centroid' })
-  centroid: string;
+  centroid!: string;
 
   @ViewColumn({name: 'planned_development_date'})
-  plannedDevelopmentDate: string;
+  plannedDevelopmentDate!: string;
 
   @ViewColumn({name: 'planned_area_ha'})
-  plannedAreaHa: number;
+  plannedAreaHa!: number;
 
   @ViewColumn({name: 'planned_length_km'})
-  plannedLengthKm: number;
+  plannedLengthKm!: number;
 
   @ViewColumn({name: 'workflow_state_code'})
-  workflowStateCode: string;
+  workflowStateCode!: string;
 
   @ManyToOne(() => ForestClient)
   @JoinColumn({ name: 'forest_client_number', referencedColumnName: 'id' })
-  forestClient: ForestClient;
+  forestClient!: ForestClient;
 
   @ManyToOne(() => SubmissionTypeCode)
   @JoinColumn({ name: 'submission_type_code', referencedColumnName: 'code' })
-  submissionType: SubmissionTypeCode;
+  submissionType!: SubmissionTypeCode;
 
   @ViewColumn({name: 'project_id'})
-  projectId: number;
+  projectId!: number;
 }

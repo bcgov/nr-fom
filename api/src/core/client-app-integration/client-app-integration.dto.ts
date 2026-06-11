@@ -10,12 +10,12 @@ export class ClientAppIntegrationResponse {
 
   // Map to CLIENT app "clientNumber".
   @MaxLength(8)
-  id: string;
+  id!: string;
 
   // Map to CLIENT app "clientName".
   // Note, this could be single blan ' ' string on TEST environment, but PROD does not have empty name record.
   @MaxLength(500)
-  name: string;
+  name!: string;
 
   /*
     ACT (Active)
@@ -25,7 +25,7 @@ export class ClientAppIntegrationResponse {
     SPN (Suspended)
   */
   @MaxLength(5)
-  clientStatusCode: string;
+  clientStatusCode!: string;
 
   /*
     A (Association)
@@ -42,5 +42,5 @@ export class ClientAppIntegrationResponse {
     U (Unregistered Company)
   */
   @MaxLength(3)
-  clientTypeCode: string;
+  clientTypeCode!: string;
 }

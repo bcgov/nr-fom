@@ -4,14 +4,14 @@ import { ForestClientResponse } from "@src/app/modules/forest-client/forest-clie
 export class ProjectByFspResponse {
 
     @ApiProperty()
-    fomId: number;
+    fomId!: number;
   
     @ApiProperty()
-    name: string;
+    name!: string;
   
     @ApiProperty()
-    fspId: number;
+    fspId!: number;
   
     @ApiPropertyOptional()
-    forestClient: ForestClientResponse;
+    forestClient!: ForestClientResponse;
   }

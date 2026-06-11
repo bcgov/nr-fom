@@ -5,31 +5,31 @@ import { FeatureTypeCode } from "./feature-type-code";
 export class SpatialFeaturePublicResponse {
 
     @ApiProperty()
-    featureType: FeatureTypeCode;
+    featureType!: FeatureTypeCode;
 
     @ApiProperty()
-    featureId: number;
+    featureId!: number;
 
     @ApiProperty()
-    name: string;
+    name!: string;
 
     @ApiProperty({ description: 'Format: GeoJSON Geometry object' })
-    geometry: object;
+    geometry!: object;
 
     @ApiProperty({ description: 'Format: GeoJSON Point' })
-    centroid: object;
+    centroid!: object;
 
     @ApiProperty({ description: 'Format: YYYY-MM-DD'})
-    plannedDevelopmentDate: string;
+    plannedDevelopmentDate!: string;
   
     @ApiProperty()
-    plannedAreaHa: number;
+    plannedAreaHa!: number;
   
     @ApiProperty()
-    plannedLengthKm: number;
+    plannedLengthKm!: number;
 
     @ApiProperty()
-    submissionType: SubmissionTypeCode;    
+    submissionType!: SubmissionTypeCode;
  }
 
 // Keep this BCGW API completely separated from the API used by FOM Public.
@@ -37,36 +37,36 @@ export class SpatialFeaturePublicResponse {
 export class SpatialFeatureBcgwResponse {
 
     @ApiProperty()
-    fomId: number;
+    fomId!: number;
 
     @ApiProperty({ enum: ['cut_block', 'road_section', 'retention_area']})
-    featureType: string;
+    featureType!: string;
 
     @ApiProperty()
-    featureId: number;
+    featureId!: number;
 
     @ApiProperty({ description: 'Feature object name', example: 'My cut block 2311' })
-    name: string;
+    name!: string;
 
     @ApiProperty({ description: 'Maximum length is expected to be <= 100'})
-    fspHolderName: string;
+    fspHolderName!: string;
 
     @ApiProperty({ enum: ['Proposed', 'Final']})
-    lifecycleStatus: string;
+    lifecycleStatus!: string;
   
     @ApiProperty({ description: 'Format: YYYY-MM-DD', example: '2021-03-31'})
-    createDate: string;
+    createDate!: string;
 
     @ApiProperty({ description: 'Format: GeoJSON Geometry as per RFC 7946 https://datatracker.ietf.org/doc/html/rfc7946#section-3.1.', 
         example: 'Cut Block / Retention Area Example: {"type":"Polygon","coordinates":[[[-121.652853481,51.67951884],[-121.499131212,51.763467947],[-121.363845891,51.668139701],[-121.373301212,51.578595415],[-121.661722435,51.589952346],[-121.652853481,51.67951884]]]} Road Section Example: {"type":"LineString","coordinates":[[-124.667049923,52.651503193],[-124.739768473,52.697146151],[-124.816364174,52.60827305]]}'})
-    geometry: object;
+    geometry!: object;
 
     @ApiProperty({ description: 'Format: YYYY-MM-DD', example: '2021-03-31'})
-    plannedDevelopmentDate: string;
+    plannedDevelopmentDate!: string;
   
     @ApiProperty({ example: '1.2345'})
-    plannedAreaHa: number;
+    plannedAreaHa!: number;
   
     @ApiProperty({ example: '1.2345'})
-    plannedLengthKm: number;
+    plannedLengthKm!: number;
 }

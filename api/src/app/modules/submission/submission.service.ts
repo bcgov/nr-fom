@@ -3,8 +3,8 @@ import { DataService } from '@core';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from "@utility/security/user";
-import * as dayjs from 'dayjs';
-import * as customParseFormat from 'dayjs/plugin/customParseFormat';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { GeoJsonProperties, Geometry, LineString, Polygon, Position } from 'geojson';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
@@ -45,12 +45,12 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     this.logger.debug(`${this.constructor.name}.create props %o`, dto);
     // Load the existing project to obtain the project's workflow state
     
-    const project: ProjectResponse = await this.projectService.findOne(dto.projectId, user); // This invokes security authorization check which will always pass.
+    const project: ProjectResponse = await this.projectService.findOne(dto.projectId!, user); // This invokes security authorization check which will always pass.
     const workflowStateCode = project.workflowState.code;
     const submissionTypeCode = this.getPermittedSubmissionTypeCode(workflowStateCode);
 
     // Operation only allowed for forest client users with project in specific states.
-    if (!await this.projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId, 
+    if (!await this.projectAuthService.isForestClientUserAllowedStateAccess(dto.projectId!, 
       [WorkflowStateEnum.INITIAL, WorkflowStateEnum.COMMENT_CLOSED], user)) {
       throw new ForbiddenException();
     }
@@ -63,9 +63,9 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     }
 
     // Obtain Submission(or new one) so we have the id.
-    const submission = await this.obtainExistingOrNewSubmission(dto.projectId, submissionTypeCode, user);
+    const submission = await this.obtainExistingOrNewSubmission(dto.projectId!, submissionTypeCode, user);
 
-    const spatialObjects: SpatialObject[] = await this.prepareFomSpatialObjects(submission.id, dto.spatialObjectCode, dto.jsonSpatialSubmission, user);
+    const spatialObjects: SpatialObject[] = await this.prepareFomSpatialObjects(submission.id, dto.spatialObjectCode!, dto.jsonSpatialSubmission!, user);
 
     // And save the geospatial objects (will update/replace previous ones)
     if (SpatialObjectCodeEnum.CUT_BLOCK === dto.spatialObjectCode) {
@@ -80,8 +80,8 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
 
     await this.repository.save(submission);
     // Apply Douglas-Peucker algorithm to simplify geometry.
-    await this.simplifyGeometry(submission.id, dto.spatialObjectCode);
-    await this.updateProjectLocationAndSpatialAreaOrLength(submission, dto.spatialObjectCode, user);
+    await this.simplifyGeometry(submission.id, dto.spatialObjectCode!);
+    await this.updateProjectLocationAndSpatialAreaOrLength(submission, dto.spatialObjectCode!, user);
   }
 
   /**
@@ -93,8 +93,8 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
    *   FINALIZED/EXPIRED = none (return an error)
    * @param workFlowStateCode workflow_state_code that the FOM currently is having
    */
-  getPermittedSubmissionTypeCode(workFlowStateCode: string): SubmissionTypeCodeEnum {
-    let submissionTypeCode: SubmissionTypeCodeEnum;
+  getPermittedSubmissionTypeCode(workFlowStateCode: string): SubmissionTypeCodeEnum | null {
+    let submissionTypeCode: SubmissionTypeCodeEnum | null;
     switch (workFlowStateCode) {
       case WorkflowStateEnum.INITIAL:
         submissionTypeCode = SubmissionTypeCodeEnum.PROPOSED;
@@ -116,9 +116,9 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     return ['project'];
   }
 
-  private async findEntityForSubmissionType(projectId: number, submissionTypeCode: SubmissionTypeCodeEnum): Promise<Submission> {
+  private async findEntityForSubmissionType(projectId: number, submissionTypeCode: SubmissionTypeCodeEnum | null): Promise<Submission | null> {
     const existingSubmissions: Submission[] = await this.repository.find({
-      where: { projectId: projectId, submissionTypeCode: submissionTypeCode },
+      where: { projectId: projectId, submissionTypeCode: submissionTypeCode as any },
       relations: this.getCommonRelations(),
     });
 
@@ -136,7 +136,7 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
    */
   async obtainExistingOrNewSubmission(projectId: number, submissionTypeCode: SubmissionTypeCodeEnum, user: User): Promise<Submission>  {
     // Obtain existing submission for the submission type
-    const existingSubmission: Submission = await this.findEntityForSubmissionType(projectId, submissionTypeCode);
+    const existingSubmission = await this.findEntityForSubmissionType(projectId, submissionTypeCode);
 
     let submission: Submission;
     if (!existingSubmission) {
@@ -177,7 +177,7 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     }
   }
 
-  private getDevelopmentDate(properties): string {
+  private getDevelopmentDate(properties: any): string {
     // Support DEVELOPMENT_DATE for backwards compatibility, but official property name is DEV_DATE
     return properties['DEV_DATE'] || properties['DEVELOPMENT_DATE'] || null;
   }
@@ -201,11 +201,11 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     return features.map(f => {
       const geometry = f.geometry;
       const properties = f.properties;
-      let name: string;
+      let name: string | undefined = undefined;
       if (properties?.hasOwnProperty(OPTIONAL_PROP_NAME)) {
         name = properties[OPTIONAL_PROP_NAME];
       }
-      let devDate: string;
+      let devDate: string | undefined = undefined;
       if (properties && spatialObjectCode != SpatialObjectCodeEnum.WTRA) {
         devDate = this.getDevelopmentDate(properties);
       }
@@ -383,13 +383,14 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
   private detectGeometryCoordRef(geometry: Geometry, type: 'LineString' | 'Polygon') {
     const maxRange_WGS84 = 360; // Note: we choose 360 for now (although WGS84 lat/long ranging from 180:-180) to distinguish 
                                 // between WGS84 and BC Albers.
-    let p_zero: number;
+    let p_zero = 0;
+    const geom: any = geometry;
     try {
       if (type == 'Polygon') {
-        p_zero = geometry['coordinates'][0][0][0];
+        p_zero = geom.coordinates[0][0][0];
       }
       else if (type == 'LineString') {
-        p_zero = geometry['coordinates'][0][0];
+        p_zero = geom.coordinates[0][0];
       }
     }
     catch (error) {
@@ -538,7 +539,7 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     return true;
   }
 
-  async findSubmissionDetailForCurrentSubmissionType(projectId: number, user: User): Promise<SubmissionDetailResponse> {
+  async findSubmissionDetailForCurrentSubmissionType(projectId: number, user: User): Promise<SubmissionDetailResponse | null> {
     this.logger.debug(`${this.constructor.name}.findSubmissionDetailForCurrentSubmissionType
       with projectId: ${projectId}`);
     
@@ -620,6 +621,9 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
       submissionId: ${submissionId}, spatialObjectCode: ${spatialObjectCode}`);
       
     const submission = await this.findEntityWithCommonRelations(submissionId);
+    if (!submission) {
+      throw new BadRequestException("Submission not found");
+    }
 
     if (! await this.isDeleteAuthorized(submission, user)) {
       throw new ForbiddenException();

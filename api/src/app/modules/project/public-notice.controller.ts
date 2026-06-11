@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, UseGuards, NotFoundException } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -34,7 +34,11 @@ export class PublicNoticeController {
     @UserHeader() user: User,
     @Param('forestClientId') forestClientId: string  
     ): Promise<PublicNoticeResponse> {
-      return this.service.findLatestPublicNotice(forestClientId, user);
+      const result = await this.service.findLatestPublicNotice(forestClientId, user);
+      if (!result) {
+        throw new NotFoundException(`Latest public notice not found for forest client ${forestClientId}`);
+      }
+      return result;
   }
 
   @Get(':id')

@@ -23,12 +23,12 @@ export function IsISODateOnlyString(validationOptions?: ValidationOptions) {
 }
 
 export class InteractionCreateRequest {
-  constructor(projectId = null, 
-              stakeholder = null, 
-              communicationDate = null, 
-              communicationDetails = null,
-              fileName = null,
-              file = null) {
+  constructor(projectId: number | null = null, 
+              stakeholder: string | null = null, 
+              communicationDate: string | null = null, 
+              communicationDetails: string | null = null,
+              fileName: string | null = null,
+              file: Buffer | null = null) {
     this.projectId = projectId;
     this.stakeholder = stakeholder;
     this.communicationDate = communicationDate;
@@ -39,41 +39,41 @@ export class InteractionCreateRequest {
 
   @ApiProperty()
   @IsInt({message: '"$property" must be an integer number.'})
-  projectId: number;
+  projectId!: number | null;
   
   @ApiProperty({ required: false })
   @MaxLength(55)
-  stakeholder: string;
+  stakeholder!: string | null;
 
   @ApiProperty({ required: true })
   @IsISODateOnlyString({message: `"$property" must be ISO-formatted date. (Required format: ${DateTimeUtil.DATE_FORMAT})`})
   @IsNotEmpty()
-  communicationDate?: string;
+  communicationDate?: string | null;
 
   @ApiProperty()
   @MaxLength(4000)
   @MinLength(1, {message: '"$property" must have at least 1 character.'})
   @IsNotEmpty()
-  communicationDetails: string;
+  communicationDetails!: string | null;
   
-  fileName: string; 
+  fileName!: string | null; 
 
-  file: Buffer;
+  file!: Buffer | null;
   
   @ApiProperty({ required: false })
-  attachmentId: number;
+  attachmentId!: number;
 }
 
 export class InteractionUpdateRequest extends InteractionCreateRequest {
 
-  constructor(projectId = null, 
-    stakeholder = null, 
-    communicationDate = null, 
-    communicationDetails = null,
-    fileName = null,
-    file = null,
-    id = null,
-    revisionCount = null) {
+  constructor(projectId: number | null = null, 
+    stakeholder: string | null = null, 
+    communicationDate: string | null = null, 
+    communicationDetails: string | null = null,
+    fileName: string | null = null,
+    file: Buffer | null = null,
+    id: number | null = null,
+    revisionCount: number | null = null) {
     super(projectId, stakeholder, communicationDate, communicationDetails, fileName, file);
     this.id = id;
     this.revisionCount = revisionCount;
@@ -83,22 +83,22 @@ export class InteractionUpdateRequest extends InteractionCreateRequest {
   @IsInt({message: '"$property" must be an integer number.'})
   @IsPositive()
   @Min(1)
-  id: number;
+  id!: number | null;
 
   @ApiProperty()
   @IsInt({message: '"$property" must be an integer number.'})
   @IsPositive()
   @Min(1)
-  revisionCount: number;
+  revisionCount!: number | null;
 }
 
 export class InteractionResponse extends InteractionCreateRequest {
   @ApiProperty()
-  id: number;
+  id!: number;
 
   @ApiProperty()
-  revisionCount: number;
+  revisionCount!: number;
 
   @ApiProperty({ description: 'ISO-formatted timestamp'})
-  createTimestamp: string;
+  createTimestamp!: string;
 }

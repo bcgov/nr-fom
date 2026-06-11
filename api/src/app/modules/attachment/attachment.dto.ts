@@ -4,30 +4,30 @@ import { AttachmentTypeCode } from './attachment-type-code.entity';
 
 // See AttachmentController.create for why these are not annotated with @ApiProperty.
 export class AttachmentCreateRequest {
-  projectId: number;
+  projectId!: number;
 
-  fileName: string; 
+  fileName!: string; 
 
-  fileContents: Buffer; 
+  fileContents!: Buffer; 
 
-  attachmentTypeCode: string;
+  attachmentTypeCode!: string;
 }
 
 export class AttachmentResponse {
   @ApiProperty()
-  id: number;
+  id!: number;
 
   @ApiProperty()
-  projectId: number;
+  projectId!: number;
 
   @ApiProperty()
-  fileName: string; 
+  fileName!: string;
 
   @ApiProperty()
-  attachmentType: AttachmentTypeCode;
+  attachmentType!: AttachmentTypeCode;
   
   @ApiProperty()
-  createTimestamp: Date;
+  createTimestamp!: Date;
 
   // Don't need revisionCount because updates are not allowed.
 }
@@ -35,6 +35,6 @@ export class AttachmentResponse {
 export class AttachmentFileResponse extends AttachmentResponse {
 
   @ApiProperty()
-  fileContents: Buffer; 
+  fileContents!: Buffer;
 
 }

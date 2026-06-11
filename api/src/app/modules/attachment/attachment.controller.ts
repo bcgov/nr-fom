@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Delete, Param, HttpStatus, Query, UseInterceptors, UploadedFile, Req, Request, Res, ParseIntPipe, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, HttpStatus, Query, UseInterceptors, UploadedFile, Req, Res, ParseIntPipe, BadRequestException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiProduces, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Express } from 'express';
-import { Multer } from 'multer'; // This is needed, don't know why Visual Studio Code thinks it isn't.
+import 'multer';
 
 import { AttachmentService } from './attachment.service';
 import { AttachmentCreateRequest, AttachmentResponse } from './attachment.dto';
@@ -14,7 +13,7 @@ import { AuthGuard, AuthGuardMeta, GUARD_OPTIONS, UserHeader } from '@api-core/s
 // From https://github.com/nestjs/swagger/issues/417#issuecomment-562869578 and https://swagger.io/docs/specification/describing-request-body/file-upload/
 const AttachmentPostBody = (fileName: string = 'file'): MethodDecorator => (
   target: any,
-  propertyKey: string,
+  propertyKey: string | symbol,
   descriptor: PropertyDescriptor,
 ) => {
   ApiBody({
@@ -56,13 +55,13 @@ export class AttachmentController {
   async create(
     @UserHeader() user: User,
     @UploadedFile('file') file: Express.Multer.File,
-    @Req() request: Request
+    @Req() request: any
     ): Promise<AttachmentResponse> {
 
     const createRequest = new AttachmentCreateRequest();
 
     // 'Manually' extract form properties from the request and from the file.
-    createRequest.projectId = await new ParseIntPipe().transform(request.body['projectId'], null);
+    createRequest.projectId = await new ParseIntPipe().transform(request.body['projectId'], { type: 'body' });
     createRequest.attachmentTypeCode = request.body['attachmentTypeCode'];
     createRequest.fileName = file.originalname;
     createRequest.fileContents = file.buffer;
@@ -86,7 +85,7 @@ export class AttachmentController {
   async getFileContents(
     @UserHeader() user: User,
     @Param('id', ParseIntPipe) id: number,
-    @Res() response) {
+    @Res() response: any) {
 
     const attachmentFileResponse = await this.service.getFileContent(id, user);
     response.attachment(attachmentFileResponse.fileName);

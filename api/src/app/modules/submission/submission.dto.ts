@@ -27,20 +27,20 @@ export enum SpatialCoordSystemEnum {
 export class SubmissionRequest {
   @ApiProperty()
   @IsNotEmpty()
-  projectId: number;
+  projectId!: number;
 
   @ApiProperty({ enum: SubmissionTypeCodeEnum, enumName: 'SubmissionTypeCodeEnum'})
   @IsEnum(SubmissionTypeCodeEnum)
-  submissionTypeCode: SubmissionTypeCodeEnum;
+  submissionTypeCode!: SubmissionTypeCodeEnum;
   
   @ApiProperty({ enum: SpatialObjectCodeEnum, enumName: 'SpatialObjectCodeEnum'})
   @IsNotEmpty()
   @IsEnum(SpatialObjectCodeEnum)
-  spatialObjectCode: SpatialObjectCodeEnum;
+  spatialObjectCode!: SpatialObjectCodeEnum;
   
   @ApiProperty()
   @IsNotEmpty()
-  jsonSpatialSubmission: FomSpatialJson;
+  jsonSpatialSubmission!: FomSpatialJson;
 }
 
 /*
@@ -56,19 +56,19 @@ export class SubmissionRequest {
 */
 export class SubmissionSpatialObjectDetail {
     @ApiProperty()
-    count: number
+    count!: number;
 
     @ApiProperty()
-    dateSubmitted: Date
+    dateSubmitted!: Date;
 }
 
 export class SubmissionDetailResponse {
 
   @ApiProperty()
-  projectId: number;
+  projectId!: number;
 
   @ApiProperty()
-  submissionId: number;
+  submissionId!: number;
 
   @ApiProperty({ 
     enum: SubmissionTypeCodeEnum, 
@@ -76,14 +76,14 @@ export class SubmissionDetailResponse {
     example: SubmissionTypeCodeEnum.PROPOSED,
     default: SubmissionTypeCodeEnum.PROPOSED
   })
-  submissionTypeCode: SubmissionTypeCodeEnum;
+  submissionTypeCode!: SubmissionTypeCodeEnum;
 
   @ApiProperty({type: SubmissionSpatialObjectDetail})
-  cutblocks: SubmissionSpatialObjectDetail; 
+  cutblocks!: SubmissionSpatialObjectDetail;
 
   @ApiProperty({type: SubmissionSpatialObjectDetail})
-  roadSections: SubmissionSpatialObjectDetail; 
+  roadSections!: SubmissionSpatialObjectDetail;
 
   @ApiProperty({type: SubmissionSpatialObjectDetail})
-  retentionAreas: SubmissionSpatialObjectDetail; 
+  retentionAreas!: SubmissionSpatialObjectDetail;
 }

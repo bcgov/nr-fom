@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { User } from "@utility/security/user";
 import { LoggerModule } from 'nestjs-pino';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../app/app.module';
 import { ProjectResponse } from '../app/modules/project/project.dto';
 import { SpatialFeatureBcgwResponse } from '../app/modules/spatial-feature/spatial-feature.dto';
@@ -11,7 +11,7 @@ import { createFakeForestryUser, createFakeMinistryUser } from '../core/security
 
 process.env.SECURITY_ENABLED="false"; // Necessary in order for authentication to succeed.
 
-const httpGetFunction = (app) => async ( user: User, args: string ) => {
+const httpGetFunction = (app: any) => async ( user: User, args: string ) => {
   if (user == null) {
     return request(app.getHttpServer()).get(args);
   } else {
@@ -21,7 +21,7 @@ const httpGetFunction = (app) => async ( user: User, args: string ) => {
 
 describe('API endpoints testing (e2e)', () => {
   let app: INestApplication;
-  let httpGet;
+  let httpGet: any;
 
   beforeAll(async () => {
 
@@ -88,20 +88,21 @@ describe('API endpoints testing (e2e)', () => {
         expect(feature.fspHolderName).toBeDefined();
         expect(feature.lifecycleStatus).toBeDefined();
         expect(feature.geometry).toBeDefined();
-        expect(feature.geometry['type']).toBeDefined();
-        expect(feature.geometry['coordinates']).toBeDefined();
+        const geometry = feature.geometry as any;
+        expect(geometry['type']).toBeDefined();
+        expect(geometry['coordinates']).toBeDefined();
 
         if (feature.featureType == 'cut_block') {
-          expect(feature.geometry['type']).toBe('Polygon');
+          expect(geometry['type']).toBe('Polygon');
           expect(feature.plannedAreaHa).toBeDefined();
           expect(feature.plannedLengthKm).toBeUndefined();
         } else if (feature.featureType == 'retention_area') {
-          expect(feature.geometry['type']).toBe('Polygon');
+          expect(geometry['type']).toBe('Polygon');
           expect(feature.plannedAreaHa).toBeDefined();
           expect(feature.plannedLengthKm).toBeUndefined();
           expect(feature.plannedDevelopmentDate).toBeUndefined();
         } else if (feature.featureType == 'road_section') {
-          expect(feature.geometry['type']).toBe('LineString');
+          expect(geometry['type']).toBe('LineString');
           expect(feature.plannedAreaHa).toBeUndefined();
           expect(feature.plannedLengthKm).toBeDefined();
         } else {

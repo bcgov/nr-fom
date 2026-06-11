@@ -1,5 +1,5 @@
 import { AuthGuard, UserHeader } from '@api-core/security/auth.guard';
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Query, UseGuards, NotFoundException } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from "@utility/security/user";
 import { SpatialObjectCodeEnum, SubmissionDetailResponse, SubmissionRequest } from './submission.dto';
@@ -28,7 +28,11 @@ export class SubmissionController {
   async findSubmissionDetailForCurrentSubmissionType(
     @UserHeader() user: User,
     @Param('projectId', ParseIntPipe) projectId: number): Promise<SubmissionDetailResponse> {
-    return this.service.findSubmissionDetailForCurrentSubmissionType(projectId, user);
+    const result = await this.service.findSubmissionDetailForCurrentSubmissionType(projectId, user);
+    if (!result) {
+      throw new NotFoundException(`Submission detail not found for project ${projectId}`);
+    }
+    return result;
   }
 
   @Delete(':submissionId')

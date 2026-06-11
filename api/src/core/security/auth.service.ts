@@ -13,16 +13,16 @@ export class AwsCognitoConfig {
   enabled: boolean = true;
 
   @ApiProperty()
-  aws_cognito_domain: string;
+  aws_cognito_domain!: string;
 
   @ApiProperty()
-  aws_cognito_region: string;
+  aws_cognito_region!: string;
 
   @ApiProperty()
-  aws_user_pools_id: string;
+  aws_user_pools_id!: string;
 
   @ApiProperty()
-  aws_user_pools_web_client_id: string;
+  aws_user_pools_web_client_id!: string;
 
   @ApiProperty()
   aws_mandatory_sign_in: string = "enable"; // 'enable' or 'disable'
@@ -52,19 +52,19 @@ export interface AuthAwsCognitoConfig {
  */
 export class AwsCognitoOauthConfig implements AuthAwsCognitoConfig {
   @ApiProperty()
-  domain: string;
+  domain!: string;
 
   @ApiProperty()
-  scope: string[];
+  scope!: string[];
 
   @ApiProperty()
-  redirectSignIn: string;
+  redirectSignIn!: string;
 
   @ApiProperty()
-  redirectSignOut: string;
+  redirectSignOut!: string;
 
   @ApiProperty()
-  responseType: string;
+  responseType!: string;
 }
 
 @Injectable()
@@ -116,12 +116,22 @@ export class AuthService {
             this.logger.debug("Untrusted decoded ID token %o", untrustedDecodedIdToken);
             this.logger.debug("Untrusted decoded ACCESS token %o", untrustedDecodedAccessToken);
 
-            const idToken_kid = untrustedDecodedIdToken.header.kid;
+            if (!untrustedDecodedIdToken || !untrustedDecodedAccessToken) {
+                throw new Error("Failed to decode token structure");
+            }
+
+            const idToken_kid = untrustedDecodedIdToken.header?.kid;
+            if (!idToken_kid) {
+                throw new Error("Kid not found in ID token header");
+            }
             const idPubkey = await this.jwksClient.getSigningKey(idToken_kid);
             const decodedIdToken = verify(cognitoIdToken, idPubkey.getPublicKey());
             this.logger.debug("Trusted decoded ID token = %o", decodedIdToken);
 
-            const accessToken_kid = untrustedDecodedAccessToken.header.kid;
+            const accessToken_kid = untrustedDecodedAccessToken.header?.kid;
+            if (!accessToken_kid) {
+                throw new Error("Kid not found in Access token header");
+            }
             const accessPubkey = await this.jwksClient.getSigningKey(accessToken_kid);
             const decodedAccessToken = verify(cognitoAccessToken, accessPubkey.getPublicKey());
             this.logger.debug("Trusted decoded Access token = %o", decodedAccessToken);
