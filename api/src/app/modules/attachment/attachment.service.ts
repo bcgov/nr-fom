@@ -65,24 +65,33 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
     }
 
     // Starting changes for Object Store
-    const created = super.create(request, user);
-    const primaryKey = (await created).id;
-    this.uploadFileObjectStorage(request, primaryKey);
+    const created = await super.create(request, user);
+    try {
+      await this.uploadFileObjectStorage(request, created.id);
+    } catch (error) {
+      this.logger.error(error, `Minio Client failed to upload file for attachment ${created.id}. Rolling back database record.`);
+      await this.repository.delete(created.id);
+      throw error;
+    }
 
     return created;
   }
 
-  uploadFileObjectStorage(request: AttachmentCreateRequest, primaryKey: number){
+  async uploadFileObjectStorage(request: AttachmentCreateRequest, primaryKey: number): Promise<void> {
 
     const objectName = this.createObjectUrl(request.projectId, primaryKey, request.fileName);
     const bucketName = this.getBucketName();
 
-    minioClient.putObject(bucketName, objectName, request.fileContents, function(error: any, objInfo: any) {
-      if(error) {
-        throw new InternalServerErrorException(error, 
-          `Minio Client encountered problem while uploading file to storage to ${bucketName},
-           location: ${objectName}`);
-      }
+    return new Promise<void>((resolve, reject) => {
+      minioClient.putObject(bucketName, objectName, request.fileContents, function(error: any, objInfo: any) {
+        if (error) {
+          reject(new InternalServerErrorException(error, 
+            `Minio Client encountered problem while uploading file to storage to ${bucketName}, location: ${objectName}`
+          ));
+        } else {
+          resolve();
+        }
+      });
     });
   }
   async isCreateAuthorized(dto: AttachmentCreateRequest, user?: User): Promise<boolean> {
