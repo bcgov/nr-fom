@@ -18,33 +18,33 @@ export class Project extends ApiBaseEntity<Project> {
   public id!: number;
 
   @Column()
-  name!: string;
+  name?: string;
 
   @Column()
-  description!: string;
+  description?: string;
 
   @Column({ name: 'commenting_open_date', type: 'date'})
-  commentingOpenDate!: string;
+  commentingOpenDate?: string;
 
   @Column({ name: 'commenting_closed_date', type: 'date'})
-  commentingClosedDate!: string;
+  commentingClosedDate?: string;
 
   @Column({ name: 'geometry_latlong', type: 'geometry', spatialFeatureType: 'Point', srid: 4326 })
-  geojson!: FomPoint;
+  geojson?: FomPoint;
 
   @Column({ name: 'fsp_id'})
-  fspId!: number;
+  fspId?: number;
 
   @Column({ name: 'woodlot_license_number'})
-  woodlotLicenseNumber!: string;
+  woodlotLicenseNumber?: string;
 
   @ManyToOne(() => District)
   @JoinColumn({ name: 'district_id', referencedColumnName: 'id' })
-  district!: District;
+  district?: District;
 
   @Column({ name: 'district_id'})
   @RelationId((project: Project) => project.district)
-  districtId!: number;
+  districtId?: number;
 
   @ManyToOne(() => ForestClient)
   @JoinColumn({ name: 'forest_client_number', referencedColumnName: 'id' })
@@ -71,20 +71,20 @@ export class Project extends ApiBaseEntity<Project> {
   projectPlanCode!: string;
 
   @OneToMany(type => Submission, (submission) => submission.project) 
-  submissions!: Submission[];
+  submissions?: Submission[];
   
   @Column({ name: 'comment_classification_mandatory', default: true, nullable: false})
   commentClassificationMandatory!: boolean;
   
   @OneToMany(type => PublicNotice, (publicNotice) => publicNotice.project, {cascade: true}) 
-  publicNotices!: PublicNotice[];
+  publicNotices?: PublicNotice[];
 
   @Column({ name: 'operation_start_year'})
-  operationStartYear!: number;
+  operationStartYear?: number;
 
   @Column({ name: 'operation_end_year'})
-  operationEndYear!: number;
+  operationEndYear?: number;
   
   @Column({ name: 'bcts_manager_name'})
-  bctsMgrName!: string;
+  bctsMgrName?: string;
 }

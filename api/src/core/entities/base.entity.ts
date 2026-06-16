@@ -1,5 +1,4 @@
-import { Column, CreateDateColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { Column, CreateDateColumn, UpdateDateColumn, VersionColumn, QueryDeepPartialEntity } from 'typeorm';
 
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer U>
@@ -39,9 +38,9 @@ export abstract class ApiBaseEntity<M> extends ApiBaseReadOnlyEntity<M> {
   public createUser!: string;
 
   @UpdateDateColumn({ name: 'update_timestamp', type: 'timestamptz' })
-  public updateTimestamp!: Date;
+  public updateTimestamp?: Date;
 
   @Column({ name: 'update_user'})
-  public updateUser!: string;
+  public updateUser?: string;
 
 }

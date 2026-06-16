@@ -177,8 +177,8 @@ export class PublicNoticeService extends DataService<PublicNotice, Repository<Pu
     response.projectId = entity.projectId;
     response.reviewAddress = entity.reviewAddress;
     response.reviewBusinessHours = entity.reviewBusinessHours;
-    response.receiveCommentsAddress = entity.receiveCommentsAddress;
-    response.receiveCommentsBusinessHours = entity.receiveCommentsBusinessHours;
+    response.receiveCommentsAddress = entity.receiveCommentsAddress!;
+    response.receiveCommentsBusinessHours = entity.receiveCommentsBusinessHours!;
     response.isReceiveCommentsSameAsReview = entity.isReceiveCommentsSameAsReview;
     response.mailingAddress = entity.mailingAddress;
     response.email = entity.email;

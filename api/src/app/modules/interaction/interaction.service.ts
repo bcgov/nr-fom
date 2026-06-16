@@ -173,7 +173,7 @@ export class InteractionService extends DataService<Interaction, Repository<Inte
     response.stakeholder = entity.stakeholder;
     response.communicationDate = entity.communicationDate;
     response.communicationDetails = entity.communicationDetails;
-    response.attachmentId = entity.attachmentId;
+    response.attachmentId = entity.attachmentId!;
     response.createTimestamp = entity.createTimestamp.toISOString();
     response.revisionCount = entity.revisionCount;
     response.id = entity.id;

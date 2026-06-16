@@ -28,10 +28,10 @@ export class CutBlock extends ApiBaseEntity<CutBlock> {
   plannedDevelopmentDate!: string; // timestamp
 
   @Column()
-  name!: string;
+  name?: string;
 
   @Column({ name: 'planned_area_ha'})
-  plannedAreaHa!: number;
+  plannedAreaHa?: number;
 
   @ManyToOne(() => Submission, (submission) => submission.cutBlocks, {onDelete: 'CASCADE', orphanedRowAction:'delete'})
   @JoinColumn({ name: 'submission_id', referencedColumnName: 'id' })

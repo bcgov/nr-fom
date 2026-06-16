@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Delete, Param, HttpStatus, Query, UseInterceptors, UploadedFile, Req, Res, ParseIntPipe, BadRequestException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiProduces, ApiResponse, ApiTags } from '@nestjs/swagger';
 import 'multer';
+import { Request, Response } from 'express';
 
 import { AttachmentService } from './attachment.service';
 import { AttachmentCreateRequest, AttachmentResponse } from './attachment.dto';
@@ -55,7 +56,7 @@ export class AttachmentController {
   async create(
     @UserHeader() user: User,
     @UploadedFile('file') file: Express.Multer.File,
-    @Req() request: any
+    @Req() request: Request
     ): Promise<AttachmentResponse> {
 
     const createRequest = new AttachmentCreateRequest();
@@ -85,7 +86,7 @@ export class AttachmentController {
   async getFileContents(
     @UserHeader() user: User,
     @Param('id', ParseIntPipe) id: number,
-    @Res() response: any) {
+    @Res() response: Response) {
 
     const attachmentFileResponse = await this.service.getFileContent(id, user);
     response.attachment(attachmentFileResponse.fileName);

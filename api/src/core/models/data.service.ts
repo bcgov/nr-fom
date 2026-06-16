@@ -2,13 +2,10 @@ import { ApiBaseEntity, DeepPartial } from '@entities';
 import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
 import dayjs from 'dayjs';
 import { PinoLogger } from 'nestjs-pino';
-import { DataSource, FindOptionsWhere, Repository, UpdateResult } from 'typeorm';
-import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';
-import { FindOneOptions } from 'typeorm/find-options/FindOneOptions';
+import { DataSource, FindOptionsWhere, Repository, UpdateResult, FindManyOptions, FindOneOptions, QueryDeepPartialEntity } from 'typeorm';
 
 import { mapToEntity } from '@core';
 import { User } from "@utility/security/user";
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 /**
  * Base class to extend for interacting with the database through a repository pattern.

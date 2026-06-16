@@ -28,10 +28,10 @@ export class PublicNotice extends ApiBaseEntity<PublicNotice> {
   isReceiveCommentsSameAsReview!: boolean;
 
   @Column({ name: 'receive_comments_address'})
-  receiveCommentsAddress!: string;
+  receiveCommentsAddress?: string;
 
   @Column({ name: 'receive_comments_business_hours'})
-  receiveCommentsBusinessHours!: string;
+  receiveCommentsBusinessHours?: string;
 
   @Column({ name: 'mailing_address'})
   mailingAddress!: string;
@@ -40,5 +40,5 @@ export class PublicNotice extends ApiBaseEntity<PublicNotice> {
   email!: string;
 
   @Column({ name: 'post_date', type: 'date'})
-  postDate!: string;
+  postDate?: string;
 }

@@ -47,8 +47,8 @@ export class ProjectsByFspService extends DataService<Project, Repository<Projec
   convertEntity(entity: Project): ProjectByFspResponse {
     const response = new ProjectByFspResponse();
     response.fomId = entity.id
-    response.name = entity.name
-    response.fspId = entity.fspId;
+    response.name = entity.name!;
+    response.fspId = entity.fspId!;
     if (entity.forestClient != null) {
       response.forestClient = this.forestClientService.convertEntity(entity.forestClient);
     }    

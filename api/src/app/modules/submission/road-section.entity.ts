@@ -28,10 +28,10 @@ export class RoadSection extends ApiBaseEntity<RoadSection> {
   plannedDevelopmentDate!: string; // timestamp
 
   @Column()
-  name!: string;
+  name?: string;
 
   @Column({ name: 'planned_length_km'})
-  plannedLengthKm!: number;
+  plannedLengthKm?: number;
 
   @ManyToOne(() => Submission, (submission) => submission.roadSections, {onDelete: 'CASCADE', orphanedRowAction:'delete'})
   @JoinColumn({ name: 'submission_id', referencedColumnName: 'id' })

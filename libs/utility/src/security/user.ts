@@ -53,8 +53,8 @@ export class User {
 
     static convertAwsCognitoDecodedTokenToUser(decodedToken: any): User {
         const user = new User();
-        const idToken = decodedToken['decodedIdToken'] || decodedToken['id_token'];
-        const accessToken = decodedToken['decodedAccessToken'] || decodedToken['access_token'];
+        const idToken = decodedToken['decodedIdToken'];
+        const accessToken = decodedToken['decodedAccessToken'];
 
         if (!idToken || !accessToken) {
             throw new TypeError("Decoded token is missing idToken or accessToken properties");

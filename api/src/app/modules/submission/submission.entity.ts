@@ -32,11 +32,11 @@ export class Submission extends ApiBaseEntity<Submission> {
   submissionTypeCode!: string;
 
   @OneToMany(type => CutBlock, (cutBlock) => cutBlock.submission, {cascade: true})
-  cutBlocks!: CutBlock[];
+  cutBlocks?: CutBlock[];
 
   @OneToMany(type => RetentionArea, (retentionArea) => retentionArea.submission, {cascade: true})
-  retentionAreas!: RetentionArea[];
+  retentionAreas?: RetentionArea[];
 
   @OneToMany(type => RoadSection, (roadSection) => roadSection.submission, {cascade: true})
-  roadSections!: RoadSection[];
+  roadSections?: RoadSection[];
 }

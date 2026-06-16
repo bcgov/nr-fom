@@ -46,9 +46,9 @@ describe('User', () => {
     });
 
     describe('convertAwsCognitoDecodedTokenToUser', () => {
-        it('should fail if decoded token contains no expected id_token or access_token', async() => {
-            const invalid_noId_decodedToken = {access_token: {}};
-            const invalid_noAccess_decodedToken = {id_token: {}};
+        it('should fail if decoded token contains no expected idToken or accessToken', async() => {
+            const invalid_noId_decodedToken = {decodedAccessToken: {}};
+            const invalid_noAccess_decodedToken = {decodedIdToken: {}};
 
             expect(() => User.convertAwsCognitoDecodedTokenToUser(invalid_noId_decodedToken))
                 .toThrow(TypeError)
@@ -60,8 +60,8 @@ describe('User', () => {
             const decodedToken = validFOMReviewerDecodedCognitoToken;
             const user = User.convertAwsCognitoDecodedTokenToUser(decodedToken)
             expect(user).toBeDefined();
-            expect(user.userName).toBe(decodedToken.id_token["custom:idp_username"]);
-            expect(user.displayName).toBe(decodedToken.id_token["custom:idp_display_name"]);
+            expect(user.userName).toBe(decodedToken.decodedIdToken["custom:idp_username"]);
+            expect(user.displayName).toBe(decodedToken.decodedIdToken["custom:idp_display_name"]);
             expect(user.isMinistry).toBe(true);
             expect(user.isForestClient).toBe(false);
             expect(user.clientIds).toStrictEqual([]);
@@ -71,8 +71,8 @@ describe('User', () => {
             const decodedToken = validFOMSubmitterDecodedCognitoToken;
             const user = User.convertAwsCognitoDecodedTokenToUser(decodedToken)
             expect(user).toBeDefined();
-            expect(user.userName).toBe(decodedToken.id_token["custom:idp_username"]);
-            expect(user.displayName).toBe(decodedToken.id_token["custom:idp_display_name"]);
+            expect(user.userName).toBe(decodedToken.decodedIdToken["custom:idp_username"]);
+            expect(user.displayName).toBe(decodedToken.decodedIdToken["custom:idp_display_name"]);
             expect(user.isMinistry).toBe(false);
             expect(user.isForestClient).toBe(true);
             expect(user.clientIds).toStrictEqual(['0001011','0001012']);
@@ -82,12 +82,12 @@ describe('User', () => {
 
     // Ignore other OIDC fields in token.
     const validFOMReviewerDecodedCognitoToken = {
-        id_token: {
+        decodedIdToken: {
           'custom:idp_username': 'IANLIU',
           'custom:idp_display_name': 'Liu, Ian WLRS:EX',
           email: 'ian.liu@gov.bc.ca'
         },
-        access_token: {
+        decodedAccessToken: {
           'cognito:groups': [ 'FOM_REVIEWER' ],
           token_use: 'access',
           scope: 'openid',
@@ -96,12 +96,12 @@ describe('User', () => {
     }
 
     const validFOMSubmitterDecodedCognitoToken = {
-        id_token: {
+        decodedIdToken: {
           'custom:idp_username': 'IANLIU',
           'custom:idp_display_name': 'Liu, Ian WLRS:EX',
           email: 'ian.liu@gov.bc.ca'
         },
-        access_token: {
+        decodedAccessToken: {
           'cognito:groups': [ 'FOM_SUBMITTER_0001011','FOM_SUBMITTER_0001012' ],
           token_use: 'access',
           scope: 'openid',

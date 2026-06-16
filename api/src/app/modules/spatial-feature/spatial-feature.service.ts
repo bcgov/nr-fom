@@ -54,11 +54,11 @@ async findByProjectId(projectId: number): Promise<SpatialFeaturePublicResponse[]
   private convertEntityToPublicResponse( entity: SpatialFeature): SpatialFeaturePublicResponse {
     const DATE_FORMAT = 'YYYY-MM-DD';
     const response = new SpatialFeaturePublicResponse();
-    response.featureId = entity.featureId;
-    response.featureType = FeatureTypeCode.getInstance(entity.featureType);
-    response.centroid = JSON.parse(entity.centroid);
-    response.geometry = JSON.parse(entity.geometry);
-    response.submissionType = entity.submissionType;
+    response.featureId = entity.featureId!;
+    response.featureType = FeatureTypeCode.getInstance(entity.featureType!);
+    response.centroid = JSON.parse(entity.centroid!);
+    response.geometry = JSON.parse(entity.geometry!);
+    response.submissionType = entity.submissionType!;
 
     if (entity.name) {
       response.name = entity.name;
@@ -81,12 +81,12 @@ async findByProjectId(projectId: number): Promise<SpatialFeaturePublicResponse[]
     const DATE_FORMAT = 'YYYY-MM-DD';
     const response = new SpatialFeatureBcgwResponse();
     response.createDate = dayjs(entity.createTimestamp).format(DATE_FORMAT);
-    response.featureId = entity.featureId;
-    response.featureType = entity.featureType;
+    response.featureId = entity.featureId!;
+    response.featureType = entity.featureType!;
     response.fomId = entity.projectId;
-    response.fspHolderName = entity.forestClient.name;
-    response.geometry = JSON.parse(entity.geometry);
-    response.lifecycleStatus = entity.submissionType.description;
+    response.fspHolderName = entity.forestClient!.name;
+    response.geometry = JSON.parse(entity.geometry!);
+    response.lifecycleStatus = entity.submissionType!.description;
     response.name = entity.name || '';
     if (entity.plannedAreaHa) {
       response.plannedAreaHa = entity.plannedAreaHa;

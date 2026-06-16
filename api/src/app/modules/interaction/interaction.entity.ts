@@ -23,5 +23,5 @@ export class Interaction extends ApiBaseEntity<Interaction> {
   projectId!: number;
 
   @Column({ name: 'attachment_id'})
-  attachmentId!: number;
+  attachmentId?: number;
 }

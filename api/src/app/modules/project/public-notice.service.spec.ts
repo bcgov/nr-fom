@@ -7,7 +7,7 @@ import { User } from "@utility/security/user";
 import { PinoLogger } from "nestjs-pino";
 import { DataSource, Repository } from "typeorm";
 import { ProjectResponse } from "./project.dto";
-import { PublicNoticeCreateRequest, PublicNoticePublicFrontEndResponse } from "./public-notice.dto";
+import { PublicNoticeCreateRequest, PublicNoticePublicFrontEndResponse, PublicNoticeResponse } from "./public-notice.dto";
 import { WorkflowStateEnum } from "./workflow-state-code.entity";
 
 describe('PublicNoticeService', () => {
@@ -204,7 +204,7 @@ describe('PublicNoticeService', () => {
           getMany: () => [publicNoticeEntityData],
         };
         const createQueryBuilderSpy = jest.spyOn(repository, 'createQueryBuilder').mockImplementation(() => createQueryBuilder);
-        const serviceSpy = jest.spyOn(service, 'convertEntity').mockImplementation((x) => x);
+        const serviceSpy = jest.spyOn(service, 'convertEntity').mockImplementation((x) => x as unknown as PublicNoticeResponse);
         const projectServiceSpy = jest.spyOn(projectService, 'convertEntity').mockReturnValue(projectResponseData);
 
         const testResult = await service.findForPublicFrontEnd();

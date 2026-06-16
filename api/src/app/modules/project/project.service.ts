@@ -128,7 +128,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     // When commenting open, can change closed date but can't make it shorter.
     if (WorkflowStateEnum.COMMENT_OPEN == entity.workflowStateCode) {
       if (DateTimeUtil.getBcDate(dto.commentingClosedDate!).startOf('day').isBefore(
-          DateTimeUtil.getBcDate(entity.commentingOpenDate).startOf('day').add(30, 'day'))) {        
+          DateTimeUtil.getBcDate(entity.commentingOpenDate!).startOf('day').add(30, 'day'))) {        
         this.logger.debug(`Not allowed to make commenting closed date shorter.`);
         return false;
       }
@@ -292,7 +292,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
       }
     }
     response.createTimestamp = entity.createTimestamp.toISOString();
-    response.description = entity.description;
+    response.description = entity.description!;
     if (entity.district != null) {
       response.district = this.districtService.convertEntity(entity.district);
     }
@@ -301,7 +301,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     }
     response.fspId = entity.fspId;
     response.id = entity.id;
-    response.name = entity.name;
+    response.name = entity.name!;
     response.revisionCount = entity.revisionCount;
     response.workflowState = entity.workflowState;
     response.commentClassificationMandatory = entity.commentClassificationMandatory;
@@ -309,9 +309,9 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
       response.publicNoticeId = entity.publicNotices[0].id; // Currently one public notice for a project.
       response.noticePostDate = entity.publicNotices[0].postDate;
     }
-    response.operationStartYear = entity.operationStartYear;
-    response.operationEndYear = entity.operationEndYear;
-    response.bctsMgrName = entity.bctsMgrName;
+    response.operationStartYear = entity.operationStartYear!;
+    response.operationEndYear = entity.operationEndYear!;
+    response.bctsMgrName = entity.bctsMgrName!;
     response.projectPlanCode = entity.projectPlanCode
     response.woodlotLicenseNumber = entity.woodlotLicenseNumber
 
@@ -470,7 +470,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 
     if (request.workflowStateCode == WorkflowStateEnum.FINALIZED) {
       try {
-        this.logger.info(`FOM ${updatedEntity.id} is finalized. Sending notification email to district ${updatedEntity.district.name}`);
+        this.logger.info(`FOM ${updatedEntity.id} is finalized. Sending notification email to district ${updatedEntity.district!.name}`);
         await this.mailService.sendDistrictNotification(updatedEntity);
         this.logger.debug('FOM finalized notification mail Sent!');
       }
@@ -552,7 +552,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     const projectPlanCode = entity.projectPlanCode;
     const fspId = entity.fspId;
     const woodlotLicenseNumber = entity.woodlotLicenseNumber;
-    const districtId = entity.districtId;
+    const districtId = entity.districtId!;
 
     if (projectPlanCode == ProjectPlanCodeEnum.FSP && (isNil(fspId) || isNaN(fspId))) {
       throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}. 
@@ -614,16 +614,16 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
       // However, it could be empty = then no check.
       const publicNotices = entity.publicNotices;
       if (!_.isEmpty(publicNotices)) {
-        const postDate = publicNotices[0].postDate;
+        const postDate = publicNotices![0].postDate;
         if (!_.isEmpty(postDate)) {
-					const commentingOpenDate = entity.commentingOpenDate;
+					const commentingOpenDate = entity.commentingOpenDate!;
 					if (postDate && !DateTimeUtil.isPNPostdateOnOrBeforeCommentingOpenDate(postDate, commentingOpenDate)) {
 						throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}. 
 						Online Public Notice Publish Date ${postDate} should be on or before commenting start date 
 						${commentingOpenDate}.`);
 					}
 					// Must be at least one day after publish is pushed
-					const dayDiff = DateTimeUtil.diffNow(postDate, DateTimeUtil.TIMEZONE_VANCOUVER, 'day');
+					const dayDiff = DateTimeUtil.diffNow(postDate!, DateTimeUtil.TIMEZONE_VANCOUVER, 'day');
 					if (dayDiff < 1) {
 							throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
 							Online Public Notice Publish Date: must be at least one day in the future.`);
@@ -856,8 +856,8 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 		if (WorkflowStateEnum.PUBLISHED == stateTransition) {
 			const publicNotices = projectEntity.publicNotices;
 			// set public notice post date to project commenting open date if post date is not set.
-			if (!_.isEmpty(publicNotices) && !publicNotices[0].postDate) {
-				const pnId = publicNotices[0].id;
+			if (!_.isEmpty(publicNotices) && !publicNotices![0].postDate) {
+				const pnId = publicNotices![0].id;
 				const commentingOpenDate = projectEntity.commentingOpenDate;
 				const updateFields = 
 				{

@@ -10,7 +10,7 @@ export class MailService {
   async sendDistrictNotification(project: Project) {
 
     // Email address used for PROD, populated from the Db
-    const districtEmail = project.district.email + "@gov.bc.ca"; // production - table stores emails without the @gov.bc.ca suffix.
+    const districtEmail = project.district!.email + "@gov.bc.ca"; // production - table stores emails without the @gov.bc.ca suffix.
 
     // Use ${districtEmail} in PROD, otherwise provided in var for lower environments (DEV, TEST, DEMO)
     const to = process.env.FOM_EMAIL_NOTIFY ? `${process.env.FOM_EMAIL_NOTIFY}` : `${districtEmail}`
