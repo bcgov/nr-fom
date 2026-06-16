@@ -16,7 +16,7 @@ export class PublicNotice extends ApiBaseEntity<PublicNotice> {
 
   @ManyToOne(() => Project, (project) => project.publicNotices, {onDelete: 'CASCADE', orphanedRowAction:'delete'})
   @JoinColumn({ name: 'project_id' })
-  project!: Project;
+  project?: Project;
 
   @Column({name: 'review_address'})
   reviewAddress!: string;

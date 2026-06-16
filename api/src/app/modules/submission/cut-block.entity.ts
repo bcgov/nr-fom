@@ -35,7 +35,7 @@ export class CutBlock extends ApiBaseEntity<CutBlock> {
 
   @ManyToOne(() => Submission, (submission) => submission.cutBlocks, {onDelete: 'CASCADE', orphanedRowAction:'delete'})
   @JoinColumn({ name: 'submission_id', referencedColumnName: 'id' })
-  submission!: Submission;
+  submission?: Submission;
 
   @Column({name: 'submission_id'})
   @RelationId((cutBlock: CutBlock) => cutBlock.submission)

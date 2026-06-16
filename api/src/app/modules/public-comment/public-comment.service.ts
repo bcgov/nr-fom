@@ -76,7 +76,7 @@ export class PublicCommentService extends DataService<
 
   protected convertEntity(entity: PublicComment): PublicCommentAdminResponse {
     const response = new PublicCommentAdminResponse();
-    response.commentScope = entity.commentScope;
+    response.commentScope = entity.commentScope!;
     response.createTimestamp = entity.createTimestamp.toISOString();
     response.email = entity.email;
     response.feedback = entity.feedback;

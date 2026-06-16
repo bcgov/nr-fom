@@ -48,7 +48,7 @@ export class Project extends ApiBaseEntity<Project> {
 
   @ManyToOne(() => ForestClient)
   @JoinColumn({ name: 'forest_client_number', referencedColumnName: 'id' })
-  forestClient!: ForestClient;
+  forestClient?: ForestClient;
 
   @Column({ name: 'forest_client_number'})
   @RelationId((project: Project) => project.forestClient)
@@ -56,7 +56,7 @@ export class Project extends ApiBaseEntity<Project> {
 
   @ManyToOne(() => WorkflowStateCode)
   @JoinColumn({ name: 'workflow_state_code' })
-  workflowState!: WorkflowStateCode;
+  workflowState?: WorkflowStateCode;
 
   @Column({ name: 'workflow_state_code'})
   @RelationId((project: Project) => project.workflowState)
@@ -64,7 +64,7 @@ export class Project extends ApiBaseEntity<Project> {
 
   @ManyToOne(() => ProjectPlanCode)
   @JoinColumn({ name: 'project_plan_code', referencedColumnName: 'code' })
-  projectPlan!: ProjectPlanCode;
+  projectPlan?: ProjectPlanCode;
 
   @Column({ name: 'project_plan_code'})
   @RelationId((project: Project) => project.projectPlan)

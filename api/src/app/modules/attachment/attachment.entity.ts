@@ -17,7 +17,7 @@ export class Attachment extends ApiBaseEntity<Attachment> {
 
   @ManyToOne(() => Project, { eager: true })
   @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })
-  project!: Project;
+  project?: Project;
 
   @Column({ name: 'project_id'})
   @RelationId((attachment: Attachment) => attachment.project)
@@ -25,7 +25,7 @@ export class Attachment extends ApiBaseEntity<Attachment> {
 
   @ManyToOne(() => AttachmentTypeCode)
   @JoinColumn({ name: 'attachment_type_code', referencedColumnName: 'code' })
-  attachmentType!: AttachmentTypeCode;
+  attachmentType?: AttachmentTypeCode;
 
   @Column({ name: 'attachment_type_code'})
   @RelationId((attachment: Attachment) => attachment.attachmentType)

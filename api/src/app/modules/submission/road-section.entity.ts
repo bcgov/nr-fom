@@ -35,7 +35,7 @@ export class RoadSection extends ApiBaseEntity<RoadSection> {
 
   @ManyToOne(() => Submission, (submission) => submission.roadSections, {onDelete: 'CASCADE', orphanedRowAction:'delete'})
   @JoinColumn({ name: 'submission_id', referencedColumnName: 'id' })
-  submission!: Submission;
+  submission?: Submission;
 
   @Column({ name: 'submission_id'})
   @RelationId((roadSection: RoadSection) => roadSection.submission)

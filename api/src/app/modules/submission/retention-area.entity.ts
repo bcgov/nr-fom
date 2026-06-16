@@ -22,7 +22,7 @@ export class RetentionArea extends ApiBaseEntity<RetentionArea> {
 
   @ManyToOne(() => Submission, (submission) => submission.retentionAreas, {onDelete: 'CASCADE', orphanedRowAction:'delete'})
   @JoinColumn({ name: 'submission_id', referencedColumnName: 'id' })
-  submission!: Submission;
+  submission?: Submission;
 
   @Column({ name: 'submission_id'})
   @RelationId((retentionArea: RetentionArea) => retentionArea.submission)

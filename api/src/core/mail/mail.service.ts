@@ -28,7 +28,7 @@ export class MailService {
       to: to,
       from: from,
       subject: `New Final FOM submission received for ${host}/admin/`,
-      html: `<h3>FOM ${project.id} ${project.name} ${project.forestClient.name} has been finalized and is available for review.</h3>
+      html: `<h3>FOM ${project.id} ${project.name} ${project.forestClient!.name} has been finalized and is available for review.</h3>
         <p>
           Please use this <a href="${fomViewLink}" target="_blank">link</a> to access FOM details.
         </p>

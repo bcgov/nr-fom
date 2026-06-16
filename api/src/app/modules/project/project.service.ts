@@ -303,7 +303,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     response.id = entity.id;
     response.name = entity.name!;
     response.revisionCount = entity.revisionCount;
-    response.workflowState = entity.workflowState;
+    response.workflowState = entity.workflowState!;
     response.commentClassificationMandatory = entity.commentClassificationMandatory;
     if (entity.publicNotices && entity.publicNotices.length > 0) {
       response.publicNoticeId = entity.publicNotices[0].id; // Currently one public notice for a project.
@@ -377,8 +377,8 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     const result = entityResult.map(project => {
       // Avoid creating new object to optimize performance.
       const response = project as (ProjectPublicSummaryResponse & Project);
-      response.forestClientName = project.forestClient.name;
-      response.workflowStateName = project.workflowState.description;
+      response.forestClientName = project.forestClient!.name;
+      response.workflowStateName = project.workflowState!.description;
       delete (response as any).forestClient;
       delete (response as any).workflowState;
       return response;

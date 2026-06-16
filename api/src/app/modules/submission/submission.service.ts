@@ -629,7 +629,7 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
       throw new ForbiddenException();
     }
 
-    const project = submission.project;
+    const project = submission.project!;
     const permittedSubmissionTypeCode = this.getPermittedSubmissionTypeCode(project.workflowStateCode);
     if (submission.submissionTypeCode !== permittedSubmissionTypeCode) {
       throw new BadRequestException(`Removal of ${submission.submissionTypeCode} submission ${submissionId} is not permitted 

@@ -139,7 +139,7 @@ export class PublicNoticeService extends DataService<PublicNotice, Repository<Pu
           'postDate'
         ]
       ));
-      response.project = this.projectService.convertEntity(entity.project);
+      response.project = this.projectService.convertEntity(entity.project!);
       return response;
     });
 

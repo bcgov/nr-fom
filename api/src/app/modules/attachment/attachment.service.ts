@@ -150,7 +150,7 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
   protected convertEntity(entity: Attachment): AttachmentResponse { 
     const response = new AttachmentResponse();
     response.projectId = entity.projectId;
-    response.attachmentType = entity.attachmentType;
+    response.attachmentType = entity.attachmentType!;
     response.fileName = entity.fileName;
     response.id = entity.id;
     response.createTimestamp = entity.createTimestamp;

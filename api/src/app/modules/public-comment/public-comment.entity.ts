@@ -42,7 +42,7 @@ export class PublicComment extends ApiBaseEntity<PublicComment> {
 
   @ManyToOne(() => Project)
   @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })
-  project!: Project;
+  project?: Project;
 
   @Column({ name: 'project_id'})
   projectId!: number;
@@ -57,7 +57,7 @@ export class PublicComment extends ApiBaseEntity<PublicComment> {
 
   @ManyToOne(() => CommentScopeCode)
   @JoinColumn({ name: 'comment_scope_code', referencedColumnName: 'code' })
-  commentScope!: CommentScopeCode;
+  commentScope?: CommentScopeCode;
 
   @Column({ name: 'comment_scope_code'})
   @RelationId((comment: PublicComment) => comment.commentScope)

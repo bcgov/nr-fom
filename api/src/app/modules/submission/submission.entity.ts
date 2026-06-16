@@ -21,11 +21,11 @@ export class Submission extends ApiBaseEntity<Submission> {
 
   @ManyToOne(() => Project, project => project.submissions)
   @JoinColumn({ name: 'project_id' })
-  project!: Project;
+  project?: Project;
 
   @ManyToOne(() => SubmissionTypeCode)
   @JoinColumn({ name: 'submission_type_code', referencedColumnName: 'code' })
-  submissionType!: SubmissionTypeCode;
+  submissionType?: SubmissionTypeCode;
 
   @Column({ name: 'submission_type_code'})
   @RelationId((submission: Submission) => submission.submissionType)
