@@ -65,7 +65,7 @@ describe('PublicNoticeService', () => {
       async (testWorkflowStateCode) => {
         const projectResponseData: ProjectResponse = getSimpleProjectResponseData();
         projectResponseData.id = 2;
-        projectResponseData.publicNoticeId = undefined as any; // no public_notice exists for projectId = 2, so can be created;
+        projectResponseData.publicNoticeId = undefined; // no public_notice exists for projectId = 2, so can be created;
         projectResponseData.workflowState.code = testWorkflowStateCode; // can't create with this status.
         const projectServiceSpy = jest.spyOn(projectService, 'findOne').mockResolvedValue(projectResponseData);
         request.projectId = projectResponseData.id;
@@ -81,7 +81,7 @@ describe('PublicNoticeService', () => {
       async () => {
         const projectResponseData: ProjectResponse = getSimpleProjectResponseData();
         projectResponseData.id = 2;
-        projectResponseData.publicNoticeId = undefined as any; // no public_notice exists for projectId = 2, so can be created;
+        projectResponseData.publicNoticeId = undefined; // no public_notice exists for projectId = 2, so can be created;
         projectResponseData.workflowState.code = WorkflowStateEnum.INITIAL; // can create with this status.
         const wrongForestClientId = 'wrong-id';
         projectResponseData.forestClient.id = wrongForestClientId;
@@ -101,7 +101,7 @@ describe('PublicNoticeService', () => {
       async () => {
         const projectResponseData: ProjectResponse = getSimpleProjectResponseData();
         projectResponseData.id = 2;
-        projectResponseData.publicNoticeId = undefined as any; // no public_notice exists for projectId = 2, so can be created;
+        projectResponseData.publicNoticeId = undefined; // no public_notice exists for projectId = 2, so can be created;
         projectResponseData.workflowState.code = WorkflowStateEnum.INITIAL; // can create with this status.
         const projectServiceSpy = jest.spyOn(projectService, 'findOne').mockResolvedValue(projectResponseData);
         user.isForestClient = true;
@@ -291,7 +291,6 @@ function getSimpleProjectResponseData(): ProjectResponse {
       "name": "BELL LUMBER & POLE CANADA, ULC"
     },
     "workflowState": {
-      "factory": null as any, // Temporarily added here, without this ts will have complaint. Probably due to type is an entity, not dto.
       "code": "COMMENT_OPEN",
       "description": "Commenting Open"
     },
@@ -300,10 +299,9 @@ function getSimpleProjectResponseData(): ProjectResponse {
     "commentClassificationMandatory": false,
     "publicNoticeId": 10001,
     "operationStartYear": 2028,
-    "operationEndYear": 2031,
-    "bctsMgrName": null as any
+    "operationEndYear": 2031
   }
-  return data;
+  return data as unknown as ProjectResponse;
 }
 
 function getSimplePublicNoticePublicFrontEndResponseData() { 

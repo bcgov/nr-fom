@@ -7,7 +7,7 @@ describe('SubmissionService', () => {
   let service: SubmissionService;
 
   beforeEach(async () => {
-    service = new SubmissionService(null as any, mockLoggerFactory(), null as any, null as any);
+    service = new SubmissionService(null as never, mockLoggerFactory(), null as never, null as never);
   });
 
   describe('detectSpatialSubmissionCoordRef', () => {

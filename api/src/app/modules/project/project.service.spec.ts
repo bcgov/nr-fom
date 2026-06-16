@@ -14,7 +14,7 @@ describe('ProjectService', () => {
   let service: ProjectService;
 
   beforeEach(async () => {
-    service = new ProjectService(null as any, mockLoggerFactory(), null as any, null as any, null as any, null as any, null as any);
+    service = new ProjectService(null as never, mockLoggerFactory(), null as never, null as never, null as never, null as never, null as never);
   });
 
   describe('isCreateAuthorized', () => {
@@ -41,7 +41,7 @@ describe('ProjectService', () => {
     it ('request forest client undefined cannot create', async () => {
       user.isForestClient = true;
       user.clientIds.push(TEST_CLIENT_ID);
-      delete (request as any).forestClientNumber;
+      delete (request as Partial<ProjectCreateRequest>).forestClientNumber;
       expect(await service.isCreateAuthorized(request, user)).toBe(false);
     });
     
@@ -172,7 +172,7 @@ describe('ProjectService', () => {
   });
 
   describe('validateWorkflowTransitionRules', () => {
-    let user: User = undefined as any;
+    let user: User = undefined as unknown as User;
     let entity: Partial<Project> = getSampleProjectEntityData();
     let districtSpy: jest.SpyInstance<Promise<boolean>>;
     let postdateOnOrBeforeCommentingOpenDateSpy: any;
@@ -212,7 +212,7 @@ describe('ProjectService', () => {
         entity.commentingClosedDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
             .add(closeDateAfterOpeningDateDays, 'day')
             .format(DateTimeUtil.DATE_FORMAT);
-        entity.publicNotices![0].postDate = null as any; // User leaves post_date empty.
+        entity.publicNotices![0].postDate = undefined; // User leaves post_date empty.
 
         // note, validator is a void.
         await service.validateWorkflowTransitionRules(entity as Project, stateTransition, user)
@@ -359,7 +359,7 @@ describe('ProjectService', () => {
 
   });
 
-  function getSampleProjectEntityData(): Partial<Project> {
+  function getSampleProjectEntityData(): Project {
     const data =  
     {
       "id": 1,
@@ -372,7 +372,6 @@ describe('ProjectService', () => {
       "districtId": 10,
       "forestClientId": "00001012",
       "workflowState": {
-        "factory": null as any, // Temporarily added here but not used for testing, without this ts will have complaint.
         "code": "COMMENT_OPEN",
         "description": "Commenting Open"
       },
@@ -380,7 +379,7 @@ describe('ProjectService', () => {
       "commentClassificationMandatory": false,
       "publicNoticeId": 10001
     }
-    return data;
+    return data as unknown as Project;
   }
 
 /*  Example of creating a mock module.

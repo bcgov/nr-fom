@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientAppIntegrationResponse } from '@src/core/client-app-integration/client-app-integration.dto';
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError, AxiosResponse, AxiosHeaders } from 'axios';
 import { PinoLogger } from 'nestjs-pino';
 import { of } from 'rxjs';
 import { ClientAppIntegrationService } from './client-app-integration.service';
@@ -194,7 +194,7 @@ const sampleAxiosResponse: AxiosResponse = {
     status: 200,
     statusText: 'OK',
     config: {
-        headers: undefined as any
+        headers: new AxiosHeaders()
     },
     headers: {},
 };

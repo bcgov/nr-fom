@@ -21,6 +21,7 @@ import dayjs from 'dayjs';
 import { isEmpty, isNil } from 'lodash';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm';
 import {
   ProjectCommentClassificationMandatoryChangeRequest, ProjectCommentingClosedDateChangeRequest,
   ProjectCountByDistrictResponse, ProjectCountByForestClientResponse,
@@ -830,18 +831,16 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     }
 
     this.logger.debug(`Updating FOM for ${projectIds} to ${workflowStateCode}`);
-    const updateFields: any = 
-      {
-        workflowStateCode: workflowStateCode,
-        updateUser: USER_SYSTEM,
-        updateTimestamp: new Date(),
-        revisionCount: () => "revision_count + 1"
-      }
-
-    if (workflowStateCode === WorkflowStateEnum.COMMENT_OPEN) {
-      updateFields['commentingClosedDate']= () => `CASE WHEN commenting_closed_date IS NULL THEN commenting_open_date + integer '30' 
-                                                        ELSE commenting_closed_date END`; // default to commenting_open_date + 30
-    }
+    const updateFields: QueryDeepPartialEntity<Project> = {
+      workflowStateCode: workflowStateCode,
+      updateUser: USER_SYSTEM,
+      updateTimestamp: new Date(),
+      revisionCount: () => "revision_count + 1",
+      ...(workflowStateCode === WorkflowStateEnum.COMMENT_OPEN ? {
+        commentingClosedDate: () => `CASE WHEN commenting_closed_date IS NULL THEN commenting_open_date + integer '30' 
+                                                          ELSE commenting_closed_date END`
+      } : {})
+    };
     
     const updatedCounts = (await this.repository
             .createQueryBuilder()

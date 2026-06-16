@@ -179,8 +179,8 @@ export class ProjectResponse {
   @ApiProperty({default: true})
   commentClassificationMandatory!: boolean;
 
-  @ApiProperty()
-  publicNoticeId!: number; // Online Public Notice (if any)
+  @ApiPropertyOptional()
+  publicNoticeId?: number; // Online Public Notice (if any)
 
   @ApiProperty()
   noticePostDate?: string;
@@ -191,8 +191,8 @@ export class ProjectResponse {
   @ApiProperty({ required: true })
   operationEndYear!: number;
 
-  @ApiProperty()
-  bctsMgrName!: string;
+  @ApiPropertyOptional()
+  bctsMgrName?: string;
 }
 
 export class ProjectMetricsResponse {

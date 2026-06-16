@@ -1,27 +1,23 @@
-var Minio = require('minio')
+import * as Minio from 'minio';
 
 // Default URL if not defined to avoid startup errors in unit tests, batch, etc.
-export const minioClient =  new Minio.Client({
-    endPoint:  process.env.OBJECT_STORAGE_URL || 'nrs.objectstore.gov.bc.ca',
-    accessKey: process.env.OBJECT_STORAGE_ACCESS_ID,
-    secretKey: process.env.OBJECT_STORAGE_SECRET
+export const minioClient = new Minio.Client({
+    endPoint: process.env.OBJECT_STORAGE_URL || 'nrs.objectstore.gov.bc.ca',
+    accessKey: process.env.OBJECT_STORAGE_ACCESS_ID || '',
+    secretKey: process.env.OBJECT_STORAGE_SECRET || ''
 });
 
-export function verifyObjectStorageConnection() {
+export async function verifyObjectStorageConnection(): Promise<void> {
     if (!process.env.OBJECT_STORAGE_ACCESS_ID || !process.env.OBJECT_STORAGE_SECRET) {
         console.error("Object storage credentials not provided.");
         return;
     }
-    minioClient.listBuckets(function(err: any, buckets: any) {
-        if (err) { 
-         console.error("Error connecting to object storage", err);
-         return;
-        } 
-        
-        console.log('Succssful connection to object storage. Buckets accessible = ' + buckets.length);
-      });
+    try {
+        const buckets = await minioClient.listBuckets();
+        console.log('Successful connection to object storage. Buckets accessible = ' + buckets.length);
+    } catch (err) {
+        console.error("Error connecting to object storage", err);
+    }
 }
 
 verifyObjectStorageConnection();
-
-

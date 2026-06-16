@@ -82,17 +82,13 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
     const objectName = this.createObjectUrl(request.projectId, primaryKey, request.fileName);
     const bucketName = this.getBucketName();
 
-    return new Promise<void>((resolve, reject) => {
-      minioClient.putObject(bucketName, objectName, request.fileContents, function(error: any, objInfo: any) {
-        if (error) {
-          reject(new InternalServerErrorException(error, 
-            `Minio Client encountered problem while uploading file to storage to ${bucketName}, location: ${objectName}`
-          ));
-        } else {
-          resolve();
-        }
-      });
-    });
+    try {
+      await minioClient.putObject(bucketName, objectName, request.fileContents);
+    } catch (error) {
+      throw new InternalServerErrorException(error, 
+        `Minio Client encountered problem while uploading file to storage to ${bucketName}, location: ${objectName}`
+      );
+    }
   }
   async isCreateAuthorized(dto: AttachmentCreateRequest, user?: User): Promise<boolean> {
     if (dto.attachmentTypeCode == AttachmentTypeEnum.INTERACTION) {
@@ -210,17 +206,13 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
 
 
   async deleteObject(bucket: string, objectName: string): Promise<boolean>{
-    
-    return new Promise((resolve, _reject) => {
-
-      return minioClient.removeObject(bucket, objectName, function (err: any) {
-        if (err) {
-          console.error("Unable to remove object: ", err);
-          return resolve(false);
-        }
-      return resolve(true);
-      });
-    });
+    try {
+      await minioClient.removeObject(bucket, objectName);
+      return true;
+    } catch (err) {
+      console.error("Unable to remove object: ", err);
+      return false;
+    }
   }
 
   async stream2buffer(stream: Stream): Promise<Buffer> {

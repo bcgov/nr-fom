@@ -134,7 +134,7 @@ export abstract class DataService<
     if (!revisedOptions.relations) {
       revisedOptions.relations = {};
     }
-    const relations: any = revisedOptions.relations;
+    const relations = revisedOptions.relations as Record<string, boolean | object>;
     // this.getCommonRelations() is an 'array', but options.relations is 'object'
     this.getCommonRelations().forEach(cRelation => {
       if (! (cRelation in relations)) { 

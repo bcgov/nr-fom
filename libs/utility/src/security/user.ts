@@ -51,10 +51,13 @@ export class User {
       return user;
     }
 
-    static convertAwsCognitoDecodedTokenToUser(decodedToken: any): User {
+    static convertAwsCognitoDecodedTokenToUser(decodedToken: {
+      decodedIdToken?: Record<string, any>;
+      decodedAccessToken?: Record<string, any>;
+    }): User {
         const user = new User();
-        const idToken = decodedToken['decodedIdToken'];
-        const accessToken = decodedToken['decodedAccessToken'];
+        const idToken = decodedToken.decodedIdToken;
+        const accessToken = decodedToken.decodedAccessToken;
 
         if (!idToken || !accessToken) {
             throw new TypeError("Decoded token is missing idToken or accessToken properties");
@@ -62,7 +65,7 @@ export class User {
 
         user.userName = idToken['custom:idp_username'];
         user.displayName = idToken['custom:idp_display_name'];
-        let roles: string[];
+        let roles: string[] | undefined;
         roles = accessToken['cognito:groups'];
 
         if (roles) {
