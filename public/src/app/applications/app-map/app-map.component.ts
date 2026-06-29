@@ -396,6 +396,12 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     }
   }
 
+  public invalidateSize() {
+    if (this.map) {
+      this.map.invalidateSize();
+    }
+  }
+
   private updateOnLayersChange() {
     this.mapLayersService.mapLayersUpdate(this.map, this.mapLayers);
   }
