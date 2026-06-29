@@ -1,19 +1,31 @@
 ---
 volumes:
   postgres-data:
+  npm-cache:
+  libs-node-modules:
 
 services:
+  init-libs:
+    container_name: init-libs
+    image: node:24.1.0-bookworm-slim
+    volumes:
+      - .:/app:z
+      - npm-cache:/root/.npm:z
+      - libs-node-modules:/app/libs/node_modules
+    working_dir: /app/libs
+    entrypoint: ["npm", "ci", "--ignore-scripts"]
+
   admin:
     container_name: admin
     depends_on:
       api:
         condition: service_healthy
+      init-libs:
+        condition: service_completed_successfully
     entrypoint:
       - sh
       - -c
-      - cd libs && npm ci --ignore-scripts &&
-        cd ../admin && npm ci --ignore-scripts &&
-        npm run start:admin
+      - cd admin && npm ci --ignore-scripts && npm run start:admin
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4200/admin', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
@@ -25,6 +37,9 @@ services:
       - 4200:4200
     volumes:
       - .:/app:z
+      - npm-cache:/root/.npm:z
+      - libs-node-modules:/app/libs/node_modules
+      - /app/admin/node_modules
     working_dir: /app
 
   api:
@@ -32,12 +47,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      init-libs:
+        condition: service_completed_successfully
     entrypoint:
       - sh
       - -c
-      - cd libs && npm ci --ignore-scripts &&
-        cd ../api && npm ci --ignore-scripts &&
-        npm run start:api
+      - cd api && npm ci --ignore-scripts && npm run start:api
     environment:
       - DB_HOST=db
       - DB_NAME=fom
@@ -61,6 +76,9 @@ services:
       - 3333:3333
     volumes:
       - .:/app:z
+      - npm-cache:/root/.npm:z
+      - libs-node-modules:/app/libs/node_modules
+      - /app/api/node_modules
     working_dir: /app
 
   db:
@@ -97,12 +115,12 @@ services:
     depends_on:
       api:
         condition: service_healthy
+      init-libs:
+        condition: service_completed_successfully
     entrypoint:
       - sh
       - -c
-      - cd libs && npm ci --ignore-scripts &&
-        cd ../public && npm ci --ignore-scripts &&
-        npm run start:public
+      - cd public && npm ci --ignore-scripts && npm run start:public
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4300/public', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
@@ -114,4 +132,7 @@ services:
       - 4300:4300
     volumes:
       - .:/app:z
+      - npm-cache:/root/.npm:z
+      - libs-node-modules:/app/libs/node_modules
+      - /app/public/node_modules
     working_dir: /app
