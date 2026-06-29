@@ -18,6 +18,7 @@ FROM registry.access.redhat.com/ubi8/ubi:8.10-1161
 
 # Node packages and dependencies
 COPY --from=builder /usr/bin/node /usr/bin/
+COPY --from=builder /usr/lib64/libnode.so* /usr/lib64/
 COPY --from=builder /usr/lib64/libz.so.1 /usr/lib64/
 COPY --from=builder /usr/lib64/libbrotlidec.so.1 /usr/lib64/
 COPY --from=builder /usr/lib64/libbrotlienc.so.1 /usr/lib64/
