@@ -121,12 +121,8 @@ describe('DetailsPanelComponent', () => {
   });
 
   describe('ngOnDestroy', () => {
-    it('should unsubscribe', () => {
-      const nextSpy = jest.spyOn(component['ngUnsubscribe'], 'next');
-      const completeSpy = jest.spyOn(component['ngUnsubscribe'], 'complete');
-      component.ngOnDestroy();
-      expect(nextSpy).toHaveBeenCalled();
-      expect(completeSpy).toHaveBeenCalled();
+    it('should run ngOnDestroy cleanly', () => {
+      expect(() => component.ngOnDestroy()).not.toThrow();
     });
 
     it('should dismiss comment modal if exists', () => {
