@@ -3,7 +3,7 @@
   "description": "FOM Shared Library",
   "version": "0.0.1",
   "engines": {
-    "node": "^24.1.0"
+    "node": ">=26.0.0 || ^24.15.0 || ^22.22.3"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

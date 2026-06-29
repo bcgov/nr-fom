@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import advancedFormat from 'dayjs/plugin/advancedFormat'
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 import _ = require('lodash');
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 

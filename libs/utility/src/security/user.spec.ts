@@ -46,7 +46,7 @@ describe('User', () => {
     });
 
     describe('convertAwsCognitoDecodedTokenToUser', () => {
-        it('should fail if decoded token contains no expected id_token or access_token', async() => {
+        it('should fail if decoded token contains no expected decodedIdToken or decodedAccessToken', async() => {
             const invalid_noId_decodedToken = { decodedAccessToken: {} };
             const invalid_noAccess_decodedToken = { decodedIdToken: {} };
 

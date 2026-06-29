@@ -23,7 +23,7 @@
   },
   "private": true,
   "engines": {
-    "node": "^24.1.0"
+    "node": ">=26.0.0 || ^24.15.0 || ^22.22.3"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.3.4",
