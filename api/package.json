@@ -22,6 +22,9 @@
     "test:cov": "jest --coverage"
   },
   "private": true,
+  "engines": {
+    "node": "^24.1.0"
+  },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.3.4",
     "@nestjs/axios": "^4.0.1",

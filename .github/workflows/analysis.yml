@@ -28,7 +28,7 @@ jobs:
             npm ci --ignore-scripts
             npm run test-unit
           dir: admin
-          node_version: 20
+          node_version: 24
           knip_config: .github/knip.json
 
   tests-api:
@@ -42,7 +42,7 @@ jobs:
             npm ci --ignore-scripts
             npm run test-unit
           dir: api
-          node_version: 20
+          node_version: 24
           knip_config: .github/knip.json
           sonar_args: >
             -Dsonar.exclusions=**/*.spec.ts
@@ -63,7 +63,7 @@ jobs:
             npm ci --ignore-scripts
             npm run test-unit
           dir: public
-          node_version: 20
+          node_version: 24
           knip_config: .github/knip.json
 
   # https://github.com/marketplace/actions/aqua-security-trivy

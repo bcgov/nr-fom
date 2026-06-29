@@ -1,5 +1,5 @@
-# RedHat UBI 8 with nodejs 20
-FROM registry.access.redhat.com/ubi8/nodejs-20:1-71.1735831626 AS builder
+# RedHat UBI 8 with nodejs 24
+FROM registry.access.redhat.com/ubi8/nodejs-24:1-1782279620 AS builder
 
 # Install packages, build and keep only prod packages
 WORKDIR /app
@@ -18,6 +18,7 @@ FROM registry.access.redhat.com/ubi8/ubi:8.10-1161
 
 # Node packages and dependencies
 COPY --from=builder /usr/bin/node /usr/bin/
+COPY --from=builder /usr/lib64/libnode.so* /usr/lib64/
 COPY --from=builder /usr/lib64/libz.so.1 /usr/lib64/
 COPY --from=builder /usr/lib64/libbrotlidec.so.1 /usr/lib64/
 COPY --from=builder /usr/lib64/libbrotlienc.so.1 /usr/lib64/
