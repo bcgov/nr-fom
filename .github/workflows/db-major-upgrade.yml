@@ -536,4 +536,4 @@ jobs:
             ## Replace the database host in all psql -h ... commands in the args section
         sed -i "s|-h ${NEW_DB_HOST}|-h ${OLD_DB_HOST}|g" database-restore.yaml
         oc apply -f database-restore.yaml
-        echo "CronJob database-restore updated to use the new database: $OLD_DB_HOST"
+        echo "CronJob database-restore updated to use the old database: $OLD_DB_HOST"
