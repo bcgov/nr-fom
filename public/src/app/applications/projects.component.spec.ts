@@ -65,6 +65,10 @@ describe('ProjectsComponent', () => {
       })
     };
 
+    const mockDestroyRef = {
+      onDestroy: jest.fn(),
+    };
+
     // Instantiate directly to avoid child component DI issues
     component = new ProjectsComponent(
       mockModalService as any,
@@ -72,6 +76,7 @@ describe('ProjectsComponent', () => {
       mockProjectService as any,
       mockUrlService as any,
       mockFomFiltersSvc as any,
+      mockDestroyRef as any,
     );
   });
 
@@ -132,12 +137,8 @@ describe('ProjectsComponent', () => {
   });
 
   describe('ngOnDestroy', () => {
-    it('should unsubscribe', () => {
-      const nextSpy = jest.spyOn(component['ngUnsubscribe'], 'next');
-      const completeSpy = jest.spyOn(component['ngUnsubscribe'], 'complete');
-      component.ngOnDestroy();
-      expect(nextSpy).toHaveBeenCalled();
-      expect(completeSpy).toHaveBeenCalled();
+    it('should run ngOnDestroy cleanly', () => {
+      expect(() => component.ngOnDestroy()).not.toThrow();
     });
 
     it('should dismiss splash modal if it exists', () => {

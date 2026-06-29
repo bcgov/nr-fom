@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
     AttachmentResponse, AttachmentService, ProjectPlanCodeEnum, ProjectResponse, ProjectService,
@@ -19,7 +20,7 @@ import { saveAs } from "file-saver-es";
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { indexBy } from 'remeda';
 import { Subject, forkJoin } from 'rxjs';
-import { take, takeUntil } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
 import { CommentModalComponent } from '../../comment-modal/comment-modal.component';
 import { Filter } from '../utils/filter';
 
@@ -45,7 +46,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   @ViewChild('panelScrollContainer')
   public panelScrollContainer: ElementRef;
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private destroyRef = inject(DestroyRef);
   public addCommentModal: NgbModalRef = null;
   public isAppLoading: boolean;
   public project: ProjectResponse;
@@ -75,7 +76,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     // Note, can't seem to get stateService.ts to get codeTable working here. Instead, subscribe to it.
     // Subscribe to this first, seems to be slower and can cause minor page render issue due to no code.
     this.projectService.workflowStateCodeControllerFindAll()
-    .pipe(take(1), takeUntil(this.ngUnsubscribe)).subscribe((data) => {
+    .pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
       this.workflowStatus = indexBy(data, (x) => x.code);
     });
     // First time component init. The `urlService.onNavEnd$` already ends, so 
@@ -84,7 +85,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     this.getProjectDetails();
 
     // Subscribe to onNavEnd so the component knows subsequent clicks on other details.
-    this.urlService.onNavEnd$.pipe(takeUntil(this.ngUnsubscribe))
+    this.urlService.onNavEnd$.pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
           this.getProjectDetails();
         });
@@ -111,7 +112,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
       spatialDetail: this.spatialFeatureService.spatialFeatureControllerGetForProject(projectId),
       attachments: this.attachmentService.attachmentControllerFind(projectId)
     })
-    .pipe(takeUntil(this.ngUnsubscribe))
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (results) => {
         this.project = results.project;
@@ -187,7 +188,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   private subscribeToFeatureSelectChange(): void {
     // Scroll to top map detail section when feature is selected from the list.
     this.fss.$currentSelected
-      .pipe(takeUntil(this.ngUnsubscribe))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(featureIndex => {
         if (featureIndex) {
           setTimeout(() => {
@@ -200,6 +201,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   // Used for (click) event from <a>/<button> at Angular page to download a file.
   public async getFileContents(fileId: number, filename: string): Promise<void> {
     this.attachmentService.attachmentControllerGetFileContents(fileId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((value: Blob) => {
             const data: Blob = new Blob([value], {
                 type: value.type
@@ -217,7 +219,5 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     if (this.addCommentModal) {
       (this.addCommentModal.componentInstance as CommentModalComponent).dismiss('destroying');
     }
-    this.ngUnsubscribe.next(null);
-    this.ngUnsubscribe.complete();
   }
 }

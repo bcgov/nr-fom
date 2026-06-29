@@ -2,8 +2,9 @@ import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DatePipe, Location, NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, ParamMap, Params, Router, RouterLink } from '@angular/router';
 import { ProjectPlanCodeEnum, ProjectResponse, ProjectService, WorkflowStateEnum } from "@api-client";
@@ -11,8 +12,6 @@ import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/n
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
 import { isNullish } from 'remeda';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 @Component({
     standalone: true,
@@ -34,7 +33,7 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class SearchComponent implements OnInit, OnDestroy {
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
-  private ngUnsubscribe = new Subject<void>();
+  private destroyRef = inject(DestroyRef);
   private paramMap: ParamMap = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   public user: User;
@@ -65,7 +64,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // get search terms from route
-    this.route.queryParamMap.pipe(takeUntil(this.ngUnsubscribe)).subscribe(paramMap => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(paramMap => {
       this.paramMap = paramMap;
       this.setInitialQueryParameters();
 
@@ -85,7 +84,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     const fspIdArg = (isNaN(this.fFspId) || isNullish(this.fFspId))? null : this.fFspId.toString();
     const projectIdArg = (isNaN(this.fNumber) || isNullish(this.fNumber))? null : this.fNumber.toString();
     this.searchProjectService.projectControllerFind(projectIdArg, fspIdArg , districtArg, workFlowStateCodeArg, this.fHolder)
-      .pipe(takeUntil(this.ngUnsubscribe))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(
         projects => {
           this.projects = projects;
@@ -188,8 +187,5 @@ export class SearchComponent implements OnInit, OnDestroy {
     if (this.snackBarRef) {
       this.snackBarRef.dismiss();
     }
-
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
   }
 }

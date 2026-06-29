@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -65,7 +66,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   @ViewChild('detailsPanel', { static: false }) detailsPanel: DetailsPanelComponent;
   @ViewChild('publicNoticesPanel', { static: false }) publicNoticesPanel: PublicNoticesPanelComponent;
 
-  private ngUnsubscribe: Subject<void> = new Subject<void>();
   private splashModal: NgbModalRef = null;
   private fragmentTimeout: any;
 
@@ -88,7 +88,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     private router: Router,
     private projectService: ProjectService,
     public urlService: UrlService,
-    private fomFiltersSvc: FOMFiltersService
+    private fomFiltersSvc: FOMFiltersService,
+    private destroyRef: DestroyRef
   ) { }
 
   /**
@@ -96,7 +97,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    */
   ngOnInit() {
     // watch for URL param changes
-    this.urlService.onNavEnd$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(event => {
+    this.urlService.onNavEnd$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
       const fragment = this.router.parseUrl(event.url).fragment || this.router.parseUrl(this.router.url).fragment;
       this.handleFragment(fragment);
     });
@@ -107,13 +108,16 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       this.handleFragment(initialFragment);
     }
 
-    this.fomFiltersSvc.filters$.pipe(takeUntil(this.ngUnsubscribe)).subscribe((filters) => {
+    this.fomFiltersSvc.filters$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filters) => {
       this.fetchFOMs(filters);
       this.commentStatusFilters = filters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>;
     });
   }
 
   private handleFragment(fragment: string) {
+    if (this.fragmentTimeout) {
+      clearTimeout(this.fragmentTimeout);
+    }
     this.fragmentTimeout = setTimeout(() => {
       this.urlTree = this.router.parseUrl(this.router.url);
       switch (fragment) {
@@ -193,7 +197,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           commentClosedParam.toString(), 
           forestClientNameParam, 
           openedOnOrAfterParam)
-        .pipe(takeUntil(this.ngUnsubscribe))
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((results) => {
           this.projectsSummary = results;
           this.totalNumber = results.length;
@@ -283,8 +287,5 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     if (this.splashModal) {
       this.splashModal.dismiss();
     }
-
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
   }
 }
