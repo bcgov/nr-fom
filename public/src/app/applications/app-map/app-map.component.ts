@@ -1,5 +1,5 @@
 import {
-    AfterViewInit, ApplicationRef, Component, ComponentFactoryResolver, ElementRef, EventEmitter, Injector, Input, OnChanges,
+    AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, EventEmitter, Injector, Input, OnChanges,
     OnDestroy, OnInit, Output, SimpleChanges
 } from '@angular/core';
 import { ProjectPlanCodeEnum, ProjectPublicSummaryResponse } from '@api-client';
@@ -61,7 +61,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     private elementRef: ElementRef,
     public urlService: UrlService,
     private injector: Injector,
-    private resolver: ComponentFactoryResolver,
     private mapLayersService: MapLayersService
   ) { }
 
@@ -373,8 +372,10 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     };
 
     // compile marker popup component
-    const compFactory = this.resolver.resolveComponentFactory(MarkerPopupComponent);
-    const compRef = compFactory.create(this.injector);
+    const compRef = createComponent(MarkerPopupComponent, {
+      environmentInjector: this.appRef.injector,
+      elementInjector: this.injector
+    });
     compRef.instance.projectSummary = projectSummary;
     this.appRef.attachView(compRef.hostView);
     compRef.onDestroy(() => this.appRef.detachView(compRef.hostView));

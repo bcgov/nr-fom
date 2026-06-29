@@ -47,8 +47,8 @@ describe('User', () => {
 
     describe('convertAwsCognitoDecodedTokenToUser', () => {
         it('should fail if decoded token contains no expected id_token or access_token', async() => {
-            const invalid_noId_decodedToken = {access_token: {}};
-            const invalid_noAccess_decodedToken = {id_token: {}};
+            const invalid_noId_decodedToken = { decodedAccessToken: {} };
+            const invalid_noAccess_decodedToken = { decodedIdToken: {} };
 
             expect(() => User.convertAwsCognitoDecodedTokenToUser(invalid_noId_decodedToken))
                 .toThrow(TypeError)
@@ -57,22 +57,28 @@ describe('User', () => {
         });
 
         it('should pass for valid FOM_REVIEWER role decoded token', async() => {
-            const decodedToken = validFOMReviewerDecodedCognitoToken;
+            const decodedToken = {
+                decodedIdToken: validFOMReviewerDecodedCognitoToken.id_token,
+                decodedAccessToken: validFOMReviewerDecodedCognitoToken.access_token
+            };
             const user = User.convertAwsCognitoDecodedTokenToUser(decodedToken)
             expect(user).toBeDefined();
-            expect(user.userName).toBe(decodedToken.id_token["custom:idp_username"]);
-            expect(user.displayName).toBe(decodedToken.id_token["custom:idp_display_name"]);
+            expect(user.userName).toBe(decodedToken.decodedIdToken["custom:idp_username"]);
+            expect(user.displayName).toBe(decodedToken.decodedIdToken["custom:idp_display_name"]);
             expect(user.isMinistry).toBe(true);
             expect(user.isForestClient).toBe(false);
             expect(user.clientIds).toStrictEqual([]);
         });
 
         it('should pass for valid FOM_SUBMITTER role decoded token', async() => {
-            const decodedToken = validFOMSubmitterDecodedCognitoToken;
+            const decodedToken = {
+                decodedIdToken: validFOMSubmitterDecodedCognitoToken.id_token,
+                decodedAccessToken: validFOMSubmitterDecodedCognitoToken.access_token
+            };
             const user = User.convertAwsCognitoDecodedTokenToUser(decodedToken)
             expect(user).toBeDefined();
-            expect(user.userName).toBe(decodedToken.id_token["custom:idp_username"]);
-            expect(user.displayName).toBe(decodedToken.id_token["custom:idp_display_name"]);
+            expect(user.userName).toBe(decodedToken.decodedIdToken["custom:idp_username"]);
+            expect(user.displayName).toBe(decodedToken.decodedIdToken["custom:idp_display_name"]);
             expect(user.isMinistry).toBe(false);
             expect(user.isForestClient).toBe(true);
             expect(user.clientIds).toStrictEqual(['0001011','0001012']);
