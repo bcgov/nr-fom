@@ -91,6 +91,7 @@ describe('CognitoService', () => {
       await Promise.all([p1, p2]);
 
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
+      expect(Amplify.configure).toHaveBeenCalledTimes(1);
     });
 
     it('should retry loadRemoteConfig if the first call failed', async () => {
@@ -105,12 +106,14 @@ describe('CognitoService', () => {
 
       await expect(service.init()).rejects.toThrow('API down');
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
+      expect(Amplify.configure).not.toHaveBeenCalled();
 
       // Second try should succeed and call HTTP get again
       const result = await service.init();
       expect(result).toBeNull();
       expect(service.initialized).toBe(true);
       expect(mockHttpClient.get).toHaveBeenCalledTimes(2);
+      expect(Amplify.configure).toHaveBeenCalledTimes(1);
     });
   });
 });
