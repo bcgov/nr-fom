@@ -20,6 +20,7 @@ export interface CognitoAuthToken {
 })
 export class CognitoService {
   public awsCognitoConfig: AwsCognitoConfig;
+  private loadRemoteConfigPromise: Promise<void> | null = null;
   private cognitoAuthToken: CognitoAuthToken;
   private loggedOut: string;
   private fakeUser: User;
@@ -135,14 +136,27 @@ export class CognitoService {
   }
 
   private async loadRemoteConfig() {
-    let url: string = this.configService.getApiBasePath() + "/api/awsCognitoConfig";
-    this.awsCognitoConfig = await lastValueFrom(
-      this.http.get(url, { observe: "body", responseType: "json" })
-    ) as AwsCognitoConfig;
+    if (this.awsCognitoConfig) {
+      return;
+    }
+    if (!this.loadRemoteConfigPromise) {
+      this.loadRemoteConfigPromise = (async () => {
+        try {
+          const url: string = this.configService.getApiBasePath() + "/api/awsCognitoConfig";
+          this.awsCognitoConfig = await lastValueFrom(
+            this.http.get(url, { observe: "body", responseType: "json" })
+          ) as AwsCognitoConfig;
 
-    const amplifyConfig = this.toAmplifyConfig(this.awsCognitoConfig);
-    console.log("Using amplify config = " + JSON.stringify(amplifyConfig));
-    Amplify.configure(amplifyConfig);
+          const amplifyConfig = this.toAmplifyConfig(this.awsCognitoConfig);
+          console.log("Using amplify config = " + JSON.stringify(amplifyConfig));
+          Amplify.configure(amplifyConfig);
+        } catch (error) {
+          this.loadRemoteConfigPromise = null;
+          throw error;
+        }
+      })();
+    }
+    return this.loadRemoteConfigPromise;
   }
 
   private toAmplifyConfig(awsCognitoConfig: AwsCognitoConfig): ResourcesConfig {

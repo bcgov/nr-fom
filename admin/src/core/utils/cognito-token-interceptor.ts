@@ -5,7 +5,7 @@ import {
     HttpRequest,
 } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable, Subject } from "rxjs";
+import { Observable, Subject, throwError } from "rxjs";
 import { catchError, switchMap, tap } from "rxjs/operators";
 
 /**
@@ -46,22 +46,28 @@ export class CognitoTokenInterceptor implements HttpInterceptor {
         if (error.status === 403) {
           console.log("Caught 403, refreshing token");
           return this.refreshToken().pipe(
+            catchError((refreshErr) => {
+              console.error(
+                "Caught error during refresh, rethrowing original 403. Refresh error is",
+                refreshErr
+              );
+              return throwError(() => error);
+            }),
             switchMap(() => {
               request = this.addAuthHeader(request);
-              return next.handle(request);
-            }),
-            catchError((err) => {
-              // If the user really isn't authorized, every attempt will fail even after token refresh.
-              console.error(
-                "Caught error after refresh, rethowing original. New error is",
-                err
+              return next.handle(request).pipe(
+                catchError((retryErr) => {
+                  console.error(
+                    "Caught error after retrying request, propagating error:",
+                    retryErr
+                  );
+                  return throwError(() => retryErr);
+                })
               );
-              // Rethrow original forbidden error as throwning new err isn't working. A bit of a hack...
-              throw error;
             })
           );
         }
-        throw error;
+        return throwError(() => error);
       })
     );
   }
