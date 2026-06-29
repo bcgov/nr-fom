@@ -2,6 +2,7 @@
 volumes:
   postgres-data:
   npm-cache:
+  libs-node-modules:
 
 services:
   init-libs:
@@ -10,7 +11,7 @@ services:
     volumes:
       - .:/app:z
       - npm-cache:/root/.npm:z
-      - /app/libs/node_modules
+      - libs-node-modules:/app/libs/node_modules
     working_dir: /app/libs
     entrypoint: ["npm", "ci", "--ignore-scripts"]
 
@@ -37,7 +38,7 @@ services:
     volumes:
       - .:/app:z
       - npm-cache:/root/.npm:z
-      - /app/libs/node_modules
+      - libs-node-modules:/app/libs/node_modules
       - /app/admin/node_modules
     working_dir: /app
 
@@ -76,7 +77,7 @@ services:
     volumes:
       - .:/app:z
       - npm-cache:/root/.npm:z
-      - /app/libs/node_modules
+      - libs-node-modules:/app/libs/node_modules
       - /app/api/node_modules
     working_dir: /app
 
@@ -132,6 +133,6 @@ services:
     volumes:
       - .:/app:z
       - npm-cache:/root/.npm:z
-      - /app/libs/node_modules
+      - libs-node-modules:/app/libs/node_modules
       - /app/public/node_modules
     working_dir: /app
