@@ -13,7 +13,7 @@ describe('CognitoTokenInterceptor', () => {
   beforeEach(() => {
     mockCognitoService = {
       initialized: false,
-      getToken: jest.fn().mockReturnValue({ jwtToken: 'mock-jwt' }),
+      getToken: jest.fn().mockReturnValue({ jwtToken: { idToken: 'mock-id', accessToken: 'mock-access' } }),
       awsCognitoConfig: { enabled: true },
       updateToken: jest.fn()
     };
@@ -55,7 +55,7 @@ describe('CognitoTokenInterceptor', () => {
     httpClient.get('/api/test').subscribe();
 
     const req = httpMock.expectOne('/api/test');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer "mock-jwt"');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer ' + JSON.stringify({ idToken: 'mock-id', accessToken: 'mock-access' }));
     req.flush({});
   });
 
@@ -74,7 +74,7 @@ describe('CognitoTokenInterceptor', () => {
 
     // Second request should be retried
     const req2 = httpMock.expectOne('/api/test');
-    expect(req2.request.headers.get('Authorization')).toBe('Bearer "mock-jwt"');
+    expect(req2.request.headers.get('Authorization')).toBe('Bearer ' + JSON.stringify({ idToken: 'mock-id', accessToken: 'mock-access' }));
     req2.flush({ data: 'success' });
   });
 
@@ -108,5 +108,26 @@ describe('CognitoTokenInterceptor', () => {
 
     const req = httpMock.expectOne('/api/test');
     req.flush('error', { status: 500, statusText: 'Internal Server Error' });
+  });
+
+  it('should propagate new non-403 errors returned from the retried request', (done) => {
+    mockCognitoService.initialized = true;
+    mockCognitoService.updateToken.mockReturnValue(of(undefined));
+
+    httpClient.get('/api/test').subscribe({
+      next: () => fail('should have failed'),
+      error: (err) => {
+        expect(err.status).toBe(500);
+        done();
+      }
+    });
+
+    // First request fails with 403
+    const req1 = httpMock.expectOne('/api/test');
+    req1.flush('forbidden', { status: 403, statusText: 'Forbidden' });
+
+    // Retried request fails with 500
+    const req2 = httpMock.expectOne('/api/test');
+    req2.flush('error', { status: 500, statusText: 'Internal Server Error' });
   });
 });

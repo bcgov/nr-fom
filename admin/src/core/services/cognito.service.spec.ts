@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { CognitoService } from './cognito.service';
 import { ConfigService } from '@utility/services/config.service';
+import { Amplify } from 'aws-amplify';
 
 jest.mock('aws-amplify', () => ({
   Amplify: {
@@ -72,6 +73,7 @@ describe('CognitoService', () => {
       expect(result).toBeNull();
       expect(service.initialized).toBe(true);
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
+      expect(Amplify.configure).toHaveBeenCalledTimes(1);
     });
 
     it('should call loadRemoteConfig exactly once even if concurrent calls are made', async () => {
