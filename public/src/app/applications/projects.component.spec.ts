@@ -247,5 +247,77 @@ describe('ProjectsComponent', () => {
       onNavEndSubject.next({ url: '/apps#find' });
       expect(handleFragmentSpy).toHaveBeenCalledWith('find');
     });
+
+    it('should route initial splash fragment correctly on ngOnInit without handleFragment mock', () => {
+      mockRouter.url = '/apps#splash';
+      const displaySpy = jest.spyOn(component, 'displaySplashModal').mockImplementation();
+      component.ngOnInit();
+      jest.runAllTimers();
+      expect(displaySpy).toHaveBeenCalled();
+    });
+
+    it('should route initial find fragment correctly on ngOnInit without handleFragment mock', () => {
+      mockRouter.url = '/apps#find';
+      const closeSpy = jest.spyOn(component, 'closeSplashModal').mockImplementation();
+      component.ngOnInit();
+      jest.runAllTimers();
+      expect(closeSpy).toHaveBeenCalled();
+      expect(component.activePanel).toBe(Panel.find);
+    });
+
+    it('should route initial details fragment correctly on ngOnInit without handleFragment mock', () => {
+      mockRouter.url = '/apps#details';
+      const closeSpy = jest.spyOn(component, 'closeSplashModal').mockImplementation();
+      component.ngOnInit();
+      jest.runAllTimers();
+      expect(closeSpy).toHaveBeenCalled();
+      expect(component.activePanel).toBe(Panel.details);
+    });
+
+    it('should route initial unknown fragment correctly on ngOnInit without handleFragment mock', () => {
+      mockRouter.url = '/apps#unknown';
+      const closeSpy = jest.spyOn(component, 'closeSplashModal').mockImplementation();
+      component.ngOnInit();
+      jest.runAllTimers();
+      expect(closeSpy).toHaveBeenCalled();
+      expect(component.activePanel).toBeUndefined();
+    });
+
+    it('should handle subsequent fragment changes via onNavEnd$ without handleFragment mock', () => {
+      const onNavEndSubject = new Subject<any>();
+      mockUrlService.onNavEnd$ = onNavEndSubject.asObservable();
+      const displaySpy = jest.spyOn(component, 'displaySplashModal').mockImplementation();
+      
+      component.ngOnInit();
+      
+      mockRouter.url = '/apps#splash';
+      onNavEndSubject.next({ url: '/apps#splash' });
+      jest.runAllTimers();
+      expect(displaySpy).toHaveBeenCalled();
+    });
+
+    it('should open modal only once if displaySplashModal is called multiple times (idempotency)', () => {
+      const openSpy = jest.spyOn(mockModalService, 'open');
+      component.displaySplashModal();
+      component.displaySplashModal();
+      expect(openSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should clear fragmentTimeout on destroy', () => {
+      jest.spyOn(global, 'clearTimeout');
+      (component as any).fragmentTimeout = 12345;
+      component.ngOnDestroy();
+      expect(clearTimeout).toHaveBeenCalledWith(12345);
+    });
+
+    it('should not execute timeout callback or throw if component is destroyed with an in-flight timeout', () => {
+      const parseSpy = jest.spyOn(mockRouter, 'parseUrl');
+      
+      (component as any).handleFragment('splash');
+      component.ngOnDestroy();
+      
+      jest.runAllTimers();
+      expect(parseSpy).not.toHaveBeenCalled();
+    });
   });
 });
