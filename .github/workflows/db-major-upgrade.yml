@@ -56,7 +56,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: OpenShift Init
-      uses: bcgov/action-deployer-openshift@v4.1.1
+      uses: bcgov/action-deployer-openshift@v4.2.0
       with:
         oc_namespace: ${{ vars.OC_NAMESPACE }}
         oc_server: ${{ vars.OC_SERVER }}
@@ -181,7 +181,7 @@ jobs:
 
     - name: OpenShift Deploy (new version db upgrade container)
       # New db pod with new db version and extension installed.
-      uses: bcgov/action-deployer-openshift@v4.1.1
+      uses: bcgov/action-deployer-openshift@v4.2.0
       with:
         file: db/openshift.deploy.dbupgrade.${{ env.DB_UPGRADE_VERSION }}.yml
         oc_namespace: ${{ vars.OC_NAMESPACE }}
@@ -370,7 +370,7 @@ jobs:
     if: ${{ inputs.revert-only == true || failure() }} # Run if revert-only is true or db-major-upgrade fails
     steps:
     - name: OpenShift Init
-      uses: bcgov/action-deployer-openshift@v4.1.1
+      uses: bcgov/action-deployer-openshift@v4.2.0
       with:
         oc_namespace: ${{ vars.OC_NAMESPACE }}
         oc_server: ${{ vars.OC_SERVER }}
@@ -536,4 +536,4 @@ jobs:
             ## Replace the database host in all psql -h ... commands in the args section
         sed -i "s|-h ${NEW_DB_HOST}|-h ${OLD_DB_HOST}|g" database-restore.yaml
         oc apply -f database-restore.yaml
-        echo "CronJob database-restore updated to use the old database: $OLD_DB_HOST"
+        echo "CronJob database-restore updated to use the new database: $OLD_DB_HOST"
