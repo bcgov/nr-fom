@@ -49,7 +49,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   private mapLayers = new MapLayers();
   private resizeObserver: ResizeObserver | null = null;
-  private refreshTimeouts: number[] = [];
 
   readonly defaultBounds = L.latLngBounds([48, -139], [60, -114]); // all of BC
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
@@ -223,30 +222,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     } else {
       this.fitBounds();
     }
-    this.queueMapRefresh();
-  }
-
-  private queueMapRefresh() {
-    const refresh = () => this.refreshMap();
-    refresh();
-
-    const requestFrame = window.requestAnimationFrame || ((cb: FrameRequestCallback) => window.setTimeout(cb, 0));
-    requestFrame(() => {
-      refresh();
-      requestFrame(refresh);
-    });
-
-    this.refreshTimeouts.push(window.setTimeout(refresh, 250));
-  }
-
-  private refreshMap() {
-    if (!this.map) return;
-    this.map.invalidateSize({ pan: false, debounceMoveend: true });
-    this.map.eachLayer(layer => {
-      if (layer instanceof L.TileLayer) {
-        layer.redraw();
-      }
-    });
   }
 
    // called when projects list changes
@@ -293,7 +268,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
   public ngOnDestroy() {
     this.resizeObserver?.disconnect();
-    this.refreshTimeouts.forEach(timeout => window.clearTimeout(timeout));
     if (this.map) {
       this.map.remove();
     }
