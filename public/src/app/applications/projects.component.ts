@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
@@ -89,6 +89,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     public urlService: UrlService,
     private fomFiltersSvc: FOMFiltersService,
+    private changeDetectorRef: ChangeDetectorRef,
     private destroyRef: DestroyRef
   ) { }
 
@@ -139,11 +140,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Shows the splash modal.
-   *
-   * @memberof ProjectsComponent
-   */
   public displaySplashModal(): void {
     if (this.splashModal) return; // already open
     this.splashModal = this.modalService.open(SplashModalComponent, {
@@ -153,9 +149,19 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
     this.splashModal.result.then(() => {
       this.splashModal = null;
+      this.invalidateMapSize();
     }, () => {
       this.splashModal = null;
+      this.invalidateMapSize();
     });
+  }
+
+  private invalidateMapSize() {
+    setTimeout(() => {
+      if (this.appmap) {
+        this.appmap.invalidateSize();
+      }
+    }, 250);
   }
 
   /**
@@ -202,12 +208,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           this.projectsSummary = results;
           this.totalNumber = results.length;
           this.loading = false;
+          this.changeDetectorRef.detectChanges();
           },
           () => {
             this.loading = false;
+            this.changeDetectorRef.detectChanges();
           },
           () => {
             this.loading = false;
+            this.changeDetectorRef.detectChanges();
           }
         );
   }

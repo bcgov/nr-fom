@@ -8,7 +8,8 @@
     "skipLibCheck": true,
     "module": "commonjs",
     "target": "es2015",
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "types": ["jest", "node"]
   },
   "include": ["**/*.ts"],
   "exclude": ["**/*.spec.ts"],

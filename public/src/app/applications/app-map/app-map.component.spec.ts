@@ -81,6 +81,45 @@ describe('AppMapComponent', () => {
     });
   });
 
+  describe('fixMap resize handling', () => {
+    it('invalidates map size on init and on every container resize, and disconnects on destroy', () => {
+      const invalidateSize = jest.fn();
+      const container = document.createElement('div');
+      (component as any).map = {
+        invalidateSize,
+        getContainer: () => container,
+        setView: jest.fn(),
+        fitBounds: jest.fn(),
+        eachLayer: jest.fn(),
+        remove: jest.fn(),
+      };
+      // pretend the host element is laid out / visible
+      Object.defineProperty(component['elementRef'].nativeElement, 'offsetParent', {
+        value: document.body,
+        configurable: true,
+      });
+
+      let resizeCb: () => void = () => undefined;
+      const observe = jest.fn();
+      const disconnect = jest.fn();
+      (global as any).ResizeObserver = jest.fn().mockImplementation((cb: () => void) => {
+        resizeCb = cb;
+        return { observe, disconnect };
+      });
+
+      (component as any).fixMap();
+
+      expect(observe).toHaveBeenCalledWith(container);
+      expect(invalidateSize).toHaveBeenCalledTimes(0); // no initial queueMapRefresh
+
+      resizeCb(); // simulate the container settling to its real size
+      expect(invalidateSize).toHaveBeenCalledTimes(1);
+
+      component.ngOnDestroy();
+      expect(disconnect).toHaveBeenCalled();
+    });
+  });
+
   describe('input properties', () => {
     it('should accept loading input', () => {
       component.loading = true;
