@@ -48,6 +48,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   private doNotify = true; // whether to emit notification
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   private mapLayers = new MapLayers();
+  private resizeObserver: ResizeObserver | null = null;
 
   readonly defaultBounds = L.latLngBounds([48, -139], [60, -114]); // all of BC
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
@@ -192,23 +193,29 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   // ref: https://github.com/Leaflet/Leaflet/issues/4835
   // ref: https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
   private fixMap() {
-    if (this.elementRef.nativeElement.offsetParent) {
-      const lat = this.urlService.getQueryParam('lat');
-      const lng = this.urlService.getQueryParam('lng');
-      const zoom = this.urlService.getQueryParam('zoom');
-
-      if (lat && lng && zoom) {
-        this.map.setView(L.latLng(+lat, +lng), +zoom); // NOTE: unary operators
-      } else {
-        // Invalidate size first so Leaflet knows the real container dimensions,
-        // then fit bounds — fixes blank map on Angular 21 initial render.
-        Promise.resolve().then(() => {
-          this.map.invalidateSize();
-          this.fitBounds();
-        });
-      }
-    } else {
+    if (!this.elementRef.nativeElement.offsetParent) {
       setTimeout(this.fixMap.bind(this), 50);
+      return;
+    }
+
+    // Leaflet only auto-recalculates its size on window resize, not when its own
+    // container resizes. After Angular's initial render the container can settle
+    // to its real size a frame later (notably while the splash modal overlay is
+    // up), leaving a blank/blue map until some later event forces a redraw.
+    // A ResizeObserver re-runs invalidateSize() on every container size change,
+    // which also covers side-panel toggles.
+    // ponytail: ResizeObserver is the native fix; no polling or per-event hooks.
+    this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
+    this.resizeObserver.observe(this.map.getContainer());
+    this.map.invalidateSize();
+
+    const lat = this.urlService.getQueryParam('lat');
+    const lng = this.urlService.getQueryParam('lng');
+    const zoom = this.urlService.getQueryParam('zoom');
+    if (lat && lng && zoom) {
+      this.map.setView(L.latLng(+lat, +lng), +zoom); // NOTE: unary operators
+    } else {
+      this.fitBounds();
     }
   }
 
@@ -249,6 +256,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   public ngOnDestroy() {
+    this.resizeObserver?.disconnect();
     if (this.map) {
       this.map.remove();
     }
@@ -396,12 +404,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     if (this.currentMarker) {
       this.currentMarker.setIcon(markerIcon);
       this.currentMarker = null;
-    }
-  }
-
-  public invalidateSize() {
-    if (this.map) {
-      this.map.invalidateSize();
     }
   }
 
