@@ -90,6 +90,7 @@ describe('AppMapComponent', () => {
         getContainer: () => container,
         setView: jest.fn(),
         fitBounds: jest.fn(),
+        eachLayer: jest.fn(),
         remove: jest.fn(),
       };
       // pretend the host element is laid out / visible
