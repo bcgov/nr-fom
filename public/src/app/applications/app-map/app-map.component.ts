@@ -43,11 +43,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   private map: L.Map = null;
   private markerList: L.Marker[] = []; // list of markers
   private currentMarker: L.Marker = null; // for removing previous marker
-  private markerClusterGroup = L.markerClusterGroup({
-    showCoverageOnHover: false,
-    maxClusterRadius: 40, // NB: change to 0 to disable clustering
-    iconCreateFunction: this.clusterCreate
-  });
+  private markerClusterGroup: any;
   private isMapReady = false;
   private doNotify = true; // whether to emit notification
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
@@ -94,6 +90,13 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
       }
     });
 
+
+    const leaflet = (window as any).L || L;
+    this.markerClusterGroup = leaflet.markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 40, // NB: change to 0 to disable clustering
+      iconCreateFunction: this.clusterCreate
+    });
 
     this.map = L.map('map', {
       zoomControl: false, // will be added manually below
