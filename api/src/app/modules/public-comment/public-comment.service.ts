@@ -102,22 +102,36 @@ export class PublicCommentService extends DataService<
 
   private async encryptSensitiveColumns(entity: PublicComment) {
     this.logger.debug('Encrypting sensitive columns for PublicComment...');
-    // Do update: pgp encrypt sensitive column values
-    await this.repository.update(entity.id, {
-      ...(entity.name && {
-        name: () => `pgp_sym_encrypt('${entity.name}', '${this.key}')`,
-      }),
-      ...(entity.location && {
-        location: () => `pgp_sym_encrypt('${entity.location}', '${this.key}')`,
-      }),
-      ...(entity.email && {
-        email: () => `pgp_sym_encrypt('${entity.email}', '${this.key}')`,
-      }),
-      ...(entity.phoneNumber && {
-        phoneNumber: () =>
-          `pgp_sym_encrypt('${entity.phoneNumber}', '${this.key}')`,
-      }),
-    });
+    // Do update: pgp encrypt sensitive column values.
+    // NOTE: values MUST be passed as bound parameters (:name, :key, ...), never
+    // string-interpolated into the SQL, otherwise unescaped public input would
+    // allow SQL injection through this anonymous endpoint.
+    await this.repository
+      .createQueryBuilder()
+      .update(PublicComment)
+      .set({
+        ...(entity.name && {
+          name: () => 'pgp_sym_encrypt(:name, :key)',
+        }),
+        ...(entity.location && {
+          location: () => 'pgp_sym_encrypt(:location, :key)',
+        }),
+        ...(entity.email && {
+          email: () => 'pgp_sym_encrypt(:email, :key)',
+        }),
+        ...(entity.phoneNumber && {
+          phoneNumber: () => 'pgp_sym_encrypt(:phoneNumber, :key)',
+        }),
+      })
+      .setParameters({
+        name: entity.name,
+        location: entity.location,
+        email: entity.email,
+        phoneNumber: entity.phoneNumber,
+        key: this.key,
+      })
+      .where('public_comment_id = :id', { id: entity.id })
+      .execute();
   }
 
   private async obtainDecryptedColumns(
@@ -128,13 +142,11 @@ export class PublicCommentService extends DataService<
     return (await this.repository
       .createQueryBuilder('pc')
       .select('public_comment_id', 'id')
-      .addSelect(`pgp_sym_decrypt(name::bytea, '${this.key}')`, 'name')
-      .addSelect(`pgp_sym_decrypt(location::bytea, '${this.key}')`, 'location')
-      .addSelect(`pgp_sym_decrypt(email::bytea, '${this.key}')`, 'email')
-      .addSelect(
-        `pgp_sym_decrypt(phone_number::bytea, '${this.key}')`,
-        'phoneNumber'
-      )
+      .addSelect('pgp_sym_decrypt(name::bytea, :key)', 'name')
+      .addSelect('pgp_sym_decrypt(location::bytea, :key)', 'location')
+      .addSelect('pgp_sym_decrypt(email::bytea, :key)', 'email')
+      .addSelect('pgp_sym_decrypt(phone_number::bytea, :key)', 'phoneNumber')
+      .setParameter('key', this.key)
       .where('pc.id IN (:...pId)', { pId: id })
       .getRawMany()) as Partial<PublicComment>[];
   }
