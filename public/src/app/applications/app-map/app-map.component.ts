@@ -60,7 +60,18 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     public urlService: UrlService,
     private injector: Injector,
     private mapLayersService: MapLayersService
-  ) { }
+  ) {
+    // Must exist before ngOnChanges (which fires before ngAfterViewInit and calls
+    // drawMap); otherwise drawMap throws and aborts change detection, leaving the
+    // projects view stuck before the map renders. The markercluster plugin augments
+    // both the global (window.L, loaded via angular.json scripts) and the module L.
+    const markerClusterGroup = (window as any).L?.markerClusterGroup || L.markerClusterGroup;
+    this.markerClusterGroup = markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 40, // NB: change to 0 to disable clustering
+      iconCreateFunction: this.clusterCreate
+    });
+  }
 
   ngOnInit(): void {
     this.mapLayersService.$mapLayersChange
@@ -92,13 +103,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
       }
     });
 
-
-    const leaflet = (window as any).L || L;
-    this.markerClusterGroup = leaflet.markerClusterGroup({
-      showCoverageOnHover: false,
-      maxClusterRadius: 40, // NB: change to 0 to disable clustering
-      iconCreateFunction: this.clusterCreate
-    });
 
     this.map = L.map('map', {
       zoomControl: false, // will be added manually below
@@ -279,6 +283,12 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
     // draw all new apps
     this.drawMap([], this.projectsSummary);
+  }
+
+  public invalidateSize() {
+    if (this.map) {
+      this.map.invalidateSize();
+    }
   }
 
   public ngOnDestroy() {

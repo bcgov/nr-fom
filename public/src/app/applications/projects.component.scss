@@ -183,6 +183,12 @@ $side-panel-shadow: 0.1rem 0 0.15rem rgba(0, 0, 0, 0.25);
   position: relative;
 }
 
+.app-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 // Results bar
 $app-results-bg: rgba(#fff, 0.9);
 
