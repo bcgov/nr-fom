@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { ActivatedRoute, Event, NavigationEnd, Params, Router } from '@angular/router';
 import { funnel } from 'remeda';
 import { Observable } from 'rxjs';
@@ -20,7 +20,7 @@ export class UrlService {
   private queryParams: Params = {};
   private panel: string = null;
 
-  constructor(public route: ActivatedRoute, public router: Router, public location: Location) {
+  constructor(public route: ActivatedRoute, public router: Router, public location: Location, private zone: NgZone) {
     // Create a new observable that publishes only the NavigationEnd event used for subscribers to know when to
     // refresh their parameters
     // Use share() so this fires only once each time even with multiple subscriptions
@@ -121,8 +121,10 @@ export class UrlService {
    * @memberof UrlService
    */
   public navigate = funnel(() => {
-    this.router
-      .navigate([], { relativeTo: this.route, queryParams: this.queryParams, fragment: this.panel })
-      .toString();
+    this.zone.run(() => {
+      this.router
+        .navigate([], { relativeTo: this.route, queryParams: this.queryParams, fragment: this.panel })
+        .toString();
+    });
   }, { minQuietPeriodMs: 100 });
 }

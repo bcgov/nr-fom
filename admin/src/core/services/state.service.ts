@@ -8,7 +8,7 @@ import { BehaviorSubject, forkJoin } from 'rxjs';
   providedIn: 'root'
 })
 export class StateService {
-  private _loading = false;
+  private _loadingCount = 0;
   private _isReadySub = new BehaviorSubject(false);
   private _codeTables: CodeTables = {
     responseCode: [],
@@ -28,11 +28,15 @@ export class StateService {
 
 
   get loading() {
-    return this._loading;
+    return this._loadingCount > 0;
   }
 
   set loading(state: boolean) {
-    this._loading = state
+    if (state) {
+      this._loadingCount++;
+    } else {
+      this._loadingCount = Math.max(0, this._loadingCount - 1);
+    }
   }
 
   setCodeTables(codeTables: CodeTables) {

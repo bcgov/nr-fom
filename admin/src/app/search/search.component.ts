@@ -85,8 +85,8 @@ export class SearchComponent implements OnInit, OnDestroy {
     const projectIdArg = (isNaN(this.fNumber) || isNullish(this.fNumber))? null : this.fNumber.toString();
     this.searchProjectService.projectControllerFind(projectIdArg, fspIdArg , districtArg, workFlowStateCodeArg, this.fHolder)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(
-        projects => {
+      .subscribe({
+        next: (projects) => {
           this.projects = projects;
           this.count = this.projects.length;
           const limit = 2500;
@@ -94,17 +94,16 @@ export class SearchComponent implements OnInit, OnDestroy {
             this.modalSvc.openSnackBar({message: `Warning: Maximum of ${limit} search results exceeded -
             not all results have been displayed. Please refine your search criteria.`, button: 'OK'});
           }
+          this.searched = true;
+          this.searching = false;
         },
-        error => {
+        error: (error) => {
           console.error('SearchComponent.doSearch() - error =', error);
           this.searched = true;
           this.searching = false;
           this.snackBarRef = this.snackBar.open('Error searching foms ...', null, {duration: 3000});
-        },
-        () => {
-          this.searched = true;
-          this.searching = false;
-        });
+        }
+      });
   }
 
   public setInitialQueryParameters() {
