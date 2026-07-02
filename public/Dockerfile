@@ -3,7 +3,7 @@ ARG build_dir=public
 ARG port=4300
 
 # Build container
-FROM node:24.1.0-bookworm-slim AS build
+FROM node:24.18.0-bookworm-slim AS build
 
 # Install dependencies and build static content
 ARG build_dir
@@ -20,7 +20,7 @@ RUN rm -rf libs/node_modules ${build_dir}/node_modules
 
 
 # Deploy container
-FROM caddy:2.11.3-alpine
+FROM caddy:2.11.4-alpine
 
 # Copy over Caddyfile and static content
 ARG build_dir
