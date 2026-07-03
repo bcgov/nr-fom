@@ -29,8 +29,7 @@
   @include mixins.flex(0 0 auto);
 
     position: relative;
-    border-bottom-width: 2px;
-  border-bottom-color: theme.$gold;
+    border-bottom: 2px solid theme.$gold !important;
   background: theme.$header-bg;
   color: theme.$header-font-color;
   }
@@ -188,7 +187,7 @@
       .nav-link {
         height: 4.2rem; // 60px to match the branding height
         padding: 0.5rem 0.75rem !important;
-        border-top: none;
+        border-top: none !important;
 
         span {
           margin-top: 0.9rem;
