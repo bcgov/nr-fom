@@ -43,7 +43,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Build and Push new db version Docker Image (for db upgrade)
       uses: bcgov/action-builder-ghcr@v4.4.1
