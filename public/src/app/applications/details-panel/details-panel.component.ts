@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -70,6 +70,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     private spatialFeatureService: SpatialFeatureService,
     private attachmentService: AttachmentService,
     private fss: FeatureSelectService,
+    private changeDetectorRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -124,10 +125,12 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
         this.projectIdFilter.filter.value = this.project.id.toString();
         this.saveQueryParameters();
         this.update.emit(this.project);
+        this.changeDetectorRef.detectChanges();
       },
       error: (err) => {
         console.error(err);
         this.isAppLoading = false;
+        this.changeDetectorRef.detectChanges();
       }
     });
   }

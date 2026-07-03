@@ -137,6 +137,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           this.closeSplashModal();
           break;
       }
+      this.changeDetectorRef.detectChanges();
     });
   }
 
