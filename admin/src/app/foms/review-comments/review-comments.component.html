@@ -72,9 +72,9 @@
         <div class="review-comments__detail panel" *ngIf="selectedItem as activeComment; else noCommentSelected">
           <div class="panel-scroll">
             <app-comment-detail #commentDetailForm="commentForm"
-                [selectedComment]="activeComment"
                 [responseCodes]="responseCodes"
-                [canReplyComment]="canReplyComment()">
+                [canReplyComment]="canReplyComment()"
+                [selectedComment]="activeComment">
               <div class="row">
                 <button type="button" title="Save this comment response"
                         class="btn btn-sm btn-primary btn-container"
