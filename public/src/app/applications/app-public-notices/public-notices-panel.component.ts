@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
@@ -42,7 +42,8 @@ export class PublicNoticesPanelComponent implements OnInit {
 
   constructor(
     public urlService: UrlService,
-    public publicNoticeService: PublicNoticeService
+    public publicNoticeService: PublicNoticeService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -58,6 +59,7 @@ export class PublicNoticesPanelComponent implements OnInit {
                 .map(pn => pn.project.district?.name)
             )].sort();
         }
+        this.changeDetectorRef.detectChanges();
       });
   }
 
@@ -87,6 +89,7 @@ export class PublicNoticesPanelComponent implements OnInit {
     });
 
     this.pNotices = [...filteredResult];
+    this.changeDetectorRef.detectChanges();
   }
 
   isFomAvailable(commentingOpenDate) {
