@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -40,7 +40,8 @@ export class CommentModalComponent implements OnInit {
 
   constructor(
     public activeModal: NgbActiveModal,
-    private commentService: PublicCommentService
+    private commentService: PublicCommentService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -91,7 +92,8 @@ export class CommentModalComponent implements OnInit {
 
   public async p3_next() {
     this.submitting = true;
-
+    this.changeDetectorRef.detectChanges();
+ 
     this.publicComment.commentScopeCode = this.selectedScope.commentScopeCode;
     if (this.selectedScope.commentScopeCode === COMMENT_SCOPE_CODE.CUT_BLOCK) {
       this.publicComment.scopeCutBlockId = this.selectedScope.scopeId;
@@ -99,14 +101,17 @@ export class CommentModalComponent implements OnInit {
     else if (this.selectedScope.commentScopeCode === COMMENT_SCOPE_CODE.ROAD_SECTION) {
       this.publicComment.scopeRoadSectionId = this.selectedScope.scopeId;
     }
-
+ 
     try {
       await firstValueFrom(this.commentService.publicCommentControllerCreate(this.publicComment));
       this.currentPage++;
+      this.changeDetectorRef.detectChanges();
     } catch (err) {
       console.error(err);
+      this.changeDetectorRef.detectChanges();
     } finally {
       this.submitting = false;
+      this.changeDetectorRef.detectChanges();
     }
   }
 
