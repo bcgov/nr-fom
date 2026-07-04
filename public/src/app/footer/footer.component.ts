@@ -18,11 +18,11 @@ export class FooterComponent implements OnInit, OnDestroy {
   constructor(public router: Router) {}
 
   ngOnInit(): void {
-    this.isProjectsPage = this.router.url.includes('projects');
+    this.isProjectsPage = this.router.url ? this.router.url.includes('projects') : false;
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        this.isProjectsPage = event.urlAfterRedirects.includes('projects');
+        this.isProjectsPage = event.urlAfterRedirects ? event.urlAfterRedirects.includes('projects') : false;
       });
   }
 
