@@ -158,9 +158,12 @@
 
   .footer-admin {
     margin: 0;
-    padding-top: 0.5rem;
+    padding-top: 0;
     padding-bottom: 0;
     border: none;
+    height: 2rem;
+    display: flex;
+    align-items: center;
   }
 
   .footer-info {
@@ -168,7 +171,10 @@
   }
 
   ul {
+    margin: 0;
+    padding: 0;
     font-size: 0.65rem;
+    line-height: 2rem;
   }
 }
 
