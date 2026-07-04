@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
+    "prestart:admin": "sh -c 'test -d ../libs/node_modules/@angular/common || npm ci --ignore-scripts --prefix ../libs'",
     "start:admin": "ng serve --configuration development --host=0.0.0.0",
+    "prebuild:admin": "npm run prestart:admin",
     "build:admin": "ng build --configuration production",
     "test-unit": "jest --coverage",
     "test-unit-watch": "jest --watch=true"

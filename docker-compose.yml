@@ -25,7 +25,7 @@ services:
     entrypoint:
       - sh
       - -c
-      - cd admin && npm ci --ignore-scripts && npm run start:admin
+      - cd ../libs && npm ci --ignore-scripts && cd admin && npm ci --ignore-scripts && npm run start:admin
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4200/admin', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
@@ -120,7 +120,7 @@ services:
     entrypoint:
       - sh
       - -c
-      - cd public && npm ci --ignore-scripts && npm run start:public
+      - cd ../libs && npm ci --ignore-scripts && cd public && npm ci --ignore-scripts && npm run start:public
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4300/public', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
