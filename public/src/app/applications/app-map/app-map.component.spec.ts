@@ -110,10 +110,10 @@ describe('AppMapComponent', () => {
       (component as any).fixMap();
 
       expect(observe).toHaveBeenCalledWith(container);
-      expect(invalidateSize).toHaveBeenCalledTimes(0); // no initial queueMapRefresh
+      expect(invalidateSize).toHaveBeenCalledTimes(1);
 
       resizeCb(); // simulate the container settling to its real size
-      expect(invalidateSize).toHaveBeenCalledTimes(1);
+      expect(invalidateSize).toHaveBeenCalledTimes(2);
 
       component.ngOnDestroy();
       expect(disconnect).toHaveBeenCalled();

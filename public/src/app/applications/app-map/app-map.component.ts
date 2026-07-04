@@ -205,6 +205,10 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
     this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
     this.resizeObserver.observe(this.map.getContainer());
+    this.map.invalidateSize();
+    // ponytail: ResizeObserver only fires on size changes; one delayed refresh covers
+    // same-sized containers that paint a frame late (splash overlay, flex layout settle)
+    window.setTimeout(() => this.map?.invalidateSize(), 250);
 
     const lat = this.urlService.getQueryParam('lat');
     const lng = this.urlService.getQueryParam('lng');
@@ -250,6 +254,10 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
     // draw all new apps
     this.drawMap([], this.projectsSummary);
+  }
+
+  public invalidateSize() {
+    this.map?.invalidateSize();
   }
 
   public ngOnDestroy() {

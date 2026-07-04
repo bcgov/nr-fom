@@ -148,9 +148,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
     this.splashModal.result.then(() => {
       this.splashModal = null;
+      this.invalidateMapSize();
     }, () => {
       this.splashModal = null;
+      this.invalidateMapSize();
     });
+  }
+
+  private invalidateMapSize() {
+    setTimeout(() => this.appmap?.invalidateSize(), 250);
   }
 
 
