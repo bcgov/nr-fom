@@ -18,7 +18,8 @@ export class FooterComponent implements OnInit, OnDestroy {
   constructor(public router: Router) {}
 
   ngOnInit(): void {
-    this.isProjectsPage = this.router.url ? this.router.url.includes('projects') : false;
+    // router.url is '/' at bootstrap before routing resolves; window.location.pathname is synchronously correct.
+    this.isProjectsPage = window.location.pathname.includes('projects');
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
