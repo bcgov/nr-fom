@@ -6,7 +6,7 @@ import { ProjectPlanCodeEnum, ProjectPublicSummaryResponse } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
 import { UrlService } from '@public-core/services/url.service';
 import { MapLayers } from '@utility/models/map-layers';
-import * as L from 'leaflet';
+import L from 'leaflet';
 import 'leaflet.markercluster';
 import { differenceWith, findIndex, funnel } from 'remeda';
 import { Subject } from 'rxjs';

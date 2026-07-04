@@ -9,6 +9,8 @@
     "module": "commonjs",
     "target": "es2015",
     "noImplicitThis": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "types": ["jest", "node"]
   },
   "include": ["**/*.ts"],

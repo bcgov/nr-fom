@@ -4,7 +4,7 @@ import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers
 import { MapLayers } from '@utility/models/map-layers';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 import { GeoJsonObject } from 'geojson';
-import * as L from 'leaflet';
+import L from 'leaflet';
 
 /*
   Leaflet has bug with these warning/error on console since Angular 11:
