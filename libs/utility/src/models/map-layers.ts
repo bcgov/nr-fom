@@ -1,4 +1,5 @@
-import L from 'leaflet';
+import * as L_import from 'leaflet';
+const L = (L_import as any).default || L_import;
 
 export class MapLayers {
 
