@@ -50,13 +50,10 @@
       ],
       "@angular/common/http": [
         "../node_modules/@angular/common/http.d.ts"
-      ],
-      "leaflet": [
-        "../node_modules/@types/leaflet/index.d.ts"
       ]
     },
     "useDefineForClassFields": false,
-    "types": ["jest", "node"]
+    "types": ["jest", "node", "leaflet", "leaflet.markercluster"]
   },
   "exclude": ["node_modules"],
   "angularCompilerOptions": {
