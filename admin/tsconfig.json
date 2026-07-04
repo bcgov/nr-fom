@@ -41,15 +41,6 @@
       ],
       "tslib": [
         "../node_modules/tslib"
-      ],
-      "@angular/core": [
-        "../node_modules/@angular/core"
-      ],
-      "@angular/common": [
-        "../node_modules/@angular/common"
-      ],
-      "@angular/common/http": [
-        "../node_modules/@angular/common/http.d.ts"
       ]
     },
     "useDefineForClassFields": false,
