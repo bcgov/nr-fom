@@ -13,12 +13,11 @@ import { filter } from 'rxjs/operators';
 })
 export class FooterComponent implements OnInit, OnDestroy {
   public isProjectsPage = false;
-  private routerSubscription: Subscription;
+  private routerSubscription: Subscription | undefined;
 
   constructor(public router: Router) {}
 
   ngOnInit(): void {
-    // router.url is '/' at bootstrap before routing resolves; window.location.pathname is synchronously correct.
     this.isProjectsPage = window.location.pathname.includes('projects');
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
