@@ -235,6 +235,10 @@ $app-results-bg: rgba(#fff, 0.9);
   }
 }
 
+.app-results__clear--no-border {
+  border-left: none;
+}
+
 // Define layout order
 @media (max-width: 1023px) {
   .applications-view {

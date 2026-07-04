@@ -203,15 +203,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
       return;
     }
 
-    // Leaflet only auto-recalculates its size on window resize, not when its own
-    // container resizes. After Angular's initial render the container can settle
-    // to its real size a frame later (notably while the splash modal overlay is
-    // up), leaving a blank/blue map until some later event forces a redraw.
-    // A ResizeObserver re-runs invalidateSize() on every container size change,
-    // which also covers side-panel toggles.
-    // ponytail: ResizeObserver is the native fix for actual size changes; the
-    // short post-layout refresh below covers browsers that paint the same-sized
-    // container one frame late after Angular renders the splash/modal stack.
     this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
     this.resizeObserver.observe(this.map.getContainer());
 
@@ -259,12 +250,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
     // draw all new apps
     this.drawMap([], this.projectsSummary);
-  }
-
-  public invalidateSize() {
-    if (this.map) {
-      this.map.invalidateSize();
-    }
   }
 
   public ngOnDestroy() {

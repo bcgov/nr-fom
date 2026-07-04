@@ -105,13 +105,10 @@ export class CommentModalComponent implements OnInit {
     try {
       await firstValueFrom(this.commentService.publicCommentControllerCreate(this.publicComment));
       this.currentPage++;
-      this.changeDetectorRef.detectChanges();
     } catch (err) {
       console.error(err);
-      this.changeDetectorRef.detectChanges();
     } finally {
       this.submitting = false;
-      this.changeDetectorRef.detectChanges();
     }
   }
 

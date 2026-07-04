@@ -6,8 +6,6 @@
     "moduleResolution": "bundler",
     "ignoreDeprecations": "6.0",
     "strict": false,
-    "strictNullChecks": false,
-    "noImplicitAny": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
