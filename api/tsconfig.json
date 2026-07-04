@@ -9,6 +9,7 @@
     "moduleResolution": "node",
     "ignoreDeprecations": "6.0",
     "strict": false,
+    "noImplicitAny": false,
     "rootDir": "..",
     "removeComments": true,
     "emitDecoratorMetadata": true,

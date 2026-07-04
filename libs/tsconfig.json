@@ -11,7 +11,7 @@
     "noImplicitThis": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "types": ["jest", "node"]
+    "types": ["jest", "node", "leaflet"]
   },
   "include": ["**/*.ts"],
   "exclude": ["**/*.spec.ts"],

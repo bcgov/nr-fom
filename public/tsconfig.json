@@ -6,6 +6,8 @@
     "moduleResolution": "bundler",
     "ignoreDeprecations": "6.0",
     "strict": false,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -47,7 +49,7 @@
         "../node_modules/@angular/common"
       ],
       "@angular/common/http": [
-        "../node_modules/@angular/common/http.d.ts"
+        "../node_modules/@angular/common/types/http.d.ts"
       ]
     },
     "useDefineForClassFields": false,
