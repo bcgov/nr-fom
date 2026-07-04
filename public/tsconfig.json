@@ -47,9 +47,6 @@
       ],
       "@angular/common": [
         "../node_modules/@angular/common"
-      ],
-      "@angular/common/http": [
-        "../node_modules/@angular/common/types/http.d.ts"
       ]
     },
     "useDefineForClassFields": false,
