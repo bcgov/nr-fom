@@ -68,9 +68,6 @@ describe('ProjectsComponent', () => {
     const mockDestroyRef = {
       onDestroy: jest.fn(),
     };
-    const mockChangeDetectorRef = {
-      detectChanges: jest.fn(),
-    };
 
     // Instantiate directly to avoid child component DI issues
     component = new ProjectsComponent(
@@ -79,7 +76,6 @@ describe('ProjectsComponent', () => {
       mockProjectService as any,
       mockUrlService as any,
       mockFomFiltersSvc as any,
-      mockChangeDetectorRef as any,
       mockDestroyRef as any,
     );
   });
