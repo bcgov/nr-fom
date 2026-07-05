@@ -33,6 +33,12 @@
       "@utility/*": [
         "../../libs/utility/src/*"
       ],
+      "@angular/core": [
+        "../node_modules/@angular/core"
+      ],
+      "@angular/common/http": [
+        "../node_modules/@angular/common/http"
+      ],
       "rxjs": [
         "../node_modules/rxjs"
       ],
