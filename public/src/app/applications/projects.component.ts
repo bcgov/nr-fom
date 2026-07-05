@@ -204,18 +204,22 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           forestClientNameParam, 
           openedOnOrAfterParam)
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe((results) => {
-          this.projectsSummary = results;
-          this.totalNumber = results.length;
-          this.loading = false;
-          },
-          () => {
+        .subscribe({
+          next: (results) => {
+            this.projectsSummary = results;
+            this.totalNumber = results.length;
             this.loading = false;
+            this.cdr.detectChanges();
           },
-          () => {
+          error: () => {
             this.loading = false;
+            this.cdr.detectChanges();
+          },
+          complete: () => {
+            this.loading = false;
+            this.cdr.detectChanges();
           }
-        );
+        });
   }
 
   /**

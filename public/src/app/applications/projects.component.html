@@ -58,8 +58,7 @@
                   [checked]="filter.value" 
                   (click)="toggleFilter(filter)"
                   [disabled]="loading">
-            <label for="project-{{filter.queryParam}}" 
-                    (click)="toggleFilter(filter)">{{filter.displayString}}</label>
+            <label for="project-{{filter.queryParam}}">{{filter.displayString}}</label>
           </div>
         </div>
         </div>

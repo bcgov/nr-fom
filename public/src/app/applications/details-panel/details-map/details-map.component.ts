@@ -81,10 +81,23 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
   public ngOnChanges(changes: SimpleChanges) {
     // Note, when Angular first onChange is triggered, the value is undefined.
-    if (changes.projectSpatialDetail.currentValue) {
-      this.resetMap();
-      this.createMap();
+    if (changes.projectSpatialDetail?.currentValue) {
+      this.scheduleMapUpdate();
     }
+  }
+
+  /** Wait for this component's map div; ngOnChanges can run before the view exists. */
+  private scheduleMapUpdate() {
+    if (!this.getMapContainer()) {
+      setTimeout(() => this.scheduleMapUpdate(), 50);
+      return;
+    }
+    this.resetMap();
+    this.createMap();
+  }
+
+  private getMapContainer(): HTMLElement | null {
+    return this.elementRef.nativeElement.querySelector('.map-container > div');
   }
 
   public createMap() {
@@ -97,8 +110,12 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public createBasicMap() {
+    const container = this.getMapContainer();
+    if (!container) {
+      return;
+    }
     this.projectFeatures = L.featureGroup();   
-    this.map = L.map('map', {
+    this.map = L.map(container, {
       layers: this.mapLayers.getAllLayers(),
       zoomControl: false, // will be added manually below
       attributionControl: true,
