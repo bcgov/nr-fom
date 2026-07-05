@@ -11,7 +11,7 @@ $map-control-button-bg:         #fff;
   left: 0;
 }
 
-#map,
+.map-host,
 .map-container {
   position: absolute;
   top: 0;
@@ -21,7 +21,7 @@ $map-control-button-bg:         #fff;
 }
 
 // see app-map.component.ts:_clusterCreate()
-#map {
+.map-host {
   .cluster-marker-count {
     text-align: center;
   }

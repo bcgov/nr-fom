@@ -1,6 +1,6 @@
 import {
     AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, EventEmitter, Injector, Input, OnChanges,
-    OnDestroy, OnInit, Output, SimpleChanges, ViewChild
+    OnDestroy, OnInit, Output, SimpleChanges
 } from '@angular/core';
 import { ProjectPlanCodeEnum, ProjectPublicSummaryResponse } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
@@ -40,7 +40,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   @Input() loading: boolean; // from projects component
   @Output() updateCoordinates = new EventEmitter(); // to applications component
   @Input() projectsSummary: Array<ProjectPublicSummaryResponse>; // from projects component
-  @ViewChild('mapContainer', { read: ElementRef }) private mapContainer: ElementRef<HTMLElement>;
 
   private map: L.Map = null;
   private markerList: L.Marker[] = []; // list of markers
@@ -105,7 +104,11 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     });
 
 
-    this.map = L.map(this.mapContainer.nativeElement, {
+    const container = this.elementRef.nativeElement.querySelector('.map-host');
+    if (!container) {
+      return;
+    }
+    this.map = L.map(container as HTMLElement, {
       zoomControl: false, // will be added manually below
       maxBounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)), // restrict view to "the world"
       minZoom: 3, // prevent zooming out too far

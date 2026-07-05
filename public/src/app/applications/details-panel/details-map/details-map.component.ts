@@ -97,7 +97,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private getMapContainer(): HTMLElement | null {
-    return this.elementRef.nativeElement.querySelector('.map-container > div');
+    return this.elementRef.nativeElement.querySelector('.map-host');
   }
 
   public createMap() {
