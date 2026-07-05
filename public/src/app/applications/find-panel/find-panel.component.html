@@ -6,7 +6,7 @@
   <div class="flex-panel__scroll">
     <div class="find-form">
       <div class="form-group">
-          <label class="control-label">FOM Number</label>
+          <label class="control-label" for="fomNumberInput">FOM Number</label>
           <input id="fomNumberInput" type="text"
             class="form-control limit-width-1"
             [maxlength]="maxInputLength"
@@ -17,7 +17,7 @@
       </div>
 
       <div class="form-group">
-        <label class="control-label">FOM Holder Name (or portion)</label>
+        <label class="control-label" for="forestClientNameInput">FOM Holder Name (or portion)</label>
         <input id="forestClientNameInput" type="text"
                class="form-control limit-width-1"
                maxlength="40"
@@ -29,11 +29,13 @@
       </div>
 
       <div class="form-group">
-        <label class="control-label">Posted As Of</label>
+        <label class="control-label" for="postedOnAfterInput">Posted As Of</label>
         <div class="date-range">
           <div class="date-range__input">
             <div>
               <input
+                id="postedOnAfterInput"
+                name="postedOnAfter"
                 style="width: 20rem;"
                 class="form-control"
                 type="text"
