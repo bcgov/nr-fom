@@ -69,6 +69,11 @@ describe('ProjectsComponent', () => {
       onDestroy: jest.fn(),
     };
 
+    const mockCdr = {
+      detectChanges: jest.fn(),
+      markForCheck: jest.fn(),
+    };
+
     // Instantiate directly to avoid child component DI issues
     component = new ProjectsComponent(
       mockModalService as any,
@@ -77,6 +82,7 @@ describe('ProjectsComponent', () => {
       mockUrlService as any,
       mockFomFiltersSvc as any,
       mockDestroyRef as any,
+      mockCdr as any,
     );
   });
 
@@ -114,14 +120,13 @@ describe('ProjectsComponent', () => {
 
   describe('togglePanel', () => {
     it('should activate panel when different panel is active', () => {
-      (component as any).urlTree = { fragment: null };
+      component.activePanel = null;
       component.togglePanel(Panel.find);
       expect(component.activePanel).toBe(Panel.find);
       expect(mockUrlService.setFragment).toHaveBeenCalledWith(Panel.find);
     });
 
     it('should deactivate panel when same panel is toggled', () => {
-      (component as any).urlTree = { fragment: 'find' };
       component.activePanel = Panel.find;
       component.togglePanel(Panel.find);
       expect(component.activePanel).toBeNull();

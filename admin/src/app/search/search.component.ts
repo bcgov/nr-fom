@@ -2,7 +2,7 @@ import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DatePipe, Location, NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
@@ -57,7 +57,8 @@ export class SearchComponent implements OnInit, OnDestroy {
     private cognitoService: CognitoService,
     public snackBar: MatSnackBar,
     public searchProjectService: ProjectService,
-    private modalSvc: ModalService
+    private modalSvc: ModalService,
+    private cdr: ChangeDetectorRef
   ) {
     this.user = this.cognitoService.getUser();
   }
@@ -96,12 +97,17 @@ export class SearchComponent implements OnInit, OnDestroy {
           }
           this.searched = true;
           this.searching = false;
+          // doSearch can be triggered from the route queryParamMap subscription, whose
+          // async HTTP response may resolve without a zone tick reaching this view.
+          // Detect changes explicitly so the spinner clears and results render.
+          this.cdr.detectChanges();
         },
         error: (error) => {
           console.error('SearchComponent.doSearch() - error =', error);
           this.searched = true;
           this.searching = false;
           this.snackBarRef = this.snackBar.open('Error searching foms ...', null, {duration: 3000});
+          this.cdr.detectChanges();
         }
       });
   }
