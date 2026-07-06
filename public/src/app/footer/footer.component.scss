@@ -147,7 +147,8 @@
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 1002;
+  // Above splash modal backdrop (1050) but below modal dialogs (1055+)
+  z-index: 1051;
   height: 2rem;
   border: none;
 
