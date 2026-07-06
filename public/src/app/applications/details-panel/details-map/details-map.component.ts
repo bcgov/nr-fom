@@ -25,6 +25,7 @@ const L = (L_import as any).default || L_import;
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { destroyMap, initMap, mapContainer, whenMapContainerReady } from '../../utils/leaflet-host';
 
 @Component({
   standalone: true,
@@ -82,22 +83,11 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   public ngOnChanges(changes: SimpleChanges) {
     // Note, when Angular first onChange is triggered, the value is undefined.
     if (changes.projectSpatialDetail?.currentValue) {
-      this.scheduleMapUpdate();
+      whenMapContainerReady(this.elementRef, () => {
+        this.resetMap();
+        this.createMap();
+      });
     }
-  }
-
-  /** Wait for this component's map div; ngOnChanges can run before the view exists. */
-  private scheduleMapUpdate() {
-    if (!this.getMapContainer()) {
-      setTimeout(() => this.scheduleMapUpdate(), 50);
-      return;
-    }
-    this.resetMap();
-    this.createMap();
-  }
-
-  private getMapContainer(): HTMLElement | null {
-    return this.elementRef.nativeElement.querySelector('.map-host');
   }
 
   public createMap() {
@@ -110,12 +100,12 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public createBasicMap() {
-    const container = this.getMapContainer();
+    const container = mapContainer(this.elementRef);
     if (!container) {
       return;
     }
     this.projectFeatures = L.featureGroup();   
-    this.map = L.map(container, {
+    this.map = initMap(container, {
       layers: this.mapLayers.getAllLayers(),
       zoomControl: false, // will be added manually below
       attributionControl: true,
@@ -250,9 +240,8 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public resetMap() {
-    if (this.map) {
-      this.map.remove();
-    }
+    destroyMap(this.map);
+    this.map = null;
 
     if (this.projectFeatures) {
       this.projectFeatures.remove();

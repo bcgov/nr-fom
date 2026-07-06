@@ -12,6 +12,7 @@ const L = (L_import as any).default || L_import;
 import { differenceWith, findIndex, funnel } from 'remeda';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { destroyMap, initMap, mapContainer } from '../utils/leaflet-host';
 import { MarkerPopupComponent } from './marker-popup/marker-popup.component';
 
 declare module 'leaflet' {
@@ -104,11 +105,11 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     });
 
 
-    const container = this.elementRef.nativeElement.querySelector('.map-host');
+    const container = mapContainer(this.elementRef);
     if (!container) {
       return;
     }
-    this.map = L.map(container as HTMLElement, {
+    this.map = initMap(container, {
       zoomControl: false, // will be added manually below
       maxBounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)), // restrict view to "the world"
       minZoom: 3, // prevent zooming out too far
@@ -266,9 +267,8 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
   public ngOnDestroy() {
     this.resizeObserver?.disconnect();
-    if (this.map) {
-      this.map.remove();
-    }
+    destroyMap(this.map);
+    this.map = null;
     this.ngUnsubscribe.next(null);
     this.ngUnsubscribe.complete();
   }
