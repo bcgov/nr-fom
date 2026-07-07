@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -118,7 +118,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     private modalSvc: ModalService,
     private datePipe: DatePipe,
     private forestSvc: ForestClientService,
-    private cognitoService: CognitoService
+    private cognitoService: CognitoService,
+    private cdr: ChangeDetectorRef
   ) {
     this.user = this.cognitoService.getUser();
   }
@@ -180,6 +181,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
               else
                 this.attachments.push(attachmentResponse);
             }
+            this.cdr.detectChanges();
           }).catch((error) => {
           console.error(error);
         });
@@ -191,8 +193,11 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
         this.descriptionValue = data.description;
       }
 
+      this.cdr.detectChanges();
+
       this.loadForestClients().then( (result) => {
         this.forestClients = result;
+        this.cdr.detectChanges();
       }).catch((error)=> {
         console.error(error);
       });
