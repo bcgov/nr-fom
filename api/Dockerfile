@@ -1,5 +1,5 @@
 # RedHat UBI 8 with nodejs 24
-FROM registry.access.redhat.com/ubi8/nodejs-24:1-1782279620 AS builder
+FROM registry.access.redhat.com/ubi8/nodejs-24:1-1782882986 AS builder
 
 # Install packages, build and keep only prod packages
 WORKDIR /app
@@ -14,7 +14,7 @@ WORKDIR /app
 
 
 # Deployment container
-FROM registry.access.redhat.com/ubi8/ubi:8.10-1161
+FROM registry.access.redhat.com/ubi8/ubi:8.10-1781720109
 
 # Node packages and dependencies
 COPY --from=builder /usr/bin/node /usr/bin/

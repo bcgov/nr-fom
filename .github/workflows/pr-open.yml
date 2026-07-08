@@ -36,7 +36,7 @@ jobs:
             build_file: public/Dockerfile
             triggers: ('public/' 'libs/')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: bcgov/action-builder-ghcr@v4.4.1
         with:
           package: ${{ matrix.package }}
