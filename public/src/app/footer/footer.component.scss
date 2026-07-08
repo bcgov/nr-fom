@@ -8,32 +8,7 @@
   &__inner {
     margin: 0 auto;
     max-width: 1100px;
-    padding: 0.75rem 1.5rem;
-  }
-
-  section {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid theme.$bg-dark-border-color;
-
-    &.last {
-      margin-bottom: 0;
-      padding-bottom: 0;
-      border-bottom: none;
-    }
-  }
-
-  h4 {
-    margin-bottom: 1rem;
-    color: theme.$color-inverted;
-    font-size: medium;
-    font-weight: bold;
-  }
-
-  p {
-    font-size: 0.875rem;
-    line-height: 1.5;
+    padding: 0.5rem 1.5rem 0.5rem 0;
   }
 
   ul {
@@ -46,32 +21,22 @@
     }
   }
 
-  .nav-links {
-    margin: 0;
-  }
-
   a {
     color: theme.$footer-color;
-
-    &.feedback-link {
-      color: theme.$gold;
-    }
 
     &:focus,
     &:hover {
       color: theme.$gold;
     }
+
+    &.feedback-link {
+      color: theme.$gold;
+    }
   }
 
   .footer-admin {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: none;
-
-    div {
-      padding-left: 0;
-      padding-right: 0;
-    }
+    margin: 0;
+    padding: 0;
 
     .gov-links {
       text-align: center;
@@ -81,7 +46,7 @@
       li {
         display: inline-block;
         margin: 0;
-        line-height: 1;
+        line-height: 1rem;
 
         &::after {
           position: relative;
@@ -99,43 +64,19 @@
         }
       }
     }
+
+    .footer-feedback {
+      padding-left: 5em;
+    }
   }
 }
 
 @media (min-width: 768px) {
   .app-footer {
-    section {
-      text-align: left;
-      margin-bottom: 0;
-      padding-bottom: 0;
-      border-bottom: none;
-    }
-
-    h4 {
-      padding-bottom: 1rem;
-      border-bottom: 1px solid theme.$bg-dark-border-color;
-    }
-
     .footer-admin {
       .gov-links {
         text-align: left;
       }
-    }
-  }
-
-  .app-footer--sm {
-    font-size: 0.8rem;
-
-    .app-footer__inner {
-      padding: 0 1rem;
-    }
-
-    .footer-admin {
-      padding-top: 0.5rem;
-    }
-
-    ul {
-      font-size: 0.8rem;
     }
   }
 }
@@ -165,7 +106,7 @@
     align-items: center;
   }
 
-  .footer-info {
+  .footer-feedback {
     display: none;
   }
 
@@ -174,26 +115,6 @@
     padding: 0;
     font-size: 0.65rem;
     line-height: 2rem;
-  }
-}
-
-.app-footer-sm {
-  display: none;
-}
-
-/* For all elements toggle between small/large screen */
-[class*="small-screen"] {
-  display: none;
-}
-[class*="large-screen"] {
-  display: block;
-}
-@media (max-width: 1024px) {
-  [class*="small-screen"] {
-    display: block;
-  }
-  [class*="large-screen"] {
-    display: none;
   }
 }
 
