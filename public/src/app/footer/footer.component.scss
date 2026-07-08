@@ -7,10 +7,7 @@
   color: theme.$footer-color;
 
   .container {
-    padding-top: 1.5rem;
-    padding-right: 1.5rem;
-    padding-bottom: 1.5rem;
-    padding-left: 1.5rem;
+    padding: 0.75rem 1.5rem;
   }
 
   section {
@@ -66,9 +63,9 @@
   }
 
   .footer-admin {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid theme.$bg-dark-border-color;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 
     div {
       padding-left: 0;
