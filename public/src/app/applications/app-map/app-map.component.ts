@@ -93,7 +93,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
         element.title = 'Reset view';
         element.innerText = 'refresh'; // material icon name
-        element.onclick = () => this.resetView();
+        element.addEventListener('click', () => this.resetView());
         element.className = 'material-icons map-reset-control';
 
         // prevent underlying map actions for these events

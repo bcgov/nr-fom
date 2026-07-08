@@ -58,7 +58,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
       element.title = 'Reset view';
       element.innerText = 'refresh'; // material icon name
-      element.onclick = () => this.fitBounds();
+      element.addEventListener('click', () => this.fitBounds());
       element.className = 'material-icons map-reset-control';
 
       // prevent underlying map actions for these events
