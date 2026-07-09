@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject, firstValueFrom } from 'rxjs';
 
@@ -77,7 +77,8 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     private projectSvc: ProjectService,
     private spatialFeatureService: SpatialFeatureService,
     private cognitoService: CognitoService,
-    private modalSvc: ModalService
+    private modalSvc: ModalService,
+    private cdr: ChangeDetectorRef
   ) {
     this.user = this.cognitoService.getUser()!;
   }
@@ -89,12 +90,9 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     
     this.projectId = this.route.snapshot.params.appId;
     firstValueFrom(this.projectSvc.projectControllerFindOne(this.projectId))
-      .then((result) => {this.project = result;});
-
-    firstValueFrom(this.spatialFeatureService.spatialFeatureControllerGetForProject(this.projectId))
-      .then((spatialDetails) => {
-        this.commentScopeOpts =  CommonUtil.buildCommentScopeOptions(spatialDetails);
-        this.selectedScope = this.commentScopeOpts.filter(opt => opt.commentScopeCode == null)[0]; // allOpt;
+      .then((result) => {
+        this.project = result;
+        this.cdr.detectChanges();
       });
 
     this.triggered$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
@@ -102,10 +100,17 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
         this.allPublicComments = comments ?? [];
         this.hasAnyPublicComments = this.allPublicComments.length > 0;
         this.filteredPublicComments = this.filterProjectComments(this.allPublicComments, this.selectedScope);
+        this.cdr.detectChanges();
       });
     });
 
-    this.triggered$.next();
+    firstValueFrom(this.spatialFeatureService.spatialFeatureControllerGetForProject(this.projectId))
+      .then((spatialDetails) => {
+        this.commentScopeOpts = CommonUtil.buildCommentScopeOptions(spatialDetails);
+        this.selectedScope = this.commentScopeOpts.filter(opt => opt.commentScopeCode == null)[0];
+        this.triggered$.next();
+        this.cdr.detectChanges();
+      });
   }
 
   filterProjectComments(comments: PublicCommentAdminResponse[], scope: CommentScopeOpt): PublicCommentAdminResponse[] {
@@ -167,6 +172,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       this.triggered$.next();
       this.selectedItem = result; // updated selected.
       this.loading = false;
+      this.cdr.detectChanges();
       setTimeout(() => {
         if (this.selectedItem) {
           this.onReviewItemClicked(this.selectedItem, pos);
@@ -176,6 +182,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     } catch (err) {
       console.error("Failed to save comment.", err)
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
