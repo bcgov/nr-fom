@@ -3,7 +3,7 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
 import { DatePipe, NgClass, NgIf } from "@angular/common";
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -55,7 +55,8 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
     private cognitoService: CognitoService,
     private modalSvc: ModalService,
     private publicNoticeService: PublicNoticeService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private cdr: ChangeDetectorRef
   ) {
     this.user = this.cognitoService.getUser();
   }
@@ -103,6 +104,7 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
         if (!this.editMode) {
           this.publicNoticeFormGroup.disable();
         }
+        this.cdr.detectChanges();
       }
     );
   }
