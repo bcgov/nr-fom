@@ -1,5 +1,5 @@
-import { Component, DestroyRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
-import { Router, UrlTree } from '@angular/router';
+import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
 import { Observable, Subscription } from 'rxjs';
@@ -75,7 +75,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   // indicates which side panel should be shown
   public activePanel: Panel;
   public loading = false;
-  public urlTree: UrlTree;
   public observablesSub: Subscription = null;
   public coordinates: string = null;
   public projectsSummary: Array<ProjectPublicSummaryResponse>;
@@ -89,7 +88,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     public urlService: UrlService,
     private fomFiltersSvc: FOMFiltersService,
-    private destroyRef: DestroyRef
+    private destroyRef: DestroyRef,
+    private cdr: ChangeDetectorRef
   ) { }
 
   /**
@@ -119,7 +119,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       clearTimeout(this.fragmentTimeout);
     }
     this.fragmentTimeout = setTimeout(() => {
-      this.urlTree = this.router.parseUrl(this.router.url);
       switch (fragment) {
         case 'splash':
           this.displaySplashModal();
@@ -136,14 +135,14 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           this.closeSplashModal();
           break;
       }
+      // This fragment change is driven by a router NavigationEnd delivered from a
+      // debounced funnel timer in UrlService, which doesn't reliably trigger a zone
+      // change-detection tick that reaches this view. Detect changes explicitly so the
+      // side panel opens/closes when navigated from the map popup "View Details".
+      this.cdr.detectChanges();
     });
   }
 
-  /**
-   * Shows the splash modal.
-   *
-   * @memberof ProjectsComponent
-   */
   public displaySplashModal(): void {
     if (this.splashModal) return; // already open
     this.splashModal = this.modalService.open(SplashModalComponent, {
@@ -153,10 +152,17 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
     this.splashModal.result.then(() => {
       this.splashModal = null;
+      this.invalidateMapSize();
     }, () => {
       this.splashModal = null;
+      this.invalidateMapSize();
     });
   }
+
+  private invalidateMapSize() {
+    setTimeout(() => this.appmap?.invalidateSize(), 250);
+  }
+
 
   /**
    * Closes the splash modal if its open.
@@ -198,18 +204,22 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           forestClientNameParam, 
           openedOnOrAfterParam)
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe((results) => {
-          this.projectsSummary = results;
-          this.totalNumber = results.length;
-          this.loading = false;
-          },
-          () => {
+        .subscribe({
+          next: (results) => {
+            this.projectsSummary = results;
+            this.totalNumber = results.length;
             this.loading = false;
+            this.cdr.detectChanges();
           },
-          () => {
+          error: () => {
             this.loading = false;
+            this.cdr.detectChanges();
+          },
+          complete: () => {
+            this.loading = false;
+            this.cdr.detectChanges();
           }
-        );
+        });
   }
 
   /**
@@ -251,7 +261,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   public togglePanel(panel: Panel) {
-    if (this.urlTree.fragment === panel) {
+    if (this.activePanel === panel) {
       this.activePanel = null;
       this.urlService.setFragment(null);
     } else {

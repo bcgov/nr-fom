@@ -17,7 +17,7 @@ import { USER_SYSTEM } from '@src/app-constants';
 import { applyFomDateAndStateFilters, applyProjectPlanCodeFilter, ProjectPlanCodeFilterEnum } from '@src/app/modules/analytics-dashboard/analytics-dashboard-data-filter';
 import { ProjectPlanCodeEnum } from '@src/app/modules/project/project-plan-code.entity';
 import { User } from "@utility/security/user";
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { isEmpty, isNil } from 'lodash';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository, SelectQueryBuilder } from 'typeorm';

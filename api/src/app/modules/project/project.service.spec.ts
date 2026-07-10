@@ -7,7 +7,7 @@ import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.enti
 import { Submission } from "@api-modules/submission/submission.entity";
 import { BadRequestException } from "@nestjs/common";
 import { User } from "@utility/security/user";
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { mockLoggerFactory } from '../../factories/mock-logger.factory';
 
 describe('ProjectService', () => {

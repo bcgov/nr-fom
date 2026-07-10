@@ -58,8 +58,7 @@
                   [checked]="filter.value" 
                   (click)="toggleFilter(filter)"
                   [disabled]="loading">
-            <label for="project-{{filter.queryParam}}" 
-                    (click)="toggleFilter(filter)">{{filter.displayString}}</label>
+            <label for="project-{{filter.queryParam}}">{{filter.displayString}}</label>
           </div>
         </div>
         </div>
@@ -70,7 +69,7 @@
           [disabled]="loading" 
           (click)="clearFilters();">Clear Filters</button>
       </span>
-      <span class="app-results__clear" style="border-left: none;">
+      <span class="app-results__clear app-results__clear--no-border">
         <!-- add this invisible span element so on mobile device for flex content it will display better 
              and not overlapping with app-map's layer icon-->
         &nbsp;

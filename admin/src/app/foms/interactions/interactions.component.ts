@@ -1,12 +1,12 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { AsyncPipe, DatePipe, NgFor, NgIf } from '@angular/common';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { DatePipe, NgFor, NgIf } from '@angular/common';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InteractionResponse, InteractionService, ProjectResponse, WorkflowStateEnum } from '@api-client';
 import { User } from "@utility/security/user";
 import { DateTime } from "luxon";
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { InteractionDetailComponent } from './interaction-detail/interaction-detail.component';
 import { InteractionRequest } from './interaction-detail/interaction-detail.form';
@@ -26,11 +26,10 @@ export const ERROR_DIALOG = {
 @Component({
     standalone: true,
     imports: [
-        NgIf, 
-        RouterLink, 
-        NgFor, 
-        InteractionDetailComponent, 
-        AsyncPipe, 
+        NgIf,
+        RouterLink,
+        NgFor,
+        InteractionDetailComponent,
         DatePipe
     ],
     selector: 'app-interactions',
@@ -50,25 +49,26 @@ export class InteractionsComponent implements OnInit, OnDestroy {
   loading = false;
   private user: User;
 
-  data$: Observable<InteractionResponse[]>;
+  data: InteractionResponse[] = null;
   private ngUnsubscribe: Subject<void> = new Subject<void>();
   private interactionSaved$ = new Subject<void>(); // To notify when 'save' happen.
 
-  constructor(    
+  constructor(
     private route: ActivatedRoute,
     private interactionSvc: InteractionService,
     private cognitoService: CognitoService,
-    private modalSvc: ModalService) 
-  { 
+    private modalSvc: ModalService,
+    private cdr: ChangeDetectorRef)
+  {
     this.user = this.cognitoService.getUser();
   }
 
   ngOnInit(): void {
     this.projectId = this.route.snapshot.params.appId;
-    this.data$ = this.getProjectInteractions();
+    this.refreshInteractions();
 
     this.interactionSaved$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
-      this.data$ = this.getProjectInteractions();
+      this.refreshInteractions();
     });
 
     this.route.data
@@ -84,6 +84,13 @@ export class InteractionsComponent implements OnInit, OnDestroy {
 
   getProjectInteractions() {
     return this.interactionSvc.interactionControllerFind(this.projectId);
+  }
+
+  private refreshInteractions() {
+    this.getProjectInteractions().subscribe((result) => {
+      this.data = result;
+      this.cdr.detectChanges();
+    });
   }
 
   onInteractionItemClicked(item: InteractionResponse, pos: number) {
@@ -132,11 +139,13 @@ export class InteractionsComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
         this.loading = true;
+        this.cdr.detectChanges();
         this.interactionSvc.interactionControllerRemove(selectedInteraction.id).subscribe(()=> {
           this.selectedItem = null;
           setTimeout(() => {
-          this.loading = false;
+            this.loading = false;
             this.interactionSaved$.next();// trigger list retrieving.
+            this.cdr.detectChanges();
           }, 100);
 
         });
@@ -174,6 +183,7 @@ export class InteractionsComponent implements OnInit, OnDestroy {
     this.interactionSaved$.next();
     this.selectedItem = result; // updated selected.
     this.loading = false;
+    this.cdr.detectChanges();
     setTimeout(() => {
       this.onInteractionItemClicked(this.selectedItem, pos);
     }, 300);
@@ -183,6 +193,7 @@ export class InteractionsComponent implements OnInit, OnDestroy {
     // Let HTTP Error Interceptor show the error for now.
     console.error('Failed to save', err);
     this.loading = false;
+    this.cdr.detectChanges();
   }
 
 }

@@ -15,8 +15,8 @@ export class ErrorInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    this.stateSvc.loading = true;
     return next.handle( request ).pipe(
-      tap( () => this.stateSvc.loading = true ),
       finalize(() => this.stateSvc.loading = false),
       catchError((err) => {
 

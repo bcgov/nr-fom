@@ -1,7 +1,7 @@
 // Represents a user's information extracted from Keycloak JWT.
 export class User {
-    userName: string; 
-    displayName: string;
+    userName!: string; 
+    displayName!: string;
     isMinistry: boolean = false;
     isForestClient: boolean = false;
     isAdmin: boolean = false;
@@ -28,7 +28,7 @@ export class User {
       const user = new User();
       user.userName = jwt['username'];
       user.displayName = jwt['displayName'];
-      let roles: string[];
+      let roles: string[] | undefined;
       if (jwt['resource_access'] && jwt['resource_access']['fom']) {
         roles = jwt['resource_access']['fom']['roles'];
       }

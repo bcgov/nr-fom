@@ -1,16 +1,18 @@
 import {
-    AfterViewInit, ApplicationRef, Component, ComponentFactoryResolver, ElementRef, EventEmitter, Injector, Input, OnChanges,
+    AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, EventEmitter, Injector, Input, OnChanges,
     OnDestroy, OnInit, Output, SimpleChanges
 } from '@angular/core';
 import { ProjectPlanCodeEnum, ProjectPublicSummaryResponse } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
 import { UrlService } from '@public-core/services/url.service';
 import { MapLayers } from '@utility/models/map-layers';
-import * as L from 'leaflet';
+import * as L_import from 'leaflet';
 import 'leaflet.markercluster';
+const L = (L_import as any).default || L_import;
 import { differenceWith, findIndex, funnel } from 'remeda';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { destroyMap, initMap, mapContainer } from '../utils/leaflet-host';
 import { MarkerPopupComponent } from './marker-popup/marker-popup.component';
 
 declare module 'leaflet' {
@@ -43,15 +45,12 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   private map: L.Map = null;
   private markerList: L.Marker[] = []; // list of markers
   private currentMarker: L.Marker = null; // for removing previous marker
-  private markerClusterGroup = L.markerClusterGroup({
-    showCoverageOnHover: false,
-    maxClusterRadius: 40, // NB: change to 0 to disable clustering
-    iconCreateFunction: this.clusterCreate
-  });
+  private markerClusterGroup: any;
   private isMapReady = false;
   private doNotify = true; // whether to emit notification
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   private mapLayers = new MapLayers();
+  private resizeObserver: ResizeObserver | null = null;
 
   readonly defaultBounds = L.latLngBounds([48, -139], [60, -114]); // all of BC
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
@@ -61,9 +60,19 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     private elementRef: ElementRef,
     public urlService: UrlService,
     private injector: Injector,
-    private resolver: ComponentFactoryResolver,
     private mapLayersService: MapLayersService
-  ) { }
+  ) {
+    // Must exist before ngOnChanges (which fires before ngAfterViewInit and calls
+    // drawMap); otherwise drawMap throws and aborts change detection, leaving the
+    // projects view stuck before the map renders. The markercluster plugin augments
+    // both the global (window.L, loaded via angular.json scripts) and the module L.
+    const markerClusterGroup = (window as any).L?.markerClusterGroup || L.markerClusterGroup;
+    this.markerClusterGroup = markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 40, // NB: change to 0 to disable clustering
+      iconCreateFunction: this.clusterCreate
+    });
+  }
 
   ngOnInit(): void {
     this.mapLayersService.$mapLayersChange
@@ -84,7 +93,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
         element.title = 'Reset view';
         element.innerText = 'refresh'; // material icon name
-        element.onclick = () => this.resetView();
+        element.addEventListener('click', () => this.resetView());
         element.className = 'material-icons map-reset-control';
 
         // prevent underlying map actions for these events
@@ -96,7 +105,11 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     });
 
 
-    this.map = L.map('map', {
+    const container = mapContainer(this.elementRef);
+    if (!container) {
+      return;
+    }
+    this.map = initMap(container, {
       zoomControl: false, // will be added manually below
       maxBounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)), // restrict view to "the world"
       minZoom: 3, // prevent zooming out too far
@@ -190,23 +203,25 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   // ref: https://github.com/Leaflet/Leaflet/issues/4835
   // ref: https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
   private fixMap() {
-    if (this.elementRef.nativeElement.offsetParent) {
-      const lat = this.urlService.getQueryParam('lat');
-      const lng = this.urlService.getQueryParam('lng');
-      const zoom = this.urlService.getQueryParam('zoom');
-
-      if (lat && lng && zoom) {
-        this.map.setView(L.latLng(+lat, +lng), +zoom); // NOTE: unary operators
-      } else {
-        // Invalidate size first so Leaflet knows the real container dimensions,
-        // then fit bounds — fixes blank map on Angular 21 initial render.
-        Promise.resolve().then(() => {
-          this.map.invalidateSize();
-          this.fitBounds();
-        });
-      }
-    } else {
+    if (!this.elementRef.nativeElement.offsetParent) {
       setTimeout(this.fixMap.bind(this), 50);
+      return;
+    }
+
+    this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
+    this.resizeObserver.observe(this.map.getContainer());
+    this.map.invalidateSize();
+    // ponytail: ResizeObserver only fires on size changes; one delayed refresh covers
+    // same-sized containers that paint a frame late (splash overlay, flex layout settle)
+    window.setTimeout(() => this.map?.invalidateSize(), 250);
+
+    const lat = this.urlService.getQueryParam('lat');
+    const lng = this.urlService.getQueryParam('lng');
+    const zoom = this.urlService.getQueryParam('zoom');
+    if (lat && lng && zoom) {
+      this.map.setView(L.latLng(+lat, +lng), +zoom); // NOTE: unary operators
+    } else {
+      this.fitBounds();
     }
   }
 
@@ -246,10 +261,14 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     this.drawMap([], this.projectsSummary);
   }
 
+  public invalidateSize() {
+    this.map?.invalidateSize();
+  }
+
   public ngOnDestroy() {
-    if (this.map) {
-      this.map.remove();
-    }
+    this.resizeObserver?.disconnect();
+    destroyMap(this.map);
+    this.map = null;
     this.ngUnsubscribe.next(null);
     this.ngUnsubscribe.complete();
   }
@@ -373,8 +392,10 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     };
 
     // compile marker popup component
-    const compFactory = this.resolver.resolveComponentFactory(MarkerPopupComponent);
-    const compRef = compFactory.create(this.injector);
+    const compRef = createComponent(MarkerPopupComponent, {
+      environmentInjector: this.appRef.injector,
+      elementInjector: this.injector
+    });
     compRef.instance.projectSummary = projectSummary;
     this.appRef.attachView(compRef.hostView);
     compRef.onDestroy(() => this.appRef.detachView(compRef.hostView));

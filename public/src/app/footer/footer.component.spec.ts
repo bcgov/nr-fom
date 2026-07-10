@@ -1,18 +1,29 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { FooterComponent } from './footer.component';
+
+@Component({ standalone: true, template: '' })
+class StubComponent {}
 
 describe('FooterComponent', () => {
   let component: FooterComponent;
   let fixture: ComponentFixture<FooterComponent>;
+  let router: Router;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FooterComponent],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([
+          { path: 'projects', component: StubComponent },
+          { path: 'about', component: StubComponent },
+        ]),
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(FooterComponent);
     component = fixture.componentInstance;
+    router = TestBed.inject(Router);
     fixture.detectChanges();
   });
 
@@ -20,12 +31,17 @@ describe('FooterComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have router injected', () => {
-    expect(component.router).toBeDefined();
+  it('should apply compact footer layout on projects routes', async () => {
+    await router.navigateByUrl('/projects#splash');
+    fixture.detectChanges();
+    expect(component.isProjectsPage).toBe(true);
+    expect(fixture.nativeElement.querySelector('footer').classList).toContain('app-footer--sm');
   });
 
-  it('should render the footer template', () => {
-    const el = fixture.nativeElement;
-    expect(el).toBeTruthy();
+  it('should not apply compact footer layout off projects routes', async () => {
+    await router.navigateByUrl('/about');
+    fixture.detectChanges();
+    expect(component.isProjectsPage).toBe(false);
+    expect(fixture.nativeElement.querySelector('footer').classList).not.toContain('app-footer--sm');
   });
 });

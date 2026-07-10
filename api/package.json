@@ -23,7 +23,7 @@
   },
   "private": true,
   "engines": {
-    "node": "^24.1.0"
+    "node": ">=26.0.0 || ^24.15.0 || ^22.22.3"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.3.4",
@@ -74,7 +74,7 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.1"
   },
   "overrides": {

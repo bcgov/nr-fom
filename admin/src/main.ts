@@ -38,7 +38,6 @@ const routesProviders = [
 const coreProviders = [
     provideZoneChangeDetection({
         eventCoalescing: true,
-        runCoalescing: true,
     }),
     // Note! - Prefer `withInterceptors` and functional interceptors instead, as support for DI-provided
     // interceptors may be phased out in a later release.

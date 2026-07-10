@@ -27,9 +27,3 @@ app-header {
   position: relative;
   overflow-y: auto;
 }
-
-@media (min-width: 768px) {
-  .app-body {
-    margin-top: 68px; // pad the top of the page so content isn't covered by the floating header bar.
-  }
-}

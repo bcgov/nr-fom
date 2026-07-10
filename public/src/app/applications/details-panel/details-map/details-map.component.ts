@@ -4,7 +4,8 @@ import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers
 import { MapLayers } from '@utility/models/map-layers';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 import { GeoJsonObject } from 'geojson';
-import * as L from 'leaflet';
+import * as L_import from 'leaflet';
+const L = (L_import as any).default || L_import;
 
 /*
   Leaflet has bug with these warning/error on console since Angular 11:
@@ -24,6 +25,7 @@ import * as L from 'leaflet';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { destroyMap, initMap, mapContainer, whenMapContainerReady } from '../../utils/leaflet-host';
 
 @Component({
   standalone: true,
@@ -56,7 +58,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
       element.title = 'Reset view';
       element.innerText = 'refresh'; // material icon name
-      element.onclick = () => this.fitBounds();
+      element.addEventListener('click', () => this.fitBounds());
       element.className = 'material-icons map-reset-control';
 
       // prevent underlying map actions for these events
@@ -80,9 +82,11 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
   public ngOnChanges(changes: SimpleChanges) {
     // Note, when Angular first onChange is triggered, the value is undefined.
-    if (changes.projectSpatialDetail.currentValue) {
-      this.resetMap();
-      this.createMap();
+    if (changes.projectSpatialDetail?.currentValue) {
+      whenMapContainerReady(this.elementRef, () => {
+        this.resetMap();
+        this.createMap();
+      });
     }
   }
 
@@ -96,8 +100,12 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public createBasicMap() {
+    const container = mapContainer(this.elementRef);
+    if (!container) {
+      return;
+    }
     this.projectFeatures = L.featureGroup();   
-    this.map = L.map('map', {
+    this.map = initMap(container, {
       layers: this.mapLayers.getAllLayers(),
       zoomControl: false, // will be added manually below
       attributionControl: true,
@@ -232,9 +240,8 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public resetMap() {
-    if (this.map) {
-      this.map.remove();
-    }
+    destroyMap(this.map);
+    this.map = null;
 
     if (this.projectFeatures) {
       this.projectFeatures.remove();

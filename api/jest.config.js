@@ -3,13 +3,10 @@ const { compilerOptions } = require('./tsconfig');
 
 module.exports = {
   displayName: 'api',
-  globals: {
-    'ts-jest': {
-      tsconfig: './tsconfig.spec.json',
-    },
-  },
   transform: {
-    '^.+\\.[tj]s$': 'ts-jest',
+    '^.+\\.[tj]s$': ['ts-jest', {
+      tsconfig: './tsconfig.spec.json',
+    }],
   },
   "testRegex": ".*\\.(spec|e2e-spec)\\.ts$",
   "modulePaths": ["<rootDir>/src", "<rootDir>/src/"],

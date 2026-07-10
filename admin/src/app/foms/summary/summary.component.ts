@@ -2,7 +2,7 @@ import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSv
 import { CommonUtil } from '@admin-core/utils/commonUtil';
 import { COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
 import { DatePipe, NgFor, NgIf } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -73,7 +73,8 @@ export class SummaryComponent implements OnInit, OnDestroy {
     private interactionSvc: InteractionService,
     private attachmentSvc: AttachmentService,
     private configSvc: ConfigService,
-    public attachmentResolverSvc: AttachmentResolverSvc
+    public attachmentResolverSvc: AttachmentResolverSvc,
+    private cdr: ChangeDetectorRef
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -86,17 +87,28 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
     this.scopeOptionChange$.pipe(takeUntil(this.ngUnsubscribe$)).subscribe((nextScope) => {
       this.doFiltering(nextScope);
+      this.cdr.detectChanges();
     });
+  }
+
+  private syncScopeFilter() {
+    if (this.selectedScope && this.spatialDetail && this.publicComments) {
+      this.doFiltering(this.selectedScope);
+    }
   }
 
   private async getProject(projectId: number) {
     this.projectSvc.projectControllerFindOne(projectId).toPromise()
         .then(
-          (result) => {this.project = result;},
+          (result) => {
+            this.project = result;
+            this.cdr.detectChanges();
+          },
           (error) => {
             console.error(`Error retrieving Project for Summary Report:`, error);
             this.project = undefined;
             this.projectReqError = true;
+            this.cdr.detectChanges();
           }
         );
   }
@@ -104,11 +116,16 @@ export class SummaryComponent implements OnInit, OnDestroy {
   private async getpublicComments(projectId: number) {
     this.commentSvc.publicCommentControllerFind(projectId).toPromise()
         .then(
-          (result) => {this.filteredPublicComments = this.publicComments = [...result];},
+          (result) => {
+            this.filteredPublicComments = this.publicComments = [...result];
+            this.syncScopeFilter();
+            this.cdr.detectChanges();
+          },
           (error) => {
             console.error(`Error retrieving Public Comments for Summary Report:`, error);
             this.publicComments = undefined;
             this.publicCommentsReqError = true;
+            this.cdr.detectChanges();
           }
         );
   }
@@ -123,11 +140,14 @@ export class SummaryComponent implements OnInit, OnDestroy {
         const mainRptOpt = {commentScopeCode: null, desc: 'Main Report', name: null, scopeId: null} as CommentScopeOpt;
         this.selectedScope = mainRptOpt;
         this.commentScopeOpts.unshift(mainRptOpt);
+        this.syncScopeFilter();
+        this.cdr.detectChanges();
       },
       (error) => {
         console.error(`Error retrieving Spatil Details for Summary Report:`, error);
         this.spatialDetail = undefined;
         this.spatialDetailReqError = true;
+        this.cdr.detectChanges();
       }
     );
   }
@@ -135,11 +155,15 @@ export class SummaryComponent implements OnInit, OnDestroy {
   private async getProjectInteractions(projectId: number) {
     this.interactionSvc.interactionControllerFind(projectId).toPromise()
     .then(
-      (result) => {this.interactions = result;},
+      (result) => {
+        this.interactions = result;
+        this.cdr.detectChanges();
+      },
       (error) => {
         console.error(`Error retrieving Project Interactions for Summary Report:`, error);
         this.interactions = undefined;
         this.interactionsReqError = true;
+        this.cdr.detectChanges();
       }
     );
   }
@@ -150,12 +174,14 @@ export class SummaryComponent implements OnInit, OnDestroy {
       (result) => {
         this.attachments  = result.sort((a: AttachmentResponse, b: AttachmentResponse) => 
             a.attachmentType.code.localeCompare(b.attachmentType.code)
-        )
+        );
+        this.cdr.detectChanges();
       },
       (error) => {
         console.error(`Error retrieving Project Attachments for Summary Report:`, error);
         this.attachments = undefined;
         this.attachmentsReqError = true;
+        this.cdr.detectChanges();
       }
     );
   }

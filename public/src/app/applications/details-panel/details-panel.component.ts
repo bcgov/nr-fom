@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -70,6 +70,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     private spatialFeatureService: SpatialFeatureService,
     private attachmentService: AttachmentService,
     private fss: FeatureSelectService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -103,6 +104,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     if (!projectId) {
       // no project to display
       this.project = null;
+      this.cdr.detectChanges();
       return;
     }
 
@@ -124,10 +126,15 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
         this.projectIdFilter.filter.value = this.project.id.toString();
         this.saveQueryParameters();
         this.update.emit(this.project);
+        // Navigation originates from a debounced funnel timer in UrlService, so this
+        // HTTP response can resolve without a zone tick reaching this view. Detect
+        // changes explicitly so the loaded project renders in the details panel.
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
         this.isAppLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ChangeDetectorRef, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter } from 'rxjs/operators';
 
 @Component({
   standalone: true,
@@ -9,6 +11,27 @@ import { Router, RouterLink } from '@angular/router';
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss']
 })
-export class FooterComponent {
-  constructor(public router: Router) {}
+export class FooterComponent implements OnInit {
+  public isProjectsPage = false;
+  private destroyRef = inject(DestroyRef);
+
+  constructor(public router: Router, private cdr: ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    this.syncProjectsPage(this.router.url);
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((event) => {
+        this.syncProjectsPage(event.urlAfterRedirects);
+        // Router-driven updates (e.g. home/true → projects#splash) may not reach this view without an explicit tick.
+        this.cdr.detectChanges();
+      });
+  }
+
+  private syncProjectsPage(url: string): void {
+    this.isProjectsPage = (url || window.location.pathname).includes('projects');
+  }
 }

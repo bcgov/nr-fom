@@ -1,6 +1,6 @@
 import { ApiBaseEntity, DeepPartial } from '@entities';
 import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { PinoLogger } from 'nestjs-pino';
 import { DataSource, FindOptionsWhere, Repository, UpdateResult } from 'typeorm';
 import { FindManyOptions } from 'typeorm/find-options/FindManyOptions';

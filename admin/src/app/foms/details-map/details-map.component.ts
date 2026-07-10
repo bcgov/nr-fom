@@ -3,7 +3,8 @@ import { SpatialFeaturePublicResponse, SubmissionTypeCodeEnum } from '@api-clien
 import { MapLayers } from '@utility/models/map-layers';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 import { GeoJsonObject } from 'geojson';
-import * as L from 'leaflet';
+import * as L_import from 'leaflet';
+const L = (L_import as any).default || L_import;
 /*
   Leaflet has bug with these warning/error on console since Angular 11:
   http://localhost:4300/public/marker-icon-2x.png 404 (Not Found)
@@ -53,7 +54,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
       element.title = 'Reset view';
       element.innerText = 'refresh'; // material icon name
-      element.onclick = () => this.fitBounds();
+      element.addEventListener('click', () => this.fitBounds());
       element.className = 'material-icons map-reset-control';
 
       // prevent underlying map actions for these events

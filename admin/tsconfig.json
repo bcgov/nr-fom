@@ -4,6 +4,10 @@
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "bundler",
+    "ignoreDeprecations": "6.0",
+    "strict": false,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -29,14 +33,28 @@
       "@utility/*": [
         "../../libs/utility/src/*"
       ],
-      "@angular/*": [
-        "../node_modules/@angular/*"
+      "@angular/core": [
+        "../node_modules/@angular/core"
+      ],
+      "@angular/common/http": [
+        "../node_modules/@angular/common/http"
+      ],
+      "rxjs": [
+        "../node_modules/rxjs"
+      ],
+      "rxjs/*": [
+        "../node_modules/rxjs/*"
+      ],
+      "tslib": [
+        "../node_modules/tslib"
       ]
     },
     "useDefineForClassFields": false,
     "types": [
       "jest",
-      "node"
+      "node",
+      "leaflet",
+      "leaflet.markercluster"
     ]
   },
   "exclude": [

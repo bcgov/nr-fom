@@ -3,7 +3,7 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe, NgFor, NgIf } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectPlanCodeEnum, ProjectResponse, ProjectService, SpatialObjectCodeEnum, SubmissionDetailResponse, SubmissionRequest, SubmissionService, SubmissionTypeCodeEnum, WorkflowStateEnum } from '@api-client';
@@ -72,7 +72,8 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     private stateSvc: StateService,
     private modalSvc: ModalService,
     private submissionSvc: SubmissionService,
-    private cognitoService: CognitoService
+    private cognitoService: CognitoService,
+    private cdr: ChangeDetectorRef
   ) {
     this.user = this.cognitoService.getUser();
   }
@@ -131,6 +132,12 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
       this.fg = <RxFormGroup>this.formBuilder.formGroup(form);
       this.fg.get('projectId').setValue(this.originalSubmissionRequest.projectId);
       this.fg.get('submissionTypeCode').setValue(this.originalSubmissionRequest.submissionTypeCode);
+      this.cdr.detectChanges();
+
+      // stateSvc.loading flips back to false in the HTTP interceptor's finalize(),
+      // which runs after this callback returns — defer so the View FOM button
+      // spinner picks up the settled value instead of a stale "true".
+      setTimeout(() => this.cdr.detectChanges());
     });
   }
 
