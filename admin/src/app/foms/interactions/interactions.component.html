@@ -1,4 +1,4 @@
-<ng-container *ngIf="data$ | async as data">
+<ng-container *ngIf="data">
     <div class="top-container">
       <div class="container">
         <div class="breadcrumb-container">
@@ -28,39 +28,33 @@
         <div class="interactions">
           <div class="interactions__list panel">
             <div class="panel-header">
-              <h2 style="margin: 0;">Engagements ({{(data$ | async)?.length}})</h2>
+              <h2 style="margin: 0;">Engagements ({{data?.length}})</h2>
             </div>
             <div class="panel-scroll" #interactionListScrollContainer>
-              <ng-container *ngIf="data$  | async as result">
-
-                <ng-container>
-                  <div class="interaction-item" *ngFor="let item of result"
-                        [class.active]="item?.id === selectedItem?.id"
-                        style="padding-right: 5px;"
-                        (click)="onInteractionItemClicked(item, null)">
-                    <div class="interaction-item-header">
-                      <div class="interaction-author">
-                        {{item.stakeholder || 'Anonymous'}}
-                      </div>
-                      <div class="interaction-date">
-                        {{(item.communicationDate | date)}}
-                      </div>
-                      <div *ngIf="canModifyInteraction()">
-                        <button class="btn btn-icon" title="Remove this engagement"
-                                [disabled]="loading"
-                                (click)="deleteInteraction(item)">
-                          <em class="spinner-border" [hidden]="!(loading && item?.id === selectedItem?.id)"></em>
-                          <em class="material-icons" [hidden]="loading">
-                            delete
-                          </em>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="interaction-body">{{item.communicationDetails}}</div>
+              <div class="interaction-item" *ngFor="let item of data"
+                    [class.active]="item?.id === selectedItem?.id"
+                    style="padding-right: 5px;"
+                    (click)="onInteractionItemClicked(item, null)">
+                <div class="interaction-item-header">
+                  <div class="interaction-author">
+                    {{item.stakeholder || 'Anonymous'}}
                   </div>
-                </ng-container>
-
-              </ng-container>
+                  <div class="interaction-date">
+                    {{(item.communicationDate | date)}}
+                  </div>
+                  <div *ngIf="canModifyInteraction()">
+                    <button class="btn btn-icon" title="Remove this engagement"
+                            [disabled]="loading"
+                            (click)="deleteInteraction(item)">
+                      <em class="spinner-border" [hidden]="!(loading && item?.id === selectedItem?.id)"></em>
+                      <em class="material-icons" [hidden]="loading">
+                        delete
+                      </em>
+                    </button>
+                  </div>
+                </div>
+                <div class="interaction-body">{{item.communicationDetails}}</div>
+              </div>
             </div>
 
           </div>
