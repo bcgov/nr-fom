@@ -276,6 +276,10 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
         }),
         catchError((error) => {
           console.error(error);
+          // stateSvc.loading flips back to false in the HTTP interceptor's finalize(),
+          // which runs after this callback returns — defer so the Submit/Save button
+          // spinners pick up the settled value instead of a stale "true".
+          setTimeout(() => this.cdr.detectChanges());
           return of(null);
         })
       )
@@ -323,6 +327,10 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       return this.onSuccess(id);
     } catch (err) {
       console.error(err);
+      // stateSvc.loading flips back to false in the HTTP interceptor's finalize(),
+      // which runs after this callback returns — defer so the Submit/Save button
+      // spinners pick up the settled value instead of a stale "true".
+      setTimeout(() => this.cdr.detectChanges());
     }
   }
 
