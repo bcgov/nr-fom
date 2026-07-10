@@ -195,6 +195,11 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.cdr.detectChanges();
 
+      // stateSvc.loading flips back to false in the HTTP interceptor's finalize(),
+      // which runs after this callback returns — defer so the Submit/Save button
+      // spinners pick up the settled value instead of a stale "true".
+      setTimeout(() => this.cdr.detectChanges());
+
       this.loadForestClients().then( (result) => {
         this.forestClients = result;
         this.cdr.detectChanges();
