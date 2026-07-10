@@ -113,3 +113,6 @@ tmp*.sh
 .github/skills/**
 .github/references
 analysis
+.claude
+.agents
+skills-lock.json
