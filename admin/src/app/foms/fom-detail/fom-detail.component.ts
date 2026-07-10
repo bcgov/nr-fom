@@ -1,7 +1,7 @@
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AttachmentResponse, ProjectMetricsResponse, ProjectPlanCodeEnum, ProjectResponse, ProjectService, ProjectWorkflowStateChangeRequest, SpatialFeaturePublicResponse, WorkflowStateEnum } from "@api-client";
 import { NgbModal, NgbModalRef, NgbModule, NgbNav } from '@ng-bootstrap/ng-bootstrap';
@@ -68,7 +68,8 @@ export class FomDetailComponent implements OnInit, OnDestroy {
     public attachmentResolverSvc: AttachmentResolverSvc,
     private cognitoService: CognitoService,
     private ngbModalService: NgbModal,
-    private fss: FeatureSelectService
+    private fss: FeatureSelectService,
+    private cdr: ChangeDetectorRef
   ) {
     this.user = this.cognitoService.getUser();
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
@@ -106,6 +107,7 @@ export class FomDetailComponent implements OnInit, OnDestroy {
       this.projectUpdateTriggered$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
         this.projectService.projectControllerFindOne(this.project.id).subscribe((data) => {
           this.initProjectDetail(data);
+          this.cdr.detectChanges();
         });
       });
     }
