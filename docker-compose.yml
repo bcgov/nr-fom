@@ -83,7 +83,7 @@ services:
   db:
     container_name: db
     # Postgis with extensions (postgis_topology, fuzzystrmatch, postgis_tiger_geocoder)
-    image: postgis/postgis:18-master
+    image: postgis/postgis:17-master
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test
