@@ -38,7 +38,7 @@ async function bootstrap():Promise<INestApplication> {
     await dbmigrate(ormConfigMain as ConnectionOptions);
     console.log("Done DB Migrations.");
   } catch (error) {
-    console.error('Error during database migration: ' + JSON.stringify(error));
+    console.error('Error during database migration:', error);
     return null;
   }
 
@@ -143,10 +143,10 @@ async function startApi() {
     app.get(Logger).log("Done regular startup.");
     // Don't await so non-blocking - allows OpenShift container (pod) to be marked ready for traffic.
     postStartup(app).catch((postError) => {
-      console.error('Error during post startup: ' + JSON.stringify(postError));
+      console.error('Error during post startup:', postError);
     });
   } catch (error) {
-    console.error('Error during application startup: ' + JSON.stringify(error));
+    console.error('Error during application startup:', error);
     process.exit(1);
   }  
 }
@@ -162,7 +162,7 @@ async function runBatch(batchType: string) {
     }
     process.exit(0);
   } catch (error) {
-    console.error('Error during batch execution: ' + JSON.stringify(error));
+    console.error('Error during batch execution:', error);
     process.exit(1);
   }  
 }
@@ -175,7 +175,7 @@ async function standaloneRunTestDataMigrations() {
     await runTestDataMigrations(app);
 
   } catch (error) {
-    console.error('Error during test data migration: ' + JSON.stringify(error));
+    console.error('Error during test data migration:', error);
     process.exit(1);
   }
 }

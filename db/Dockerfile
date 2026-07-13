@@ -1,8 +1,8 @@
 FROM postgis/postgis:18-master
 
-# Enable pgcrypto extension on startup
-RUN sed -i '/EXISTS postgis_tiger_geocoder;*/a CREATE EXTENSION IF NOT EXISTS pgcrypto;' \
-    /docker-entrypoint-initdb.d/10_postgis.sh
+# PostGIS is provided by the base image's init script (10_postgis.sh) on fresh init.
+# pgcrypto is enabled via a main DB migration (CREATE EXTENSION IF NOT EXISTS pgcrypto)
+# rather than here, so it also self-heals existing databases, not just fresh ones.
 
 # Healthcheck
 HEALTHCHECK --interval=15s --timeout=5s --retries=3 CMD [ "pg_isready" ]

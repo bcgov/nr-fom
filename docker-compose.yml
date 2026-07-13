@@ -1,6 +1,5 @@
 ---
 volumes:
-  postgres-data:
   npm-cache:
   libs-node-modules:
 
@@ -85,14 +84,6 @@ services:
     container_name: db
     # Postgis with extensions (postgis_topology, fuzzystrmatch, postgis_tiger_geocoder)
     image: postgis/postgis:18-master
-    # Add pgcrypto extension (sed) if not present (grep), then start normally (entrypoint)
-    entrypoint:
-      - sh
-      - -c
-      - grep -qxF 'CREATE EXTENSION IF NOT EXISTS pgcrypto'/docker-entrypoint-initdb.d/10_postgis.sh ||
-        sed -i '/EXISTS postgis_tiger_geocoder;*/a CREATE EXTENSION IF NOT EXISTS pgcrypto;'
-        /docker-entrypoint-initdb.d/10_postgis.sh &&
-        /usr/local/bin/docker-entrypoint.sh postgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test
@@ -105,8 +96,7 @@ services:
       retries: 3
       start_period: 30s
       timeout: 5s
-    volumes:
-      - postgres-data:/var/lib/postgres/data
+    # pgcrypto is enabled by a main DB migration on API startup.
     ports:
       - 5432:5432
 
