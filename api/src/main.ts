@@ -133,7 +133,7 @@ async function postStartup(app: INestApplication) {
 
     logger.log("Done postStartup.");
   } catch (error) {
-    console.error('Error during post startup: ' + JSON.stringify(error));
+    console.error('Error during post startup:', error);
   }
 }
 
