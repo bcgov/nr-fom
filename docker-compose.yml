@@ -83,6 +83,7 @@ services:
   db:
     container_name: db
     # Postgis with extensions (postgis_topology, fuzzystrmatch, postgis_tiger_geocoder)
+    # pgcrypto is enabled by a main DB migration on API startup.
     image: postgis/postgis:17-master
     environment:
       - POSTGRES_USER=postgres
@@ -96,7 +97,6 @@ services:
       retries: 3
       start_period: 30s
       timeout: 5s
-    # pgcrypto is enabled by a main DB migration on API startup.
     ports:
       - 5432:5432
 
