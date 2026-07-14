@@ -84,7 +84,7 @@ services:
     container_name: db
     # Postgis with extensions (postgis_topology, fuzzystrmatch, postgis_tiger_geocoder)
     # pgcrypto is enabled by a main DB migration on API startup.
-    image: postgis/postgis:17-master
+    image: postgis/postgis:18-master
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=test
