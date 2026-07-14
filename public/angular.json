@@ -64,6 +64,7 @@
           },
           "configurations": {
             "production": {
+              "tsConfig": "tsconfig.app.prod.json",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

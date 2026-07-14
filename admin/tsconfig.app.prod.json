@@ -1,0 +1,39 @@
+// Production-only build config. The `@angular/*`, `rxjs`, and `tslib` path
+// entries pin those packages to admin/node_modules so the `libs` source we
+// compile in-place does NOT pull its own sibling copy of Angular into the
+// bundle (two copies -> NG0203 "inject() outside injection context").
+// This pin MUST stay out of tsconfig.json/tsconfig.app.json: the esbuild
+// dev-server prebundles @angular/core, and a path remap there creates a
+// duplicate (raw + prebundled) that breaks `ng serve`. Prod esbuild does no
+// prebundling and needs the remap. See angular.json build > production > tsConfig.
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "paths": {
+      "@admin-core/*": [
+        "core/*"
+      ],
+      "@api-client": [
+        "../../libs/client/typescript-ng"
+      ],
+      "@utility/*": [
+        "../../libs/utility/src/*"
+      ],
+      "@angular/core": [
+        "../node_modules/@angular/core"
+      ],
+      "@angular/common/http": [
+        "../node_modules/@angular/common/http"
+      ],
+      "rxjs": [
+        "../node_modules/rxjs"
+      ],
+      "rxjs/*": [
+        "../node_modules/rxjs/*"
+      ],
+      "tslib": [
+        "../node_modules/tslib"
+      ]
+    }
+  }
+}
