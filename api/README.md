@@ -26,32 +26,31 @@ Once set up, the stack can be access using the following paths on localhost:
 
 ### Local / Bare Metal
 
-Run 'cd ../libs && npm ci --ignore-scripts' first. 
-
-Run 'npm install --ignore-scripts' for this component.
-
-Start commands are available in package.json.
-
-OBJECT_STORAGE_SECRET = object storage secret, available in the OpenShift dev secret `fom-object-storage-dev`
-
-Here's how to run only the api locally:
+Dependencies are managed with npm workspaces and installed once at the **repository root** — there is no separate install for this component:
 
 ```
-# Source local variables
-source ./localdev.env      # Linux, MacOS
+cd ..        # repository root
+npm ci
+```
 
-# Object storage secret
+Running the API also requires a reachable PostgreSQL and a set of environment variables. `localdev.env` (in this folder) holds local defaults; the object storage secret is not included and must be supplied separately.
+
+`OBJECT_STORAGE_SECRET` = object storage secret, available in the OpenShift dev secret `fom-object-storage-dev`.
+
+Here's how to run only the api locally (a database must be running first — e.g. `docker compose up -d db` from the repository root):
+
+```
+# From the api directory, load local environment variables into the current shell
+source ./localdev.env          # Linux, macOS
+
+# Object storage secret (not included in localdev.env)
 export OBJECT_STORAGE_SECRET=<hidden>
 
-# Make sure 'libs' dependencies is installed
-cd ../libs && npm ci --ignore-scripts
-
-# Install node modules
-npm i
-
-# Build and run the api
+# Start the API (from the api directory; or `npm run start:api` from the repository root)
 npm run start:api
 ```
+
+Other component scripts are defined in `package.json` (`build:api`, `test-unit`, `db:migrate-*`, batch entry points, etc.).
 
 ## Client Library Generation
 These are the steps to generate the client library used by the frontend components (Admin + Public)

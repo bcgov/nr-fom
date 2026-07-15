@@ -24,10 +24,13 @@ jobs:
       - uses: bcgov/action-test-and-analyse@v2.0.0
         with:
           commands: |
-            cd ../libs && npm ci --ignore-scripts && cd -
-            npm ci --ignore-scripts
+            cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
           dir: admin
+          # Workspaces use a single root package-lock.json; the action's npm cache
+          # keys on <dir>/package-lock.json (now absent), so disable it to avoid
+          # "Some specified paths were not resolved, unable to cache dependencies".
+          cache: ""
           node_version: 24
           knip_config: .github/knip.json
 
@@ -39,17 +42,25 @@ jobs:
       - uses: bcgov/action-test-and-analyse@v2.0.0
         with:
           commands: |
-            npm ci --ignore-scripts
+            cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
           dir: api
+          # See note in tests-admin: single root lockfile -> disable per-dir npm cache.
+          cache: ""
           node_version: 24
           knip_config: .github/knip.json
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          # npm workspaces use a single hoisted root package-lock.json, so the
+          # per-workspace lockfiles were removed by design.
+          # The root package.json still has its sibling lock.
           sonar_args: >
             -Dsonar.exclusions=**/*.spec.ts
-            -Dsonar.javascript.lcov.reportPaths=coverage/api/lcov.info   
+            -Dsonar.javascript.lcov.reportPaths=coverage/api/lcov.info
             -Dsonar.organization=bcgov-sonarcloud
             -Dsonar.projectKey=nr-fom
-          sonar_token: ${{ secrets.SONAR_TOKEN }}
+            -Dsonar.issue.ignore.multicriteria=e1
+            -Dsonar.issue.ignore.multicriteria.e1.ruleKey=text:S8564
+            -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/package.json
 
   tests-public:
     name: Unit Tests (public)
@@ -59,10 +70,11 @@ jobs:
       - uses: bcgov/action-test-and-analyse@v2.0.0
         with:
           commands: |
-            cd ../libs && npm ci --ignore-scripts && cd -
-            npm ci --ignore-scripts
+            cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
           dir: public
+          # See note in tests-admin: single root lockfile -> disable per-dir npm cache.
+          cache: ""
           node_version: 24
           knip_config: .github/knip.json
 

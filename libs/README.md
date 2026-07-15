@@ -29,11 +29,11 @@ Under 'libs' folder, current categories for the libs project contains:
    - This is the common places for common code to be deposited and shared among other projects.
    - One specific 'user.ts' object is shared between 'api' and 'admin' and should be changed carefully.
 
-## Requirement to Build for Project using LIBS
+## Dependencies
 
-FOM has been migrated from mono-repo to none mono-repo for ease of resolving dependencies individually for each project (but not 'libs' with versioning). As 'libs' is a sibling project beside other projects, for the individual project to use it and to build, you do require to do following steps first before building individual project:
-- cd libs
-- npm ci --ignore-scripts
+`libs` is a member of the repository's **npm workspace**. Its dependencies are installed together with every other component by a single `npm ci` at the **repository root** — `libs` has no lockfile or `node_modules` of its own, and needs no separate install step.
+
+Consuming projects (`public`, `admin`, `api`) reference `libs` **as source** through their `tsconfig.json` `paths` (e.g. `@utility/*`, `@api-client`); `libs` itself is not built or published — it is compiled in place as part of each consuming project's build.
 
 ## Client Library Generation
 - See [Client Library Generation](../api/README.md)

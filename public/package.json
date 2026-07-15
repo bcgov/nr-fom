@@ -3,9 +3,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "prestart:public": "sh -c 'test -d ../libs/node_modules/@angular/common || npm ci --ignore-scripts --prefix ../libs'",
     "start:public": "ng serve --configuration development --host=0.0.0.0",
-    "prebuild:public": "npm run prestart:public",
     "build:public": "ng build --configuration production",
     "test-unit": "jest --coverage",
     "test-unit-watch": "jest --watch=true"
@@ -47,13 +45,13 @@
   },
   "devDependencies": {
     "@angular-devkit/architect": "^0.2200.1",
-    "@angular-devkit/build-angular": "^22.0.1",
     "@angular-devkit/core": "^22.0.1",
     "@angular-eslint/builder": "^22.0.0",
     "@angular-eslint/eslint-plugin": "^22.0.0",
     "@angular-eslint/eslint-plugin-template": "^22.0.0",
     "@angular-eslint/schematics": "^22.0.0",
     "@angular-eslint/template-parser": "^22.0.0",
+    "@angular/build": "^22.0.6",
     "@angular/cli": "^22.0.1",
     "@angular/compiler-cli": "^22.0.1",
     "@noble/hashes": "^2.2.0",
@@ -71,18 +69,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.1"
-  },
-  "overrides": {
-    "@ng-bootstrap/ng-bootstrap": {
-      "@angular/core": "$@angular/core",
-      "@angular/common": "$@angular/common",
-      "@angular/forms": "$@angular/forms",
-      "@angular/localize": "$@angular/localize"
-    },
-    "ngx-bootstrap": {
-      "@angular/core": "$@angular/core",
-      "@angular/common": "$@angular/common",
-      "@angular/forms": "$@angular/forms"
-    }
   }
 }

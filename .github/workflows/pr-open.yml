@@ -75,7 +75,7 @@ jobs:
           URL="https://$URL_HOST/api"
           echo "Smoke testing endpoint: $URL"
           for i in {1..30}; do
-            HTTP_STATUS=$(curl -s -k -o /dev/null -w "%{http_code}" "$URL" || true)
+            HTTP_STATUS=$(curl -sL -k -o /dev/null -w "%{http_code}" "$URL" || true)
             if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "302" ] || [ "$HTTP_STATUS" = "404" ]; then
               echo "✅ App is alive! Status: $HTTP_STATUS"
               exit 0

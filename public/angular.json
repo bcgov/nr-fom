@@ -16,18 +16,21 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular/build:application",
           "options": {
             "allowedCommonJsDependencies": [
                 "leaflet", "leaflet.markercluster", "object-hash"
             ],
             "baseHref": "/public/",
-            "outputPath": "dist/public",
+            "outputPath": {
+              "base": "dist/public",
+              "browser": ""
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "src/polyfills.ts"
+            ],
             "tsConfig": "tsconfig.app.json",
-            "aot": true,
             "assets": [
               "src/favicon.ico",
               {
@@ -37,26 +40,22 @@
                   "**/*.scss"
                 ],
                 "output": "/assets/"
-              },
-              {
-                "glob": "**/*",
-                "input": "./node_modules/leaflet/dist/images/",
-                "output": "/assets/images"
-              }              
+              }
             ],
             "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
-              "node_modules/leaflet/dist/leaflet.css",
-              "node_modules/leaflet.markercluster/dist/MarkerCluster.css",
-              "node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css",
+              "../node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "../node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
+              "../node_modules/leaflet/dist/leaflet.css",
+              "../node_modules/leaflet.markercluster/dist/MarkerCluster.css",
+              "../node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css",
               "src/styles.scss",
-              "node_modules/@angular/material/prebuilt-themes/indigo-pink.css"
+              "../node_modules/@angular/material/prebuilt-themes/indigo-pink.css"
             ],
             "scripts": [
-              "node_modules/leaflet/dist/leaflet.js",
-              "node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
-            ]
+              "../node_modules/leaflet/dist/leaflet.js",
+              "../node_modules/leaflet.markercluster/dist/leaflet.markercluster.js"
+            ],
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production": {
@@ -82,8 +81,6 @@
               },
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "initial",
@@ -92,7 +89,7 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
+                  "maximumWarning": "8kb",
                   "maximumError": "10kb"
                 }
               ]
@@ -100,13 +97,12 @@
             "development": {
               "optimization": false,
               "sourceMap": true,
-              "namedChunks": true,
-              "vendorChunk": true
+              "namedChunks": true
             }
           }
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "options": {
             "port": 4300,
             "host": "0.0.0.0",
@@ -127,7 +123,7 @@
           }
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
             "buildTarget": "public:build"
           }

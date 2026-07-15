@@ -1,0 +1,38 @@
+{
+  "name": "nr-fom",
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "node": ">=26.0.0 || ^24.15.0 || ^22.22.3"
+  },
+  "workspaces": [
+    "libs",
+    "public",
+    "admin",
+    "api"
+  ],
+  "scripts": {
+    "build:public": "npm run build:public --workspace=public",
+    "build:admin": "npm run build:admin --workspace=admin",
+    "build:api": "npm run build:api --workspace=api",
+    "start:public": "npm run start:public --workspace=public",
+    "start:admin": "npm run start:admin --workspace=admin",
+    "start:api": "npm run start:api --workspace=api"
+  },
+  "overrides": {
+    "@ng-bootstrap/ng-bootstrap": {
+      "@angular/core": "^22.0.1",
+      "@angular/common": "^22.0.1",
+      "@angular/forms": "^22.0.1",
+      "@angular/localize": "^22.0.1"
+    },
+    "ngx-bootstrap": {
+      "@angular/core": "^22.0.1",
+      "@angular/common": "^22.0.1",
+      "@angular/forms": "^22.0.1"
+    },
+    "shell-quote": "1.9.0",
+    "nodemailer": "9.0.3"
+  }
+}
