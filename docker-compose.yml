@@ -40,6 +40,8 @@ services:
       - .:/app:z
       - npm-cache:/root/.npm:z
       - root-node-modules:/app/node_modules
+      # Keep the Angular build cache in the container (avoids root-owned .angular on the host)
+      - /app/admin/.angular
     working_dir: /app
 
   api:
@@ -78,6 +80,8 @@ services:
       - .:/app:z
       - npm-cache:/root/.npm:z
       - root-node-modules:/app/node_modules
+      # Keep nest build output inside the container (avoids root-owned api/dist on the host)
+      - /app/api/dist
     working_dir: /app
 
   db:
@@ -124,4 +128,6 @@ services:
       - .:/app:z
       - npm-cache:/root/.npm:z
       - root-node-modules:/app/node_modules
+      # Keep the Angular build cache in the container (avoids root-owned .angular on the host)
+      - /app/public/.angular
     working_dir: /app
