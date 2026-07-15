@@ -71,6 +71,33 @@ FROM pg_extension
 ORDER BY extname;
 ```
 
+#### Required extensions: `postgis` and `pgcrypto`
+
+Confirm **both** `postgis` and `pgcrypto` appear in the extensions list above.
+
+- `postgis` — used for the spatial/GIS columns.
+- `pgcrypto` — a **runtime dependency**: public-comment PII (name, location, email,
+  phone) is encrypted/decrypted with `pgp_sym_encrypt` / `pgp_sym_decrypt`
+
+`pgcrypto` is normally carried over automatically — `db_transfer.sh` uses a full
+`pg_dump` (it excludes only the `tiger`/`topology` schemas), so the dump includes the
+`CREATE EXTENSION pgcrypto` statement and the restore recreates it.
+
+To verify `pgcrypto` specifically (returns one row if present, no rows if missing):
+
+```sql
+SELECT extname FROM pg_extension WHERE extname = 'pgcrypto';
+```
+
+If `pgcrypto` is missing, create it (idempotent) and confirm it works:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- Sanity check: should return 't'
+SELECT pgp_sym_decrypt(pgp_sym_encrypt('ok', 'k'), 'k') = 'ok' AS pgcrypto_works;
+```
+
 In non-prod environments, add a new FOM and verify project counts again.
 
 ### 8. Scale Up the API
