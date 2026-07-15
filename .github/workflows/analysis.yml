@@ -60,7 +60,7 @@ jobs:
             -Dsonar.projectKey=nr-fom
             -Dsonar.issue.ignore.multicriteria=e1
             -Dsonar.issue.ignore.multicriteria.e1.ruleKey=text:S8564
-            -Dsonar.issue.ignore.multicriteria.e1.resourcePattern=**/package.json
+            -Dsonar.issue.ignore.multicriteria.e1.resourceKey=**/package.json
 
   tests-public:
     name: Unit Tests (public)
