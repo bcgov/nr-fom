@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { PinoLogger } from 'nestjs-pino';
-import fetch from 'node-fetch';
+import type { Request } from 'express';
 import { maxFileSizeBytes } from '../attachment/attachment.controller';
 import { InteractionCreateRequest, InteractionResponse, InteractionUpdateRequest } from './interaction.dto';
 import { InteractionService } from './interaction.service';
@@ -111,7 +111,7 @@ export class InteractionController {
   async create(
     @UserHeader() user: User,
     @UploadedFile('file') file: Express.Multer.File,
-    @Req() request: fetch.Request): Promise<InteractionResponse> {
+    @Req() request: Request): Promise<InteractionResponse> {
       const createRequest = new InteractionCreateRequest(
         await new ParseIntPipe().transform(request.body['projectId'], null),
         request.body['stakeholder'],
@@ -152,7 +152,7 @@ export class InteractionController {
     @UserHeader() user: User,
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile('file') file: Express.Multer.File,
-    @Req() request: fetch.Request): Promise<InteractionResponse> {     
+    @Req() request: Request): Promise<InteractionResponse> {     
       const updateRequest = new InteractionUpdateRequest(
         await new ParseIntPipe().transform(request.body['projectId'], null),
         request.body['stakeholder'],
