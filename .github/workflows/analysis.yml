@@ -49,12 +49,18 @@ jobs:
           cache: ""
           node_version: 24
           knip_config: .github/knip.json
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          # npm workspaces use a single hoisted root package-lock.json, so the
+          # per-workspace lockfiles were removed by design.
+          # The root package.json still has its sibling lock.
           sonar_args: >
             -Dsonar.exclusions=**/*.spec.ts
-            -Dsonar.javascript.lcov.reportPaths=coverage/api/lcov.info   
+            -Dsonar.javascript.lcov.reportPaths=coverage/api/lcov.info
             -Dsonar.organization=bcgov-sonarcloud
             -Dsonar.projectKey=nr-fom
-          sonar_token: ${{ secrets.SONAR_TOKEN }}
+            -Dsonar.issue.ignore.multicriteria=e1
+            -Dsonar.issue.ignore.multicriteria.e1.ruleKey=text:S8564
+            -Dsonar.issue.ignore.multicriteria.e1.resourcePattern=**/package.json
 
   tests-public:
     name: Unit Tests (public)

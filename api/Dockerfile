@@ -5,7 +5,7 @@ FROM registry.access.redhat.com/ubi8/nodejs-24:1-1782882986 AS builder
 WORKDIR /app
 USER root
 RUN dnf install -y ca-certificates && dnf clean all && rm -rf /var/cache/dnf
-RUN npm install -g npm@10.9.4
+RUN npm install -g npm@10.9.4 --ignore-scripts
 
 # Root lockfile + only the manifests this image builds (api + libs). `npm ci`
 # reads the full root lockfile but skips workspaces whose directory is absent,
