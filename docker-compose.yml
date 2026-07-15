@@ -2,17 +2,19 @@
 volumes:
   postgres-data:
   npm-cache:
-  libs-node-modules:
+  root-node-modules:
 
 services:
-  init-libs:
-    container_name: init-libs
+  # Single hoisted workspace install into a shared node_modules volume.
+  # All other services reuse it (one physical Angular copy -> no NG0203).
+  init-deps:
+    container_name: init-deps
     image: node:24.18.0-bookworm-slim
     volumes:
       - .:/app:z
       - npm-cache:/root/.npm:z
-      - libs-node-modules:/app/libs/node_modules
-    working_dir: /app/libs
+      - root-node-modules:/app/node_modules
+    working_dir: /app
     entrypoint: ["npm", "ci", "--ignore-scripts"]
 
   admin:
@@ -20,12 +22,12 @@ services:
     depends_on:
       api:
         condition: service_healthy
-      init-libs:
+      init-deps:
         condition: service_completed_successfully
     entrypoint:
       - sh
       - -c
-      - cd libs && npm ci --ignore-scripts && cd ../admin && npm ci --ignore-scripts && npm run start:admin
+      - npm run start:admin
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4200/admin', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
@@ -38,8 +40,7 @@ services:
     volumes:
       - .:/app:z
       - npm-cache:/root/.npm:z
-      - libs-node-modules:/app/libs/node_modules
-      - /app/admin/node_modules
+      - root-node-modules:/app/node_modules
     working_dir: /app
 
   api:
@@ -47,12 +48,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      init-libs:
+      init-deps:
         condition: service_completed_successfully
     entrypoint:
       - sh
       - -c
-      - cd api && npm ci --ignore-scripts && npm run start:api
+      - npm run start:api
     environment:
       - DB_HOST=db
       - DB_NAME=fom
@@ -77,8 +78,7 @@ services:
     volumes:
       - .:/app:z
       - npm-cache:/root/.npm:z
-      - libs-node-modules:/app/libs/node_modules
-      - /app/api/node_modules
+      - root-node-modules:/app/node_modules
     working_dir: /app
 
   db:
@@ -115,12 +115,12 @@ services:
     depends_on:
       api:
         condition: service_healthy
-      init-libs:
+      init-deps:
         condition: service_completed_successfully
     entrypoint:
       - sh
       - -c
-      - cd libs && npm ci --ignore-scripts && cd ../public && npm ci --ignore-scripts && npm run start:public
+      - npm run start:public
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4300/public', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
@@ -133,6 +133,5 @@ services:
     volumes:
       - .:/app:z
       - npm-cache:/root/.npm:z
-      - libs-node-modules:/app/libs/node_modules
-      - /app/public/node_modules
+      - root-node-modules:/app/node_modules
     working_dir: /app

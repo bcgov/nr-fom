@@ -3,9 +3,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "prestart:public": "sh -c 'test -d ../libs/node_modules/@angular/common || npm ci --ignore-scripts --prefix ../libs'",
     "start:public": "ng serve --configuration development --host=0.0.0.0",
-    "prebuild:public": "npm run prestart:public",
     "build:public": "ng build --configuration production",
     "test-unit": "jest --coverage",
     "test-unit-watch": "jest --watch=true"
@@ -71,18 +69,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.1"
-  },
-  "overrides": {
-    "@ng-bootstrap/ng-bootstrap": {
-      "@angular/core": "$@angular/core",
-      "@angular/common": "$@angular/common",
-      "@angular/forms": "$@angular/forms",
-      "@angular/localize": "$@angular/localize"
-    },
-    "ngx-bootstrap": {
-      "@angular/core": "$@angular/core",
-      "@angular/common": "$@angular/common",
-      "@angular/forms": "$@angular/forms"
-    }
   }
 }
