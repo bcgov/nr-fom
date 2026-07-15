@@ -27,6 +27,10 @@ jobs:
             cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
           dir: admin
+          # Workspaces use a single root package-lock.json; the action's npm cache
+          # keys on <dir>/package-lock.json (now absent), so disable it to avoid
+          # "Some specified paths were not resolved, unable to cache dependencies".
+          cache: ""
           node_version: 24
           knip_config: .github/knip.json
 
@@ -41,6 +45,8 @@ jobs:
             cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
           dir: api
+          # See note in tests-admin: single root lockfile -> disable per-dir npm cache.
+          cache: ""
           node_version: 24
           knip_config: .github/knip.json
           sonar_args: >
@@ -61,6 +67,8 @@ jobs:
             cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
           dir: public
+          # See note in tests-admin: single root lockfile -> disable per-dir npm cache.
+          cache: ""
           node_version: 24
           knip_config: .github/knip.json
 
