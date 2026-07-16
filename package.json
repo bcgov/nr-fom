@@ -21,12 +21,6 @@
     "start:api": "npm run start:api --workspace=api"
   },
   "overrides": {
-    "@ng-bootstrap/ng-bootstrap": {
-      "@angular/core": "^22.0.1",
-      "@angular/common": "^22.0.1",
-      "@angular/forms": "^22.0.1",
-      "@angular/localize": "^22.0.1"
-    },
     "ngx-bootstrap": {
       "@angular/core": "^22.0.1",
       "@angular/common": "^22.0.1",

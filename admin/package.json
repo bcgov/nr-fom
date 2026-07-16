@@ -24,7 +24,7 @@
     "@angular/platform-browser": "^22.0.1",
     "@angular/platform-browser-dynamic": "^22.0.1",
     "@angular/router": "^22.0.1",
-    "@ng-bootstrap/ng-bootstrap": "^20.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^21.0.0",
     "@ngx-dropzone/cdk": "^22.0.0",
     "@ngx-dropzone/material": "^22.0.0",
     "@popperjs/core": "^2.11.8",
