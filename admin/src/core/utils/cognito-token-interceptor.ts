@@ -1,122 +1,110 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
-import {
-    HttpHandler,
-    HttpInterceptor,
-    HttpRequest,
-} from "@angular/common/http";
+import { HttpInterceptorFn, HttpRequest } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { Observable, Subject, throwError } from "rxjs";
 import { catchError, switchMap, tap } from "rxjs/operators";
 
 /**
- * Intercepts all http requests and allows for the request and/or response to be manipulated.
+ * Coordinates a single in-flight token refresh across concurrent requests.
  *
- * @export
- * @class CognitoTokenInterceptor
- * @implements {HttpInterceptor}
+ * The previous `CognitoTokenInterceptor` class held this state as instance
+ * fields; because Angular instantiates interceptors as singletons, that state
+ * was effectively app-wide. Modelling it as a `providedIn: 'root'` service
+ * preserves that singleton behaviour in production while keeping the functional
+ * interceptor pure — and TestBed recreates the service per test, so unit tests
+ * stay isolated exactly as they were with per-instance fields.
  */
-@Injectable()
-export class CognitoTokenInterceptor implements HttpInterceptor {
-  private cognitoService = inject(CognitoService);
+@Injectable({ providedIn: "root" })
+export class TokenRefreshState {
+  inProgress = false;
+  readonly refreshed$ = new Subject<void>();
+}
 
-  private refreshTokenInProgress = false;
+/**
+ * Fetches and adds the bearer auth token to the request.
+ */
+function addAuthHeader(
+  request: HttpRequest<unknown>,
+  cognitoService: CognitoService
+): HttpRequest<unknown> {
+  let authToken: any = cognitoService.getToken();
 
-  private tokenRefreshedSource = new Subject<void>();
-  private tokenRefreshed$ = this.tokenRefreshedSource.asObservable();
+  if (cognitoService.awsCognitoConfig.enabled) {
+    authToken = JSON.stringify(authToken['jwtToken']);
+  }
 
-  /**
-   * Main request intercept handler to automatically add the bearer auth token to every request.
-   * If the auth token expires mid-request, the requests 403 response will be caught, the auth token will be
-   * refreshed, and the request will be re-tried.
-   *
-   * @param {HttpRequest<any>} request
-   * @param {HttpHandler} next
-   * @returns {Observable<HttpEvent<any>>}
-   * @memberof CognitoTokenInterceptor
-   */
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
-    if (!this.cognitoService.initialized) {
-      return next.handle(request);
-    }
+  return request.clone({
+    setHeaders: { Authorization: "Bearer " + authToken },
+  });
+}
 
-    request = this.addAuthHeader(request);
-
-    return next.handle(request).pipe(
-      catchError((error) => {
-        if (error.status === 403) {
-          console.log("Caught 403, refreshing token");
-          return this.refreshToken().pipe(
-            catchError((refreshErr) => {
-              console.error(
-                "Caught error during refresh, rethrowing original 403. Refresh error is",
-                refreshErr
-              );
-              return throwError(() => error);
-            }),
-            switchMap(() => {
-              request = this.addAuthHeader(request);
-              return next.handle(request).pipe(
-                catchError((retryErr) => {
-                  console.error(
-                    "Caught error after retrying request, propagating error:",
-                    retryErr
-                  );
-                  return throwError(() => retryErr);
-                })
-              );
-            })
-          );
-        }
-        return throwError(() => error);
+/**
+ * Attempts to refresh the auth token, de-duplicating concurrent refreshes.
+ */
+function refreshToken(
+  cognitoService: CognitoService,
+  state: TokenRefreshState
+): Observable<any> {
+  if (state.inProgress) {
+    return new Observable((observer) => {
+      state.refreshed$.subscribe(() => {
+        observer.next(undefined);
+        observer.complete();
+      });
+    });
+  } else {
+    state.inProgress = true;
+    return cognitoService.updateToken().pipe(
+      tap(() => {
+        state.inProgress = false;
+        state.refreshed$.next();
       })
     );
   }
-
-  /**
-   * Fetches and adds the bearer auth token to the request.
-   *
-   * @private
-   * @param {HttpRequest<any>} request to modify
-   * @returns {HttpRequest<any>}
-   * @memberof CognitoTokenInterceptor
-   */
-  private addAuthHeader(request: HttpRequest<any>): HttpRequest<any> {
-    let authToken: any = this.cognitoService.getToken();
-
-    if (this.cognitoService.awsCognitoConfig.enabled) {
-      authToken = JSON.stringify(authToken['jwtToken']);
-    }
-
-    request = request.clone({
-      setHeaders: { Authorization: "Bearer " + authToken },
-    });
-
-    return request;
-  }
-
-  /**
-   * Attempts to refresh the auth token.
-   *
-   * @private
-   * @returns {Observable<any>}
-   * @memberof CognitoTokenInterceptor
-   */
-  private refreshToken(): Observable<any> {
-    if (this.refreshTokenInProgress) {
-      return new Observable((observer) => {
-        this.tokenRefreshed$.subscribe(() => {
-            observer.next(undefined);
-          observer.complete();
-        });
-      });
-    } else {
-      this.refreshTokenInProgress = true;
-      return this.cognitoService.updateToken().pipe(
-        tap(() => {
-          this.refreshTokenInProgress = false;
-          this.tokenRefreshedSource.next();
-        })
-      );
-    }
-  }
 }
+
+/**
+ * Intercepts all http requests to automatically add the bearer auth token.
+ * If the auth token expires mid-request, the request's 403 response is caught,
+ * the auth token is refreshed, and the request is retried.
+ */
+export const cognitoTokenInterceptor: HttpInterceptorFn = (request, next) => {
+  const cognitoService = inject(CognitoService);
+  const state = inject(TokenRefreshState);
+
+  if (!cognitoService.initialized) {
+    return next(request);
+  }
+
+  request = addAuthHeader(request, cognitoService);
+
+  return next(request).pipe(
+    catchError((error) => {
+      if (error.status === 403) {
+        console.log("Caught 403, refreshing token");
+        return refreshToken(cognitoService, state).pipe(
+          catchError((refreshErr) => {
+            console.error(
+              "Caught error during refresh, rethrowing original 403. Refresh error is",
+              refreshErr
+            );
+            return throwError(() => error);
+          }),
+          switchMap(() => {
+            request = addAuthHeader(request, cognitoService);
+            return next(request).pipe(
+              catchError((retryErr) => {
+                console.error(
+                  "Caught error after retrying request, propagating error:",
+                  retryErr
+                );
+                return throwError(() => retryErr);
+              })
+            );
+          })
+        );
+      }
+      return throwError(() => error);
+    })
+  );
+};

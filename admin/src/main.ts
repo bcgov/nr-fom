@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, enableProdMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -14,9 +14,9 @@ import { retrieveApiBasePath } from '@utility/services/config.service';
 import { AppRoutes } from 'app/app.routes';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { AppComponent } from './app/app.component';
-import { ErrorInterceptor } from './core/interceptors/http-error.interceptor';
+import { errorInterceptor } from './core/interceptors/http-error.interceptor';
 import { CognitoService } from './core/services/cognito.service';
-import { CognitoTokenInterceptor } from './core/utils/cognito-token-interceptor';
+import { cognitoTokenInterceptor } from './core/utils/cognito-token-interceptor';
 import { environment } from './environments/environment';
 
 if (environment.production) {
@@ -39,9 +39,10 @@ const coreProviders = [
     provideZoneChangeDetection({
         eventCoalescing: true,
     }),
-    // Note! - Prefer `withInterceptors` and functional interceptors instead, as support for DI-provided
-    // interceptors may be phased out in a later release.
-    provideHttpClient(withInterceptorsFromDi()),
+    // Order is critical - the token interceptor must run after the error interceptor
+    // (it is last in the array, so it sees the response first and can refresh+retry a
+    // 403 before the error interceptor would surface a "Forbidden" dialog).
+    provideHttpClient(withInterceptors([errorInterceptor, cognitoTokenInterceptor])),
     provideAnimations(),
     importProvidersFrom(
         BrowserModule, 
@@ -59,17 +60,6 @@ const coreProviders = [
         provide: APP_INITIALIZER,
         useFactory: cognitoFactory,
         deps: [CognitoService],
-        multi: true,
-    },
-    // Order of these interceptors is critical - token interceptor must be last, after error interceptor.
-    {
-        provide: HTTP_INTERCEPTORS,
-        useClass: ErrorInterceptor,
-        multi: true
-    },
-    {
-        provide: HTTP_INTERCEPTORS,
-        useClass: CognitoTokenInterceptor,
         multi: true,
     },
 ]
