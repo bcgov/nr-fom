@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -20,12 +20,13 @@ import { HeaderComponent } from 'app/header/header.component';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy {
+    router = inject(Router);
+    private stateSvc = inject(StateService);
+    private modalSvc = inject(ModalService);
+
     isReady$: Observable<boolean>;
 
   private ngUnsubscribe: Subject<void> = new Subject<void>();
-
-  constructor(public router: Router, private stateSvc: StateService, private modalSvc: ModalService) {
-  }
 
   async ngOnInit() {
     this.router.events.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {

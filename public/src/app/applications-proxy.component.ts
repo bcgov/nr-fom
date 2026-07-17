@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 //
@@ -13,7 +13,10 @@ import { Router, ActivatedRoute } from '@angular/router';
   template: ''
 })
 export class ApplicationsProxyComponent {
-  constructor(private router: Router, private route: ActivatedRoute) {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  constructor() {
     this.router.navigate(['/applications'], {
       queryParams: { id: this.route.snapshot.params['id'] },
       fragment: 'details'

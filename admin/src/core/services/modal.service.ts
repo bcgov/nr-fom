@@ -1,4 +1,4 @@
-import { Injectable, Type } from '@angular/core';
+import { Injectable, Type, inject } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { DialogData } from '@admin-core/models/dialog';
@@ -17,12 +17,12 @@ export interface DialogOptions {
   providedIn: 'root',
 })
 export class ModalService {
+  dialog = inject(MatDialog);
+  snackBar = inject(MatSnackBar);
+
 
   modalOpen = false;
   dialogRefClose$: Observable<MatDialogRef<any>>;
-
-  constructor(public dialog: MatDialog, public snackBar: MatSnackBar) {
-  }
 
   openSnackBar( { message, button }: { message: string, button?: string; } ) {
     return this.snackBar.open( message, button ?? button, { verticalPosition: 'top', panelClass: 'snackbar'} )

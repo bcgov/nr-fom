@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, inject } from '@angular/core';
 import { SpatialFeaturePublicResponse, SubmissionTypeCodeEnum } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
 import { MapLayers } from '@utility/models/map-layers';
@@ -35,6 +35,10 @@ import { destroyMap, initMap, mapContainer, whenMapContainerReady } from '../../
   styleUrls: ['./details-map.component.scss']
 })
 export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
+  private elementRef = inject(ElementRef);
+  private mapLayersService = inject(MapLayersService);
+  private fss = inject(FeatureSelectService);
+
 
   @Input() 
   projectSpatialDetail: SpatialFeaturePublicResponse[];
@@ -68,12 +72,6 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
       return element;
     }
   });
-
-  constructor(
-    private elementRef: ElementRef,
-    private mapLayersService: MapLayersService,
-    private fss: FeatureSelectService
-  ) { }
 
   ngOnInit(): void {
     this.subscribeToMapLayersChange();

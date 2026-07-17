@@ -2,7 +2,7 @@ import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSv
 import { CommonUtil } from '@admin-core/utils/commonUtil';
 import { COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -41,6 +41,16 @@ import { InteractionsSummaryComponent } from './interactions-summary/interaction
     styleUrls: ['./summary.component.scss']
 })
 export class SummaryComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private projectSvc = inject(ProjectService);
+  private commentSvc = inject(PublicCommentService);
+  private spatialFeatureSvc = inject(SpatialFeatureService);
+  private interactionSvc = inject(InteractionService);
+  private attachmentSvc = inject(AttachmentService);
+  private configSvc = inject(ConfigService);
+  attachmentResolverSvc = inject(AttachmentResolverSvc);
+  private cdr = inject(ChangeDetectorRef);
+
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly periodOperationsTxt = "This FOM can be relied upon by the FOM holder for the purpose of a cutting permit or road permit application, until the date three years after commencement of the public review and commenting period. FOMs published by BC Timber Sales can be relied upon for the purpose of a cutting permit or road permit application, or the issuance of a Timber Sales License until the date three years after conclusion of the public review and commenting period.";
   readonly woodlotOperationsTxt = "Woodlots are not legally required to publish FOMs for public review and comment prior to cutting permit or road permit application. However, woodlot licensees may choose to publish FOMs on a voluntary basis to facilitate public engagement.";
@@ -61,19 +71,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
   selectedScope: CommentScopeOpt;
 
   private ngUnsubscribe$: Subject<void> = new Subject<void>();
-  private scopeOptionChange$ = new Subject<CommentScopeOpt>(); // To notify when scope 'option' changed.
-
-  constructor(    
-    private route: ActivatedRoute,
-    private projectSvc: ProjectService,
-    private commentSvc: PublicCommentService,
-    private spatialFeatureSvc: SpatialFeatureService,
-    private interactionSvc: InteractionService,
-    private attachmentSvc: AttachmentService,
-    private configSvc: ConfigService,
-    public attachmentResolverSvc: AttachmentResolverSvc,
-    private cdr: ChangeDetectorRef
-  ) { }
+  private scopeOptionChange$ = new Subject<CommentScopeOpt>();
 
   async ngOnInit(): Promise<void> {
     this.projectId = this.route.snapshot.params.appId;

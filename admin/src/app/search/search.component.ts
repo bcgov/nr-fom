@@ -30,6 +30,16 @@ import { isNullish } from 'remeda';
     styleUrls: ['./search.component.scss']
 })
 export class SearchComponent implements OnInit, OnDestroy {
+  private location = inject(Location);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private stateSvc = inject(StateService);
+  private cognitoService = inject(CognitoService);
+  snackBar = inject(MatSnackBar);
+  searchProjectService = inject(ProjectService);
+  private modalSvc = inject(ModalService);
+  private cdr = inject(ChangeDetectorRef);
+
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   private destroyRef = inject(DestroyRef);
   private paramMap: ParamMap = null;
@@ -47,17 +57,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   public districts = this.stateSvc.getCodeTable('district');
   public searched = false;
 
-  constructor(
-    private location: Location,
-    private router: Router,
-    private route: ActivatedRoute,
-    private stateSvc: StateService,
-    private cognitoService: CognitoService,
-    public snackBar: MatSnackBar,
-    public searchProjectService: ProjectService,
-    private modalSvc: ModalService,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.user = this.cognitoService.getUser();
   }
 

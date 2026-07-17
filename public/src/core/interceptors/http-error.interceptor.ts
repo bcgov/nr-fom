@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
@@ -9,10 +9,9 @@ import { ModalService } from '@public-core/services/modal.service';
   providedIn: 'root'
 })
 export class ErrorInterceptor implements HttpInterceptor {
-  constructor(
-    private stateSvc: StateService,
-    private modalSvc: ModalService
-  ) {}
+  private stateSvc = inject(StateService);
+  private modalSvc = inject(ModalService);
+
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle( request ).pipe(

@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { COMMENT_STATUS_FILTER_PARAMS, FOMFiltersService, FOM_FILTER_NAME } from '@public-core/services/fomFilters.service';
 import { UrlService } from '@public-core/services/url.service';
@@ -29,6 +29,9 @@ import { Filter, FilterUtils, IFilter, IMultiFilter, IMultiFilterFields, MultiFi
   styleUrls: ['./find-panel.component.scss']
 })
 export class FindPanelComponent implements OnDestroy, OnInit {
+  urlSvc = inject(UrlService);
+  private fomFiltersSvc = inject(FOMFiltersService);
+
   @Output() update = new EventEmitter<IUpdateEvent>();
   @Input() loading: boolean; // from projects component
   
@@ -42,10 +45,6 @@ export class FindPanelComponent implements OnDestroy, OnInit {
   readonly minDate = DateTime.fromISO('2018-03-23').toJSDate(); // first app created
   readonly maxDate = DateTime.now().toJSDate(); // today
   readonly maxInputLength = 9;
-
-  constructor(public urlSvc: UrlService,
-              private fomFiltersSvc: FOMFiltersService) {
-  }
 
   ngOnInit(): void {
     this.fomFiltersSvc.filters$.pipe(takeUntil(this.ngUnsubscribe)).subscribe((filters) => {

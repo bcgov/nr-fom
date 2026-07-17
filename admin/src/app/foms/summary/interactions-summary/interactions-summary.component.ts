@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { InteractionResponse } from '@api-client';
 import { ConfigService } from '@utility/services/config.service';
@@ -27,6 +27,9 @@ import { MatIconModule } from '@angular/material/icon';
     styleUrls: ['./interactions-summary.component.scss'],
 })
 export class InteractionsSummaryComponent implements OnInit {
+  private configSvc = inject(ConfigService);
+  attachmentResolverSvc = inject(AttachmentResolverSvc);
+
 
   interactions: InteractionResponse[] = [];
 
@@ -35,11 +38,6 @@ export class InteractionsSummaryComponent implements OnInit {
   
   @ViewChild(MatAccordion) 
   accordion: MatAccordion;
-  
-  constructor(
-    private configSvc: ConfigService,
-    public attachmentResolverSvc: AttachmentResolverSvc
-  ) { }
 
   ngOnInit(): void {
     // Deliberately empty

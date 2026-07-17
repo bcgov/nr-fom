@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { Injectable, Optional } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { Configuration } from "@api-client";
 import { ConfigService } from '@utility/services/config.service';
 import { Observable } from "rxjs";
@@ -8,11 +8,16 @@ import { Observable } from "rxjs";
   providedIn: 'root'
 })
 export class AttachmentUploadService {
+  private configService = inject(ConfigService);
+  protected httpClient = inject(HttpClient);
+
 
   public configuration = new Configuration();
   public defaultHeaders = new HttpHeaders();
 
-  constructor(private configService: ConfigService, protected httpClient: HttpClient, @Optional() configuration: Configuration) {
+  constructor() {
+    const configuration = inject(Configuration, { optional: true });
+
     if (configuration) {
       this.configuration = configuration;
     }

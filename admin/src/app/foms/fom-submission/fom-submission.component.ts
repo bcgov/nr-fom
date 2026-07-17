@@ -3,7 +3,7 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectPlanCodeEnum, ProjectResponse, ProjectService, SpatialObjectCodeEnum, SubmissionDetailResponse, SubmissionRequest, SubmissionService, SubmissionTypeCodeEnum, WorkflowStateEnum } from '@api-client';
@@ -37,6 +37,17 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     providers: [DatePipe]
 })
 export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  snackBar = inject(MatSnackBar);
+  private projectSvc = inject(ProjectService);
+  private formBuilder = inject(RxFormBuilder);
+  private stateSvc = inject(StateService);
+  private modalSvc = inject(ModalService);
+  private submissionSvc = inject(SubmissionService);
+  private cognitoService = inject(CognitoService);
+  private cdr = inject(ChangeDetectorRef);
+
   public fg: RxFormGroup;
   public project: ProjectResponse;
   public spatialSubmission: SubmissionDetailResponse;
@@ -61,18 +72,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     return this.stateSvc.loading;
   }
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    public snackBar: MatSnackBar,
-    private projectSvc: ProjectService,
-    private formBuilder: RxFormBuilder,
-    private stateSvc: StateService,
-    private modalSvc: ModalService,
-    private submissionSvc: SubmissionService,
-    private cognitoService: CognitoService,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.user = this.cognitoService.getUser();
   }
 

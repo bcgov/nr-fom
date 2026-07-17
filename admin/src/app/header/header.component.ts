@@ -1,7 +1,7 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { User } from "@utility/security/user";
 import { ConfigService } from '@utility/services/config.service';
@@ -22,15 +22,17 @@ import { ConfigService } from '@utility/services/config.service';
     ]
 })
 export class HeaderComponent implements OnInit {
+  private configService = inject(ConfigService);
+  router = inject(Router);
+  private cognitoService = inject(CognitoService);
+
   isNavMenuOpen = false; 
   environmentDisplay: string;
   user: User;
 
-  constructor(
-    private configService: ConfigService, 
-    public router: Router, 
-    private cognitoService: CognitoService
-  ) {
+  constructor() {
+    const configService = this.configService;
+
     this.environmentDisplay = configService.getEnvironmentDisplay();
     this.user = this.cognitoService.getUser();
   }

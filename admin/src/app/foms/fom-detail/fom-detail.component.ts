@@ -1,7 +1,7 @@
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AttachmentResponse, ProjectMetricsResponse, ProjectPlanCodeEnum, ProjectResponse, ProjectService, ProjectWorkflowStateChangeRequest, SpatialFeaturePublicResponse, WorkflowStateEnum } from "@api-client";
 import { NgbModal, NgbModalRef, NgbModule, NgbNav } from '@ng-bootstrap/ng-bootstrap';
@@ -34,6 +34,16 @@ import { ShapeInfoComponent } from "../shape-info/shape-info.component";
     styleUrls: ['./fom-detail.component.scss']
 })
 export class FomDetailComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private modalSvc = inject(ModalService);
+  projectService = inject(ProjectService);
+  attachmentResolverSvc = inject(AttachmentResolverSvc);
+  private cognitoService = inject(CognitoService);
+  private ngbModalService = inject(NgbModal);
+  private fss = inject(FeatureSelectService);
+  private cdr = inject(ChangeDetectorRef);
+
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   @ViewChild('scrollContainer')
   public scrollContainer: ElementRef;
@@ -58,17 +68,7 @@ export class FomDetailComponent implements OnInit, OnDestroy {
   private today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
   private projectUpdateTriggered$ = new Subject(); // To notify when project update happen.
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private modalSvc: ModalService,
-    public projectService: ProjectService, // also used in template
-    public attachmentResolverSvc: AttachmentResolverSvc,
-    private cognitoService: CognitoService,
-    private ngbModalService: NgbModal,
-    private fss: FeatureSelectService,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.user = this.cognitoService.getUser();
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
   }

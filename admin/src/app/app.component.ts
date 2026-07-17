@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Observable, lastValueFrom, timeout } from 'rxjs';
 import { StateService } from '@admin-core/services/state.service';
@@ -19,9 +19,11 @@ import { HeaderComponent } from './header/header.component';
     styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
+  private stateSvc = inject(StateService);
+
   isReady$: Observable<boolean>;
 
-  constructor(private stateSvc: StateService) {
+  constructor() {
     this.isReady$ = this.stateSvc.isReady$;
   }
 

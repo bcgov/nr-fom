@@ -12,10 +12,11 @@ import { filter } from 'rxjs/operators';
   styleUrls: ['./footer.component.scss']
 })
 export class FooterComponent implements OnInit {
+  router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
   public isProjectsPage = false;
   private destroyRef = inject(DestroyRef);
-
-  constructor(public router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.syncProjectsPage(this.router.url);

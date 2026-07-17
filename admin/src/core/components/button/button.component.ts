@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { StateService } from '@admin-core/services/state.service';
 
 @Component({
@@ -23,9 +23,9 @@ import { StateService } from '@admin-core/services/state.service';
     styleUrls: ['./button.component.scss']
 })
 export class ButtonComponent {
+  stateSvc = inject(StateService);
+
   @Input() title: string;
   @Input() disabled: boolean;
-
-  constructor(public stateSvc: StateService) { }
 
 }

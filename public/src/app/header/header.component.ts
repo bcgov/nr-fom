@@ -1,6 +1,6 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ConfigService } from '@utility/services/config.service';
 
@@ -20,10 +20,13 @@ import { ConfigService } from '@utility/services/config.service';
   ]
 })
 export class HeaderComponent {
+  private configService = inject(ConfigService);
+  router = inject(Router);
+
   environmentDisplay: string;
   isNavMenuOpen = false; 
 
-  constructor(private configService: ConfigService, public router: Router) {
+  constructor() {
     this.environmentDisplay = this.configService.getEnvironmentDisplay();
   }
 

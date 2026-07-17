@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 //
@@ -13,7 +13,9 @@ import { Router, ActivatedRoute } from '@angular/router';
   template: ''
 })
 export class HomeProxyComponent implements OnInit {
-  constructor(private router: Router, private route: ActivatedRoute) { }
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
 
   ngOnInit() {
     const showSplashModal = this.route.snapshot.paramMap.get('showSplashModal');

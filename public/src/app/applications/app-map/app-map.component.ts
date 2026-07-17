@@ -1,7 +1,4 @@
-import {
-    AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, EventEmitter, Injector, Input, OnChanges,
-    OnDestroy, OnInit, Output, SimpleChanges
-} from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, EventEmitter, Injector, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, inject } from '@angular/core';
 import { ProjectPlanCodeEnum, ProjectPublicSummaryResponse } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
 import { UrlService } from '@public-core/services/url.service';
@@ -38,6 +35,12 @@ const markerIcon = L.icon({
   styleUrls: ['./app-map.component.scss']
 })
 export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+  private appRef = inject(ApplicationRef);
+  private elementRef = inject(ElementRef);
+  urlService = inject(UrlService);
+  private injector = inject(Injector);
+  private mapLayersService = inject(MapLayersService);
+
   @Input() loading: boolean; // from projects component
   @Output() updateCoordinates = new EventEmitter(); // to applications component
   @Input() projectsSummary: Array<ProjectPublicSummaryResponse>; // from projects component
@@ -55,13 +58,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   readonly defaultBounds = L.latLngBounds([48, -139], [60, -114]); // all of BC
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   
-  constructor(
-    private appRef: ApplicationRef,
-    private elementRef: ElementRef,
-    public urlService: UrlService,
-    private injector: Injector,
-    private mapLayersService: MapLayersService
-  ) {
+  constructor() {
     // Must exist before ngOnChanges (which fires before ngAfterViewInit and calls
     // drawMap); otherwise drawMap throws and aborts change detection, leaving the
     // projects view stuck before the map renders. The markercluster plugin augments

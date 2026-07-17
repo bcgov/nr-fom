@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
 // Migrated from admin
@@ -54,11 +54,16 @@ export interface DialogData {
   styleUrls: ['./dialog.component.scss'],
 })
 export class DialogComponent {
+  dialogRef = inject<MatDialogRef<DialogComponent>>(MatDialogRef);
+  data = inject<DialogData>(MAT_DIALOG_DATA);
+
   message = '';
 
   isWarning = false;
 
-  constructor(public dialogRef: MatDialogRef<DialogComponent>, @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+  constructor() {
+    const data = this.data;
+
     this.isWarning = data['isWarning'] ? data['isWarning'] : false;
     if (!data['message'].startsWith('<')) {
       this.message = '<p>' + data['message'] + '</p>';

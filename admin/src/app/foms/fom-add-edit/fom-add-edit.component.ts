@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -50,6 +50,20 @@ type ApplicationPageType = 'create' | 'edit';
     providers: [DatePipe]
 })
 export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  snackBar = inject(MatSnackBar);
+  private projectSvc = inject(ProjectService);
+  attachmentResolverSvc = inject(AttachmentResolverSvc);
+  private attachmentUploadSvc = inject(AttachmentUploadService);
+  private formBuilder = inject(RxFormBuilder);
+  stateSvc = inject(StateService);
+  private modalSvc = inject(ModalService);
+  private datePipe = inject(DatePipe);
+  private forestSvc = inject(ForestClientService);
+  private cognitoService = inject(CognitoService);
+  private cdr = inject(ChangeDetectorRef);
+
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly DEFAULT_ISO_DATE_FORMAT = DEFAULT_ISO_DATE_FORMAT;
   fg: RxFormGroup;
@@ -104,21 +118,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     containerClass: 'theme-dark-blue'
   } as Partial<BsDatepickerConfig>
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    public snackBar: MatSnackBar,
-    private projectSvc: ProjectService,
-    public attachmentResolverSvc: AttachmentResolverSvc,
-    private attachmentUploadSvc: AttachmentUploadService,
-    private formBuilder: RxFormBuilder,
-    public stateSvc: StateService,
-    private modalSvc: ModalService,
-    private datePipe: DatePipe,
-    private forestSvc: ForestClientService,
-    private cognitoService: CognitoService,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.user = this.cognitoService.getUser();
   }
 

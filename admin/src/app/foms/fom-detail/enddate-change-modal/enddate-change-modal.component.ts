@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProjectCommentingClosedDateChangeRequest, ProjectService } from '@api-client';
@@ -20,6 +20,9 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
     encapsulation: ViewEncapsulation.None // Important to make bootstrap modal custom styling property 'windowClass' work.
 })
 export class EnddateChangeModalComponent implements OnInit {
+  private activeModal = inject(NgbActiveModal);
+  private projectService = inject(ProjectService);
+
 
   public updating = false;
   public changeRequest = {} as ProjectCommentingClosedDateChangeRequest; // Default values assigned when modal compoent was opened outside.
@@ -27,11 +30,6 @@ export class EnddateChangeModalComponent implements OnInit {
   public currentCommentingClosedDate: string;
   public newCommentingClosedDate: Date;
   public minDate: Date;
-
-  constructor(
-    private activeModal: NgbActiveModal,
-    private projectService: ProjectService
-  ) {}
 
   ngOnInit(): void {
     this.minDate = DateTime.now().plus({days: 1}).toJSDate(); // Earliest date allowed for change: tomorrow.

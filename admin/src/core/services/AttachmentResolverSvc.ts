@@ -1,5 +1,5 @@
 import { AttachmentTypeEnum } from "@admin-core/models/attachmentTypeEnum";
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import {
     AttachmentResponse,
     AttachmentService,
@@ -11,10 +11,8 @@ import { saveAs } from "file-saver-es";
   providedIn: 'root'
 })
 export class AttachmentResolverSvc {
+  attachmentService = inject(AttachmentService);
 
-  constructor(
-    public attachmentService: AttachmentService
-  ) {  }
 
   public async getAttachments(projectId: number): Promise<AttachmentResponse[]> {
       return this.attachmentService.attachmentControllerFind(projectId).toPromise()

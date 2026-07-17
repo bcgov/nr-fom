@@ -1,4 +1,7 @@
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
+import { ChangeDetectorRef, DestroyRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { ProjectsComponent } from './projects.component';
 import { ProjectService } from '@api-client';
@@ -74,16 +77,20 @@ describe('ProjectsComponent', () => {
       markForCheck: jest.fn(),
     };
 
-    // Instantiate directly to avoid child component DI issues
-    component = new ProjectsComponent(
-      mockModalService as any,
-      mockRouter as any,
-      mockProjectService as any,
-      mockUrlService as any,
-      mockFomFiltersSvc as any,
-      mockDestroyRef as any,
-      mockCdr as any,
-    );
+    // Instantiate in an injection context (component now uses inject()), with
+    // mocks provided as tokens, to avoid rendering child components.
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: NgbModal, useValue: mockModalService },
+        { provide: Router, useValue: mockRouter },
+        { provide: ProjectService, useValue: mockProjectService },
+        { provide: UrlService, useValue: mockUrlService },
+        { provide: FOMFiltersService, useValue: mockFomFiltersSvc },
+        { provide: DestroyRef, useValue: mockDestroyRef },
+        { provide: ChangeDetectorRef, useValue: mockCdr },
+      ],
+    });
+    component = TestBed.runInInjectionContext(() => new ProjectsComponent());
   });
 
   it('should create', () => {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -27,6 +27,10 @@ type CommentScopeOpt = {commentScopeCode: COMMENT_SCOPE_CODE,
   encapsulation: ViewEncapsulation.None
 })
 export class CommentModalComponent implements OnInit {
+  activeModal = inject(NgbActiveModal);
+  private commentService = inject(PublicCommentService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
 
   public submitting = false;
   public currentPage = 1;
@@ -37,12 +41,6 @@ export class CommentModalComponent implements OnInit {
   public selectedScope: CommentScopeOpt;
   public commentScopeOpts :Array<CommentScopeOpt> = [];
   public feedbackLimit: number = 4000;
-
-  constructor(
-    public activeModal: NgbActiveModal,
-    private commentService: PublicCommentService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {}
 
   ngOnInit(): void {
     this.publicComment.commentScopeCode = 'OVERALL';

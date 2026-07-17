@@ -3,7 +3,7 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
 import { DatePipe, NgClass } from "@angular/common";
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -32,6 +32,16 @@ import { PublicNoticeForm } from './public-notice.form';
     providers: [DatePipe]
 })
 export class PublicNoticeEditComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private formBuilder = inject(RxFormBuilder);
+  stateSvc = inject(StateService);
+  private cognitoService = inject(CognitoService);
+  private modalSvc = inject(ModalService);
+  private publicNoticeService = inject(PublicNoticeService);
+  private datePipe = inject(DatePipe);
+  private cdr = inject(ChangeDetectorRef);
+
   user: User;
   project: ProjectResponse;
   projectId: number;
@@ -46,17 +56,7 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private formBuilder: RxFormBuilder,
-    public stateSvc: StateService,
-    private cognitoService: CognitoService,
-    private modalSvc: ModalService,
-    private publicNoticeService: PublicNoticeService,
-    private datePipe: DatePipe,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.user = this.cognitoService.getUser();
   }
 

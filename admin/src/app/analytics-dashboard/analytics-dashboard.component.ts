@@ -1,6 +1,6 @@
 import { ANALYTICS_DATA_DEFAULT_SIZE, DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, Component, OnInit, signal, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, signal, ViewChild, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -37,6 +37,9 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
     providers: [DatePipe]
 })
 export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
+  private route = inject(ActivatedRoute);
+  private analyticsDashboardDataService = inject(AnalyticsDashboardDataService);
+
   isInitialized = false; // Is Angular view done initialization
   analyticsData = signal<AnalyticsDashboardData>(null);
   startDate: Date;
@@ -72,10 +75,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   commentsByDistrictChartOptions: Partial<ChartOptions>;
   fomsCountByForestClientChartOptions: Partial<ChartOptions>;
 
-  constructor(
-    private route: ActivatedRoute,
-    private analyticsDashboardDataService: AnalyticsDashboardDataService
-  ) {
+  constructor() {
     // Initialize empty chart options earlier.
     this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions;
     this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;

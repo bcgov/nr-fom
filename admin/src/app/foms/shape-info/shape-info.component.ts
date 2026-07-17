@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { SpatialFeaturePublicResponse } from '@api-client';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
@@ -13,6 +13,8 @@ import { MatTableModule } from '@angular/material/table';
     imports: [MatTableModule, NgClass, DecimalPipe]
 })
 export class ShapeInfoComponent implements OnInit {
+  private fss = inject(FeatureSelectService);
+
 
   slideColor: ThemePalette = 'primary';
   displayedColumns: string[] = ['shape_id', 'type', 'name', 'submission_type', 'area_length', 'development_date'];
@@ -20,10 +22,6 @@ export class ShapeInfoComponent implements OnInit {
 
   @Input('spatialDetail')
   projectSpatialDetail: SpatialFeaturePublicResponse[];
-
-  constructor(private fss: FeatureSelectService) { 
-    // Deliberately empty
-  }
 
   ngOnInit(): void {
     // Deliberately empty

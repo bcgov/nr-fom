@@ -1,13 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DialogComponent, DialogData } from '@public-core/components/dialog/dialog.component';
 @Injectable({
   providedIn: 'root',
 })
 export class ModalService {
+  dialog = inject(MatDialog);
 
-  constructor(public dialog: MatDialog) {
-  }
 
   openDialog(config: { data: DialogData; disableClose?: boolean; autoFocus?: boolean }): MatDialogRef<any> {
     const { data, disableClose = false, autoFocus = true } = config;

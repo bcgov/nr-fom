@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, inject } from '@angular/core';
 import { ActivatedRoute, Event, NavigationEnd, Params, Router } from '@angular/router';
 import { funnel } from 'remeda';
 import { Observable } from 'rxjs';
@@ -16,11 +16,16 @@ import { filter, share } from 'rxjs/operators';
     providedIn: 'root',
 })
 export class UrlService {
+  route = inject(ActivatedRoute);
+  router = inject(Router);
+  location = inject(Location);
+  private zone = inject(NgZone);
+
   public onNavEnd$: Observable<NavigationEnd>; // see details below
   private queryParams: Params = {};
   private panel: string = null;
 
-  constructor(public route: ActivatedRoute, public router: Router, public location: Location, private zone: NgZone) {
+  constructor() {
     // Create a new observable that publishes only the NavigationEnd event used for subscribers to know when to
     // refresh their parameters
     // Use share() so this fires only once each time even with multiple subscriptions

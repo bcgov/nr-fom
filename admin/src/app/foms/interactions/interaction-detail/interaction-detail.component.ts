@@ -1,5 +1,5 @@
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
-import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AttachmentResponse, AttachmentService, InteractionResponse } from '@api-client';
 import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
@@ -27,6 +27,12 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
     exportAs: 'interactionForm'
 })
 export class InteractionDetailComponent {
+  private formBuilder = inject(RxFormBuilder);
+  private configSvc = inject(ConfigService);
+  attachmentSvc = inject(AttachmentService);
+  attachmentResolverSvc = inject(AttachmentResolverSvc);
+  private cdr = inject(ChangeDetectorRef);
+
 
   today = new Date();
   maxDate = this.today;
@@ -51,14 +57,6 @@ export class InteractionDetailComponent {
   ]
   attachment: AttachmentResponse;
   communicationDetailsLimit: number = 4000;
-
-  constructor(
-    private formBuilder: RxFormBuilder,
-    private configSvc: ConfigService,
-    public attachmentSvc: AttachmentService,
-    public attachmentResolverSvc: AttachmentResolverSvc,
-    private cdr: ChangeDetectorRef
-  ) { }
 
   @Input() set selectedInteraction(interaction: InteractionResponse) {
     this.interaction = interaction;

@@ -1,7 +1,7 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InteractionResponse, InteractionService, ProjectResponse, WorkflowStateEnum } from '@api-client';
 import { User } from "@utility/security/user";
@@ -35,6 +35,12 @@ export const ERROR_DIALOG = {
     styleUrls: ['./interactions.component.scss']
 })
 export class InteractionsComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private interactionSvc = inject(InteractionService);
+  private cognitoService = inject(CognitoService);
+  private modalSvc = inject(ModalService);
+  private cdr = inject(ChangeDetectorRef);
+
 
   @ViewChild('interactionDetailForm') 
   interactionDetailForm: InteractionDetailComponent;
@@ -51,12 +57,7 @@ export class InteractionsComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<void> = new Subject<void>();
   private interactionSaved$ = new Subject<void>(); // To notify when 'save' happen.
 
-  constructor(
-    private route: ActivatedRoute,
-    private interactionSvc: InteractionService,
-    private cognitoService: CognitoService,
-    private modalSvc: ModalService,
-    private cdr: ChangeDetectorRef)
+  constructor()
   {
     this.user = this.cognitoService.getUser();
   }

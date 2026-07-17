@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject, firstValueFrom } from 'rxjs';
 
@@ -38,6 +38,15 @@ import { ExportTermsModalComponent } from './export-terms-modal/export-terms-mod
     styleUrls: ['./review-comments.component.scss']
 })
 export class ReviewCommentsComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private commentSvc = inject(PublicCommentService);
+  private stateSvc = inject(StateService);
+  private projectSvc = inject(ProjectService);
+  private spatialFeatureService = inject(SpatialFeatureService);
+  private cognitoService = inject(CognitoService);
+  private modalSvc = inject(ModalService);
+  private cdr = inject(ChangeDetectorRef);
+
 
   @ViewChild('commentListScrollContainer', { read: ElementRef })
   public commentListScrollContainer!: ElementRef;
@@ -68,16 +77,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     timeZone: BC_TIME_ZONE
   });
 
-  constructor(
-    private route: ActivatedRoute,
-    private commentSvc: PublicCommentService,
-    private stateSvc: StateService,
-    private projectSvc: ProjectService,
-    private spatialFeatureService: SpatialFeatureService,
-    private cognitoService: CognitoService,
-    private modalSvc: ModalService,
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.user = this.cognitoService.getUser()!;
   }
 

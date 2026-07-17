@@ -4,7 +4,7 @@ import {
     HttpInterceptor,
     HttpRequest,
 } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { Observable, Subject, throwError } from "rxjs";
 import { catchError, switchMap, tap } from "rxjs/operators";
 
@@ -17,12 +17,12 @@ import { catchError, switchMap, tap } from "rxjs/operators";
  */
 @Injectable()
 export class CognitoTokenInterceptor implements HttpInterceptor {
+  private cognitoService = inject(CognitoService);
+
   private refreshTokenInProgress = false;
 
   private tokenRefreshedSource = new Subject<void>();
   private tokenRefreshed$ = this.tokenRefreshedSource.asObservable();
-
-  constructor(private cognitoService: CognitoService) {}
 
   /**
    * Main request intercept handler to automatically add the bearer auth token to every request.

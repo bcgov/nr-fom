@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DistrictService, PublicCommentService, ProjectService } from '@api-client';
 import { CodeTables } from '@admin-core/models/code-tables';
 import { BehaviorSubject, forkJoin } from 'rxjs';
@@ -8,6 +8,10 @@ import { BehaviorSubject, forkJoin } from 'rxjs';
   providedIn: 'root'
 })
 export class StateService {
+  private publicCommentSvc = inject(PublicCommentService);
+  private districtSvc = inject(DistrictService);
+  private projectSvc = inject(ProjectService);
+
   private _loadingCount = 0;
   private _isReadySub = new BehaviorSubject(false);
   private _codeTables: CodeTables = {
@@ -47,12 +51,6 @@ export class StateService {
   get codeTables() {
     return this._codeTables;
   }
-
-  constructor (
-    private publicCommentSvc: PublicCommentService,
-    private districtSvc: DistrictService,
-    private projectSvc: ProjectService
-    ) { }
 
   getCodeTables() {
     return forkJoin({

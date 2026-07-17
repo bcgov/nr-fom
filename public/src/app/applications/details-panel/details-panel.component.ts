@@ -42,6 +42,15 @@ import { Filter } from '../utils/filter';
   styleUrls: ['./details-panel.component.scss']
 })
 export class DetailsPanelComponent implements OnDestroy, OnInit {
+  modalService = inject(NgbModal);
+  configService = inject(ConfigService);
+  urlService = inject(UrlService);
+  private projectService = inject(ProjectService);
+  private spatialFeatureService = inject(SpatialFeatureService);
+  private attachmentService = inject(AttachmentService);
+  private fss = inject(FeatureSelectService);
+  private cdr = inject(ChangeDetectorRef);
+
   @Output() update = new EventEmitter();
   @ViewChild('panelScrollContainer')
   public panelScrollContainer: ElementRef;
@@ -61,17 +70,6 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly periodOperationsTxt = periodOperationsTxt;
   readonly woodlotOperationsTxt = woodlotOperationsTxt;
-
-  constructor(
-    public modalService: NgbModal,
-    public configService: ConfigService, // used in template
-    public urlService: UrlService,
-    private projectService: ProjectService,
-    private spatialFeatureService: SpatialFeatureService,
-    private attachmentService: AttachmentService,
-    private fss: FeatureSelectService,
-    private cdr: ChangeDetectorRef,
-  ) {}
 
   ngOnInit(): void {
     // Note, can't seem to get stateService.ts to get codeTable working here. Instead, subscribe to it.

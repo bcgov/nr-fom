@@ -61,6 +61,14 @@ export interface IUpdateEvent {
   styleUrls: ['./projects.component.scss']
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
+  private modalService = inject(NgbModal);
+  private router = inject(Router);
+  private projectService = inject(ProjectService);
+  urlService = inject(UrlService);
+  private fomFiltersSvc = inject(FOMFiltersService);
+  private destroyRef = inject(DestroyRef);
+  private cdr = inject(ChangeDetectorRef);
+
   @ViewChild('appmap', { static: false }) appmap: AppMapComponent;
   @ViewChild('findPanel', { static: false }) findPanel: FindPanelComponent;
   @ViewChild('detailsPanel', { static: false }) detailsPanel: DetailsPanelComponent;
@@ -81,16 +89,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   public projectsSummary$: Observable<Array<ProjectPublicSummaryResponse>>;
   public totalNumber: number;
   public commentStatusFilters: MultiFilter<boolean>;
-  
-  constructor(
-    private modalService: NgbModal,
-    private router: Router,
-    private projectService: ProjectService,
-    public urlService: UrlService,
-    private fomFiltersSvc: FOMFiltersService,
-    private destroyRef: DestroyRef,
-    private cdr: ChangeDetectorRef
-  ) { }
 
   /**
    * @memberof ProjectsComponent

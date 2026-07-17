@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { AwsCognitoConfig } from "@api-client";
 import { User } from "@utility/security/user";
 import { ConfigService } from "@utility/services/config.service";
@@ -19,14 +19,15 @@ export interface CognitoAuthToken {
     providedIn: 'root'
 })
 export class CognitoService {
+  private configService = inject(ConfigService);
+  private http = inject(HttpClient);
+
   public awsCognitoConfig: AwsCognitoConfig;
   private loadRemoteConfigPromise: Promise<void> | null = null;
   private cognitoAuthToken: CognitoAuthToken;
   private loggedOut: string;
   private fakeUser: User;
   public initialized: boolean = false;
-
-  constructor(private configService: ConfigService, private http: HttpClient) {}
 
   /*
       See Aws-Amplify documenation for intgration: 

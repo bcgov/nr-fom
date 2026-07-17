@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
@@ -30,6 +30,10 @@ import { NoticeFilter, PublicNoticesFilterPanelComponent } from './notices-filte
   styleUrls: ['./public-notices-panel.component.scss']
 })
 export class PublicNoticesPanelComponent implements OnInit {
+  urlService = inject(UrlService);
+  publicNoticeService = inject(PublicNoticeService);
+  private changeDetectorRef = inject(ChangeDetectorRef);
+
   @Output() update = new EventEmitter<IUpdateEvent>();
   @ViewChild(MatAccordion) accordion: MatAccordion;
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
@@ -39,12 +43,6 @@ export class PublicNoticesPanelComponent implements OnInit {
   pNotices: Array<PublicNoticePublicFrontEndResponse>;
   initialPNotices: Array<PublicNoticePublicFrontEndResponse>;
   districtList: string[]
-
-  constructor(
-    public urlService: UrlService,
-    public publicNoticeService: PublicNoticeService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {}
 
   ngOnInit(): void {
     this.publicNoticeService

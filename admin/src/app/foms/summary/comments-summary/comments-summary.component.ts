@@ -1,5 +1,5 @@
 import { StateService } from '@admin-core/services/state.service';
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { PublicCommentAdminResponse, ResponseCodeEnum } from '@api-client';
 import { indexBy } from 'remeda';
@@ -27,6 +27,8 @@ import { MatIconModule } from '@angular/material/icon';
     styleUrls: ['./comments-summary.component.scss'],
 })
 export class CommentsSummaryComponent implements OnInit {
+  private stateSvc = inject(StateService);
+
 
   commentScopeCodes = indexBy(this.stateSvc.getCodeTable('commentScopeCode'), (x) => x.code);
   publicComments: PublicCommentAdminResponse[];
@@ -40,8 +42,6 @@ export class CommentsSummaryComponent implements OnInit {
 
   @ViewChild(MatAccordion) 
   accordion: MatAccordion;
-  
-  constructor(private stateSvc: StateService) { }
 
   ngOnInit(): void { 
     // Deliberately empty
