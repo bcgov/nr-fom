@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, enableProdMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { enableProdMode, importProvidersFrom, inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -21,10 +21,6 @@ import { environment } from './environments/environment';
 
 if (environment.production) {
     enableProdMode();
-}
-
-function cognitoFactory(cognitoService: CognitoService) {
-  return () => cognitoService.init();
 }
 
 const apiConfig = new Configuration({
@@ -56,12 +52,7 @@ const coreProviders = [
         MatDialogModule,
         MatSnackBarModule
     ),
-    {
-        provide: APP_INITIALIZER,
-        useFactory: cognitoFactory,
-        deps: [CognitoService],
-        multi: true,
-    },
+    provideAppInitializer(() => inject(CognitoService).init()),
 ]
 
 bootstrapApplication(AppComponent, {
