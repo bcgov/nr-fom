@@ -1,64 +1,70 @@
 <div class="top-container">
-  <div class="container" *ngIf="project">
-    <div class="title-container">
-      <div class="title-container__title">
-        <h1>FOM Number: {{project.id}}</h1>
-      </div>
-      <div class="title-container__actions">
-        <div class="btn-container">
-          <button class="btn btn-light" type="button" title="Edit Online Public Notice"
-                  (click)="goToPublicNotice()"
-                  [disabled]="isDeleting"
-                  [hidden]="!canEditPublicNotice() && !project.publicNoticeId"
-                  style="margin-right: 8px;">
-            {{canEditPublicNotice() ? (project.publicNoticeId?'Edit' : 'Add') + ' Online Public Notice' 
-                                    : 'View Online Public Notice'}}
-          </button>
+  @if (project) {
+    <div class="container">
+      <div class="title-container">
+        <div class="title-container__title">
+          <h1>FOM Number: {{project.id}}</h1>
         </div>
-        <div class="btn-container" *ngIf="canEditFOM()">
-          <button class="btn btn-light" type="button" title="Edit FOM"
-                  [routerLink]="['/a', project.id, 'edit']"
-                  [disabled]="isDeleting">
-            Edit FOM
-          </button>
-          <span title="You cannot edit a finalized/expired project"></span>
-        </div>
-        <div class="btn-container">
-          <button class="btn btn-primary ms-1" type="button" title="Publish FOM"
-                  [disabled]="isPublishing"
-                  [hidden]="!canViewPublishing()"
-                  (click)="publishFOM()">
-            <em class="spinner rotating" [hidden]="!isPublishing"></em>
-            <span>{{isPublishing ? 'Publishing' : 'Publish'}}</span>
-          </button>
-         </div>
-         <div class="btn-container">
-          <button class="btn btn-primary ms-1" type="button" title="Finalize FOM"
-                  [disabled]="isFinalizing"
-                  [hidden]="!canFinalize()"
-                  (click)="finalizeFOM()">
-            <em class="spinner rotating" [hidden]="!isFinalizing"></em>
-            <span>{{isFinalizing ? 'Finalizing' : 'Finalize'}}</span>
-          </button>
-         </div>
-        <button class="btn btn-primary ms-1" type="button" title="Summary Report"
-              [routerLink]="['/a', project.id, 'summary']">
-              <span>Summary Report</span>
-        </button>
-
-        <span class="vert-pipe" *ngIf="canWithdraw()">&nbsp;</span>
-        <button class="btn btn-icon" title="Remove this FOM"
-                *ngIf="canWithdraw()"
-                (click)="deleteFOM()"
+        <div class="title-container__actions">
+          <div class="btn-container">
+            <button class="btn btn-light" type="button" title="Edit Online Public Notice"
+              (click)="goToPublicNotice()"
+              [disabled]="isDeleting"
+              [hidden]="!canEditPublicNotice() && !project.publicNoticeId"
+              style="margin-right: 8px;">
+              {{canEditPublicNotice() ? (project.publicNoticeId?'Edit' : 'Add') + ' Online Public Notice'
+              : 'View Online Public Notice'}}
+            </button>
+          </div>
+          @if (canEditFOM()) {
+            <div class="btn-container">
+              <button class="btn btn-light" type="button" title="Edit FOM"
+                [routerLink]="['/a', project.id, 'edit']"
                 [disabled]="isDeleting">
-          <em class="spinner-border" [hidden]="!isDeleting"></em>
-          <em class="material-icons" [hidden]="isDeleting" >
-            delete
-          </em>
-        </button>
+                Edit FOM
+              </button>
+              <span title="You cannot edit a finalized/expired project"></span>
+            </div>
+          }
+          <div class="btn-container">
+            <button class="btn btn-primary ms-1" type="button" title="Publish FOM"
+              [disabled]="isPublishing"
+              [hidden]="!canViewPublishing()"
+              (click)="publishFOM()">
+              <em class="spinner rotating" [hidden]="!isPublishing"></em>
+              <span>{{isPublishing ? 'Publishing' : 'Publish'}}</span>
+            </button>
+          </div>
+          <div class="btn-container">
+            <button class="btn btn-primary ms-1" type="button" title="Finalize FOM"
+              [disabled]="isFinalizing"
+              [hidden]="!canFinalize()"
+              (click)="finalizeFOM()">
+              <em class="spinner rotating" [hidden]="!isFinalizing"></em>
+              <span>{{isFinalizing ? 'Finalizing' : 'Finalize'}}</span>
+            </button>
+          </div>
+          <button class="btn btn-primary ms-1" type="button" title="Summary Report"
+            [routerLink]="['/a', project.id, 'summary']">
+            <span>Summary Report</span>
+          </button>
+          @if (canWithdraw()) {
+            <span class="vert-pipe">&nbsp;</span>
+          }
+          @if (canWithdraw()) {
+            <button class="btn btn-icon" title="Remove this FOM"
+              (click)="deleteFOM()"
+              [disabled]="isDeleting">
+              <em class="spinner-border" [hidden]="!isDeleting"></em>
+              <em class="material-icons" [hidden]="isDeleting" >
+                delete
+              </em>
+            </button>
+          }
+        </div>
       </div>
     </div>
-  </div>
+  }
 </div>
 
 <div class="bottom-container" #scrollContainer>
@@ -79,265 +85,289 @@
                 <section>
                   <h2>Name</h2>
                   <p class="mb-0"
-                     [innerHTML]="project.name ? project.name : '<em>No applicant on this file</em>'"></p>
-                </section>
-                <section>
-                  <h2>Description</h2>
-                  <p class="mb-0"
-                     [innerHTML]="(project.description | newlines) || '<em>No project description available</em>'"></p>
-                </section>
-                <section>
-                  <h2>Details</h2>
-                  <ul class="nv-list">
-                    <li *ngIf="project.projectPlanCode == projectPlanCodeEnum.Fsp">
-                      <span class="name">FSP ID:</span>
-                      <span
-                        class="value">
-                        {{project?.fspId}}
-                      </span>
-                    </li>
-                    <li *ngIf="project.projectPlanCode == projectPlanCodeEnum.Woodlot">
-                      <span class="name">Woodlot Licence Number:</span>
-                      <span
-                        class="value">
-                        {{project?.woodlotLicenseNumber}}
-                      </span>
-                    </li>
+                    [innerHTML]="project.name ? project.name : '<em>No applicant on this file</em>'"></p>
+                  </section>
+                  <section>
+                    <h2>Description</h2>
+                    <p class="mb-0"
+                      [innerHTML]="(project.description | newlines) || '<em>No project description available</em>'"></p>
+                    </section>
+                    <section>
+                      <h2>Details</h2>
+                      <ul class="nv-list">
+                        @if (project.projectPlanCode == projectPlanCodeEnum.Fsp) {
+                          <li>
+                            <span class="name">FSP ID:</span>
+                            <span
+                              class="value">
+                              {{project?.fspId}}
+                            </span>
+                          </li>
+                        }
+                        @if (project.projectPlanCode == projectPlanCodeEnum.Woodlot) {
+                          <li>
+                            <span class="name">Woodlot Licence Number:</span>
+                            <span
+                              class="value">
+                              {{project?.woodlotLicenseNumber}}
+                            </span>
+                          </li>
+                        }
 
+                        <li>
+                          <span class="name">FOM Holder:</span>
+                          <span
+                            class="value">
+                            {{project.forestClient.name}}
+                          </span>
+                        </li>
+                        @if (project.bctsMgrName && project.bctsMgrName.length > 0) {
+                          <li>
+                            <span class="name">Timber Sales Manager Name:</span>
+                            <span
+                              class="value">
+                              {{project.bctsMgrName}}
+                            </span>
+                          </li>
+                        }
+                        <li>
+                          <span class="name">District:</span>
+                          <span
+                            class="value">
+                            {{project.district ? project.district?.name : 'A district has not been specified'}}
+                          </span>
+                        </li>
+                        <li>
+                          <span class="name">Online Public Notice:</span>
+                          <span
+                            class="value">
+                            {{project.publicNoticeId? 'Yes' : 'No'}}
+                          </span>
+                        </li>
+                        @if (project.publicNoticeId) {
+                          <li>
+                            <span class="name">Notice Publishing Date:</span>
+                            <span class="value">{{project.noticePostDate}}</span>
+                          </li>
+                        }
+                      </ul>
+                    </section>
+                    <br />
+                    <h2>Attachments</h2>
+                    @if (attachments.length > 0) {
+                      <section>
+                        @for (attachment of attachments; track attachment) {
+                          <div class="doc-list row">
+                            <a class="doc-list__item" style="width: 90%;cursor:pointer"
+                              (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
+                              [title]="attachment.fileName || ''"
+                              rel="noopener">
+                              <div class="cell doc-list__item-icon">
+                                <em class="material-icons">
+                                  insert_drive_file
+                                </em>
+                              </div>
+                              <div class="cell doc-list__item-name">{{attachment.fileName}}</div>
+                              <div style="text-align: right;margin-right: 5px;">({{attachment.attachmentType.description}})</div>
+                            </a>
+                            @if (isDeleteAttachmentAllowed(attachment)) {
+                              <button class="btn btn-icon row doc-list__item"
+                                title="Delete this attachment"
+                                (click)="deleteAttachment(attachment.id)"
+                                [disabled]="isDeleting">
+                                <em class="material-icons">
+                                  delete
+                                </em>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </section>
+                    }
+                  </ng-template>
+                </li>
+                <li ngbNavItem [disabled]="isDeleting">
+
+                  <a ngbNavLink>
+                    <em class="material-icons">
+                      pin_drop
+                    </em>
+                    Location
+                  </a>
+
+                  <ng-template ngbNavContent>
+                    <h2>Geographic Shape Information</h2>
+
+                    <app-details-map
+                      [projectSpatialDetail]="spatialDetail">
+                    </app-details-map>
+
+                    <app-shape-info
+                      [spatialDetail]="spatialDetail">
+                    </app-shape-info>
+
+                  </ng-template>
+
+                </li>
+              </ul>
+              <div [ngbNavOutlet]="nav"></div>
+            </section>
+          </div>
+
+          <div class="col-md-4">
+            <div class="aside-card">
+              <h3 class="title">FOM Status</h3>
+              <div class="body">
+                <div
+                  class="app-status">
+                  {{project.workflowState ? project.workflowState.description: '-'}}
+                </div>
+              </div>
+            </div>
+
+            @if (project.operationStartYear && project.operationEndYear) {
+              <div class="aside-card">
+                <h3 class="title">Operations Period</h3>
+                <div class="body">
+                  <ul class="nv-list">
                     <li>
-                      <span class="name">FOM Holder:</span>
-                      <span
-                        class="value">
-                        {{project.forestClient.name}}
-                      </span>
-                    </li>
-                    <li *ngIf="project.bctsMgrName && project.bctsMgrName.length > 0">
-                      <span class="name">Timber Sales Manager Name:</span>
-                      <span
-                        class="value">
-                        {{project.bctsMgrName}}
-                      </span>
+                      <span class="name">Start Year:</span>
+                      <span class="value" [ngClass]="{'invalid-type-msg': !project.operationStartYear }">
+                      {{project.operationStartYear }}</span>
                     </li>
                     <li>
-                      <span class="name">District:</span>
-                      <span
-                        class="value">
-                        {{project.district ? project.district?.name : 'A district has not been specified'}}
-                      </span>
-                    </li>
-                    <li>
-                      <span class="name">Online Public Notice:</span>
-                      <span
-                        class="value">
-                        {{project.publicNoticeId? 'Yes' : 'No'}}
-                      </span>
-                    </li>
-                    <li *ngIf="project.publicNoticeId">
-                        <span class="name">Notice Publishing Date:</span>
-                        <span class="value">{{project.noticePostDate}}</span>
+                      <span class="name">End Year:</span>
+                      <span class="value">{{project.operationEndYear }}</span>
                     </li>
                   </ul>
-                </section>
-                <br />
-                <h2>Attachments</h2>
-                <section *ngIf="attachments.length > 0">
-                 <div class="doc-list row" *ngFor="let attachment of attachments">
-                    <a class="doc-list__item" style="width: 90%;cursor:pointer"
-                       (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
-                       [title]="attachment.fileName || ''"
-                       rel="noopener">
-                      <div class="cell doc-list__item-icon">
-                        <em class="material-icons">
-                           insert_drive_file
-                        </em>
-                      </div>
-                      <div class="cell doc-list__item-name">{{attachment.fileName}}</div>
-                      <div style="text-align: right;margin-right: 5px;">({{attachment.attachmentType.description}})</div>
-                    </a>
-                    <button *ngIf="isDeleteAttachmentAllowed(attachment)" class="btn btn-icon row doc-list__item" 
-                            title="Delete this attachment"
-                            (click)="deleteAttachment(attachment.id)"
-                            [disabled]="isDeleting">
-                      <em class="material-icons">
-                        delete
-                      </em>
-                    </button>
-                  </div>
-                </section>
-              </ng-template>
-            </li>
-            <li ngbNavItem [disabled]="isDeleting">
+                </div>
+              </div>
+            }
 
-              <a ngbNavLink>
-                <em class="material-icons">
-                  pin_drop
-                </em>
-                Location
-              </a>
-
-              <ng-template ngbNavContent>
-                <h2>Geographic Shape Information</h2>
-
-                  <app-details-map
-                    [projectSpatialDetail]="spatialDetail">
-                  </app-details-map>
-
-                  <app-shape-info
-                    [spatialDetail]="spatialDetail">
-                  </app-shape-info>
-
-              </ng-template>
-
-            </li>
-          </ul>
-          <div [ngbNavOutlet]="nav"></div>
-        </section>
-      </div>
-
-      <div class="col-md-4">
-        <div class="aside-card">
-          <h3 class="title">FOM Status</h3>
-          <div class="body">
-            <div
-              class="app-status">
-              {{project.workflowState ? project.workflowState.description: '-'}}
-            </div>
-          </div>
-        </div>
-
-        <div *ngIf="project.operationStartYear && project.operationEndYear" class="aside-card">
-          <h3 class="title">Operations Period</h3>
-          <div class="body">
-            <ul class="nv-list">
-              <li>
-                <span class="name">Start Year:</span>
-                <span class="value" [ngClass]="{'invalid-type-msg': !project.operationStartYear }">
-                  {{project.operationStartYear }}</span>
-              </li>
-              <li>
-                <span class="name">End Year:</span>
-                <span class="value">{{project.operationEndYear }}</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="aside-card">
-          <h3 class="title">Comment Period Details</h3>
-          <div class="body">
-            <ul class="nv-list">
-              <li>
-                <span class="name">Start Date:</span>
-                <span class="value" [ngClass]="{'invalid-type-msg': !project.commentingOpenDate }">
-                  {{project.commentingOpenDate ?
-                  ( project.commentingOpenDate | date:'longDate') :
+            <div class="aside-card">
+              <h3 class="title">Comment Period Details</h3>
+              <div class="body">
+                <ul class="nv-list">
+                  <li>
+                    <span class="name">Start Date:</span>
+                    <span class="value" [ngClass]="{'invalid-type-msg': !project.commentingOpenDate }">
+                      {{project.commentingOpenDate ?
+                      ( project.commentingOpenDate | date:'longDate') :
                     'Must be defined'}}</span>
-              </li>
-              <li>
-                <span class="name">End Date:</span>
-                <span class="value">{{project.commentingClosedDate| date:'longDate'}}</span>
-              </li>
-              <li>
-                <span class="name">Days Remaining:</span>
-                <span class="value">{{daysRemaining > 0? daysRemaining: ''}}</span>
-              </li>
-            </ul>
+                  </li>
+                  <li>
+                    <span class="name">End Date:</span>
+                    <span class="value">{{project.commentingClosedDate| date:'longDate'}}</span>
+                  </li>
+                  <li>
+                    <span class="name">Days Remaining:</span>
+                    <span class="value">{{daysRemaining > 0? daysRemaining: ''}}</span>
+                  </li>
+                </ul>
 
-            <div class="btn-container" *ngIf="project">
-              <button class="cta-btn btn btn-sm btn-outline-primary"
-                      type="button"
-                      title="Change Commenting End Date"
-                      [disabled]="isDeleting"
-                      *ngIf="canChangeEndDate()"
-                      (click)="openChangeEndDateModal()">
-                Change Commenting End Date
-              </button>
-            </div>
+                @if (project) {
+                  <div class="btn-container">
+                    @if (canChangeEndDate()) {
+                      <button class="cta-btn btn btn-sm btn-outline-primary"
+                        type="button"
+                        title="Change Commenting End Date"
+                        [disabled]="isDeleting"
+                        (click)="openChangeEndDateModal()">
+                        Change Commenting End Date
+                      </button>
+                    }
+                  </div>
+                }
 
-            <div class="btn-container" *ngIf="project">
-              <button class="cta-btn btn btn-sm btn-outline-primary"
+                @if (project) {
+                  <div class="btn-container">
+                    <button class="cta-btn btn btn-sm btn-outline-primary"
                       type="button"
                       title="Review comments"
                       [disabled]="isDeleting"
                       [hidden]="!canAccessComments()"
                       [routerLink]="['/comments', project.id]">
-                Review Comments
-              </button>
-            </div>
+                      Review Comments
+                    </button>
+                  </div>
+                }
 
-            <ul class="nv-list" style="margin-top: 1em;">
-              <li>
-                <span class="name">Total:</span>
-                <span class="value">{{projectMetrics.totalCommentsCount}}</span>
-              </li>
-              <li>
-                <span class="name">Classified:</span>
-                <span class="value">{{projectMetrics.respondedToCommentsCount}}</span>
-              </li>
+                <ul class="nv-list" style="margin-top: 1em;">
+                  <li>
+                    <span class="name">Total:</span>
+                    <span class="value">{{projectMetrics.totalCommentsCount}}</span>
+                  </li>
+                  <li>
+                    <span class="name">Classified:</span>
+                    <span class="value">{{projectMetrics.respondedToCommentsCount}}</span>
+                  </li>
 
-              <li>
-                <span class="name">Comment Classification:</span>
-                <span class="value">
+                  <li>
+                    <span class="name">Comment Classification:</span>
+                    <span class="value">
                       {{project.commentClassificationMandatory? 'Mandatory' : 'Not Mandatory'}}
-                </span>
-              </li>
-            </ul>
+                    </span>
+                  </li>
+                </ul>
 
-            <div class="btn-container"
-                [hidden]="!canSetCommentClassification()">
-              <button class="cta-btn btn btn-sm btn-outline-primary"
-                      type="button"
-                      title="Set Comment Classification"
-                      (click)="setCommentClassification()"
-                      [disabled]="isSettingCommentClassification">
-                {{'Change to ' + (project.commentClassificationMandatory? 'Not Mandatory' : 'Mandatory')}}
-                <em class="spinner-border" [hidden]="!isSettingCommentClassification"></em>
-              </button>
+                <div class="btn-container"
+                  [hidden]="!canSetCommentClassification()">
+                  <button class="cta-btn btn btn-sm btn-outline-primary"
+                    type="button"
+                    title="Set Comment Classification"
+                    (click)="setCommentClassification()"
+                    [disabled]="isSettingCommentClassification">
+                    {{'Change to ' + (project.commentClassificationMandatory? 'Not Mandatory' : 'Mandatory')}}
+                    <em class="spinner-border" [hidden]="!isSettingCommentClassification"></em>
+                  </button>
+                </div>
+
+              </div>
             </div>
 
-          </div>
-        </div>
+            <div class="aside-card"
+              [hidden]="!canAccessInteractions()">
+              <h3 class="title">Stakeholder Engagement</h3>
+              <div class="body">
+                <div>
+                  <p class="mb-0">Record and edit stakeholder engagements</p>
+                </div>
+                <div class="btn-container">
+                  <button class="cta-btn btn btn-sm btn-outline-primary" type="button"
+                    title="Record and edit stakeholder engagements"
+                    [disabled]="isDeleting"
+                    [routerLink]="['/interactions', project.id]">
+                    Stakeholder Engagements
+                  </button>
+                </div>
 
-        <div class="aside-card"
-            [hidden]="!canAccessInteractions()">
-          <h3 class="title">Stakeholder Engagement</h3>
-          <div class="body">
-            <div>
-              <p class="mb-0">Record and edit stakeholder engagements</p>
+                <ul class="nv-list" style="margin-top: 1em;">
+                  <li>
+                    <span class="name">Total:</span>
+                    <span class="value">{{projectMetrics.totalInteractionsCount}}</span>
+                  </li>
+                </ul>
+
+              </div>
             </div>
-           <div class="btn-container">
-              <button class="cta-btn btn btn-sm btn-outline-primary" type="button"
-                      title="Record and edit stakeholder engagements"
-                      [disabled]="isDeleting"
-                      [routerLink]="['/interactions', project.id]">
-                Stakeholder Engagements
-              </button>
-            </div>
-
-            <ul class="nv-list" style="margin-top: 1em;">
-              <li>
-                <span class="name">Total:</span>
-                <span class="value">{{projectMetrics.totalInteractionsCount}}</span>
-              </li>
-            </ul>
-
-          </div>
-        </div>
-        <div *ngIf="canViewSubmission()" class="aside-card">
-          <h3 class="title">FOM Spatial Submission</h3>
-          <div class="body">
-            <span  *ngIf="spatialDetail.length === 0" class="invalid-type-msg"> Proposed FOM Spatial Upload Required </span>
-           <div class="btn-container">
-              <button class="cta-btn btn btn-sm btn-outline-primary" type="button" title="Edit fom documents"
+            @if (canViewSubmission()) {
+              <div class="aside-card">
+                <h3 class="title">FOM Spatial Submission</h3>
+                <div class="body">
+                  @if (spatialDetail.length === 0) {
+                    <span  class="invalid-type-msg"> Proposed FOM Spatial Upload Required </span>
+                  }
+                  <div class="btn-container">
+                    <button class="cta-btn btn btn-sm btn-outline-primary" type="button" title="Edit fom documents"
                       [disabled]="isDeleting"
                       [routerLink]="['/a', project.id, 'upload']">
-                Edit FOM Spatial Submission
-              </button>
-            </div>
+                      Edit FOM Spatial Submission
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
           </div>
-
         </div>
+      </div>
     </div>
-  </div>
-</div>
-</div>

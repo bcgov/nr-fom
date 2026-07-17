@@ -1,7 +1,7 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
-import { DatePipe, Location, NgFor, NgIf, TitleCasePipe } from '@angular/common';
+import { DatePipe, Location, TitleCasePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,17 +16,15 @@ import { isNullish } from 'remeda';
 @Component({
     standalone: true,
     imports: [
-        FormsModule, 
-        RxReactiveFormsModule, 
-        NgFor, 
-        NgIf, 
-        NgbDropdown, 
-        NgbDropdownToggle, 
-        NgbDropdownMenu, 
-        RouterLink, 
-        TitleCasePipe, 
-        DatePipe
-    ],
+    FormsModule,
+    RxReactiveFormsModule,
+    NgbDropdown,
+    NgbDropdownToggle,
+    NgbDropdownMenu,
+    RouterLink,
+    TitleCasePipe,
+    DatePipe
+],
     selector: 'app-search',
     templateUrl: './search.component.html',
     styleUrls: ['./search.component.scss']

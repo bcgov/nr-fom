@@ -1,31 +1,36 @@
-<div class="popup-content" *ngIf="!projectSummary">
-  Loading FOM details...
-</div>
+@if (!projectSummary) {
+  <div class="popup-content">
+    Loading FOM details...
+  </div>
+}
 
-<div class="popup-content" *ngIf="projectSummary">
-  <div class="file-number"><strong>FOM Number: {{projectSummary.id}}</strong></div>
-
-  <div class="applicant-name">{{projectSummary.forestClientName | titlecase}}</div>
-  <div class="purpose">{{projectSummary.name}}</div>
-  <div *ngIf="projectSummary.projectPlanCode == projectPlanCodeEnum.Fsp"><strong>FSP ID: {{projectSummary.fspId}}</strong></div>
-  <div *ngIf="projectSummary.projectPlanCode == projectPlanCodeEnum.Woodlot"><strong>Woodlot Licence: {{projectSummary.woodlotLicenseNumber}}</strong></div>
-
-  <ul class="status-container">
-    <li class="workflow-status"
+@if (projectSummary) {
+  <div class="popup-content">
+    <div class="file-number"><strong>FOM Number: {{projectSummary.id}}</strong></div>
+    <div class="applicant-name">{{projectSummary.forestClientName | titlecase}}</div>
+    <div class="purpose">{{projectSummary.name}}</div>
+    @if (projectSummary.projectPlanCode == projectPlanCodeEnum.Fsp) {
+      <div><strong>FSP ID: {{projectSummary.fspId}}</strong></div>
+    }
+    @if (projectSummary.projectPlanCode == projectPlanCodeEnum.Woodlot) {
+      <div><strong>Woodlot Licence: {{projectSummary.woodlotLicenseNumber}}</strong></div>
+    }
+    <ul class="status-container">
+      <li class="workflow-status"
       [ngClass]="{
         'commenting-open':  projectSummary.workflowStateName === workflowStatus['COMMENT_OPEN'].description,
         'commenting-closed': projectSummary.workflowStateName === workflowStatus['COMMENT_CLOSED'].description,
         'finalized': projectSummary.workflowStateName === workflowStatus['FINALIZED'].description,
         'expired': projectSummary.workflowStateName === workflowStatus['EXPIRED'].description
       }">
-      {{ projectSummary.workflowStateName | titlecase }}
-      {{
+        {{ projectSummary.workflowStateName | titlecase }}
+        {{
         (projectSummary.workflowStateName === workflowStatus['FINALIZED'].description ||
         projectSummary.workflowStateName === workflowStatus['EXPIRED'].description) ?
-         ', Commenting Closed': ''
-      }}
-    </li> 
-  </ul>
-
-  <button class="app-link btn btn-primary" (click)="showDetails()">View Details</button>
-</div>
+        ', Commenting Closed': ''
+        }}
+      </li>
+    </ul>
+    <button class="app-link btn btn-primary" (click)="showDetails()">View Details</button>
+  </div>
+}

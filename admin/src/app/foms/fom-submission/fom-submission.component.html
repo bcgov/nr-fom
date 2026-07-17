@@ -1,178 +1,185 @@
-<div class="top-container" *ngIf="fg">
-  <div class="container">
-    <div class="title-container">
-      <div class="title-container__title">
-        <h1 class="text-muted">{{project.projectPlanCode == projectPlanCodeEnum.Fsp
+@if (fg) {
+  <div class="top-container">
+    <div class="container">
+      <div class="title-container">
+        <div class="title-container__title">
+          <h1 class="text-muted">{{project.projectPlanCode == projectPlanCodeEnum.Fsp
             ? "FSP ID: " + project.fspId
             : "Woodlot Licence: "+ project.woodlotLicenseNumber
-        }}</h1>
-      </div>
-      <div class="title-container__actions">
-        <button
-          class="btn btn-light"
-          type="button"
-          title="Cancel changes"
-          (click)="cancelChanges()"
-          [disabled]="isSubmitting"
-        >
-          View FOM
-          <em class="spinner rotating" [hidden]="!isLoading"></em>
-        </button>
-        <button
-          class="btn btn-primary ms-1"
-          type="button"
-          title="Upload your GeoJSON FOM File"
-          (click)="submit()"
-          [disabled]="!isSubmissionAllowed()"
-        >{{ isSubmitting ? "Uploading" : "Upload" }}
-          <em class="spinner rotating" [hidden]="!isSubmitting"></em>
-        </button>
+          }}</h1>
+        </div>
+        <div class="title-container__actions">
+          <button
+            class="btn btn-light"
+            type="button"
+            title="Cancel changes"
+            (click)="cancelChanges()"
+            [disabled]="isSubmitting"
+            >
+            View FOM
+            <em class="spinner rotating" [hidden]="!isLoading"></em>
+          </button>
+          <button
+            class="btn btn-primary ms-1"
+            type="button"
+            title="Upload your GeoJSON FOM File"
+            (click)="submit()"
+            [disabled]="!isSubmissionAllowed()"
+            >{{ isSubmitting ? "Uploading" : "Upload" }}
+            <em class="spinner rotating" [hidden]="!isSubmitting"></em>
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
+}
 
-<div class="bottom-container" *ngIf="fg">
-
-  <div class="container">
-
-    <form class="mb-3" [formGroup]="fg">
-      <fieldset>
-        <legend>FOM Spatial Submission</legend>
-        <div class="row">
-          <div class="form-group col-md-3">
-            <label>FOM Number:</label>
-          </div>
-          <div class="col-md-2">
-            <input
-              type="text"
-              class="form-control"
-              id="id"
-              name="name"
-              disabled
-              [value]="project.id"
-            />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-md-3">
-            <label style="white-space: nowrap;">Submission Type:</label>
-          </div>
-          <div class="col-md-3">
-            <span
-              class="value">
-              {{originalSubmissionRequest.submissionTypeCode === 'FINAL' ? 'Final' : 'Proposed'}}
-            </span>
-          </div>
-        </div>
-        <p>
-        <div class="row">
-          <div class="form-group col-md-3">
-            <label style="white-space: nowrap;">GeoSpatial Object Type:</label>
-          </div>
-          <div class="form-group col-md-3">
-            <select name="objectType" class="sort-comments form-control" (change)="changeGeoType($event)" id="geoSpatialType-list">
-              <option  [value]="geoType" *ngFor="let geoType of geoTypeValues"
-                       [innerHTML]=" getGeoSpatialTypeDescription(geoType)"> </option>
-            </select>
-          </div>
-
-        </div>
-
-        <div class="sample-spatial-download" ngbDropdown>
-          <button ngbDropdownToggle class="btn btn-sm btn-outline-primary" type="button">
-            Download Sample Spatial Files
-          </button>
-          <div ngbDropdownMenu>
-            <a class="dropdown-item" href="assets/sample-spatial-files/sample_cut_block_file.json" download>Cut block</a>
-            <a class="dropdown-item" href="assets/sample-spatial-files/sample_road_section_file.json" download>Road section</a>
-            <a class="dropdown-item" href="assets/sample-spatial-files/sample_wtra_file.json" download>Wildlife/tree retention area</a>
-          </div>
-        </div>
-
-        <div class="form-group mb-0">
-          <app-upload-box [fileTypes]="fileTypesParent"
-                          [maxFileSizeMB]="maxSpatialFileSize"
-                          (emitFile)="onFileEmit($event)">
-          </app-upload-box>
-          <div class="fileTypes"><em>Acceptable File Types: json, txt</em></div>
-        </div>
-      </fieldset>
-
-      <fieldset class="no-margin no-border"
-        *ngIf="spatialSubmission?.cutblocks?.count > 0 
-            || spatialSubmission?.roadSections?.count > 0 
-            || spatialSubmission?.retentionAreas?.count > 0">
-        <legend> Submitted Spatial Objects </legend>
-        <ul class="nv-list">
-          <li *ngIf="spatialSubmission.cutblocks?.count > 0"
-              style="padding-bottom: 0">
-            <span class="name">Cut block submission - {{spatialSubmission.cutblocks.count}} blocks</span>
-            <span class="value1">{{spatialSubmission.cutblocks.dateSubmitted | date}}</span>
-            <span class="action">
-              <button class="btn btn-icon no-padding no-border" title="Remove Cutblocks"
-                type="button"
-                *ngIf="canDeleteSpatialSubmission()"
+@if (fg) {
+  <div class="bottom-container">
+    <div class="container">
+      <form class="mb-3" [formGroup]="fg">
+        <fieldset>
+          <legend>FOM Spatial Submission</legend>
+          <div class="row">
+            <div class="form-group col-md-3">
+              <label>FOM Number:</label>
+            </div>
+            <div class="col-md-2">
+              <input
+                type="text"
+                class="form-control"
+                id="id"
+                name="name"
+                disabled
+                [value]="project.id"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-3">
+                <label style="white-space: nowrap;">Submission Type:</label>
+              </div>
+              <div class="col-md-3">
+                <span
+                  class="value">
+                  {{originalSubmissionRequest.submissionTypeCode === 'FINAL' ? 'Final' : 'Proposed'}}
+                </span>
+              </div>
+            </div>
+            <p>
+              <div class="row">
+                <div class="form-group col-md-3">
+                  <label style="white-space: nowrap;">GeoSpatial Object Type:</label>
+                </div>
+                <div class="form-group col-md-3">
+                  <select name="objectType" class="sort-comments form-control" (change)="changeGeoType($event)" id="geoSpatialType-list">
+                    @for (geoType of geoTypeValues; track geoType) {
+                      <option  [value]="geoType"
+                      [innerHTML]=" getGeoSpatialTypeDescription(geoType)"> </option>
+                    }
+                  </select>
+                </div>
+              </div>
+              <div class="sample-spatial-download" ngbDropdown>
+                <button ngbDropdownToggle class="btn btn-sm btn-outline-primary" type="button">
+                  Download Sample Spatial Files
+                </button>
+                <div ngbDropdownMenu>
+                  <a class="dropdown-item" href="assets/sample-spatial-files/sample_cut_block_file.json" download>Cut block</a>
+                  <a class="dropdown-item" href="assets/sample-spatial-files/sample_road_section_file.json" download>Road section</a>
+                  <a class="dropdown-item" href="assets/sample-spatial-files/sample_wtra_file.json" download>Wildlife/tree retention area</a>
+                </div>
+              </div>
+              <div class="form-group mb-0">
+                <app-upload-box [fileTypes]="fileTypesParent"
+                  [maxFileSizeMB]="maxSpatialFileSize"
+                  (emitFile)="onFileEmit($event)">
+                </app-upload-box>
+                <div class="fileTypes"><em>Acceptable File Types: json, txt</em></div>
+              </div>
+            </fieldset>
+            @if (spatialSubmission?.cutblocks?.count > 0
+              || spatialSubmission?.roadSections?.count > 0
+              || spatialSubmission?.retentionAreas?.count > 0) {
+              <fieldset class="no-margin no-border"
+                >
+                <legend> Submitted Spatial Objects </legend>
+                <ul class="nv-list">
+                  @if (spatialSubmission.cutblocks?.count > 0) {
+                    <li
+                      style="padding-bottom: 0">
+                      <span class="name">Cut block submission - {{spatialSubmission.cutblocks.count}} blocks</span>
+                      <span class="value1">{{spatialSubmission.cutblocks.dateSubmitted | date}}</span>
+                      <span class="action">
+                        @if (canDeleteSpatialSubmission()) {
+                          <button class="btn btn-icon no-padding no-border" title="Remove Cutblocks"
+                            type="button"
                 (click)="onDeleteSpatialSubmission(
                   spatialSubmission.submissionId, 
                   SpatialObjectCodeEnum.CutBlock
                   )">
-                <em class="spinner rotating" [hidden]="!isLoading"></em>
-                <em class="material-icons" [hidden]="isLoading || isSubmitting">
-                  delete
-                </em>
-              </button>
-            </span>
-          </li>
-          <li *ngIf="spatialSubmission.roadSections?.count > 0"
-              style="padding-bottom: 0">
-            <span class="name">Road section submission - {{spatialSubmission.roadSections.count}} sections</span>
-            <span class="value1">{{spatialSubmission.roadSections.dateSubmitted | date}}</span>
-            <span class="action">
-              <button class="btn btn-icon no-padding no-border" title="Remove Road Sections"
-                *ngIf="canDeleteSpatialSubmission()"
-                type="button"
+                            <em class="spinner rotating" [hidden]="!isLoading"></em>
+                            <em class="material-icons" [hidden]="isLoading || isSubmitting">
+                              delete
+                            </em>
+                          </button>
+                        }
+                      </span>
+                    </li>
+                  }
+                  @if (spatialSubmission.roadSections?.count > 0) {
+                    <li
+                      style="padding-bottom: 0">
+                      <span class="name">Road section submission - {{spatialSubmission.roadSections.count}} sections</span>
+                      <span class="value1">{{spatialSubmission.roadSections.dateSubmitted | date}}</span>
+                      <span class="action">
+                        @if (canDeleteSpatialSubmission()) {
+                          <button class="btn btn-icon no-padding no-border" title="Remove Road Sections"
+                            type="button"
                 (click)="onDeleteSpatialSubmission(
                   spatialSubmission.submissionId, 
                   SpatialObjectCodeEnum.RoadSection
                   )">
-                  <em class="spinner rotating" [hidden]="!isLoading"></em>
-                  <em class="material-icons" [hidden]="isLoading || isSubmitting">
-                    delete
-                  </em>
-              </button>
-            </span>
-          </li>
-          <li *ngIf="spatialSubmission.retentionAreas?.count > 0"
-              style="padding-bottom: 0">
-            <span class="name">Retention area submission - {{spatialSubmission.retentionAreas.count}} areas</span>
-            <span class="value1">{{spatialSubmission.retentionAreas.dateSubmitted | date}}</span>
-            <span class="action">
-              <button class="btn btn-icon no-padding no-border" title="Remove Retention Areas"
-                *ngIf="canDeleteSpatialSubmission()"
-                type="button"
+                            <em class="spinner rotating" [hidden]="!isLoading"></em>
+                            <em class="material-icons" [hidden]="isLoading || isSubmitting">
+                              delete
+                            </em>
+                          </button>
+                        }
+                      </span>
+                    </li>
+                  }
+                  @if (spatialSubmission.retentionAreas?.count > 0) {
+                    <li
+                      style="padding-bottom: 0">
+                      <span class="name">Retention area submission - {{spatialSubmission.retentionAreas.count}} areas</span>
+                      <span class="value1">{{spatialSubmission.retentionAreas.dateSubmitted | date}}</span>
+                      <span class="action">
+                        @if (canDeleteSpatialSubmission()) {
+                          <button class="btn btn-icon no-padding no-border" title="Remove Retention Areas"
+                            type="button"
                 (click)="onDeleteSpatialSubmission(
                   spatialSubmission.submissionId, 
                   SpatialObjectCodeEnum.Wtra
                   )">
-                  <em class="spinner rotating" [hidden]="!isLoading"></em>
-                  <em class="material-icons" [hidden]="isLoading || isSubmitting">
-                    delete
-                  </em>
-              </button>
-            </span>
-          </li>
-        </ul>
-      </fieldset>
-
-      <hr/>
-
-      <div>
-        <app-submission-overview-faq></app-submission-overview-faq>
+                            <em class="spinner rotating" [hidden]="!isLoading"></em>
+                            <em class="material-icons" [hidden]="isLoading || isSubmitting">
+                              delete
+                            </em>
+                          </button>
+                        }
+                      </span>
+                    </li>
+                  }
+                </ul>
+              </fieldset>
+            }
+            <hr/>
+            <div>
+              <app-submission-overview-faq></app-submission-overview-faq>
+            </div>
+          </form>
+        </div>
       </div>
-
-    </form>
-  </div>
-</div>
+    }
 

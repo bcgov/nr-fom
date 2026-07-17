@@ -1,204 +1,206 @@
 
-<div class="flex-panel" *ngIf="!isLoading && !pNotices">
-  <div class="flex-panel__header">
-    <h2 class="title">No Public Notices Found</h2>
+@if (!isLoading && !pNotices) {
+  <div class="flex-panel">
+    <div class="flex-panel__header">
+      <h2 class="title">No Public Notices Found</h2>
+    </div>
   </div>
-</div>
+}
 
-<div class="flex-panel" *ngIf="isLoading">
-  <div>
-    <h2 class="title">Loading public notices summary...</h2>
+@if (isLoading) {
+  <div class="flex-panel">
+    <div>
+      <h2 class="title">Loading public notices summary...</h2>
+    </div>
   </div>
-</div>
+}
 
-<div class="flex-panel" *ngIf="pNotices">
-  <div class="flex-panel__header" style="height: auto;">
-    <h3>
-      Public Notices
-    </h3>
-  </div>
-
-  <div>
-    <div class="flex-panel__scroll" style="padding-top: 5px">
-
-      <section style="margin-bottom: 15px;">
-        <notices-filter-panel
-          [districtList]="districtList"
+@if (pNotices) {
+  <div class="flex-panel">
+    <div class="flex-panel__header" style="height: auto;">
+      <h3>
+        Public Notices
+      </h3>
+    </div>
+    <div>
+      <div class="flex-panel__scroll" style="padding-top: 5px">
+        <section style="margin-bottom: 15px;">
+          <notices-filter-panel
+            [districtList]="districtList"
           (filterPublicNoticesEvt)="handlePublicNoticesFilterUpdate($event)"></notices-filter-panel>
-      </section>
-
-      <section *ngIf="pNotices.length > 0 else no_notice_message">
-        <div class="expansion-button">
-          <button class="btn btn-primary btn-sm" (click)="accordion.openAll()">Expand</button>
-          <button class="btn btn-light btn-sm" (click)="accordion.closeAll()">Collapse</button>
-        </div>
-
-        <mat-accordion multi>
-          <!-- Public Notices Summary List-->
-          <div *ngFor="let pn of pNotices">
-            <mat-expansion-panel>
-              <mat-expansion-panel-header>
-                <mat-panel-title>
-                  <div class="container" style="padding: 0;">
-                    <div class="row">
-                      <div class="col-6 col-sm-3" style="padding-left: 2;">
-                        <div class="header">FOM Holder</div>
-                        <div matTooltip="{{pn.project.forestClient?.name}}">
-                          {{pn.project.forestClient?.name | shorten: 25}}
+        </section>
+        @if (pNotices.length > 0) {
+          <section>
+            <div class="expansion-button">
+              <button class="btn btn-primary btn-sm" (click)="accordion.openAll()">Expand</button>
+              <button class="btn btn-light btn-sm" (click)="accordion.closeAll()">Collapse</button>
+            </div>
+            <mat-accordion multi>
+              <!-- Public Notices Summary List-->
+              @for (pn of pNotices; track pn) {
+                <div>
+                  <mat-expansion-panel>
+                    <mat-expansion-panel-header>
+                      <mat-panel-title>
+                        <div class="container" style="padding: 0;">
+                          <div class="row">
+                            <div class="col-6 col-sm-3" style="padding-left: 2;">
+                              <div class="header">FOM Holder</div>
+                              <div matTooltip="{{pn.project.forestClient?.name}}">
+                                {{pn.project.forestClient?.name | shorten: 25}}
+                              </div>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                              <div class="header">FOM Name</div>
+                              <div matTooltip="{{pn.project.name}}">
+                                {{pn.project.name | shorten: 30}}
+                              </div>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                              <div class="header">District</div>
+                              <div matTooltip="{{pn.project.district?.name}}">
+                                {{pn.project.district?.name}}
+                              </div>
+                            </div>
+                            <div class="col-6 col-sm-3" style="padding-right: 0;">
+                              <div class="header">Commenting Open Date</div>
+                              <div>
+                                {{pn.project.commentingOpenDate | date: 'longDate'}}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div class="col-6 col-sm-3">
-                        <div class="header">FOM Name</div>
-                        <div matTooltip="{{pn.project.name}}">
-                          {{pn.project.name | shorten: 30}}
-                        </div>
-                      </div>
-                      <div class="col-6 col-sm-3">
-                        <div class="header">District</div>
-                        <div matTooltip="{{pn.project.district?.name}}">
-                          {{pn.project.district?.name}}
-                        </div>
-                      </div>
-                      <div class="col-6 col-sm-3" style="padding-right: 0;">
-                        <div class="header">Commenting Open Date</div>
-                        <div>
-                          {{pn.project.commentingOpenDate | date: 'longDate'}}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </mat-panel-title>
-              </mat-expansion-panel-header>
-              <mat-card appearance="outlined">
-                <ng-container [ngTemplateOutlet]="pNotice_fields_template"
+                      </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <mat-card appearance="outlined">
+                      <ng-container [ngTemplateOutlet]="pNotice_fields_template"
                               [ngTemplateOutletContext]="{ 
                                 pNotice: pn, 
                                 isFomAvailable: isFomAvailable(pn.project.commentingOpenDate
                               )}">
-                </ng-container>
-                <button class="app-link btn btn-primary"
-                    *ngIf="isFomAvailable(pn.project.commentingOpenDate)"
-                    (click)="showDetails(pn.projectId)">View Details</button>
-              </mat-card>
-            </mat-expansion-panel>
-            <pre></pre>
+                      </ng-container>
+                      @if (isFomAvailable(pn.project.commentingOpenDate)) {
+                        <button class="app-link btn btn-primary"
+                        (click)="showDetails(pn.projectId)">View Details</button>
+                      }
+                    </mat-card>
+                  </mat-expansion-panel>
+                  <pre></pre>
+                </div>
+              }
+            </mat-accordion>
+          </section>
+        } @else {
+          <br/>
+          <h3 class="title">No public notices found.</h3>
+        }
+      </div>
+      <!-- Public Notice item display template -->
+      <ng-template #pNotice_fields_template let-pn="pNotice" let-isFomAvailable="isFomAvailable">
+        <div class="row">
+          <div class="col-5 col-sm-2 bold">FOM Number: </div>
+          <div class="col-7 col-sm-4 no-padding" style="text-align: left;">{{pn.projectId}}</div>
+          <div class="col-5 col-sm-2 bold">FOM Holder: </div>
+          <div class="col-7 col-sm-4 no-padding" style="text-align: left;">{{pn.project.forestClient?.name}}</div>
+        </div>
+        <div class="row">
+          @if (pn.project.projectPlanCode == projectPlanCodeEnum.Fsp) {
+            <div class="col-5 col-sm-2 bold"
+            >FSP ID: </div>
+          }
+          @if (pn.project.projectPlanCode == projectPlanCodeEnum.Fsp) {
+            <div class="col-7 col-sm-4 no-padding"
+            >{{pn.project.fspId}}</div>
+          }
+          @if (pn.project.projectPlanCode == projectPlanCodeEnum.Woodlot) {
+            <div class="col-5 col-sm-2 bold"
+            >Woodlot Licence: </div>
+          }
+          @if (pn.project.projectPlanCode == projectPlanCodeEnum.Woodlot) {
+            <div class="col-7 col-sm-4 no-padding"
+            >{{pn.project.woodlotLicenseNumber}}</div>
+          }
+          <div class="col-5 col-sm-2 bold">District: </div>
+          <div class="col-7 col-sm-4 no-padding">{{pn.project.district?.name}}</div>
+        </div>
+        <div class="row no-padding">
+          &nbsp;
+        </div>
+        <div class="row">
+          <div class="col-sm-4 bold">Commenting Period: </div>
+          <div class="col-sm-8">
+            {{pn.project.commentingOpenDate | date: 'longDate'}} to {{pn.project.commentingClosedDate | date: 'longDate'}}
           </div>
-        </mat-accordion>
-      </section>
-    </div>
-
-    <ng-template #no_notice_message >
-      <br/>
-      <h3 class="title">No public notices found.</h3>
-    </ng-template>
-
-    <!-- Public Notice item display template -->
-    <ng-template #pNotice_fields_template let-pn="pNotice" let-isFomAvailable="isFomAvailable">
-      <div class="row">
-        <div class="col-5 col-sm-2 bold">FOM Number: </div>
-        <div class="col-7 col-sm-4 no-padding" style="text-align: left;">{{pn.projectId}}</div>
-        <div class="col-5 col-sm-2 bold">FOM Holder: </div>
-        <div class="col-7 col-sm-4 no-padding" style="text-align: left;">{{pn.project.forestClient?.name}}</div>
-      </div>
-
-      <div class="row">
-        <div class="col-5 col-sm-2 bold" 
-          *ngIf="pn.project.projectPlanCode == projectPlanCodeEnum.Fsp">FSP ID: </div>
-        <div class="col-7 col-sm-4 no-padding" 
-          *ngIf="pn.project.projectPlanCode == projectPlanCodeEnum.Fsp">{{pn.project.fspId}}</div>
-
-        <div class="col-5 col-sm-2 bold" 
-          *ngIf="pn.project.projectPlanCode == projectPlanCodeEnum.Woodlot">Woodlot Licence: </div>
-        <div class="col-7 col-sm-4 no-padding" 
-          *ngIf="pn.project.projectPlanCode == projectPlanCodeEnum.Woodlot">{{pn.project.woodlotLicenseNumber}}</div>
-
-        <div class="col-5 col-sm-2 bold">District: </div>
-        <div class="col-7 col-sm-4 no-padding">{{pn.project.district?.name}}</div>
-      </div>
-
-      <div class="row no-padding">
-        &nbsp;
-      </div>
-
-      <div class="row">
-        <div class="col-sm-4 bold">Commenting Period: </div>
-        <div class="col-sm-8">
-          {{pn.project.commentingOpenDate | date: 'longDate'}} to {{pn.project.commentingClosedDate | date: 'longDate'}}
         </div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-4 bold">Validity Period: </div>
-        <div class="col-sm-8">{{getValidityStartDate(pn.project) | date: 'longDate'}} to {{pn.project.validityEndDate | date: 'longDate'}}</div>
-      </div>
-
-      <div class="row" *ngIf="pn.project.operationStartYear && pn.project.operationEndYear">
-        <div class="col-sm-4 bold">Period of Operations: </div>
-        <div class="col-sm-8">{{pn.project.operationStartYear}} - {{pn.project.operationEndYear}}</div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-4 bold">FOM Summary: </div>
-        <div class="col-sm-8">{{pn.project.name}}</div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-4 bold">FOM Description: </div>
-        <div class="col-sm-8">{{pn.project.description}}</div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-4 bold">
-          {{pn.isReceiveCommentsSameAsReview === false? 'Physical address to review FOM': 'Physical address to review FOM and submit FOM comments'}}:
-        </div>
-        <div class="col-sm-8">{{pn.reviewAddress}}</div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-4 bold">
-          {{pn.isReceiveCommentsSameAsReview === false? 'Business hours to physically review FOM': 'Business hours to physically review FOM and submit FOM comments'}}:
-        </div>
-        <div class="col-sm-8">{{pn.reviewBusinessHours}}</div>
-      </div>
-
-      <div *ngIf="pn.isReceiveCommentsSameAsReview !== true">
         <div class="row">
-          <div class="col-sm-4 bold">Physical address to submit comments: </div>
-          <div class="col-sm-8">{{pn.receiveCommentsAddress}}</div>
+          <div class="col-sm-4 bold">Validity Period: </div>
+          <div class="col-sm-8">{{getValidityStartDate(pn.project) | date: 'longDate'}} to {{pn.project.validityEndDate | date: 'longDate'}}</div>
         </div>
-
+        @if (pn.project.operationStartYear && pn.project.operationEndYear) {
+          <div class="row">
+            <div class="col-sm-4 bold">Period of Operations: </div>
+            <div class="col-sm-8">{{pn.project.operationStartYear}} - {{pn.project.operationEndYear}}</div>
+          </div>
+        }
         <div class="row">
-          <div class="col-sm-4 bold">Business hours to physically submit comments: </div>
-          <div class="col-sm-8">{{pn.receiveCommentsBusinessHours}}</div>
+          <div class="col-sm-4 bold">FOM Summary: </div>
+          <div class="col-sm-8">{{pn.project.name}}</div>
         </div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-4 bold">Mailing Address: </div>
-        <div class="col-sm-8">{{pn.mailingAddress}}</div>
-      </div>
-
-      <div class="row">
-        <div class="col-sm-4 bold">Email for Public Comment: </div>
-        <div class="col-sm-8 word-wrap">{{pn.email}}</div>
-      </div>
-
-      <div class="validity-txt" *ngIf="pn.operationStartYear && pn.operationEndYear">
-        Road construction and harvesting of cutblocks depicted on this Forest Operations Map is scheduled to be conducted between {{pn.operationStartYear}} and {{pn.operationEndYear}}.
-      </div>
-
-      <div class="validity-txt" *ngIf="!isFomAvailable">
-        This FOM will be available for public review and comment starting {{pn.project.commentingOpenDate | date: 'longDate'}}.
-      </div>
-
-      <div class="validity-txt" *ngIf="isFomAvailable">
-        {{pn.project.projectPlanCode == projectPlanCodeEnum.Fsp
+        <div class="row">
+          <div class="col-sm-4 bold">FOM Description: </div>
+          <div class="col-sm-8">{{pn.project.description}}</div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 bold">
+            {{pn.isReceiveCommentsSameAsReview === false? 'Physical address to review FOM': 'Physical address to review FOM and submit FOM comments'}}:
+          </div>
+          <div class="col-sm-8">{{pn.reviewAddress}}</div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 bold">
+            {{pn.isReceiveCommentsSameAsReview === false? 'Business hours to physically review FOM': 'Business hours to physically review FOM and submit FOM comments'}}:
+          </div>
+          <div class="col-sm-8">{{pn.reviewBusinessHours}}</div>
+        </div>
+        @if (pn.isReceiveCommentsSameAsReview !== true) {
+          <div>
+            <div class="row">
+              <div class="col-sm-4 bold">Physical address to submit comments: </div>
+              <div class="col-sm-8">{{pn.receiveCommentsAddress}}</div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 bold">Business hours to physically submit comments: </div>
+              <div class="col-sm-8">{{pn.receiveCommentsBusinessHours}}</div>
+            </div>
+          </div>
+        }
+        <div class="row">
+          <div class="col-sm-4 bold">Mailing Address: </div>
+          <div class="col-sm-8">{{pn.mailingAddress}}</div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4 bold">Email for Public Comment: </div>
+          <div class="col-sm-8 word-wrap">{{pn.email}}</div>
+        </div>
+        @if (pn.operationStartYear && pn.operationEndYear) {
+          <div class="validity-txt">
+            Road construction and harvesting of cutblocks depicted on this Forest Operations Map is scheduled to be conducted between {{pn.operationStartYear}} and {{pn.operationEndYear}}.
+          </div>
+        }
+        @if (!isFomAvailable) {
+          <div class="validity-txt">
+            This FOM will be available for public review and comment starting {{pn.project.commentingOpenDate | date: 'longDate'}}.
+          </div>
+        }
+        @if (isFomAvailable) {
+          <div class="validity-txt">
+            {{pn.project.projectPlanCode == projectPlanCodeEnum.Fsp
             ? periodOperationsTxt
             : woodlotOperationsTxt
-        }}
-      </div>
-
-    </ng-template>
+            }}
+          </div>
+        }
+      </ng-template>
+    </div>
   </div>
-
-</div>
+}

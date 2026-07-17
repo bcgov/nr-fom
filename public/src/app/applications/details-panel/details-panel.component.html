@@ -1,158 +1,182 @@
-<div class="flex-panel" *ngIf="!isAppLoading && !project">
-  <div class="flex-panel__header">
-    <h2 class="title">No Project Selected</h2>
+@if (!isAppLoading && !project) {
+  <div class="flex-panel">
+    <div class="flex-panel__header">
+      <h2 class="title">No Project Selected</h2>
+    </div>
   </div>
-</div>
+}
 
-<div class="flex-panel" *ngIf="isAppLoading">
-  <div class="flex-panel__header">
-    <h2 class="title">Loading project details...</h2>
+@if (isAppLoading) {
+  <div class="flex-panel">
+    <div class="flex-panel__header">
+      <h2 class="title">Loading project details...</h2>
+    </div>
   </div>
-</div>
+}
 
-<div class="flex-panel" *ngIf="project">
-  <div class="flex-panel__header" style="height: auto;">
-    <h3>
-      FOM Number: {{project.id}} &nbsp; {{project.name}}<br>
-    </h3>
-  </div>
-
-  <div class="flex-panel__scroll" #panelScrollContainer>
-    <div class="app-detail-info">
-      <section>
-        <div>
-          <button class="submit-comment-btn btn btn-primary"
-              style="margin-top: 0px; margin-bottom: 1em;" 
-            (click)="addComment()" 
-            *ngIf="project.workflowState.code === workflowStatus['COMMENT_OPEN'].code">
-            Submit a Comment</button>
-        </div>
-
-        <h3>Description</h3>
-        <ul class="meta-container">
-          <li>
-            <span>{{project.description}}</span>
-          </li>
-        </ul>
-        <br/>
-
-        <div class="details-map-container">
-          <div class="banner-top">
-            <h3>Geographic Shape Information 
-              <span>({{projectSpatialDetail.length > 1 ? projectSpatialDetail.length + " Shapes": projectSpatialDetail.length + " Shape"}})</span>
-            </h3>
-            <div>
-              <a href="https://maps.gov.bc.ca/ess/hm/imap4m/" 
-                target="_blank" 
-                rel="noopener"
-                class="ghost-button"
-                style="text-transform: none">
-                <fa-icon [icon]="faArrowUpRightFromSquare"></fa-icon> View spatial layers in iMapBC
-              </a>
-            </div>
+@if (project) {
+  <div class="flex-panel">
+    <div class="flex-panel__header" style="height: auto;">
+      <h3>
+        FOM Number: {{project.id}} &nbsp; {{project.name}}<br>
+      </h3>
+    </div>
+    <div class="flex-panel__scroll" #panelScrollContainer>
+      <div class="app-detail-info">
+        <section>
+          <div>
+            @if (project.workflowState.code === workflowStatus['COMMENT_OPEN'].code) {
+              <button class="submit-comment-btn btn btn-primary"
+                style="margin-top: 0px; margin-bottom: 1em;"
+                (click)="addComment()"
+                >
+              Submit a Comment</button>
+            }
           </div>
-
-          <app-details-map
-            [projectSpatialDetail]="projectSpatialDetail">
-          </app-details-map>
-        </div>
-        <app-shape-info
-          [spatialDetail]="projectSpatialDetail">
-        </app-shape-info>
-      </section>
-      
-      <section>
-        <h3>FOM Details</h3>
-        <ul class="meta-container">
-          <li>
-            FOM Holder: <span class="bold">{{project.forestClient.name | titlecase}}</span>
-          </li>
-          <li *ngIf="project.bctsMgrName && project.bctsMgrName.length > 0">
-            Timber Sales Manager Name: <span class="bold">{{project.bctsMgrName | titlecase}}</span>
-          </li>
-          <li *ngIf="project.projectPlanCode == projectPlanCodeEnum.Fsp">
-            FSP ID: <span class="bold">{{project.fspId}}</span>
-          </li>
-          <li *ngIf="project.projectPlanCode == projectPlanCodeEnum.Woodlot">
-            Woodlot Licence: <span class="bold">{{project.woodlotLicenseNumber}}</span>
-          </li>
-          <li>
-            Period of operations: 
-                <span class="bold" *ngIf="project.operationStartYear">{{project.operationStartYear}} to {{project.operationEndYear}}</span>
-                <span class="bold" *ngIf="!project.operationStartYear">N/A</span>
-          </li>
-          <li>
+          <h3>Description</h3>
+          <ul class="meta-container">
+            <li>
+              <span>{{project.description}}</span>
+            </li>
+          </ul>
+          <br/>
+          <div class="details-map-container">
+            <div class="banner-top">
+              <h3>Geographic Shape Information
+                <span>({{projectSpatialDetail.length > 1 ? projectSpatialDetail.length + " Shapes": projectSpatialDetail.length + " Shape"}})</span>
+              </h3>
+              <div>
+                <a href="https://maps.gov.bc.ca/ess/hm/imap4m/"
+                  target="_blank"
+                  rel="noopener"
+                  class="ghost-button"
+                  style="text-transform: none">
+                  <fa-icon [icon]="faArrowUpRightFromSquare"></fa-icon> View spatial layers in iMapBC
+                </a>
+              </div>
+            </div>
+            <app-details-map
+              [projectSpatialDetail]="projectSpatialDetail">
+            </app-details-map>
+          </div>
+          <app-shape-info
+            [spatialDetail]="projectSpatialDetail">
+          </app-shape-info>
+        </section>
+        <section>
+          <h3>FOM Details</h3>
+          <ul class="meta-container">
+            <li>
+              FOM Holder: <span class="bold">{{project.forestClient.name | titlecase}}</span>
+            </li>
+            @if (project.bctsMgrName && project.bctsMgrName.length > 0) {
+              <li>
+                Timber Sales Manager Name: <span class="bold">{{project.bctsMgrName | titlecase}}</span>
+              </li>
+            }
+            @if (project.projectPlanCode == projectPlanCodeEnum.Fsp) {
+              <li>
+                FSP ID: <span class="bold">{{project.fspId}}</span>
+              </li>
+            }
+            @if (project.projectPlanCode == projectPlanCodeEnum.Woodlot) {
+              <li>
+                Woodlot Licence: <span class="bold">{{project.woodlotLicenseNumber}}</span>
+              </li>
+            }
+            <li>
+              Period of operations:
+              @if (project.operationStartYear) {
+                <span class="bold">{{project.operationStartYear}} to {{project.operationEndYear}}</span>
+              }
+              @if (!project.operationStartYear) {
+                <span class="bold">N/A</span>
+              }
+            </li>
+            <li>
               This FOM is valid until: <span class="bold">{{project.validityEndDate | date: 'longDate'}}</span>
               <span class="info-validityEndDate"
                 matTooltip="{{periodOperationsTooltipTxt}}"
                 matTooltipPosition="below"
                 matTooltipClass="tooltip-info"
                 matTooltipShowDelay="300"
-              ></span>             
-            <div class="text-muted--margin-top">
+              ></span>
+              <div class="text-muted--margin-top">
                 {{project.projectPlanCode == projectPlanCodeEnum.Fsp
-                    ? periodOperationsTxt
-                    : woodlotOperationsTxt
+                ? periodOperationsTxt
+                : woodlotOperationsTxt
                 }}
+              </div>
+            </li>
+          </ul>
+          <hr/>
+          <div style="display: flex;">
+            <h3 style="margin-right: 0.2rem;">
+              Status:
+              @if (project.workflowState.code === workflowStatus['COMMENT_OPEN'].code) {
+                <span
+                  class="badge text-bg-info rounded-pill commenting-open">
+                  {{workflowStatus['COMMENT_OPEN'].description}}
+                </span>
+                } <!-- only in commenting open the design is to show it in rouded-green badge-->
+              </h3>
+              @if (project.workflowState.code !== workflowStatus['COMMENT_OPEN'].code) {
+                <span
+                  >
+                  {{project.workflowState.description}}
+                </span>
+              }
             </div>
-          </li>
-        </ul>
-
-        <hr/>
-
-        <div style="display: flex;">
-          <h3 style="margin-right: 0.2rem;">
-            Status: 
-            <span
-              *ngIf="project.workflowState.code === workflowStatus['COMMENT_OPEN'].code" 
-              class="badge text-bg-info rounded-pill commenting-open">
-                {{workflowStatus['COMMENT_OPEN'].description}}
-            </span> <!-- only in commenting open the design is to show it in rouded-green badge-->
-          </h3>
-          <span
-            *ngIf="project.workflowState.code !== workflowStatus['COMMENT_OPEN'].code">
-            {{project.workflowState.description}}
-          </span>
-        </div>
-        <div>
-          <div *ngIf="project.workflowState.code === workflowStatus['COMMENT_OPEN'].code">
-            You can comment until: 
-            <span class="bold">
-              {{getCommentingClosingDate(project.commentingClosedDate) | date:'longDate'}} at 11:59pm
-            </span>
-          </div>
-          <div class="text-muted" *ngIf="project.workflowState.code !== workflowStatus['COMMENT_OPEN'].code">
-            Commenting closed on {{project.commentingClosedDate | date:'longDate'}}.
-          </div>
-          <div class="text-muted" *ngIf="project.workflowState.code == workflowStatus['COMMENT_OPEN'].code">
-            Commenting opened on {{project.commentingOpenDate | date:'longDate'}}
-          </div>
-
-          <button class="submit-comment-btn btn btn-primary" 
-                  (click)="addComment()" 
-                  *ngIf="project.workflowState.code === workflowStatus['COMMENT_OPEN'].code">
-                  Submit a Comment</button>
-        </div>
-      </section>
-      <section *ngIf="attachments.length > 0">
-        <h3>Attachments</h3>
-        <div class="doc-list" style="width: 25rem;">
-          <a class="doc-list__item"
-            *ngFor="let attachment of attachments"
-            style="cursor:pointer"
-            (click)="getFileContents(attachment.id, attachment.fileName)"
-            [title]="attachment.fileName || ''" 
-            rel="noopener">
-            <div class="cell doc-list__item-icon">
-              <em class="material-icons">
-                <!-- insert_drive_file -->
-              </em>
+            <div>
+              @if (project.workflowState.code === workflowStatus['COMMENT_OPEN'].code) {
+                <div>
+                  You can comment until:
+                  <span class="bold">
+                    {{getCommentingClosingDate(project.commentingClosedDate) | date:'longDate'}} at 11:59pm
+                  </span>
+                </div>
+              }
+              @if (project.workflowState.code !== workflowStatus['COMMENT_OPEN'].code) {
+                <div class="text-muted">
+                  Commenting closed on {{project.commentingClosedDate | date:'longDate'}}.
+                </div>
+              }
+              @if (project.workflowState.code == workflowStatus['COMMENT_OPEN'].code) {
+                <div class="text-muted">
+                  Commenting opened on {{project.commentingOpenDate | date:'longDate'}}
+                </div>
+              }
+              @if (project.workflowState.code === workflowStatus['COMMENT_OPEN'].code) {
+                <button class="submit-comment-btn btn btn-primary"
+                  (click)="addComment()"
+                  >
+                Submit a Comment</button>
+              }
             </div>
-            <div class="cell doc-list__item-name">{{attachment.fileName}}</div>
-            <div style="text-align: right;margin-right: 5px;">({{attachment.attachmentType.description}})</div>
-          </a>
+          </section>
+          @if (attachments.length > 0) {
+            <section>
+              <h3>Attachments</h3>
+              <div class="doc-list" style="width: 25rem;">
+                @for (attachment of attachments; track attachment) {
+                  <a class="doc-list__item"
+                    style="cursor:pointer"
+                    (click)="getFileContents(attachment.id, attachment.fileName)"
+                    [title]="attachment.fileName || ''"
+                    rel="noopener">
+                    <div class="cell doc-list__item-icon">
+                      <em class="material-icons">
+                        <!-- insert_drive_file -->
+                      </em>
+                    </div>
+                    <div class="cell doc-list__item-name">{{attachment.fileName}}</div>
+                    <div style="text-align: right;margin-right: 5px;">({{attachment.attachmentType.description}})</div>
+                  </a>
+                }
+              </div>
+            </section>
+          }
         </div>
-      </section>
+      </div>
     </div>
-  </div>
-</div>
+  }

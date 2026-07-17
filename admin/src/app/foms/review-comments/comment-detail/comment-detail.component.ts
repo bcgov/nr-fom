@@ -7,18 +7,16 @@ import { indexBy } from 'remeda';
 import { CommentDetailForm } from './comment-detail.form';
 
 import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
-import { DatePipe, NgFor, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 
 @Component({
     standalone: true,
     imports: [
-        NgIf, 
-        FormsModule, 
-        ReactiveFormsModule, 
-        NgFor, 
-        DatePipe, 
-        NewlinesPipe
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    DatePipe,
+    NewlinesPipe
+],
     selector: 'app-comment-detail',
     templateUrl: './comment-detail.component.html',
     styleUrls: ['./comment-detail.component.scss'],

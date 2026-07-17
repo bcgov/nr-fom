@@ -1,113 +1,118 @@
 
-<div class="interaction-detail-container" *ngIf="!interaction">
+@if (!interaction) {
+  <div class="interaction-detail-container">
     <em>No engagement selected</em>
-</div>
-
-<div class="interaction-detail-container" *ngIf="interaction">
-  <div class="title-container__title">
-    <h2>&nbsp;</h2>
-    <div class="interaction-detail__date">
-      {{interaction.createTimestamp || today | date:'medium'}}
-    </div>
   </div>
-  <hr>
+}
 
-  <form [formGroup]="interactionFormGroup">
-    <div class="form-group col-md">
-      <label for="communicationDatePickerDate" class="control-label"
-            [ngClass]="{'required': editMode}">Engagement Date</label>
-      <div class="input-group" 
-          [ngClass]="{'is-invalid': interactionFormGroup.touched && !isValid('communicationDatePickerDate')}">
-        <input
-          type="text"
-          class="form-control col-md-6"
-          placeholder="YYYY-MM-DD"
-          bsDatepicker
-          #communicationDatePickerDate="bsDatepicker"
-          id="communicationDatePickerDate"
-          name="communicationDatePickerDate"
-          formControlName="communicationDatePickerDate"
-          [maxDate]="maxDate"
-          [minDate]="minDate"
-          readonly
-          (keydown)="$event.preventDefault()"
+@if (interaction) {
+  <div class="interaction-detail-container">
+    <div class="title-container__title">
+      <h2>&nbsp;</h2>
+      <div class="interaction-detail__date">
+        {{interaction.createTimestamp || today | date:'medium'}}
+      </div>
+    </div>
+    <hr>
+      <form [formGroup]="interactionFormGroup">
+        <div class="form-group col-md">
+          <label for="communicationDatePickerDate" class="control-label"
+          [ngClass]="{'required': editMode}">Engagement Date</label>
+          <div class="input-group"
+            [ngClass]="{'is-invalid': interactionFormGroup.touched && !isValid('communicationDatePickerDate')}">
+            <input
+              type="text"
+              class="form-control col-md-6"
+              placeholder="YYYY-MM-DD"
+              bsDatepicker
+              #communicationDatePickerDate="bsDatepicker"
+              id="communicationDatePickerDate"
+              name="communicationDatePickerDate"
+              formControlName="communicationDatePickerDate"
+              [maxDate]="maxDate"
+              [minDate]="minDate"
+              readonly
+              (keydown)="$event.preventDefault()"
           [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
           containerClass: 'theme-dark-blue', showWeekNumbers: false  }"
-        />
-        <div class="input-group-append">
-          <button class="btn btn-icon"  type="button" tabindex="-1"
+              />
+              <div class="input-group-append">
+                <button class="btn btn-icon"  type="button" tabindex="-1"
                   (click)="communicationDatePickerDate.show()"
                   [disabled]="!editMode"
                   [attr.aria-expanded]="communicationDatePickerDate.isOpen">
-            <em class="material-icons">date_range</em>
-          </button>
+                  <em class="material-icons">date_range</em>
+                </button>
+              </div>
+            </div>
+            @if (interactionFormGroup.touched && !isValid('communicationDatePickerDate')) {
+              <div class="invalid-feedback">
+                Engagement Date is required.
+              </div>
+            }
+          </div>
+          <div id="stakeholderDiv" class="form-group col-md">
+            <label for="stakeholder">Stakeholder</label>
+            <input id="stakeholder" type="text"
+              name="stakeholder"
+              class="form-control col-md-6"
+              maxlength="55"
+              formControlName="stakeholder"/>
+            </div>
+            <div id="descriptionDiv" class="form-group col-md">
+              <label for="description" class="control-label"
+              [ngClass]="{'required': editMode}">Description</label>
+              <textarea id="description"
+                name="communicationDetails"
+                class="form-control col-md-12"
+                rows="5"
+                [ngClass]="{'is-invalid': interactionFormGroup.touched && !isValid('communicationDetails')}"
+                maxlength="{{communicationDetailsLimit}}"
+                formControlName="communicationDetails">
+              </textarea>
+              <small>{{communicationDetailsLimit-interactionFormGroup.get('communicationDetails').value?.length}} characters remaining.</small>
+              @if (interactionFormGroup.touched && !isValid('communicationDetails')) {
+                <div class="invalid-feedback">
+                  Please provide description.
+                </div>
+              }
+            </div>
+            @if (editMode) {
+              <div id="communicationDetailsDiv" class="form-group col-md"
+                >
+                <label for="upload">Engagement Attachment</label>
+                <app-upload-box id="upload"
+                  [fileTypes]="supportingFileTypes"
+                  [maxFileSizeMB]="maxFileSize"
+                  (emitFile)="onFileEmit($event)">
+                </app-upload-box>
+                <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf, txt, csv, doc, docx, xls, xlsx, msg, rtf </em></div>
+              </div>
+            }
+            @if (attachment) {
+              <div id="attachmentDiv" class="form-group col-md doc-list"
+                style="padding: 0 15px"
+                >
+                <label for="upload">Attachment</label>
+                <a class="doc-list__item"
+                  style="cursor:pointer"
+                  (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
+                  [title]="attachment.fileName || ''"
+                  rel="noopener">
+                  <div class="cell doc-list__item-icon">
+                    <em class="material-icons">
+                      insert_drive_file
+                    </em>
+                  </div>
+                  <div class="cell doc-list__item-name">{{attachment.fileName}}</div>
+                </a>
+                <span class="vert-pipe">&nbsp;</span>
+              </div>
+            }
+            &nbsp;
+            <ng-content>
+            </ng-content>
+          </form>
         </div>
-      </div>
-      <div class="invalid-feedback" *ngIf="interactionFormGroup.touched && !isValid('communicationDatePickerDate')">
-        Engagement Date is required.
-      </div>
-    </div>
-
-    <div id="stakeholderDiv" class="form-group col-md">
-      <label for="stakeholder">Stakeholder</label>
-      <input id="stakeholder" type="text"
-            name="stakeholder"
-            class="form-control col-md-6"
-            maxlength="55"
-            formControlName="stakeholder"/>
-    </div>
-
-    <div id="descriptionDiv" class="form-group col-md">
-      <label for="description" class="control-label"
-            [ngClass]="{'required': editMode}">Description</label>
-      <textarea id="description"
-            name="communicationDetails"
-            class="form-control col-md-12"
-            rows="5"
-            [ngClass]="{'is-invalid': interactionFormGroup.touched && !isValid('communicationDetails')}"
-            maxlength="{{communicationDetailsLimit}}"
-            formControlName="communicationDetails">
-      </textarea>
-      <small>{{communicationDetailsLimit-interactionFormGroup.get('communicationDetails').value?.length}} characters remaining.</small>
-      <div class="invalid-feedback" *ngIf="interactionFormGroup.touched && !isValid('communicationDetails')">
-        Please provide description.
-      </div>
-    </div>
-
-    <div id="communicationDetailsDiv" class="form-group col-md"
-        *ngIf="editMode">
-      <label for="upload">Engagement Attachment</label>
-      <app-upload-box id="upload"
-                      [fileTypes]="supportingFileTypes"
-                      [maxFileSizeMB]="maxFileSize"
-                      (emitFile)="onFileEmit($event)">
-      </app-upload-box>
-      <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf, txt, csv, doc, docx, xls, xlsx, msg, rtf </em></div>
-    </div>
-
-    <div id="attachmentDiv" class="form-group col-md doc-list"
-          style="padding: 0 15px"
-          *ngIf="attachment">
-      <label for="upload">Attachment</label>
-      <a class="doc-list__item"
-          style="cursor:pointer"
-          (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
-          [title]="attachment.fileName || ''"
-          rel="noopener">
-        <div class="cell doc-list__item-icon">
-          <em class="material-icons">
-              insert_drive_file
-          </em>
-        </div>
-        <div class="cell doc-list__item-name">{{attachment.fileName}}</div>
-      </a>
-      <span class="vert-pipe">&nbsp;</span>
-    </div>
-
-    &nbsp;
-    <ng-content>
-    </ng-content>
-  </form>
-
-</div>
+      }
 

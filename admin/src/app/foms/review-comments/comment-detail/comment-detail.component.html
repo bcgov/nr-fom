@@ -1,75 +1,79 @@
-<div class="comment-detail-container" *ngIf="!comment">
-  <em>No comment selected</em>
-</div>
+@if (!comment) {
+  <div class="comment-detail-container">
+    <em>No comment selected</em>
+  </div>
+}
 
-<div class="comment-detail-container" *ngIf="comment">
-  <div class="title-container__title">
-    <h2>{{comment.name || 'Anonymous'}}</h2>
-    <div class="comment-detail__date">
-      {{comment.createTimestamp | date:'medium'}}
-    </div>
-  </div>
-  <div class="comment-detail__meta">
-    <div>
-      <a href="mailto:{{comment.email}}">{{comment.email}}</a>
-    </div>
-    <div>
-      <a href="tel:{{comment.phoneNumber}}">{{comment.phoneNumber}}</a>
-    </div>
-    <div>
-      {{comment.location}}
-    </div>
-  </div>
-  <hr>
-  <div class="comment-detail__scope">
-    Commenting On: 
-    <span class="scope-desc">
-      {{comment.commentScope.description}} 
-      {{ (commentScopeCodes.CUT_BLOCK.code === comment.commentScope.code)? '#'+ comment.scopeCutBlockId: 
-        ((commentScopeCodes.ROAD_SECTION.code === comment.commentScope.code)? '#'+ comment.scopeRoadSectionId:
-        '')
-      }}
-      {{ comment.scopeFeatureName? ' - '+ comment.scopeFeatureName: ''}}
-    </span>
-  </div>
-  <div class="comment-detail__body" [innerHTML]="comment.feedback | newlines"></div>
-  <hr>
-
-  <form [formGroup]="commentFormGroup">
-    <div class="row">
-      <div class="col-md-4">
-        <label>Response to Commment</label>
+@if (comment) {
+  <div class="comment-detail-container">
+    <div class="title-container__title">
+      <h2>{{comment.name || 'Anonymous'}}</h2>
+      <div class="comment-detail__date">
+        {{comment.createTimestamp | date:'medium'}}
       </div>
     </div>
-    <div class="row">
-      <div class="col-md-4">
-        <select class="sort-comments form-control mb-3" id="responseCode" 
-          name="responseCode"
-          formControlName="responseCode">
-          <option [ngValue]="null" disabled>Select a Response</option>
-          <option *ngFor="let code of responseCodes" 
+    <div class="comment-detail__meta">
+      <div>
+        <a href="mailto:{{comment.email}}">{{comment.email}}</a>
+      </div>
+      <div>
+        <a href="tel:{{comment.phoneNumber}}">{{comment.phoneNumber}}</a>
+      </div>
+      <div>
+        {{comment.location}}
+      </div>
+    </div>
+    <hr>
+      <div class="comment-detail__scope">
+        Commenting On:
+        <span class="scope-desc">
+          {{comment.commentScope.description}}
+          {{ (commentScopeCodes.CUT_BLOCK.code === comment.commentScope.code)? '#'+ comment.scopeCutBlockId:
+          ((commentScopeCodes.ROAD_SECTION.code === comment.commentScope.code)? '#'+ comment.scopeRoadSectionId:
+          '')
+          }}
+          {{ comment.scopeFeatureName? ' - '+ comment.scopeFeatureName: ''}}
+        </span>
+      </div>
+      <div class="comment-detail__body" [innerHTML]="comment.feedback | newlines"></div>
+      <hr>
+        <form [formGroup]="commentFormGroup">
+          <div class="row">
+            <div class="col-md-4">
+              <label>Response to Commment</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <select class="sort-comments form-control mb-3" id="responseCode"
+                name="responseCode"
+                formControlName="responseCode">
+                <option [ngValue]="null" disabled>Select a Response</option>
+                @for (code of responseCodes; track code) {
+                  <option
                   [ngValue]="code.code">{{code.description}}</option>
-        </select>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <label>Response Details</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <textarea class="form-control  mb" rows="3" id="detail"
+                name="detail"
+                formControlName="responseDetails"
+                maxlength="{{responseDetailsLimit}}">
+              </textarea>
+              <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails').value?.length}} characters remaining.</small>
+            </div>
+          </div>
+          &nbsp;
+          <ng-content>
+          </ng-content>
+        </form>
       </div>
-    </div>
-
-    <div class="row">
-      <div class="col-md-12">
-        <label>Response Details</label>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12">
-        <textarea class="form-control  mb" rows="3" id="detail" 
-                  name="detail" 
-                  formControlName="responseDetails"
-                  maxlength="{{responseDetailsLimit}}">
-        </textarea>
-        <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails').value?.length}} characters remaining.</small>
-      </div>
-    </div>
-    &nbsp;
-    <ng-content>
-    </ng-content>
-</form>
-</div>
+    }

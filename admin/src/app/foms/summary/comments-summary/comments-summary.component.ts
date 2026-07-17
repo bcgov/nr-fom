@@ -5,7 +5,7 @@ import { PublicCommentAdminResponse, ResponseCodeEnum } from '@api-client';
 import { indexBy } from 'remeda';
 
 import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
-import { DatePipe, NgFor, NgStyle, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, NgStyle, NgTemplateOutlet } from '@angular/common';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,16 +13,15 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
     standalone: true,
     imports: [
-        MatExpansionModule, 
-        NgStyle, 
-        MatIconModule, 
-        MatBadgeModule, 
-        NgFor, 
-        MatCardModule, 
-        NgTemplateOutlet, 
-        DatePipe, 
-        NewlinesPipe
-    ],
+    MatExpansionModule,
+    NgStyle,
+    MatIconModule,
+    MatBadgeModule,
+    MatCardModule,
+    NgTemplateOutlet,
+    DatePipe,
+    NewlinesPipe
+],
     selector: 'app-comments-summary',
     templateUrl: './comments-summary.component.html',
     styleUrls: ['./comments-summary.component.scss'],

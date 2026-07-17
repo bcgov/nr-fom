@@ -1,5 +1,5 @@
 import { ANALYTICS_DATA_DEFAULT_SIZE, DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
-import { DatePipe, NgFor } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { AfterViewInit, Component, OnInit, signal, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
@@ -23,15 +23,14 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 @Component({
     standalone: true,
     imports: [
-      FormsModule,
-      ReactiveFormsModule,
-      BsDatepickerModule,
-      NgApexchartsModule,
-      NgFor,
-      MatFormFieldModule,
-      MatSelectModule,
-      MatOptionModule
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    BsDatepickerModule,
+    NgApexchartsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule
+],
     selector: 'app-analytics-dashboard',
     templateUrl: './analytics-dashboard.component.html',
     styleUrls: ['./analytics-dashboard.component.scss'],

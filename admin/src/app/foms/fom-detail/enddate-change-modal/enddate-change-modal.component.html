@@ -1,19 +1,21 @@
-<div class="modal-content progress-content" *ngIf="updating">
-  <div class="modal-body">
-    <h4 class="modal-title">Updating your change...</h4>
-    <mat-progress-bar color="primary" mode="indeterminate"></mat-progress-bar>
+@if (updating) {
+  <div class="modal-content progress-content">
+    <div class="modal-body">
+      <h4 class="modal-title">Updating your change...</h4>
+      <mat-progress-bar color="primary" mode="indeterminate"></mat-progress-bar>
+    </div>
   </div>
-</div>
+}
 
 <div class="modal-content container" style="padding: 0;">
   <form #changeDateForm="ngForm">
     <div class="modal-header" style="padding-bottom: 8px;">
       <h4 class="modal-title">
-          Change Comment Period End Date
+        Change Comment Period End Date
       </h4>
-      <button class="btn btn-icon close-btn" type="button" 
-              aria-label="Close" 
-              (click)="dismiss('dismissed end date change.')">
+      <button class="btn btn-icon close-btn" type="button"
+        aria-label="Close"
+        (click)="dismiss('dismissed end date change.')">
         <em class="material-icons">
           close
         </em>
@@ -30,7 +32,7 @@
         <div class="col-md-8">
           <div class="input-group">
             <input
-              ngbAutofocus 
+              ngbAutofocus
               type="text"
               class="form-control"
               placeholder="YYYY-MM-DD"
@@ -44,28 +46,28 @@
               name="newCommentingClosedDate"
               [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
               showWeekNumbers: false  }"
-            />
-            <div class="input-group-append">
-              <button class="btn btn-icon"  type="button" tabindex="-1"
-                      (click)="nccdDatepicker.show()"
-                      [attr.aria-expanded]="nccdDatepicker.isOpen">
-                <em class="material-icons">date_range</em>
-              </button>
+              />
+              <div class="input-group-append">
+                <button class="btn btn-icon"  type="button" tabindex="-1"
+                  (click)="nccdDatepicker.show()"
+                  [attr.aria-expanded]="nccdDatepicker.isOpen">
+                  <em class="material-icons">date_range</em>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="modal-footer form-btns">
-      <button class="btn btn-light" type="button"
-              (click)="dismiss('dismissed end date change.')">
-        Cancel
-      </button>
-      <button class="btn btn-primary" type="button"
-        (click)="changeEndDate()">
-        Update
-      </button>
-    </div>
-  </form>
-</div>
+      <div class="modal-footer form-btns">
+        <button class="btn btn-light" type="button"
+          (click)="dismiss('dismissed end date change.')">
+          Cancel
+        </button>
+        <button class="btn btn-primary" type="button"
+          (click)="changeEndDate()">
+          Update
+        </button>
+      </div>
+    </form>
+  </div>

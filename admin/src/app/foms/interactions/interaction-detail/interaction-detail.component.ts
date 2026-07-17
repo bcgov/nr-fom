@@ -8,20 +8,19 @@ import { InteractionDetailForm, InteractionRequest } from './interaction-detail.
 
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSvc';
-import { DatePipe, NgClass, NgIf } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 @Component({
     standalone: true,
     imports: [
-        NgIf, 
-        FormsModule, 
-        ReactiveFormsModule, 
-        NgClass, 
-        BsDatepickerModule, 
-        DatePipe, 
-        UploadBoxComponent
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    NgClass,
+    BsDatepickerModule,
+    DatePipe,
+    UploadBoxComponent
+],
     selector: 'app-interaction-detail',
     templateUrl: './interaction-detail.component.html',
     styleUrls: ['./interaction-detail.component.scss'],

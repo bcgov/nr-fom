@@ -6,50 +6,61 @@
       [style.pointerEvents]="!isAdminRoleOnly() ? 'auto' : 'none'"
       [attr.tabindex]="!isAdminRoleOnly() ? 0 : -1">
       <span class="navbar-brand__title">
-        Forest Operations Map - Admin 
+        Forest Operations Map - Admin
       </span>
     </a>
 
     <div class="header-notice">
-        <span class="navbar-environment" *ngIf="environmentDisplay">{{environmentDisplay}}</span>
-        <!-- Uncomment below Maintenance Notice and adjust it if needed -->
-        <!-- <div class="downtime-notice">
-            <span>Scheduled Maintenance on July 28th, 2025, 6:00–7:30 PM PST. <br/></span>
-            <span>The app will be temporarily unavailable. Thank you for your understanding and patience.</span>
-        </div> -->
-    </div>
+      @if (environmentDisplay) {
+        <span class="navbar-environment">{{environmentDisplay}}</span>
+      }
+      <!-- Uncomment below Maintenance Notice and adjust it if needed -->
+      <!-- <div class="downtime-notice">
+      <span>Scheduled Maintenance on July 28th, 2025, 6:00–7:30 PM PST. <br/></span>
+      <span>The app will be temporarily unavailable. Thank you for your understanding and patience.</span>
+    </div> -->
+  </div>
 
-    <button class="navbar-toggler" type="button" title="Toggle Main Navigation"
-            aria-controls="navbarText"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-            (click)="toggleNav()">
-      <em class="material-icons">menu</em>
-    </button>
+  <button class="navbar-toggler" type="button" title="Toggle Main Navigation"
+    aria-controls="navbarText"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+    (click)="toggleNav()">
+    <em class="material-icons">menu</em>
+  </button>
 
-    <div class="navbar-collapse" [@toggleNav]="isNavMenuOpen ? 'navOpen' : 'navClosed'" id="mainNav">
-      <ul *ngIf="user" class="navbar-nav">
-        <li *ngIf="user.isForestClient" class="nav-item">
-          <a class="nav-link" routerLink="/a/create" title="Add a new FOM" tabindex="0">
-            <span>Add new FOM</span>
-          </a>
-        </li>
+  <div class="navbar-collapse" [@toggleNav]="isNavMenuOpen ? 'navOpen' : 'navClosed'" id="mainNav">
+    @if (user) {
+      <ul class="navbar-nav">
+        @if (user.isForestClient) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/a/create" title="Add a new FOM" tabindex="0">
+              <span>Add new FOM</span>
+            </a>
+          </li>
+        }
         <div class="v-bar"><div></div></div>
-        <li *ngIf="user.isMinistry || user.isForestClient" class="nav-item">
-          <a class="nav-link" routerLink="/search" title="Search for FOMs" tabindex="1">
-            <span>Search for FOM</span>
-          </a>
-        </li>
-        <div *ngIf="user.isAdmin" class="v-bar"><div></div></div>
-        <li *ngIf="user.isAdmin" class="nav-item">
-          <a class="nav-link" routerLink="/analytics-dashboard" title="Analytics dashboard" tabindex="1">
-            <span>Analytics dashboard</span>
-          </a>
-        </li>
+        @if (user.isMinistry || user.isForestClient) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/search" title="Search for FOMs" tabindex="1">
+              <span>Search for FOM</span>
+            </a>
+          </li>
+        }
+        @if (user.isAdmin) {
+          <div class="v-bar"><div></div></div>
+        }
+        @if (user.isAdmin) {
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/analytics-dashboard" title="Analytics dashboard" tabindex="1">
+              <span>Analytics dashboard</span>
+            </a>
+          </li>
+        }
         <div class="v-bar"><div></div></div>
         <li class="nav-item">
           <a class="nav-link" routerLink="/about" title="Training modules" tabindex="2">
-              <span>Training modules</span>
+            <span>Training modules</span>
           </a>
         </li>
         <div class="v-bar"><div></div></div>
@@ -57,17 +68,17 @@
           <!-- disable link, just displaying name -->
           <a class="nav-link" title="Login User" style="pointer-events: none;">
             <span style="color: #adb5bd">
-                {{user.displayName}}
+              {{user.displayName}}
             </span>
           </a>
         </li>
-  
         <li class="nav-item">
           <a class="nav-link" (click)="navigateToLogout()" title="Log out" tabindex="3">
-            <span>Logout</span> 
+            <span>Logout</span>
           </a>
         </li>
       </ul>
-    </div>
-  </nav>
+    }
+  </div>
+</nav>
 </header>

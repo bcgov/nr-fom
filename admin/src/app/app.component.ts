@@ -1,4 +1,4 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Observable, lastValueFrom, timeout } from 'rxjs';
@@ -9,12 +9,11 @@ import { HeaderComponent } from './header/header.component';
 @Component({
     standalone: true,
     imports: [
-        NgIf, 
-        HeaderComponent, 
-        RouterOutlet, 
-        FooterComponent, 
-        AsyncPipe
-    ],
+    HeaderComponent,
+    RouterOutlet,
+    FooterComponent,
+    AsyncPipe
+],
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],

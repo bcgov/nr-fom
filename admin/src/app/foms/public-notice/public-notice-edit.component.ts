@@ -2,7 +2,7 @@ import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
-import { DatePipe, NgClass, NgIf } from "@angular/common";
+import { DatePipe, NgClass } from "@angular/common";
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,12 +21,11 @@ import { PublicNoticeForm } from './public-notice.form';
 @Component({
     standalone: true,
     imports: [
-        NgIf, 
-        FormsModule, 
-        ReactiveFormsModule, 
-        NgClass, 
-        BsDatepickerModule
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    NgClass,
+    BsDatepickerModule
+],
     selector: 'app-public-notice-edit',
     templateUrl: './public-notice-edit.component.html',
     styleUrls: ['./public-notice-edit.component.scss'],

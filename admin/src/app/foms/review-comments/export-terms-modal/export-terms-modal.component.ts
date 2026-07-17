@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -54,7 +54,7 @@ const TERMS_CONTENT: TermsContent = {
   selector: 'app-export-terms-modal',
   templateUrl: './export-terms-modal.component.html',
   styleUrls: ['./export-terms-modal.component.scss'],
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
+  imports: [MatDialogModule, MatButtonModule, MatIconModule],
 })
 export class ExportTermsModalComponent {
   readonly termsContent = TERMS_CONTENT;

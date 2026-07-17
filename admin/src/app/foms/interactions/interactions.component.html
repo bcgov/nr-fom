@@ -1,28 +1,29 @@
-<ng-container *ngIf="data">
-    <div class="top-container">
-      <div class="container">
-        <div class="breadcrumb-container">
-          <a [routerLink]="['/a', projectId]">
-            <em class="material-icons md-20">arrow_back </em> Back to FOM Details</a>
+@if (data) {
+  <div class="top-container">
+    <div class="container">
+      <div class="breadcrumb-container">
+        <a [routerLink]="['/a', projectId]">
+          <em class="material-icons md-20">arrow_back </em> Back to FOM Details</a>
         </div>
         <div class="title-container">
           <div class="title-container__title">
             <h1>Stakeholder Engagements for FOM Number:{{projectId}}</h1>
           </div>
-          <div class="title-container__actions"
-                *ngIf="project.workflowState.code == 'COMMENT_OPEN' || project.workflowState.code == 'COMMENT_CLOSED'">
-            <button type="button" class="filter-btn-search btn btn-primary"
-                    title="Add"
-                    *ngIf="canModifyInteraction()"
-                    (click)="addEmptyInteractionDetail()">
-                    Add New
-            </button>
-          </div>
+          @if (project.workflowState.code == 'COMMENT_OPEN' || project.workflowState.code == 'COMMENT_CLOSED') {
+            <div class="title-container__actions"
+              >
+              @if (canModifyInteraction()) {
+                <button type="button" class="filter-btn-search btn btn-primary"
+                  title="Add"
+                  (click)="addEmptyInteractionDetail()">
+                  Add New
+                </button>
+              }
+            </div>
+          }
         </div>
       </div>
     </div>
-
-
     <div class="bottom-container">
       <div class="container">
         <div class="interactions">
@@ -31,44 +32,48 @@
               <h2 style="margin: 0;">Engagements ({{data?.length}})</h2>
             </div>
             <div class="panel-scroll" #interactionListScrollContainer>
-              <div class="interaction-item" *ngFor="let item of data"
-                    [class.active]="item?.id === selectedItem?.id"
-                    style="padding-right: 5px;"
-                    (click)="onInteractionItemClicked(item, null)">
-                <div class="interaction-item-header">
-                  <div class="interaction-author">
-                    {{item.stakeholder || 'Anonymous'}}
+              @for (item of data; track item) {
+                <div class="interaction-item"
+                  [class.active]="item?.id === selectedItem?.id"
+                  style="padding-right: 5px;"
+                  (click)="onInteractionItemClicked(item, null)">
+                  <div class="interaction-item-header">
+                    <div class="interaction-author">
+                      {{item.stakeholder || 'Anonymous'}}
+                    </div>
+                    <div class="interaction-date">
+                      {{(item.communicationDate | date)}}
+                    </div>
+                    @if (canModifyInteraction()) {
+                      <div>
+                        <button class="btn btn-icon" title="Remove this engagement"
+                          [disabled]="loading"
+                          (click)="deleteInteraction(item)">
+                          <em class="spinner-border" [hidden]="!(loading && item?.id === selectedItem?.id)"></em>
+                          <em class="material-icons" [hidden]="loading">
+                            delete
+                          </em>
+                        </button>
+                      </div>
+                    }
                   </div>
-                  <div class="interaction-date">
-                    {{(item.communicationDate | date)}}
-                  </div>
-                  <div *ngIf="canModifyInteraction()">
-                    <button class="btn btn-icon" title="Remove this engagement"
-                            [disabled]="loading"
-                            (click)="deleteInteraction(item)">
-                      <em class="spinner-border" [hidden]="!(loading && item?.id === selectedItem?.id)"></em>
-                      <em class="material-icons" [hidden]="loading">
-                        delete
-                      </em>
-                    </button>
-                  </div>
+                  <div class="interaction-body">{{item.communicationDetails}}</div>
                 </div>
-                <div class="interaction-body">{{item.communicationDetails}}</div>
-              </div>
+              }
             </div>
-
           </div>
           <div class="interactions__detail panel">
             <div class="panel-scroll">
               <app-interaction-detail #interactionDetailForm="interactionForm">
                 <div class="row">
-                  <button type="button" title="Save this engagement"
-                          class="btn btn-sm btn-primary btn-container"
-                          *ngIf="canModifyInteraction()"
-                          [disabled]="loading || interactionDetailForm.interactionFormGroup?.invalid"
-                          (click)="saveInteraction(interactionDetailForm.interactionFormGroup.value, interactionDetailForm.interaction)">
-                    Save interaction
-                  </button>
+                  @if (canModifyInteraction()) {
+                    <button type="button" title="Save this engagement"
+                      class="btn btn-sm btn-primary btn-container"
+                      [disabled]="loading || interactionDetailForm.interactionFormGroup?.invalid"
+                      (click)="saveInteraction(interactionDetailForm.interactionFormGroup.value, interactionDetailForm.interaction)">
+                      Save interaction
+                    </button>
+                  }
                 </div>
               </app-interaction-detail>
             </div>
@@ -76,7 +81,7 @@
         </div>
       </div>
     </div>
-  </ng-container>
+  }
 
   <ng-template #noComments>
     No engagements available for the FOM.

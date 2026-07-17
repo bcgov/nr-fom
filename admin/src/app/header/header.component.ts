@@ -1,6 +1,6 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { NgIf } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { User } from "@utility/security/user";
@@ -8,7 +8,7 @@ import { ConfigService } from '@utility/services/config.service';
 
 @Component({
     standalone: true,
-    imports: [RouterLink, NgIf],
+    imports: [RouterLink],
     selector: 'app-header',
     templateUrl: './header.component.html',
     styleUrls: ['./header.component.scss'],

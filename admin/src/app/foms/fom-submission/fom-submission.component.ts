@@ -2,7 +2,7 @@ import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
-import { DatePipe, NgFor, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,17 +22,15 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 @Component({
     standalone: true,
     imports: [
-        NgIf, 
-        FormsModule, 
-        ReactiveFormsModule, 
-        NgFor, 
-        SubmissionOverviewFaqComponent, 
-        DatePipe, 
-        UploadBoxComponent,
-        NgbDropdown, 
-        NgbDropdownToggle, 
-        NgbDropdownMenu, 
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    SubmissionOverviewFaqComponent,
+    DatePipe,
+    UploadBoxComponent,
+    NgbDropdown,
+    NgbDropdownToggle,
+    NgbDropdownMenu
+],
     selector: 'app-fom-submission',
     templateUrl: './fom-submission.component.html',
     styleUrls: ['./fom-submission.component.scss'],

@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { SpatialFeaturePublicResponse } from '@api-client';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
-import { NgClass, NgFor, NgIf, DecimalPipe } from '@angular/common';
+import { NgClass, DecimalPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 
 @Component({
@@ -10,7 +10,7 @@ import { MatTableModule } from '@angular/material/table';
     templateUrl: './shape-info.component.html',
     styleUrls: ['./shape-info.component.scss'],
     standalone: true,
-    imports: [MatTableModule, NgClass, NgFor, NgIf, DecimalPipe]
+    imports: [MatTableModule, NgClass, DecimalPipe]
 })
 export class ShapeInfoComponent implements OnInit {
 

@@ -7,7 +7,7 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { CommonUtil } from '@admin-core/utils/commonUtil';
 import { BC_TIME_ZONE, COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
-import { DatePipe, NgFor, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,16 +25,14 @@ import { ExportTermsModalComponent } from './export-terms-modal/export-terms-mod
 @Component({
     standalone: true,
     imports: [
-        NgIf, 
-        RouterLink, 
-        MatFormFieldModule, 
-        MatSelectModule, 
-        FormsModule, 
-        NgFor, 
-        MatOptionModule, 
-        CommentDetailComponent,
-        DatePipe
-    ],
+    RouterLink,
+    MatFormFieldModule,
+    MatSelectModule,
+    FormsModule,
+    MatOptionModule,
+    CommentDetailComponent,
+    DatePipe
+],
     selector: 'app-review-comments',
     templateUrl: './review-comments.component.html',
     styleUrls: ['./review-comments.component.scss']

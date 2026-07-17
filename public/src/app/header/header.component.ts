@@ -1,5 +1,5 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ConfigService } from '@utility/services/config.service';
@@ -7,7 +7,7 @@ import { ConfigService } from '@utility/services/config.service';
 @Component({
   standalone: true,
   selector: 'app-header',
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   animations: [

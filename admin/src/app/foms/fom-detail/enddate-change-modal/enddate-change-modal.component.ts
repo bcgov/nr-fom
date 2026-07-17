@@ -1,4 +1,4 @@
-import { DatePipe, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -10,12 +10,11 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 @Component({
     standalone: true,
     imports: [
-        NgIf, 
-        MatProgressBarModule, 
-        FormsModule, 
-        BsDatepickerModule, 
-        DatePipe
-    ],
+    MatProgressBarModule,
+    FormsModule,
+    BsDatepickerModule,
+    DatePipe
+],
     templateUrl: './enddate-change-modal.component.html',
     styleUrls: ['./enddate-change-modal.component.scss'],
     encapsulation: ViewEncapsulation.None // Important to make bootstrap modal custom styling property 'windowClass' work.

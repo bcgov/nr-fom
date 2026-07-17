@@ -1,4 +1,4 @@
-import { NgIf } from "@angular/common";
+
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { Subject } from "rxjs";
@@ -6,7 +6,7 @@ import { takeUntil } from "rxjs/operators";
 
 @Component({
     standalone: true,
-    imports: [NgIf],
+    imports: [],
     selector: "app-not-authorized",
     templateUrl: "./not-authorized.component.html",
     styleUrls: ["./not-authorized.component.scss"]

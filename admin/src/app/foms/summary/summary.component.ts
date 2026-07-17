@@ -1,7 +1,7 @@
 import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSvc';
 import { CommonUtil } from '@admin-core/utils/commonUtil';
 import { COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
-import { DatePipe, NgFor, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
@@ -25,19 +25,17 @@ import { InteractionsSummaryComponent } from './interactions-summary/interaction
 @Component({
     standalone: true,
     imports: [
-        RouterLink, 
-        FormsModule, 
-        NgFor, 
-        NgIf,
-        DatePipe,
-        MatFormFieldModule, 
-        MatSelectModule, 
-        MatOptionModule, 
-        DetailsMapComponent, 
-        ShapeInfoComponent, 
-        CommentsSummaryComponent,
-        InteractionsSummaryComponent
-    ],
+    RouterLink,
+    FormsModule,
+    DatePipe,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    DetailsMapComponent,
+    ShapeInfoComponent,
+    CommentsSummaryComponent,
+    InteractionsSummaryComponent
+],
     selector: 'app-summary',
     templateUrl: './summary.component.html',
     styleUrls: ['./summary.component.scss']

@@ -20,16 +20,18 @@
           {{requestError? 'Request encountered error. Please try later.': ''}}
         </span>
       </mat-panel-description>
-      <mat-icon matBadge="{{addressedPcs?.length}}" matBadgePosition="above before" 
-              matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
+      <mat-icon matBadge="{{addressedPcs?.length}}" matBadgePosition="above before"
+      matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
     </mat-expansion-panel-header>
-    <mat-card appearance="outlined" *ngFor="let comment of addressedPcs">
-      <mat-card-content>
-        <ng-container [ngTemplateOutlet]="comment_fields_template"
-                      [ngTemplateOutletContext]="{ comment: comment }">
-        </ng-container>
-      </mat-card-content>
-    </mat-card>
+    @for (comment of addressedPcs; track comment) {
+      <mat-card appearance="outlined">
+        <mat-card-content>
+          <ng-container [ngTemplateOutlet]="comment_fields_template"
+            [ngTemplateOutletContext]="{ comment: comment }">
+          </ng-container>
+        </mat-card-content>
+      </mat-card>
+    }
   </mat-expansion-panel>
 
   <!-- Considered Comments Panel-->
@@ -43,63 +45,69 @@
           {{requestError? 'Request encountered error. Please try later.': ''}}
         </span>
       </mat-panel-description>
-      <mat-icon matBadge="{{consideredPcs?.length}}" matBadgePosition="above before" 
-              matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
+      <mat-icon matBadge="{{consideredPcs?.length}}" matBadgePosition="above before"
+      matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
     </mat-expansion-panel-header>
-    <mat-card appearance="outlined" *ngFor="let comment of consideredPcs">
-      <mat-card-content>
-        <ng-container [ngTemplateOutlet]="comment_fields_template"
-                      [ngTemplateOutletContext]="{ comment: comment }">
-        </ng-container>
-      </mat-card-content>
-    </mat-card>
+    @for (comment of consideredPcs; track comment) {
+      <mat-card appearance="outlined">
+        <mat-card-content>
+          <ng-container [ngTemplateOutlet]="comment_fields_template"
+            [ngTemplateOutletContext]="{ comment: comment }">
+          </ng-container>
+        </mat-card-content>
+      </mat-card>
+    }
   </mat-expansion-panel>
 
-    <!-- Irrelevant Comments Panel-->
-    <mat-expansion-panel hideToggle [disabled]="requestError">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Non Applicable Comments
-        </mat-panel-title>
-        <mat-panel-description>
-          <span [ngStyle]="requestError && {'color': 'red'}">
-            {{requestError? 'Request encountered error. Please try later.': ''}}
-          </span>
-        </mat-panel-description>
-        <mat-icon matBadge="{{irrelevantPcs?.length}}" matBadgePosition="above before" 
-                  matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
-      </mat-expansion-panel-header>
-      <mat-card appearance="outlined" *ngFor="let comment of irrelevantPcs">
+  <!-- Irrelevant Comments Panel-->
+  <mat-expansion-panel hideToggle [disabled]="requestError">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Non Applicable Comments
+      </mat-panel-title>
+      <mat-panel-description>
+        <span [ngStyle]="requestError && {'color': 'red'}">
+          {{requestError? 'Request encountered error. Please try later.': ''}}
+        </span>
+      </mat-panel-description>
+      <mat-icon matBadge="{{irrelevantPcs?.length}}" matBadgePosition="above before"
+      matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
+    </mat-expansion-panel-header>
+    @for (comment of irrelevantPcs; track comment) {
+      <mat-card appearance="outlined">
         <mat-card-content>
           <ng-container [ngTemplateOutlet]="comment_fields_template"
-                        [ngTemplateOutletContext]="{ comment: comment }">
+            [ngTemplateOutletContext]="{ comment: comment }">
           </ng-container>
         </mat-card-content>
       </mat-card>
-    </mat-expansion-panel>
+    }
+  </mat-expansion-panel>
 
-    <!-- No-Respons Comments Panel-->
-    <mat-expansion-panel hideToggle [disabled]="requestError">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Comments not classified
-        </mat-panel-title>
-        <mat-panel-description>
-          <span [ngStyle]="requestError && {'color': 'red'}">
-            {{requestError? 'Request encountered error. Please try later.': ''}}
-          </span>
-        </mat-panel-description>
-        <mat-icon matBadge="{{noResponsePcs?.length}}" matBadgePosition="above before" 
-                  matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
-      </mat-expansion-panel-header>
-      <mat-card appearance="outlined" *ngFor="let comment of noResponsePcs">
+  <!-- No-Respons Comments Panel-->
+  <mat-expansion-panel hideToggle [disabled]="requestError">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Comments not classified
+      </mat-panel-title>
+      <mat-panel-description>
+        <span [ngStyle]="requestError && {'color': 'red'}">
+          {{requestError? 'Request encountered error. Please try later.': ''}}
+        </span>
+      </mat-panel-description>
+      <mat-icon matBadge="{{noResponsePcs?.length}}" matBadgePosition="above before"
+      matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
+    </mat-expansion-panel-header>
+    @for (comment of noResponsePcs; track comment) {
+      <mat-card appearance="outlined">
         <mat-card-content>
           <ng-container [ngTemplateOutlet]="comment_fields_template"
-                        [ngTemplateOutletContext]="{ comment: comment }">
+            [ngTemplateOutletContext]="{ comment: comment }">
           </ng-container>
         </mat-card-content>
       </mat-card>
-    </mat-expansion-panel>                                              
+    }
+  </mat-expansion-panel>
 </mat-accordion>
 
 
@@ -114,10 +122,10 @@
   <div class="row">
     <div class="col-md-3 bold">Commenting On: </div>
     <div class="col-md-9">
-      {{comment?.commentScope.description}} 
-      {{ (commentScopeCodes.CUT_BLOCK.code === comment?.commentScope.code)? '#'+ comment?.scopeCutBlockId: 
-        ((commentScopeCodes.ROAD_SECTION.code === comment?.commentScope.code)? '#'+ comment?.scopeRoadSectionId:
-        '')
+      {{comment?.commentScope.description}}
+      {{ (commentScopeCodes.CUT_BLOCK.code === comment?.commentScope.code)? '#'+ comment?.scopeCutBlockId:
+      ((commentScopeCodes.ROAD_SECTION.code === comment?.commentScope.code)? '#'+ comment?.scopeRoadSectionId:
+      '')
       }}
       {{ comment?.scopeFeatureName? ' - '+ comment?.scopeFeatureName: ''}}
     </div>
@@ -133,4 +141,4 @@
     <div class="col-md-9" [innerHTML]="comment?.responseDetails | newlines"></div>
   </div>
   <hr>
-</ng-template>
+  </ng-template>

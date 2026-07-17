@@ -5,47 +5,49 @@
     </a>
 
     <div class="header-notice">
-        <span class="navbar-environment" *ngIf="environmentDisplay">{{environmentDisplay}}</span>
-        <!-- Uncomment below Maintenance Notice and adjust it if needed -->
-        <!-- <div class="downtime-notice">
-            <span>Scheduled Maintenance on July 28th, 2025, 6:00–7:30 PM PST. <br/></span>
-            <span>The app will be temporarily unavailable. Thank you for your understanding and patience.</span>
-        </div> -->
-    </div>
+      @if (environmentDisplay) {
+        <span class="navbar-environment">{{environmentDisplay}}</span>
+      }
+      <!-- Uncomment below Maintenance Notice and adjust it if needed -->
+      <!-- <div class="downtime-notice">
+      <span>Scheduled Maintenance on July 28th, 2025, 6:00–7:30 PM PST. <br/></span>
+      <span>The app will be temporarily unavailable. Thank you for your understanding and patience.</span>
+    </div> -->
+  </div>
 
-    <button class="navbar-toggler" type="button" title="Toggle Main Navigation"
-      aria-controls="navbarText" 
-      aria-expanded="false" 
-      aria-label="Toggle navigation"
-      (click)="toggleNav()">
-      <em class="material-icons">menu</em>
-    </button>
-    <div class="navbar-collapse" [@toggleNav]="isNavMenuOpen ? 'navOpen' : 'navClosed'" id="mainNav">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" title="Find FOM Applications in British Columbia" routerLink="/home/false">
-            <span>All FOMs</span>
-          </a>
-        </li>
-        <div class="v-bar"><div></div></div>
-        <li class="nav-item">
-          <a class="nav-link" title="About Us" routerLink="/about">
-            <span>About</span>
-          </a>
-        </li>
-        <div class="v-bar"><div></div></div>
-        <li class="nav-item">
-          <a class="nav-link" title="How-to Videos" href="https://bcgov.github.io/forestry-digital-services/assets/training/FOMpublic/index.html#/lessons/bPu8Fx187gWLV3rC5RjpbKEKkDBwIX93" target="_blank">
-            <span>How-to videos</span>
-          </a>
-        </li>
-        <div class="v-bar"><div></div></div>
-        <li class="nav-item">
-          <a class="nav-link" title="Contact Us" routerLink="/contact">
-            <span>Contact us</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  <button class="navbar-toggler" type="button" title="Toggle Main Navigation"
+    aria-controls="navbarText"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+    (click)="toggleNav()">
+    <em class="material-icons">menu</em>
+  </button>
+  <div class="navbar-collapse" [@toggleNav]="isNavMenuOpen ? 'navOpen' : 'navClosed'" id="mainNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" title="Find FOM Applications in British Columbia" routerLink="/home/false">
+          <span>All FOMs</span>
+        </a>
+      </li>
+      <div class="v-bar"><div></div></div>
+      <li class="nav-item">
+        <a class="nav-link" title="About Us" routerLink="/about">
+          <span>About</span>
+        </a>
+      </li>
+      <div class="v-bar"><div></div></div>
+      <li class="nav-item">
+        <a class="nav-link" title="How-to Videos" href="https://bcgov.github.io/forestry-digital-services/assets/training/FOMpublic/index.html#/lessons/bPu8Fx187gWLV3rC5RjpbKEKkDBwIX93" target="_blank">
+          <span>How-to videos</span>
+        </a>
+      </li>
+      <div class="v-bar"><div></div></div>
+      <li class="nav-item">
+        <a class="nav-link" title="Contact Us" routerLink="/contact">
+          <span>Contact us</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
 </header>

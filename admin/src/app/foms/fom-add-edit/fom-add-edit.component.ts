@@ -13,7 +13,7 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { AttachmentUploadService } from "@admin-core/utils/attachmentUploadService";
 import { DEFAULT_ISO_DATE_FORMAT, MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
-import { DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import {
   AttachmentResponse, DistrictResponse, ForestClientResponse,
   ForestClientService,
@@ -37,15 +37,13 @@ type ApplicationPageType = 'create' | 'edit';
 @Component({
     standalone: true,
     imports: [
-        NgIf,
-        FormsModule,
-        ReactiveFormsModule,
-        BsDatepickerModule,
-        NgClass,
-        NgFor,
-        AppFormControlDirective,
-        UploadBoxComponent
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    BsDatepickerModule,
+    NgClass,
+    AppFormControlDirective,
+    UploadBoxComponent
+],
     selector: 'app-application-add-edit',
     templateUrl: './fom-add-edit.component.html',
     styleUrls: ['./fom-add-edit.component.scss'],

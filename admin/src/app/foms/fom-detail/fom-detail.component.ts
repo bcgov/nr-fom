@@ -13,24 +13,22 @@ import { takeUntil } from 'rxjs/operators';
 import { EnddateChangeModalComponent } from './enddate-change-modal/enddate-change-modal.component';
 
 import { NewlinesPipe } from "@admin-core/pipes/newlines.pipe";
-import { DatePipe, NgClass, NgFor, NgIf } from "@angular/common";
+import { DatePipe, NgClass } from "@angular/common";
 import { DetailsMapComponent } from "../details-map/details-map.component";
 import { ShapeInfoComponent } from "../shape-info/shape-info.component";
 
 @Component({
     standalone: true,
     imports: [
-        NgIf, 
-        RouterLink, 
-        NgbNav,
-        NgbModule, 
-        NgFor, 
-        DetailsMapComponent, 
-        ShapeInfoComponent,
-        NgClass,
-        DatePipe, 
-        NewlinesPipe
-    ],
+    RouterLink,
+    NgbNav,
+    NgbModule,
+    DetailsMapComponent,
+    ShapeInfoComponent,
+    NgClass,
+    DatePipe,
+    NewlinesPipe
+],
     selector: 'app-application-detail',
     templateUrl: './fom-detail.component.html',
     styleUrls: ['./fom-detail.component.scss']

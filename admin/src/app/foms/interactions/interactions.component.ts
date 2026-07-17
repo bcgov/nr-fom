@@ -1,6 +1,6 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { DatePipe, NgFor, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InteractionResponse, InteractionService, ProjectResponse, WorkflowStateEnum } from '@api-client';
@@ -26,12 +26,10 @@ export const ERROR_DIALOG = {
 @Component({
     standalone: true,
     imports: [
-        NgIf,
-        RouterLink,
-        NgFor,
-        InteractionDetailComponent,
-        DatePipe
-    ],
+    RouterLink,
+    InteractionDetailComponent,
+    DatePipe
+],
     selector: 'app-interactions',
     templateUrl: './interactions.component.html',
     styleUrls: ['./interactions.component.scss']
