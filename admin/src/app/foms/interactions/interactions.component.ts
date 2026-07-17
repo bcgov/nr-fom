@@ -24,7 +24,6 @@ export const ERROR_DIALOG = {
 };
 
 @Component({
-    standalone: true,
     imports: [
     RouterLink,
     InteractionDetailComponent,
@@ -32,7 +31,7 @@ export const ERROR_DIALOG = {
 ],
     selector: 'app-interactions',
     templateUrl: './interactions.component.html',
-    styleUrls: ['./interactions.component.scss']
+    styleUrl: './interactions.component.scss'
 })
 export class InteractionsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

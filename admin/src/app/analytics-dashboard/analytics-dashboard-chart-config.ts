@@ -50,7 +50,7 @@ export const RESPONSE_CODE_COLORS = {
 
 /* *** Some utility functions to help with chart configuration and display *** */
 export const maxAxis = (series) => {
-  let maxValue = Math.max(...series);
+  const maxValue = Math.max(...series);
   let maxAxis = 10;
   switch (true) {
     case (maxValue < 10):

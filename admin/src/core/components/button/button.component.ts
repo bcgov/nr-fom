@@ -2,7 +2,6 @@ import { Component, Input, inject } from '@angular/core';
 import { StateService } from '@admin-core/services/state.service';
 
 @Component({
-    standalone: true,
     selector: 'app-button',
     template: `
         <div class="btn-container">
@@ -13,14 +12,14 @@ import { StateService } from '@admin-core/services/state.service';
             type="button"
           >
             <i class="spinner rotating" [hidden]="!stateSvc.loading"></i>
-            <ng-content></ng-content>
+            <ng-content />
           </button>
           <span title="{{title}}"></span>
 
         </div>
 
   `,
-    styleUrls: ['./button.component.scss']
+    styleUrl: './button.component.scss'
 })
 export class ButtonComponent {
   stateSvc = inject(StateService);

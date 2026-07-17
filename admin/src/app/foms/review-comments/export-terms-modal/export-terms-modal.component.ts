@@ -50,10 +50,9 @@ const TERMS_CONTENT: TermsContent = {
 };
 
 @Component({
-  standalone: true,
   selector: 'app-export-terms-modal',
   templateUrl: './export-terms-modal.component.html',
-  styleUrls: ['./export-terms-modal.component.scss'],
+  styleUrl: './export-terms-modal.component.scss',
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
 })
 export class ExportTermsModalComponent {

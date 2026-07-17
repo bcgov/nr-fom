@@ -19,14 +19,13 @@ import { Filter, FilterUtils, IFilter, IMultiFilter, IMultiFilterFields, MultiFi
  * @implements {OnDestroy}
  */
 @Component({
-  standalone: true,
   imports: [
     FormsModule,
     BsDatepickerModule
 ],
   selector: 'app-find-panel',
   templateUrl: './find-panel.component.html',
-  styleUrls: ['./find-panel.component.scss']
+  styleUrl: './find-panel.component.scss'
 })
 export class FindPanelComponent implements OnDestroy, OnInit {
   urlSvc = inject(UrlService);

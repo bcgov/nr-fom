@@ -11,7 +11,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-    standalone: true,
     imports: [
     MatExpansionModule,
     NgStyle,
@@ -24,7 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 ],
     selector: 'app-comments-summary',
     templateUrl: './comments-summary.component.html',
-    styleUrls: ['./comments-summary.component.scss'],
+    styleUrl: './comments-summary.component.scss',
 })
 export class CommentsSummaryComponent implements OnInit {
   private stateSvc = inject(StateService);

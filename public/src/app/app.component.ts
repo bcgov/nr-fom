@@ -9,7 +9,6 @@ import { FooterComponent } from 'app/footer/footer.component';
 import { HeaderComponent } from 'app/header/header.component';
 
 @Component({
-  standalone: true,
   imports: [
     RouterOutlet,
     HeaderComponent,
@@ -17,7 +16,7 @@ import { HeaderComponent } from 'app/header/header.component';
   ],
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, OnDestroy {
     router = inject(Router);

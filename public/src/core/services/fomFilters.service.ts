@@ -64,7 +64,7 @@ export class FOMFiltersService {
     }
 
     const currentFilters = this._filters$.value;
-    let nextFilters = new Map();
+    const nextFilters = new Map();
     currentFilters.forEach((currentFilter) => {
       let currentFilterName: string;
       if (currentFilter.hasOwnProperty('queryParamsKey')) {
@@ -90,7 +90,7 @@ export class FOMFiltersService {
   }
 
   _getDefaultFilters(): Map<string, IFilter|IMultiFilter> {
-    let defaultFilters = new Map();
+    const defaultFilters = new Map();
     const fomNumberFilter = new Filter<string>(AppUtils.copy(DEFAULT_FOM_FILTERS.fomNumberFilter));
     const forestClientNameFilter = new Filter<string>(AppUtils.copy(DEFAULT_FOM_FILTERS.fcNameFilter));
     const postedOnAfterFilter = new Filter<Date>(AppUtils.copy(DEFAULT_FOM_FILTERS.postedOnAfterFilter));

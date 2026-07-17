@@ -6,16 +6,15 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { IFilterFields } from '../../utils/filter';
 
 @Component({
-  standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    MatExpansionModule, 
+    CommonModule,
+    FormsModule,
+    MatExpansionModule,
     BsDatepickerModule
   ],
   selector: 'notices-filter-panel',
   templateUrl: './public-notices-filter-panel.component.html',
-  styleUrls: ['./public-notices-filter-panel.component.scss']
+  styleUrl: './public-notices-filter-panel.component.scss'
 })
 export class PublicNoticesFilterPanelComponent implements OnInit {
 

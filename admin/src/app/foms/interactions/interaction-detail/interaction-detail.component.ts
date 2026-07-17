@@ -12,7 +12,6 @@ import { DatePipe, NgClass } from '@angular/common';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 @Component({
-    standalone: true,
     imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -23,7 +22,7 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 ],
     selector: 'app-interaction-detail',
     templateUrl: './interaction-detail.component.html',
-    styleUrls: ['./interaction-detail.component.scss'],
+    styleUrl: './interaction-detail.component.scss',
     exportAs: 'interactionForm'
 })
 export class InteractionDetailComponent {

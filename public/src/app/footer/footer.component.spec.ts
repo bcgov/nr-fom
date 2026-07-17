@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { FooterComponent } from './footer.component';
 
-@Component({ standalone: true, template: '' })
+@Component({ template: '' })
 class StubComponent {}
 
 describe('FooterComponent', () => {

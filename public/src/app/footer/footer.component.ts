@@ -5,11 +5,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs/operators';
 
 @Component({
-  standalone: true,
   selector: 'app-footer',
   imports: [CommonModule, RouterLink],
   templateUrl: './footer.component.html',
-  styleUrls: ['./footer.component.scss']
+  styleUrl: './footer.component.scss'
 })
 export class FooterComponent implements OnInit {
   router = inject(Router);

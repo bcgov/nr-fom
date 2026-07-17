@@ -14,7 +14,6 @@ import { User } from "@utility/security/user";
 import { isNullish } from 'remeda';
 
 @Component({
-    standalone: true,
     imports: [
     FormsModule,
     RxReactiveFormsModule,
@@ -27,7 +26,7 @@ import { isNullish } from 'remeda';
 ],
     selector: 'app-search',
     templateUrl: './search.component.html',
-    styleUrls: ['./search.component.scss']
+    styleUrl: './search.component.scss'
 })
 export class SearchComponent implements OnInit, OnDestroy {
   private location = inject(Location);

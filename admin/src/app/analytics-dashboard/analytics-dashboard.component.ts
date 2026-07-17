@@ -21,7 +21,6 @@ import {
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 @Component({
-    standalone: true,
     imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -33,7 +32,7 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 ],
     selector: 'app-analytics-dashboard',
     templateUrl: './analytics-dashboard.component.html',
-    styleUrls: ['./analytics-dashboard.component.scss'],
+    styleUrl: './analytics-dashboard.component.scss',
     providers: [DatePipe]
 })
 export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {

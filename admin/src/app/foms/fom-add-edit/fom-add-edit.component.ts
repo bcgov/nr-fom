@@ -35,7 +35,6 @@ import { BsDatepickerConfig, BsDatepickerModule } from 'ngx-bootstrap/datepicker
 type ApplicationPageType = 'create' | 'edit';
 
 @Component({
-    standalone: true,
     imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -46,7 +45,7 @@ type ApplicationPageType = 'create' | 'edit';
 ],
     selector: 'app-application-add-edit',
     templateUrl: './fom-add-edit.component.html',
-    styleUrls: ['./fom-add-edit.component.scss'],
+    styleUrl: './fom-add-edit.component.scss',
     providers: [DatePipe]
 })
 export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -257,7 +256,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     this.validate();
     if (!this.fg.valid) return;
     if (this.stateSvc.loading) return;
-    let projectCreate = this.fg.value as ProjectCreateRequest
+    const projectCreate = this.fg.value as ProjectCreateRequest
     projectCreate['districtId'] = this.districtIdSelect;
     projectCreate.forestClientNumber = this.fg.get('forestClient').value.id;
     const cmoDateIsoVal = this.getformatedDate('commentingOpenDate', this.DEFAULT_ISO_DATE_FORMAT);
@@ -292,7 +291,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isSubmitSaveClicked = true;
     this.validate();
     const {id, forestClient, workflowState, ...rest} = this.originalProjectResponse;
-    let projectUpdateRequest = {...rest, ...this.fg.value}
+    const projectUpdateRequest = {...rest, ...this.fg.value}
     projectUpdateRequest['districtId'] = projectUpdateRequest.district;
 
     if (!this.fg.valid) return;
@@ -420,7 +419,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     const dialogRef = this.modalSvc.openConfirmationDialog(`You are about to delete this attachment. Are you sure?`, 'Delete Attachment');
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
-        let result = this.attachmentResolverSvc.attachmentControllerRemove(id);
+        const result = this.attachmentResolverSvc.attachmentControllerRemove(id);
         result.then( () => {
           return this.onSuccessAttachment(this.originalProjectResponse.id);
         }).catch( (error) => {

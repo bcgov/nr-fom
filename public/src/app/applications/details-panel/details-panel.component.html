@@ -51,17 +51,13 @@
                   rel="noopener"
                   class="ghost-button"
                   style="text-transform: none">
-                  <fa-icon [icon]="faArrowUpRightFromSquare"></fa-icon> View spatial layers in iMapBC
+                  <fa-icon [icon]="faArrowUpRightFromSquare" /> View spatial layers in iMapBC
                 </a>
               </div>
             </div>
-            <app-details-map
-              [projectSpatialDetail]="projectSpatialDetail">
-            </app-details-map>
+            <app-details-map [projectSpatialDetail]="projectSpatialDetail" />
           </div>
-          <app-shape-info
-            [spatialDetail]="projectSpatialDetail">
-          </app-shape-info>
+          <app-shape-info [spatialDetail]="projectSpatialDetail" />
         </section>
         <section>
           <h3>FOM Details</h3>

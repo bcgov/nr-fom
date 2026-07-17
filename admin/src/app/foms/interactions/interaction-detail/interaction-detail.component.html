@@ -84,8 +84,7 @@
                 <app-upload-box id="upload"
                   [fileTypes]="supportingFileTypes"
                   [maxFileSizeMB]="maxFileSize"
-                  (emitFile)="onFileEmit($event)">
-                </app-upload-box>
+                  (emitFile)="onFileEmit($event)" />
                 <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf, txt, csv, doc, docx, xls, xlsx, msg, rtf </em></div>
               </div>
             }
@@ -110,8 +109,7 @@
               </div>
             }
             &nbsp;
-            <ng-content>
-            </ng-content>
+            <ng-content />
           </form>
         </div>
       }

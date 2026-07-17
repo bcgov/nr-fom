@@ -32,14 +32,13 @@ import { Filter } from '../utils/filter';
  * @implements {OnDestroy}
  */
 @Component({
-  standalone: true,
   imports: [
     FontAwesomeModule, CommonModule, ShapeInfoComponent, 
     DetailsMapComponent, TooltipModule, MatTooltipModule
   ],
   selector: 'app-details-panel',
   templateUrl: './details-panel.component.html',
-  styleUrls: ['./details-panel.component.scss']
+  styleUrl: './details-panel.component.scss'
 })
 export class DetailsPanelComponent implements OnDestroy, OnInit {
   modalService = inject(NgbModal);
@@ -149,7 +148,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
       windowClass: 'comment-modal'
     });
     
-    let modalInstance = this.addCommentModal.componentInstance as CommentModalComponent;
+    const modalInstance = this.addCommentModal.componentInstance as CommentModalComponent;
     modalInstance.projectId = this.project.id;
     modalInstance.projectSpatialDetail = this.projectSpatialDetail;
 

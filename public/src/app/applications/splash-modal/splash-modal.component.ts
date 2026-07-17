@@ -13,10 +13,9 @@ export enum SplashModalResult {
 }
 
 @Component({
-  standalone: true,
   imports: [FontAwesomeModule],
   templateUrl: './splash-modal.component.html',
-  styleUrls: ['./splash-modal.component.scss']
+  styleUrl: './splash-modal.component.scss'
 })
 export class SplashModalComponent {
   private activatedRoute = inject(ActivatedRoute);

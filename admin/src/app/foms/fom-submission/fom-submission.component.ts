@@ -20,7 +20,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 @Component({
-    standalone: true,
     imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -33,7 +32,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 ],
     selector: 'app-fom-submission',
     templateUrl: './fom-submission.component.html',
-    styleUrls: ['./fom-submission.component.scss'],
+    styleUrl: './fom-submission.component.scss',
     providers: [DatePipe]
 })
 export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -199,7 +198,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
 
   submit() {
     const {projectId, submissionTypeCode, ...rest} = this.originalSubmissionRequest;
-    let submissionRequest = {...rest, ...this.fg.value}
+    const submissionRequest = {...rest, ...this.fg.value}
     this.isSubmitting = true;
     this.submissionSvc.submissionControllerProcessSpatialSubmission(submissionRequest as SubmissionRequest)
         .subscribe({

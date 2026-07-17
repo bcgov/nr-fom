@@ -4,7 +4,7 @@ import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'fom-date-input',
   templateUrl: './date-input.component.html',
-  styleUrls: ['./date-input.component.scss']
+  styleUrl: './date-input.component.scss'
 })
 export class DateInputComponent implements OnChanges {
   @Input() date: Date = null;

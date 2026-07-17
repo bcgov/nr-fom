@@ -7,11 +7,10 @@ import { User } from "@utility/security/user";
 import { ConfigService } from '@utility/services/config.service';
 
 @Component({
-    standalone: true,
     imports: [RouterLink],
     selector: 'app-header',
     templateUrl: './header.component.html',
-    styleUrls: ['./header.component.scss'],
+    styleUrl: './header.component.scss',
     animations: [
         trigger('toggleNav', [
             state('navClosed', style({ height: '0' })),

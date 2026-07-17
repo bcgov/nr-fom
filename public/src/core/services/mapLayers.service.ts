@@ -38,7 +38,7 @@ export class MapLayersService {
    *              or {overlay: {action: 'ADD'|'REMOVE', layerName: string}}
    */
   notifyLayersChange(data) {
-    let newLayersChange = Object.assign({}, this._mapLayersChange.value);
+    const newLayersChange = Object.assign({}, this._mapLayersChange.value);
     if (data.baseLayer) {
       newLayersChange['baseLayer'] = data.baseLayer;
     }

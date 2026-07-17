@@ -25,11 +25,10 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
-    standalone: true,
     imports: [],
     selector: 'app-details-map',
     templateUrl: './details-map.component.html',
-    styleUrls: ['./details-map.component.scss']
+    styleUrl: './details-map.component.scss'
 })
 export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   private elementRef = inject(ElementRef);
@@ -140,7 +139,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
         layer.on('click', L.Util.bind(this.onSpatialFeatureClick, this, spatialDetail));
         this.projectFeatures.addLayer(layer);
         this.map.on('zoomend', () => {
-          let style: L.PathOptions = {};
+          const style: L.PathOptions = {};
           style.weight = 5; 
           if (this.map.getZoom() < 14) {
             style.weight = 2;

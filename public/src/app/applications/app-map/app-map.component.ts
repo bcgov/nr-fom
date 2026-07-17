@@ -13,7 +13,7 @@ import { destroyMap, initMap, mapContainer } from '../utils/leaflet-host';
 import { MarkerPopupComponent } from './marker-popup/marker-popup.component';
 
 declare module 'leaflet' {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
+   
   export interface Marker<P = any> {
     dispositionId: number;
   }
@@ -29,10 +29,9 @@ const markerIcon = L.icon({
 });
 
 @Component({
-  standalone: true,
   selector: 'app-map',
   templateUrl: './app-map.component.html',
-  styleUrls: ['./app-map.component.scss']
+  styleUrl: './app-map.component.scss'
 })
 export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   private appRef = inject(ApplicationRef);

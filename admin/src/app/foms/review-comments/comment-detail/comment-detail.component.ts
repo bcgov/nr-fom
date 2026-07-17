@@ -10,7 +10,6 @@ import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
 import { DatePipe } from '@angular/common';
 
 @Component({
-    standalone: true,
     imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -19,7 +18,7 @@ import { DatePipe } from '@angular/common';
 ],
     selector: 'app-comment-detail',
     templateUrl: './comment-detail.component.html',
-    styleUrls: ['./comment-detail.component.scss'],
+    styleUrl: './comment-detail.component.scss',
     exportAs: 'commentForm'
 })
 export class CommentDetailComponent {

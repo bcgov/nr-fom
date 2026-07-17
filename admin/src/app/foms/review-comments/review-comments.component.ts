@@ -23,7 +23,6 @@ import { CommentDetailComponent } from './comment-detail/comment-detail.componen
 import { ExportTermsModalComponent } from './export-terms-modal/export-terms-modal.component';
 
 @Component({
-    standalone: true,
     imports: [
     RouterLink,
     MatFormFieldModule,
@@ -35,7 +34,7 @@ import { ExportTermsModalComponent } from './export-terms-modal/export-terms-mod
 ],
     selector: 'app-review-comments',
     templateUrl: './review-comments.component.html',
-    styleUrls: ['./review-comments.component.scss']
+    styleUrl: './review-comments.component.scss'
 })
 export class ReviewCommentsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

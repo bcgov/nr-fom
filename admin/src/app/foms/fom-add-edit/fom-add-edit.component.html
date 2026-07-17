@@ -573,7 +573,7 @@
                                   <app-upload-box [fileTypes]="fileTypesParentInitial"
                                     (emitFile)="onFileEmitForPublicNotice($event)"
                                     [maxFileSizeMB]="maxFileSize"
-                                  ></app-upload-box>
+                                   />
                                   <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf </em></div>
                                 </div>
                                 <div class="form-group col-md-6">
@@ -629,8 +629,7 @@
                                   <div class="form-group col-md-6">
                                     <app-upload-box [fileTypes]="fileTypesParentSupporting"
                                       (emitFile)="onFileEmitForSupportingDocument($event)"
-                                      [maxFileSizeMB]="maxFileSize">
-                                    </app-upload-box>
+                                      [maxFileSizeMB]="maxFileSize" />
                                     <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf, txt, csv, doc, docx, xls, xlsx </em></div>
                                   </div>
                                   <div class="form-group col-md-6">

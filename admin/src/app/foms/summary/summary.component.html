@@ -106,32 +106,24 @@
 
         <section>
           <h4>Geographic Shape Information</h4>
-          <app-details-map
-            [projectSpatialDetail]="filteredSpatialDetail">
-          </app-details-map>
+          <app-details-map [projectSpatialDetail]="filteredSpatialDetail" />
 
-          <app-shape-info
-            [spatialDetail]="filteredSpatialDetail">
-          </app-shape-info>
+          <app-shape-info [spatialDetail]="filteredSpatialDetail" />
         </section>
 
         <section class="project-relations">
           <section>
             <div>
-              <app-comments-summary
-                [publicCommentDetails]="filteredPublicComments"
-                [requestError]="publicCommentsReqError">
-              </app-comments-summary>
+              <app-comments-summary [publicCommentDetails]="filteredPublicComments"
+                [requestError]="publicCommentsReqError" />
             </div>
           </section>
 
           @if (!selectedScope?.commentScopeCode) {
             <section>
               <div>
-                <app-interactions-summary
-                  [interactionDetails]="interactions"
-                  [requestError]="interactionsReqError">
-                </app-interactions-summary>
+                <app-interactions-summary [interactionDetails]="interactions"
+                  [requestError]="interactionsReqError" />
               </div>
             </section>
           }

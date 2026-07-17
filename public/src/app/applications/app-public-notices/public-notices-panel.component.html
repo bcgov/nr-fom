@@ -25,9 +25,8 @@
     <div>
       <div class="flex-panel__scroll" style="padding-top: 5px">
         <section style="margin-bottom: 15px;">
-          <notices-filter-panel
-            [districtList]="districtList"
-          (filterPublicNoticesEvt)="handlePublicNoticesFilterUpdate($event)"></notices-filter-panel>
+          <notices-filter-panel [districtList]="districtList"
+          (filterPublicNoticesEvt)="handlePublicNoticesFilterUpdate($event)" />
         </section>
         @if (pNotices.length > 0) {
           <section>
@@ -77,8 +76,7 @@
                               [ngTemplateOutletContext]="{ 
                                 pNotice: pn, 
                                 isFomAvailable: isFomAvailable(pn.project.commentingOpenDate
-                              )}">
-                      </ng-container>
+                              )}" />
                       @if (isFomAvailable(pn.project.commentingOpenDate)) {
                         <button class="app-link btn btn-primary"
                         (click)="showDetails(pn.projectId)">View Details</button>

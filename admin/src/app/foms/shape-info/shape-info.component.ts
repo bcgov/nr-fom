@@ -8,8 +8,7 @@ import { MatTableModule } from '@angular/material/table';
 @Component({
     selector: 'app-shape-info',
     templateUrl: './shape-info.component.html',
-    styleUrls: ['./shape-info.component.scss'],
-    standalone: true,
+    styleUrl: './shape-info.component.scss',
     imports: [MatTableModule, NgClass, DecimalPipe]
 })
 export class ShapeInfoComponent implements OnInit {

@@ -5,11 +5,10 @@ import { Router, RouterLink } from '@angular/router';
 import { ConfigService } from '@utility/services/config.service';
 
 @Component({
-  standalone: true,
   selector: 'app-header',
   imports: [RouterLink],
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss'],
+  styleUrl: './header.component.scss',
   animations: [
     trigger('toggleNav', [
       state('navClosed', style({ height: '0' })),

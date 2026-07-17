@@ -53,7 +53,7 @@ export class AttachmentUploadService {
     formParams.append('projectId', <any>projectId);
     formParams.append('attachmentTypeCode', <any>attachmentTypeCode);
 
-    let responseType: 'text' | 'json' = 'json';
+    const responseType: 'text' | 'json' = 'json';
     return this.httpClient.post<any>(`${this.configService.getApiBasePath()}/api/attachment`,
       formParams,
       {

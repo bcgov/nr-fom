@@ -7,10 +7,9 @@ import { indexBy } from 'remeda';
 import { Panel } from '../../../applications/utils/panel.enum';
 
 @Component({
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './marker-popup.component.html',
-  styleUrls: ['./marker-popup.component.scss']
+  styleUrl: './marker-popup.component.scss'
 })
 export class MarkerPopupComponent {
   private stateSvc = inject(StateService);

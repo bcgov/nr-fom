@@ -11,7 +11,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-    standalone: true,
     imports: [
     MatExpansionModule,
     NgStyle,
@@ -24,7 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 ],
     selector: 'app-interactions-summary',
     templateUrl: './interactions-summary.component.html',
-    styleUrls: ['./interactions-summary.component.scss'],
+    styleUrl: './interactions-summary.component.scss',
 })
 export class InteractionsSummaryComponent implements OnInit {
   private configSvc = inject(ConfigService);

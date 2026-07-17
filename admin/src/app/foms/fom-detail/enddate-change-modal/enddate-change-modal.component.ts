@@ -8,7 +8,6 @@ import { DateTime } from 'luxon';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 @Component({
-    standalone: true,
     imports: [
     MatProgressBarModule,
     FormsModule,
@@ -16,7 +15,7 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
     DatePipe
 ],
     templateUrl: './enddate-change-modal.component.html',
-    styleUrls: ['./enddate-change-modal.component.scss'],
+    styleUrl: './enddate-change-modal.component.scss',
     encapsulation: ViewEncapsulation.None // Important to make bootstrap modal custom styling property 'windowClass' work.
 })
 export class EnddateChangeModalComponent implements OnInit {

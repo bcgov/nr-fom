@@ -2,7 +2,6 @@ import { Directive, HostBinding, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 
 @Directive({
-    standalone: true,
     selector: '[appFormControl]',
 })
 export class AppFormControlDirective {

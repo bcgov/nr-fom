@@ -47,7 +47,6 @@ export interface IUpdateEvent {
  * @implements {OnDestroy}
  */
 @Component({
-  standalone: true,
   imports: [
     CommonModule, 
     FormsModule,
@@ -58,7 +57,7 @@ export interface IUpdateEvent {
   ],
   selector: 'app-projects',
   templateUrl: './projects.component.html',
-  styleUrls: ['./projects.component.scss']
+  styleUrl: './projects.component.scss'
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
   private modalService = inject(NgbModal);

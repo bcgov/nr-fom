@@ -93,8 +93,7 @@
               <div class="form-group mb-0">
                 <app-upload-box [fileTypes]="fileTypesParent"
                   [maxFileSizeMB]="maxSpatialFileSize"
-                  (emitFile)="onFileEmit($event)">
-                </app-upload-box>
+                  (emitFile)="onFileEmit($event)" />
                 <div class="fileTypes"><em>Acceptable File Types: json, txt</em></div>
               </div>
             </fieldset>
@@ -176,7 +175,7 @@
             }
             <hr/>
             <div>
-              <app-submission-overview-faq></app-submission-overview-faq>
+              <app-submission-overview-faq />
             </div>
           </form>
         </div>

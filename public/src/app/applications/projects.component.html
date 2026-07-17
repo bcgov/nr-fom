@@ -30,15 +30,12 @@
     <app-find-panel #findPanel
       (update)="handleFindUpdate($event)"
       [loading]="loading"
-      [hidden]="activePanel !== Panel.find">
-    </app-find-panel>
+      [hidden]="activePanel !== Panel.find" />
     <app-details-panel #detailsPanel
-      [hidden]="activePanel !== Panel.details">
-    </app-details-panel>
+      [hidden]="activePanel !== Panel.details" />
     <app-public-notices-panel #publicNoticesPanel
       (update)="handlePublicNoticesUpdate($event)"
-      [hidden]="activePanel !== Panel.publicNotices">
-    </app-public-notices-panel>
+      [hidden]="activePanel !== Panel.publicNotices" />
   </div>
 
   <div class="main-panel">
@@ -88,8 +85,7 @@
       @if (projectsSummary) {
         <app-map class="app-map" #appmap
           [loading]="loading"
-          [projectsSummary]="projectsSummary">
-        </app-map>
+          [projectsSummary]="projectsSummary" />
       }
     </div>
 

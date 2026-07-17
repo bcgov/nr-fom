@@ -5,7 +5,6 @@ import { DialogData } from '@admin-core/models/dialog';
 import { ButtonComponent } from '@admin-core/components/button/button.component';
 
 @Component({
-    standalone: true,
     selector: 'app-dialog-component',
     template: `
     @if (data['title']) {
@@ -14,7 +13,7 @@ import { ButtonComponent } from '@admin-core/components/button/button.component'
       </h2>
     }
     
-    <mat-dialog-content [innerHTML]="message"></mat-dialog-content>
+    <mat-dialog-content [innerHTML]="message" />
     
     <mat-dialog-actions>
     
@@ -36,7 +35,7 @@ import { ButtonComponent } from '@admin-core/components/button/button.component'
     }
     </mat-dialog-actions>
     `,
-    styleUrls: ['./dialog.component.scss'],
+    styleUrl: './dialog.component.scss',
     imports: [
     MatDialogModule,
     ButtonComponent,

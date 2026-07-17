@@ -8,7 +8,6 @@ import { MatInputModule } from '@angular/material/input';
 import { FileInputDirective, FileInputValidators } from '@ngx-dropzone/cdk';
 import { MatDropzone } from '@ngx-dropzone/material';
 @Component({
-    standalone: true,
     imports: [
     ReactiveFormsModule,
     MatDropzone,
@@ -24,7 +23,7 @@ import { MatDropzone } from '@ngx-dropzone/material';
 ],
     selector: 'app-upload-box',
     templateUrl:'./file-upload-box.component.html', 
-    styleUrls: ['./file-upload-box.component.scss']
+    styleUrl: './file-upload-box.component.scss'
 })
 export class UploadBoxComponent implements OnInit {
   @Input() maxFileSizeMB: number;

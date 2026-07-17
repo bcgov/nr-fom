@@ -23,7 +23,6 @@ import { CommentsSummaryComponent } from './comments-summary/comments-summary.co
 import { InteractionsSummaryComponent } from './interactions-summary/interactions-summary.component';
 
 @Component({
-    standalone: true,
     imports: [
     RouterLink,
     FormsModule,
@@ -38,7 +37,7 @@ import { InteractionsSummaryComponent } from './interactions-summary/interaction
 ],
     selector: 'app-summary',
     templateUrl: './summary.component.html',
-    styleUrls: ['./summary.component.scss']
+    styleUrl: './summary.component.scss'
 })
 export class SummaryComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

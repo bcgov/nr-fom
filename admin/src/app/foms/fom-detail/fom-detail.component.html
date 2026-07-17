@@ -198,13 +198,9 @@
                   <ng-template ngbNavContent>
                     <h2>Geographic Shape Information</h2>
 
-                    <app-details-map
-                      [projectSpatialDetail]="spatialDetail">
-                    </app-details-map>
+                    <app-details-map [projectSpatialDetail]="spatialDetail" />
 
-                    <app-shape-info
-                      [spatialDetail]="spatialDetail">
-                    </app-shape-info>
+                    <app-shape-info [spatialDetail]="spatialDetail" />
 
                   </ng-template>
 

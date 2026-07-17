@@ -6,11 +6,10 @@ import { SpatialFeaturePublicResponse } from '@api-client';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 
 @Component({
-  standalone: true,
   imports: [CommonModule, MatTableModule],
   selector: 'app-shape-info',
   templateUrl: './shape-info.component.html',
-  styleUrls: ['./shape-info.component.scss']
+  styleUrl: './shape-info.component.scss'
 })
 export class ShapeInfoComponent {
   private fss = inject(FeatureSelectService);

@@ -7,7 +7,6 @@ import { FooterComponent } from './footer/footer.component';
 import { HeaderComponent } from './header/header.component';
 
 @Component({
-    standalone: true,
     imports: [
     HeaderComponent,
     RouterOutlet,
@@ -16,7 +15,7 @@ import { HeaderComponent } from './header/header.component';
 ],
     selector: 'app-root',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
+    styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   private stateSvc = inject(StateService);

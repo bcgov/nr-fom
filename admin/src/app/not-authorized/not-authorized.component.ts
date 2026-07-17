@@ -5,11 +5,10 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 
 @Component({
-    standalone: true,
     imports: [],
     selector: "app-not-authorized",
     templateUrl: "./not-authorized.component.html",
-    styleUrls: ["./not-authorized.component.scss"]
+    styleUrl: "./not-authorized.component.scss"
 })
 export class NotAuthorizedComponent implements OnInit {
   private route = inject(ActivatedRoute);

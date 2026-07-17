@@ -18,7 +18,6 @@ import { DetailsMapComponent } from "../details-map/details-map.component";
 import { ShapeInfoComponent } from "../shape-info/shape-info.component";
 
 @Component({
-    standalone: true,
     imports: [
     RouterLink,
     NgbNav,
@@ -31,7 +30,7 @@ import { ShapeInfoComponent } from "../shape-info/shape-info.component";
 ],
     selector: 'app-application-detail',
     templateUrl: './fom-detail.component.html',
-    styleUrls: ['./fom-detail.component.scss']
+    styleUrl: './fom-detail.component.scss'
 })
 export class FomDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -117,7 +116,7 @@ export class FomDetailComponent implements OnInit, OnDestroy {
     const dialogRef = this.modalSvc.openConfirmationDialog(`You are about to delete this attachment. Are you sure?`, 'Delete Attachment');
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
-        let result = this.attachmentResolverSvc.attachmentControllerRemove(id);
+        const result = this.attachmentResolverSvc.attachmentControllerRemove(id);
         result.then( () => {
           return this.onSuccess();
         }).catch( (error) => {
@@ -317,7 +316,7 @@ export class FomDetailComponent implements OnInit, OnDestroy {
           windowClass: 'enddate-change-modal' // Important! See endate-change-modal.component.scss for explanation.
         });
         
-        let modalInstance = this.changeEndDateModal.componentInstance as EnddateChangeModalComponent;
+        const modalInstance = this.changeEndDateModal.componentInstance as EnddateChangeModalComponent;
         modalInstance.projectId = this.project.id;
         modalInstance.currentCommentingClosedDate = this.project.commentingClosedDate;
         modalInstance.changeRequest.revisionCount = this.project.revisionCount;

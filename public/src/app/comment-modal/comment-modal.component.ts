@@ -20,10 +20,9 @@ type CommentScopeOpt = {commentScopeCode: COMMENT_SCOPE_CODE,
                         scopeId: number};
 
 @Component({
-  standalone: true,
   imports: [CommonModule, FormsModule, MatSelectModule, MatProgressBarModule],
   templateUrl: './comment-modal.component.html',
-  styleUrls: ['./comment-modal.component.scss'],
+  styleUrl: './comment-modal.component.scss',
   encapsulation: ViewEncapsulation.None
 })
 export class CommentModalComponent implements OnInit {

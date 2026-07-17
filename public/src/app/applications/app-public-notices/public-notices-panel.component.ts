@@ -15,7 +15,6 @@ import { IUpdateEvent } from '../projects.component';
 import { Panel } from '../utils/panel.enum';
 import { NoticeFilter, PublicNoticesFilterPanelComponent } from './notices-filter-panel/public-notices-filter-panel.component';
 @Component({
-  standalone: true,
   imports: [
     CommonModule, 
     FormsModule,
@@ -27,7 +26,7 @@ import { NoticeFilter, PublicNoticesFilterPanelComponent } from './notices-filte
   ],
   selector: 'app-public-notices-panel',
   templateUrl: './public-notices-panel.component.html',
-  styleUrls: ['./public-notices-panel.component.scss']
+  styleUrl: './public-notices-panel.component.scss'
 })
 export class PublicNoticesPanelComponent implements OnInit {
   urlService = inject(UrlService);

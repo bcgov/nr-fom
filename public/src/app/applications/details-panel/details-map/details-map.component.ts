@@ -28,11 +28,10 @@ import { takeUntil } from 'rxjs/operators';
 import { destroyMap, initMap, mapContainer, whenMapContainerReady } from '../../utils/leaflet-host';
 
 @Component({
-  standalone: true,
   imports: [],
   selector: 'app-details-map',
   templateUrl: './details-map.component.html',
-  styleUrls: ['./details-map.component.scss']
+  styleUrl: './details-map.component.scss'
 })
 export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   private elementRef = inject(ElementRef);
@@ -154,14 +153,14 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public addFeatures() {
-    var projectSpatialDetails = this.projectSpatialDetail;
+    const projectSpatialDetails = this.projectSpatialDetail;
     if (this.map) {
       projectSpatialDetails.forEach(spatialDetail => {
         const layer = L.geoJSON(<GeoJsonObject>spatialDetail['geometry']);
         layer.on('click', L.Util.bind(this.onSpatialFeatureClick, this, spatialDetail));
         this.projectFeatures.addLayer(layer);
         this.map.on('zoomend', () => {
-            var style: L.PathOptions = {};
+            const style: L.PathOptions = {};
             style.weight = 5; 
             if (this.map.getZoom() < 14) {
                 style.weight = 2;

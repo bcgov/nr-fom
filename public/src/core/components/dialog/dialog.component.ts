@@ -20,7 +20,6 @@ export interface DialogData {
 }
 
 @Component({
-  standalone: true,
   imports: [CommonModule, MatDialogModule],
   selector: 'app-dialog-component',
   template: `
@@ -30,7 +29,7 @@ export interface DialogData {
       </h2>
     }
     
-    <mat-dialog-content [innerHTML]="message"></mat-dialog-content>
+    <mat-dialog-content [innerHTML]="message" />
     
     <mat-dialog-actions>
     
@@ -51,7 +50,7 @@ export interface DialogData {
       }
     </mat-dialog-actions>
     `,
-  styleUrls: ['./dialog.component.scss'],
+  styleUrl: './dialog.component.scss',
 })
 export class DialogComponent {
   dialogRef = inject<MatDialogRef<DialogComponent>>(MatDialogRef);

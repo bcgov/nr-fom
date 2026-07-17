@@ -8,7 +8,6 @@ import { Pipe, PipeTransform } from '@angular/core';
  * @implements {PipeTransform}
  */
 @Pipe({
-    standalone: true,
     name: 'newlines'
 })
 export class NewlinesPipe implements PipeTransform {

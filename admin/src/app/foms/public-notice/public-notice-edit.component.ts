@@ -19,7 +19,6 @@ import { map, switchMap } from 'rxjs/operators';
 import { PublicNoticeForm } from './public-notice.form';
 
 @Component({
-    standalone: true,
     imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -28,7 +27,7 @@ import { PublicNoticeForm } from './public-notice.form';
 ],
     selector: 'app-public-notice-edit',
     templateUrl: './public-notice-edit.component.html',
-    styleUrls: ['./public-notice-edit.component.scss'],
+    styleUrl: './public-notice-edit.component.scss',
     providers: [DatePipe]
 })
 export class PublicNoticeEditComponent implements OnInit, OnDestroy {
@@ -97,7 +96,7 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
         this.maxPostDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
         this.processBeforeFormGroupInitialized()
         
-        let publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse);
+        const publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse);
         this.publicNoticeFormGroup = this.formBuilder.formGroup(publicNoticeForm) as IFormGroup<PublicNoticeForm>;
         this.onSameAsReviewIndToggled();
         if (!this.editMode) {
