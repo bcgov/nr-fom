@@ -1,5 +1,4 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
-import { animate, state, style, transition, trigger } from '@angular/animations';
 
 import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -10,15 +9,7 @@ import { ConfigService } from '@utility/services/config.service';
     imports: [RouterLink],
     selector: 'app-header',
     templateUrl: './header.component.html',
-    styleUrl: './header.component.scss',
-    animations: [
-        trigger('toggleNav', [
-            state('navClosed', style({ height: '0' })),
-            state('navOpen', style({ height: '*' })),
-            transition('navOpen => navClosed', [animate('0.2s')]),
-            transition('navClosed => navOpen', [animate('0.2s')])
-        ])
-    ]
+    styleUrl: './header.component.scss'
 })
 export class HeaderComponent implements OnInit {
   private configService = inject(ConfigService);

@@ -29,7 +29,7 @@
     <em class="material-icons">menu</em>
   </button>
 
-  <div class="navbar-collapse" [@toggleNav]="isNavMenuOpen ? 'navOpen' : 'navClosed'" id="mainNav">
+  <div class="navbar-collapse" [class.nav-open]="isNavMenuOpen" id="mainNav">
     @if (user) {
       <ul class="navbar-nav">
         @if (user.isForestClient) {

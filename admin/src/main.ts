@@ -1,11 +1,9 @@
-import { enableProdMode, importProvidersFrom, inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
+import { importProvidersFrom, inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
-import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations';
+import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { ApiModule, Configuration } from '@api-client';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -17,11 +15,6 @@ import { AppComponent } from './app/app.component';
 import { errorInterceptor } from './core/interceptors/http-error.interceptor';
 import { CognitoService } from './core/services/cognito.service';
 import { cognitoTokenInterceptor } from './core/utils/cognito-token-interceptor';
-import { environment } from './environments/environment';
-
-if (environment.production) {
-    enableProdMode();
-}
 
 const apiConfig = new Configuration({
   basePath: retrieveApiBasePath()
@@ -39,14 +32,9 @@ const coreProviders = [
     // (it is last in the array, so it sees the response first and can refresh+retry a
     // 403 before the error interceptor would surface a "Forbidden" dialog).
     provideHttpClient(withInterceptors([errorInterceptor, cognitoTokenInterceptor])),
-    provideAnimations(),
     importProvidersFrom(
-        BrowserModule, 
-        FormsModule, 
-        ReactiveFormsModule,
-        BrowserAnimationsModule,
         BsDatepickerModule,
-        NgbModule, 
+        NgbModule,
         ApiModule.forRoot(() => apiConfig),
         RxReactiveFormsModule,
         MatDialogModule,
