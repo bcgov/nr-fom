@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input } from '@angular/core';
+import { Component, ElementRef, Injector, OnChanges, OnDestroy, OnInit, SimpleChanges, afterNextRender, inject, input } from '@angular/core';
 import { SpatialFeaturePublicResponse, SubmissionTypeCodeEnum } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
 import { MapLayers } from '@utility/models/map-layers';
@@ -25,7 +25,7 @@ const L = (L_import as any).default || L_import;
 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { destroyMap, initMap, mapContainer, whenMapContainerReady } from '../../utils/leaflet-host';
+import { destroyMap, initMap, mapContainer, observeMapSize } from '../../utils/leaflet-host';
 
 @Component({
   imports: [],
@@ -37,6 +37,8 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   private elementRef = inject(ElementRef);
   private mapLayersService = inject(MapLayersService);
   private fss = inject(FeatureSelectService);
+  private injector = inject(Injector);
+  private resizeObserver: ResizeObserver | null = null;
 
 
   readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[] | undefined>(undefined);
@@ -79,10 +81,12 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   public ngOnChanges(changes: SimpleChanges) {
     // Note, when Angular first onChange is triggered, the value is undefined.
     if (changes.projectSpatialDetail?.currentValue) {
-      whenMapContainerReady(this.elementRef, () => {
+      // ngOnChanges can fire before this component's view (and thus the .map-host
+      // container) exists; afterNextRender runs once the DOM is painted, so no polling.
+      afterNextRender(() => {
         this.resetMap();
         this.createMap();
-      });
+      }, { injector: this.injector });
     }
   }
 
@@ -92,7 +96,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
     this.addZoomControl();
     this.addResetViewControl();
     this.addFeatures();
-    this.fixMap();
+    this.observeMapSizing();
   }
 
   public createBasicMap() {
@@ -214,16 +218,8 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
     this.projectFeatures.addLayer(this.lastLabelMarker);
   }
 
-  // to avoid timing conflict with animations (resulting in small map tile at top left of page),
-  // ensure map component is visible in the DOM then update it; otherwise wait a bit and try again
-  // ref: https://github.com/Leaflet/Leaflet/issues/4835
-  // ref: https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-  private fixMap() {
-    if (this.elementRef.nativeElement.offsetParent) {
-      this.fitBounds();
-    } else {
-      setTimeout(this.fixMap.bind(this), 50);
-    }
+  private observeMapSizing() {
+    this.resizeObserver = observeMapSize(this.map, () => this.fitBounds());
   }
 
   private fitBounds() {
@@ -236,6 +232,8 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public resetMap() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
     destroyMap(this.map);
     this.map = null;
 

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, Injector, OnDestroy, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
@@ -67,6 +67,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   private fomFiltersSvc = inject(FOMFiltersService);
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
+  private injector = inject(Injector);
 
   readonly appmap = viewChild<AppMapComponent>('appmap');
   readonly findPanel = viewChild<FindPanelComponent>('findPanel');
@@ -157,7 +158,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   private invalidateMapSize() {
-    setTimeout(() => this.appmap()?.invalidateSize(), 250);
+    // Closing the splash modal doesn't resize the map container, so the map's own
+    // ResizeObserver won't fire; refresh it once the post-close render has painted.
+    afterNextRender(() => this.appmap()?.invalidateSize(), { injector: this.injector });
   }
 
 

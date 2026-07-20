@@ -9,7 +9,7 @@ const L = (L_import as any).default || L_import;
 import { differenceWith, findIndex, funnel } from 'remeda';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { destroyMap, initMap, mapContainer } from '../utils/leaflet-host';
+import { destroyMap, initMap, mapContainer, observeMapSize } from '../utils/leaflet-host';
 import { MarkerPopupComponent } from './marker-popup/marker-popup.component';
 
 declare module 'leaflet' {
@@ -171,7 +171,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
       );
     });
 
-    this.fixMap();
+    this.observeMapSizing();
   }
 
   // for creating custom cluster icon
@@ -194,23 +194,11 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     });
   }
 
-  // to avoid timing conflict with animations (resulting in small map tile at top left of page),
-  // ensure map component is visible in the DOM then update it; otherwise wait a bit and try again
-  // ref: https://github.com/Leaflet/Leaflet/issues/4835
-  // ref: https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-  private fixMap() {
-    if (!this.elementRef.nativeElement.offsetParent) {
-      setTimeout(this.fixMap.bind(this), 50);
-      return;
-    }
+  private observeMapSizing() {
+    this.resizeObserver = observeMapSize(this.map, () => this.applyInitialView());
+  }
 
-    this.resizeObserver = new ResizeObserver(() => this.map?.invalidateSize());
-    this.resizeObserver.observe(this.map.getContainer());
-    this.map.invalidateSize();
-    // ponytail: ResizeObserver only fires on size changes; one delayed refresh covers
-    // same-sized containers that paint a frame late (splash overlay, flex layout settle)
-    window.setTimeout(() => this.map?.invalidateSize(), 250);
-
+  private applyInitialView() {
     const lat = this.urlService.getQueryParam('lat');
     const lng = this.urlService.getQueryParam('lng');
     const zoom = this.urlService.getQueryParam('zoom');

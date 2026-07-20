@@ -81,8 +81,8 @@ describe('AppMapComponent', () => {
     });
   });
 
-  describe('fixMap resize handling', () => {
-    it('invalidates map size on init and on every container resize, and disconnects on destroy', () => {
+  describe('map sizing (ResizeObserver)', () => {
+    it('invalidates map size on every container resize callback, and disconnects on destroy', () => {
       const invalidateSize = jest.fn();
       const container = document.createElement('div');
       (component as any).map = {
@@ -107,12 +107,18 @@ describe('AppMapComponent', () => {
         return { observe, disconnect };
       });
 
-      (component as any).fixMap();
+      (component as any).observeMapSizing();
 
+      // Observer is attached to the map container; invalidateSize is now driven entirely
+      // by the observer callback (initial layout + every subsequent resize), not by a
+      // synchronous call.
       expect(observe).toHaveBeenCalledWith(container);
+      expect(invalidateSize).toHaveBeenCalledTimes(0);
+
+      resizeCb(); // initial layout callback
       expect(invalidateSize).toHaveBeenCalledTimes(1);
 
-      resizeCb(); // simulate the container settling to its real size
+      resizeCb(); // a later container resize
       expect(invalidateSize).toHaveBeenCalledTimes(2);
 
       component.ngOnDestroy();

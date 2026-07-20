@@ -33,6 +33,7 @@ import { takeUntil } from 'rxjs/operators';
 export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   private elementRef = inject(ElementRef);
   private fss = inject(FeatureSelectService);
+  private resizeObserver: ResizeObserver | null = null;
 
 
   readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[]>(undefined);
@@ -84,7 +85,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
     this.addZoomControl();
     this.addResetViewControl();
     this.addFeatures();
-    this.fixMap();
+    this.observeMapSizing();
   }
 
   public createBasicMap() {
@@ -192,16 +193,26 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
     this.projectFeatures.addLayer(this.lastLabelMarker);
   }
 
-  // to avoid timing conflict with animations (resulting in small map tile at top left of page),
-  // ensure map component is visible in the DOM then update it; otherwise wait a bit and try again
+  // Keep the map sized to its container via a single ResizeObserver (initial layout +
+  // every later resize), replacing the former 50ms offsetParent poll. The one-time
+  // fitBounds runs on the first callback where the container is actually visible.
   // ref: https://github.com/Leaflet/Leaflet/issues/4835
-  // ref: https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-  private fixMap() {
-    if (this.elementRef.nativeElement.offsetParent) {
-      this.fitBounds();
-    } else {
-      setTimeout(this.fixMap.bind(this), 50);
-    }
+  private observeMapSizing() {
+    let didFit = false;
+    this.resizeObserver = new ResizeObserver((entries) => {
+      if (!this.map) {
+        return;
+      }
+      this.map.invalidateSize();
+      // Gate the one-time fitBounds on the observed map container actually having a size
+      // (not the component host element, which can be zero-width even when the map is sized).
+      const width = entries?.[0]?.contentRect.width ?? 0;
+      if (!didFit && width > 0) {
+        didFit = true;
+        this.fitBounds();
+      }
+    });
+    this.resizeObserver.observe(this.map.getContainer());
   }
 
   private fitBounds() {
@@ -214,6 +225,9 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public resetMap() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+
     if (this.map) {
       this.map.remove();
     }
