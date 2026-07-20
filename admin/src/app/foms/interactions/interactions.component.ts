@@ -1,7 +1,7 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InteractionResponse, InteractionService, ProjectResponse, WorkflowStateEnum } from '@api-client';
 import { User } from "@utility/security/user";
@@ -39,6 +39,7 @@ export class InteractionsComponent implements OnInit, OnDestroy {
   private cognitoService = inject(CognitoService);
   private modalSvc = inject(ModalService);
   private cdr = inject(ChangeDetectorRef);
+  private injector = inject(Injector);
 
 
   readonly interactionDetailForm = viewChild<InteractionDetailComponent>('interactionDetailForm');
@@ -98,10 +99,13 @@ export class InteractionsComponent implements OnInit, OnDestroy {
     }
     this.setMinDate();
     if (pos) {
-      // !! important to wait or will not see the effect.
-      setTimeout(() => {
-        this.interactionListScrollContainer().nativeElement.scrollTop = pos;
-      }, 150);
+      // Restore the list scroll position after the selection re-render lands in the DOM.
+      afterNextRender(() => {
+        const container = this.interactionListScrollContainer();
+        if (container) {
+          container.nativeElement.scrollTop = pos;
+        }
+      }, { injector: this.injector });
     }
   }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject, firstValueFrom } from 'rxjs';
 
@@ -45,6 +45,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   private cognitoService = inject(CognitoService);
   private modalSvc = inject(ModalService);
   private cdr = inject(ChangeDetectorRef);
+  private injector = inject(Injector);
 
 
   public readonly commentListScrollContainer = viewChild.required('commentListScrollContainer', { read: ElementRef });
@@ -137,10 +138,10 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   onReviewItemClicked(item: PublicCommentAdminResponse, pos: number) {
     this.selectedItem = item;
     if (pos) {
-      // !! important to wait or will not see the effect.
-      setTimeout(() => {
+      // Restore the list scroll position after the selection re-render lands in the DOM.
+      afterNextRender(() => {
         this.commentListScrollContainer().nativeElement.scrollTop = pos;
-      }, 150);
+      }, { injector: this.injector });
     }
   }
 
