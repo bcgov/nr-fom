@@ -2,6 +2,10 @@
 volumes:
   npm-cache:
   root-node-modules:
+  db-data:
+  admin-angular:
+  public-angular:
+  api-dist:
 
 services:
   # Single hoisted workspace install into a shared node_modules volume.
@@ -41,7 +45,7 @@ services:
       - npm-cache:/root/.npm:z
       - root-node-modules:/app/node_modules
       # Keep the Angular build cache in the container (avoids root-owned .angular on the host)
-      - /app/admin/.angular
+      - admin-angular:/app/admin/.angular
     working_dir: /app
 
   api:
@@ -81,7 +85,7 @@ services:
       - npm-cache:/root/.npm:z
       - root-node-modules:/app/node_modules
       # Keep nest build output inside the container (avoids root-owned api/dist on the host)
-      - /app/api/dist
+      - api-dist:/app/api/dist
     working_dir: /app
 
   db:
@@ -103,6 +107,9 @@ services:
       timeout: 5s
     ports:
       - 5432:5432
+    volumes:
+      # PG18 image declares VOLUME /var/lib/postgresql (PGDATA=/var/lib/postgresql/18/docker)
+      - db-data:/var/lib/postgresql
 
   public:
     container_name: public
@@ -129,5 +136,5 @@ services:
       - npm-cache:/root/.npm:z
       - root-node-modules:/app/node_modules
       # Keep the Angular build cache in the container (avoids root-owned .angular on the host)
-      - /app/public/.angular
+      - public-angular:/app/public/.angular
     working_dir: /app
