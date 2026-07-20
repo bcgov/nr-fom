@@ -2,7 +2,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
+import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading } from '@angular/router';
 import { ApiModule, Configuration } from '@api-client';
 import { errorInterceptor } from '@public-core/interceptors/http-error.interceptor';
 import { retrieveApiBasePath } from '@utility/services/config.service';
@@ -27,7 +27,12 @@ const coreProviders = [
 ]
 
 const routesProviders = [
-    provideRouter(AppRoutes)
+    provideRouter(
+        AppRoutes,
+        withComponentInputBinding(),
+        withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
+        withPreloading(PreloadAllModules)
+    )
 ]
 
 // Bootstrap standalone root AppComponent.

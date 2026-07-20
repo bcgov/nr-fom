@@ -4,7 +4,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router';
+import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading } from '@angular/router';
 import { ApiModule, Configuration } from '@api-client';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
@@ -21,7 +21,12 @@ const apiConfig = new Configuration({
 })
 
 const routesProviders = [
-    provideRouter(AppRoutes)
+    provideRouter(
+        AppRoutes,
+        withComponentInputBinding(),
+        withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
+        withPreloading(PreloadAllModules)
+    )
 ]
 
 const coreProviders = [

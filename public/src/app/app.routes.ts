@@ -1,9 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { AboutComponent } from './about/about.component';
 import { ApplicationsProxyComponent } from './applications-proxy.component';
-import { ProjectsComponent } from './applications/projects.component';
-import { ContactComponent } from './contact/contact.component';
 import { HomeProxyComponent } from './home-proxy.component';
 
 export const AppRoutes: Routes = [
@@ -14,15 +11,15 @@ export const AppRoutes: Routes = [
   },
   {
     path: 'about',
-    component: AboutComponent
+    loadComponent: () => import('./about/about.component').then(m => m.AboutComponent)
   },
   {
     path: 'contact',
-    component: ContactComponent
+    loadComponent: () => import('./contact/contact.component').then(m => m.ContactComponent)
   },
   {
     path: 'projects',
-    component: ProjectsComponent
+    loadComponent: () => import('./applications/projects.component').then(m => m.ProjectsComponent)
   },
   {
     // redirect from legacy route to new route
