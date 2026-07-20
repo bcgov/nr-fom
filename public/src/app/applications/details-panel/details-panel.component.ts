@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnDestroy, OnInit, ViewChild, inject, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -50,7 +50,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   private fss = inject(FeatureSelectService);
   private cdr = inject(ChangeDetectorRef);
 
-  @Output() update = new EventEmitter();
+  readonly update = output<ProjectResponse>();
   @ViewChild('panelScrollContainer')
   public panelScrollContainer: ElementRef;
 

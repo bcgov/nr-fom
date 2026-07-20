@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, OnInit, Output, input } from '@angular/core';
+import { Component, OnInit, input, output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatError, MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
@@ -43,7 +43,7 @@ export class UploadBoxComponent implements OnInit {
     'application/vnd.ms-excel',
 ]);
 
-  @Output() emitFile = new EventEmitter<File | null>();
+  readonly emitFile = output<File | null>();
 
   readonly BYTES_PER_MB = 1048576;
   maxFileSize = 10 * this.BYTES_PER_MB; // bytes - default to max 10mb (set from global config)

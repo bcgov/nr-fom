@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output, input } from '@angular/core';
+import { Component, OnInit, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
@@ -23,8 +23,7 @@ export class PublicNoticesFilterPanelComponent implements OnInit {
 
   readonly districtList = input<string[] | undefined>(undefined);
   
-  @Output() 
-  filterPublicNoticesEvt = new EventEmitter<NoticeFilter>();
+  readonly filterPublicNoticesEvt = output<NoticeFilter>();
 
   ngOnInit(): void {
     this.filter = new NoticeFilter();

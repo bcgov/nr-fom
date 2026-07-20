@@ -1,4 +1,4 @@
-import { AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, EventEmitter, Injector, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, inject, input } from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, Injector, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input, output } from '@angular/core';
 import { ProjectPlanCodeEnum, ProjectPublicSummaryResponse } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
 import { UrlService } from '@public-core/services/url.service';
@@ -41,7 +41,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   private mapLayersService = inject(MapLayersService);
 
   readonly loading = input<boolean | undefined>(undefined); // from projects component
-  @Output() updateCoordinates = new EventEmitter(); // to applications component
+  readonly updateCoordinates = output(); // to applications component
   readonly projectsSummary = input<Array<ProjectPublicSummaryResponse> | undefined>(undefined); // from projects component
 
   private map: L.Map = null;
