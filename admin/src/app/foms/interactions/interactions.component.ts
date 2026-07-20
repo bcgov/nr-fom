@@ -1,7 +1,7 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InteractionResponse, InteractionService, ProjectResponse, WorkflowStateEnum } from '@api-client';
 import { User } from "@utility/security/user";
@@ -41,10 +41,8 @@ export class InteractionsComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
 
-  @ViewChild('interactionDetailForm') 
-  interactionDetailForm: InteractionDetailComponent;
-  @ViewChild('interactionListScrollContainer', {read: ElementRef})
-  public interactionListScrollContainer: ElementRef;
+  readonly interactionDetailForm = viewChild<InteractionDetailComponent>('interactionDetailForm');
+  public readonly interactionListScrollContainer = viewChild('interactionListScrollContainer', { read: ElementRef });
   
   projectId: number;
   project: ProjectResponse;
@@ -93,13 +91,16 @@ export class InteractionsComponent implements OnInit, OnDestroy {
 
   onInteractionItemClicked(item: InteractionResponse, pos: number) {
     this.selectedItem = item;
-    this.interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
-    this.interactionDetailForm.selectedInteraction = item;
+    const interactionDetailForm = this.interactionDetailForm();
+    if (interactionDetailForm) {
+      interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
+      interactionDetailForm.selectedInteraction = item;
+    }
     this.setMinDate();
     if (pos) {
       // !! important to wait or will not see the effect.
       setTimeout(() => {
-        this.interactionListScrollContainer.nativeElement.scrollTop = pos;
+        this.interactionListScrollContainer().nativeElement.scrollTop = pos;
       }, 150);
     }
   }
@@ -115,13 +116,19 @@ export class InteractionsComponent implements OnInit, OnDestroy {
 
   addEmptyInteractionDetail() {
     this.selectedItem = null;
-    this.interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
-    this.interactionDetailForm.selectedInteraction = {} as InteractionResponse;
+    const interactionDetailForm = this.interactionDetailForm();
+    if (interactionDetailForm) {
+      interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
+      interactionDetailForm.selectedInteraction = {} as InteractionResponse;
+    }
     this.setMinDate();
   }
 
   setMinDate() {
-    this.interactionDetailForm.minDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
+    const interactionDetailForm = this.interactionDetailForm();
+    if (interactionDetailForm) {
+      interactionDetailForm.minDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
+    }
   }
 
   async saveInteraction(saveReq: InteractionRequest, selectedInteraction: InteractionResponse) {
@@ -177,7 +184,7 @@ export class InteractionsComponent implements OnInit, OnDestroy {
   }
 
   private handleSaveSuccess(result: any) {
-    const pos = this.interactionListScrollContainer.nativeElement.scrollTop;
+    const pos = this.interactionListScrollContainer().nativeElement.scrollTop;
     this.interactionSaved$.next();
     this.selectedItem = result; // updated selected.
     this.loading = false;

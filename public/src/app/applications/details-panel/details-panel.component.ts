@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnDestroy, OnInit, ViewChild, inject, output } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnDestroy, OnInit, inject, output, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -51,8 +51,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   readonly update = output<ProjectResponse>();
-  @ViewChild('panelScrollContainer')
-  public panelScrollContainer: ElementRef;
+  public readonly panelScrollContainer = viewChild<ElementRef>('panelScrollContainer');
 
   private destroyRef = inject(DestroyRef);
   public addCommentModal: NgbModalRef = null;
@@ -196,7 +195,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
       .subscribe(featureIndex => {
         if (featureIndex) {
           setTimeout(() => {
-            this.panelScrollContainer.nativeElement.scrollTop = 100;
+            this.panelScrollContainer().nativeElement.scrollTop = 100;
           }, 500); // Delay scroll to top timing for seeing highted row for user experience.
         }
       });

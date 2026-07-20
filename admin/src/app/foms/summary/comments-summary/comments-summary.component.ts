@@ -1,5 +1,5 @@
 import { StateService } from '@admin-core/services/state.service';
-import { Component, OnInit, ViewChild, computed, inject, input } from '@angular/core';
+import { Component, OnInit, computed, inject, input, viewChild } from '@angular/core';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { PublicCommentAdminResponse, ResponseCodeEnum } from '@api-client';
 import { indexBy } from 'remeda';
@@ -65,8 +65,7 @@ export class CommentsSummaryComponent implements OnInit {
   readonly irrelevantPcs = computed(() => this.categorized().irrelevant);
   readonly noResponsePcs = computed(() => this.categorized().noResponse);
 
-  @ViewChild(MatAccordion)
-  accordion: MatAccordion;
+  readonly accordion = viewChild(MatAccordion);
 
   ngOnInit(): void {
     // Deliberately empty

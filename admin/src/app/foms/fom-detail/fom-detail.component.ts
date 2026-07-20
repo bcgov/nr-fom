@@ -1,7 +1,7 @@
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AttachmentResponse, ProjectMetricsResponse, ProjectPlanCodeEnum, ProjectResponse, ProjectService, ProjectWorkflowStateChangeRequest, SpatialFeaturePublicResponse, WorkflowStateEnum } from "@api-client";
 import { NgbModal, NgbModalRef, NgbModule, NgbNav } from '@ng-bootstrap/ng-bootstrap';
@@ -44,8 +44,7 @@ export class FomDetailComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
-  @ViewChild('scrollContainer')
-  public scrollContainer: ElementRef;
+  public readonly scrollContainer = viewChild<ElementRef>('scrollContainer');
   
   public changeEndDateModal : NgbModalRef = null;
   public isPublishing = false;
@@ -387,7 +386,7 @@ export class FomDetailComponent implements OnInit, OnDestroy {
       .subscribe(featureIndex => {
         if (featureIndex) {
           setTimeout(() => {
-            this.scrollContainer.nativeElement.scrollTop = 200;
+            this.scrollContainer().nativeElement.scrollTop = 200;
           }, 500); // Delay scroll to top timing for seeing highted row for user experience.
         }
       });

@@ -31,8 +31,8 @@
         @if (pNotices.length > 0) {
           <section>
             <div class="expansion-button">
-              <button class="btn btn-primary btn-sm" (click)="accordion.openAll()">Expand</button>
-              <button class="btn btn-light btn-sm" (click)="accordion.closeAll()">Collapse</button>
+              <button class="btn btn-primary btn-sm" (click)="accordion().openAll()">Expand</button>
+              <button class="btn btn-light btn-sm" (click)="accordion().closeAll()">Collapse</button>
             </div>
             <mat-accordion multi>
               <!-- Public Notices Summary List-->

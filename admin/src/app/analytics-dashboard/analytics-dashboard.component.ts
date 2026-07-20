@@ -1,6 +1,6 @@
 import { ANALYTICS_DATA_DEFAULT_SIZE, DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, Component, OnInit, signal, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, OnInit, signal, inject, viewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -61,11 +61,11 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   maxDate: Date = new Date(); // today
   
   // chart Angular views
-  @ViewChild("commentsByResponseCodeChart") commentsByResponseCodeChart!: ChartComponent;
-  @ViewChild("topCommentedProjectsChart") topCommentedProjectsChart!: ChartComponent;
-  @ViewChild("fomsCountByDistrictChart") fomsCountByDistrictChart!: ChartComponent;
-  @ViewChild("commentsByDistrictChart") commentsByDistrictChart!: ChartComponent;
-  @ViewChild("fomsCountByForestClientChart") fomsCountByForestClientChart!: ChartComponent;
+  readonly commentsByResponseCodeChart = viewChild.required<ChartComponent>("commentsByResponseCodeChart");
+  readonly topCommentedProjectsChart = viewChild.required<ChartComponent>("topCommentedProjectsChart");
+  readonly fomsCountByDistrictChart = viewChild.required<ChartComponent>("fomsCountByDistrictChart");
+  readonly commentsByDistrictChart = viewChild.required<ChartComponent>("commentsByDistrictChart");
+  readonly fomsCountByForestClientChart = viewChild.required<ChartComponent>("fomsCountByForestClientChart");
 
   // chart options
   commentsByResponseCodeChartOptions: Partial<ChartOptions>;
@@ -165,7 +165,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   applyCommentsByResponseCodeChartOptions() {
     const apiData = this.analyticsData().commentCountByResponseCode;
     if (apiData && !(apiData instanceof ApiError)) {
-      this.commentsByResponseCodeChart.updateOptions({
+      this.commentsByResponseCodeChart().updateOptions({
         series: [{
           name: this.commentsByResponseCodeChartOptions.series[0].name,
           data: [
@@ -186,7 +186,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const apiData = this.analyticsData().topCommentedProjects;
     if (apiData && !(apiData instanceof ApiError)) {
       const data = apiData.map(item => item.publicCommentCount);
-      this.topCommentedProjectsChart.updateOptions({
+      this.topCommentedProjectsChart().updateOptions({
         series: [{
           name: this.topCommentedProjectsChartOptions.series[0].name,
           data: data
@@ -209,7 +209,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const apiData = this.analyticsData().nonInitialPublishedProjectCountByDistrict;
     if (apiData && !(apiData instanceof ApiError)) {
       const data = apiData.map(item => item.projectCount);
-      this.fomsCountByDistrictChart.updateOptions({
+      this.fomsCountByDistrictChart().updateOptions({
         series: [{
           name: this.fomsCountByDistrictChartOptions.series[0].name,
           data: data
@@ -283,7 +283,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
       const maxValue = maxxAxis(allValues);
 
       // Update chart
-      this.commentsByDistrictChart.updateOptions({
+      this.commentsByDistrictChart().updateOptions({
         series: series,
         xaxis: {
           categories: filteredData.map(item => item.districtName + "\u00A0\u00A0"),
@@ -312,7 +312,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
       const data = apiData
         .slice(0, slice)
         .map(item => item.projectCount);
-      this.fomsCountByForestClientChart.updateOptions({
+      this.fomsCountByForestClientChart().updateOptions({
         series: [{
           name: this.fomsCountByForestClientChartOptions.series[0].name,
           data: data

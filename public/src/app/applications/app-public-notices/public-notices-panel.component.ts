@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewChild, inject, output } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, output, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
@@ -34,7 +34,7 @@ export class PublicNoticesPanelComponent implements OnInit {
   private changeDetectorRef = inject(ChangeDetectorRef);
 
   readonly update = output<IUpdateEvent>();
-  @ViewChild(MatAccordion) accordion: MatAccordion;
+  readonly accordion = viewChild(MatAccordion);
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly periodOperationsTxt = periodOperationsTxt;
   readonly woodlotOperationsTxt = woodlotOperationsTxt;

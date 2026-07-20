@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject, firstValueFrom } from 'rxjs';
 
@@ -47,10 +47,8 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
 
-  @ViewChild('commentListScrollContainer', { read: ElementRef })
-  public commentListScrollContainer!: ElementRef;
-  @ViewChild('commentDetailForm') 
-  commentDetailForm!: CommentDetailComponent;
+  public readonly commentListScrollContainer = viewChild.required('commentListScrollContainer', { read: ElementRef });
+  readonly commentDetailForm = viewChild.required<CommentDetailComponent>('commentDetailForm');
 
   public responseCodes = this.stateSvc.getCodeTable('responseCode')
   public commentScopeCodes = indexBy(this.stateSvc.getCodeTable('commentScopeCode'), (x) => x.code);
@@ -81,8 +79,9 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    if (this.commentListScrollContainer && this.commentListScrollContainer.nativeElement) {
-      this.commentListScrollContainer.nativeElement.scrollTop = 0;
+    const commentListScrollContainer = this.commentListScrollContainer();
+    if (commentListScrollContainer && commentListScrollContainer.nativeElement) {
+      commentListScrollContainer.nativeElement.scrollTop = 0;
     }
     
     this.projectId = this.route.snapshot.params.appId;
@@ -140,7 +139,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     if (pos) {
       // !! important to wait or will not see the effect.
       setTimeout(() => {
-        this.commentListScrollContainer.nativeElement.scrollTop = pos;
+        this.commentListScrollContainer().nativeElement.scrollTop = pos;
       }, 150);
     }
   }
@@ -162,7 +161,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       const result = await firstValueFrom(this.commentSvc.publicCommentControllerUpdate(id, update));
 
       // scroll position, important to get it first!!
-      const pos = this.commentListScrollContainer.nativeElement.scrollTop;
+      const pos = this.commentListScrollContainer().nativeElement.scrollTop;
 
       // Comment is saved successfully, so triggering service to retrieve comment list 
       // from backend for consistent state of the list at frontend.

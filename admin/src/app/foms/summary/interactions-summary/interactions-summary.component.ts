@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, computed, inject, input } from '@angular/core';
+import { Component, OnInit, computed, inject, input, viewChild } from '@angular/core';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { InteractionResponse } from '@api-client';
 import { ConfigService } from '@utility/services/config.service';
@@ -35,8 +35,7 @@ export class InteractionsSummaryComponent implements OnInit {
 
   readonly requestError = input<boolean | undefined>(undefined);
 
-  @ViewChild(MatAccordion)
-  accordion: MatAccordion;
+  readonly accordion = viewChild(MatAccordion);
 
   ngOnInit(): void {
     // Deliberately empty

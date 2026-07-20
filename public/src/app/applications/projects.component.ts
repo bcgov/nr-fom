@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
@@ -68,10 +68,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
 
-  @ViewChild('appmap', { static: false }) appmap: AppMapComponent;
-  @ViewChild('findPanel', { static: false }) findPanel: FindPanelComponent;
-  @ViewChild('detailsPanel', { static: false }) detailsPanel: DetailsPanelComponent;
-  @ViewChild('publicNoticesPanel', { static: false }) publicNoticesPanel: PublicNoticesPanelComponent;
+  readonly appmap = viewChild<AppMapComponent>('appmap');
+  readonly findPanel = viewChild<FindPanelComponent>('findPanel');
+  readonly detailsPanel = viewChild<DetailsPanelComponent>('detailsPanel');
+  readonly publicNoticesPanel = viewChild<PublicNoticesPanelComponent>('publicNoticesPanel');
 
   private splashModal: NgbModalRef = null;
   private fragmentTimeout: any;
@@ -157,7 +157,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   private invalidateMapSize() {
-    setTimeout(() => this.appmap?.invalidateSize(), 250);
+    setTimeout(() => this.appmap()?.invalidateSize(), 250);
   }
 
 
@@ -227,16 +227,17 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    */
   public handleFindUpdate(updateEvent: IUpdateEvent) {
 
+    const appmap = this.appmap();
     if (updateEvent.search) {
-      this.detailsPanel.clearAllFilters();
+      this.detailsPanel().clearAllFilters();
 
-      if (this.appmap) {
-        this.appmap.unhighlightApplications();
+      if (appmap) {
+        appmap.unhighlightApplications();
       }
     }
 
     if (updateEvent.resetMap) {
-      this.appmap.resetView(false);
+      appmap.resetView(false);
     }
 
     if (updateEvent.hidePanel) {
