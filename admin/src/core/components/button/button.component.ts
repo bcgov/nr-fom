@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, booleanAttribute, inject, input } from '@angular/core';
 import { StateService } from '@admin-core/services/state.service';
 
 @Component({
@@ -7,14 +7,14 @@ import { StateService } from '@admin-core/services/state.service';
         <div class="btn-container">
 
    <button
-            [disabled]="disabled"
+            [disabled]="disabled()"
             class="btn btn-primary ms-1"
             type="button"
           >
             <i class="spinner rotating" [hidden]="!stateSvc.loading"></i>
             <ng-content />
           </button>
-          <span title="{{title}}"></span>
+          <span title="{{title()}}"></span>
 
         </div>
 
@@ -24,7 +24,7 @@ import { StateService } from '@admin-core/services/state.service';
 export class ButtonComponent {
   stateSvc = inject(StateService);
 
-  @Input() title: string;
-  @Input() disabled: boolean;
+  readonly title = input('');
+  readonly disabled = input(false, { transform: booleanAttribute });
 
 }

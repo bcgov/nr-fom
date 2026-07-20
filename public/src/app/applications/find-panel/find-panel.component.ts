@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { COMMENT_STATUS_FILTER_PARAMS, FOMFiltersService, FOM_FILTER_NAME } from '@public-core/services/fomFilters.service';
 import { UrlService } from '@public-core/services/url.service';
@@ -32,7 +32,7 @@ export class FindPanelComponent implements OnDestroy, OnInit {
   private fomFiltersSvc = inject(FOMFiltersService);
 
   @Output() update = new EventEmitter<IUpdateEvent>();
-  @Input() loading: boolean; // from projects component
+  readonly loading = input<boolean | undefined>(undefined); // from projects component
   
   public filterHash: string;
   private ngUnsubscribe: Subject<void> = new Subject<void>();

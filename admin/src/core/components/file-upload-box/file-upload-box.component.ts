@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, input } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatError, MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
@@ -26,8 +26,8 @@ import { MatDropzone } from '@ngx-dropzone/material';
     styleUrl: './file-upload-box.component.scss'
 })
 export class UploadBoxComponent implements OnInit {
-  @Input() maxFileSizeMB: number;
-  @Input() fileTypes: string[] = [
+  readonly maxFileSizeMB = input<number>(undefined);
+  readonly fileTypes = input<string[]>([
     'image/png',
     'image/jpeg',
     'image/tiff',
@@ -41,7 +41,7 @@ export class UploadBoxComponent implements OnInit {
     'application/msword',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
-  ];
+]);
 
   @Output() emitFile = new EventEmitter<File | null>();
 
@@ -58,9 +58,10 @@ export class UploadBoxComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.maxFileSize = this.maxFileSizeMB ? this.maxFileSizeMB * this.BYTES_PER_MB : this.maxFileSize;
+    const maxFileSizeMB = this.maxFileSizeMB();
+    this.maxFileSize = maxFileSizeMB ? maxFileSizeMB * this.BYTES_PER_MB : this.maxFileSize;
     this.validators = [
-      FileInputValidators.accept(this.fileTypes.join(',')), // file type validation
+      FileInputValidators.accept(this.fileTypes().join(',')), // file type validation
       FileInputValidators.maxSize(this.maxFileSize) // file size validation
     ];
     this.fileCtrl.setValidators(this.validators);

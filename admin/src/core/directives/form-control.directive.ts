@@ -1,28 +1,23 @@
-import { Directive, HostBinding, Input } from '@angular/core';
+import { Directive, HostBinding, input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 
 @Directive({
     selector: '[appFormControl]',
 })
 export class AppFormControlDirective {
-  private _fc: AbstractControl;
+  // Bound as `[appFormControl]="fg.get('x')"`, and `AbstractControl.get()` can return null,
+  // so the value is nullable even though the binding is always present.
+  readonly appFormControl = input.required<AbstractControl | null>();
 
   @HostBinding( 'class.is-invalid' )
   get isInvalid() {
-    return this._fc.touched && this._fc.invalid;
+    const fc = this.appFormControl();
+    return !!fc && fc.touched && fc.invalid;
   }
 
   @HostBinding( 'class.invalid' )
   get invalid() {
-    return this._fc.touched && this._fc.invalid;
+    const fc = this.appFormControl();
+    return !!fc && fc.touched && fc.invalid;
   }
-  @Input() set appFormControl( fc: AbstractControl ) {
-
-    this._fc = fc;
-  }
-
-  constructor() { 
-    // Deliberately empty
-  }
-
 }

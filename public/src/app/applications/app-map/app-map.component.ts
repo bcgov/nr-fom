@@ -1,4 +1,4 @@
-import { AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, EventEmitter, Injector, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, inject } from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, EventEmitter, Injector, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, inject, input } from '@angular/core';
 import { ProjectPlanCodeEnum, ProjectPublicSummaryResponse } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
 import { UrlService } from '@public-core/services/url.service';
@@ -40,9 +40,9 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   private injector = inject(Injector);
   private mapLayersService = inject(MapLayersService);
 
-  @Input() loading: boolean; // from projects component
+  readonly loading = input<boolean | undefined>(undefined); // from projects component
   @Output() updateCoordinates = new EventEmitter(); // to applications component
-  @Input() projectsSummary: Array<ProjectPublicSummaryResponse>; // from projects component
+  readonly projectsSummary = input<Array<ProjectPublicSummaryResponse> | undefined>(undefined); // from projects component
 
   private map: L.Map = null;
   private markerList: L.Marker[] = []; // list of markers
@@ -254,7 +254,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     this.markerList = []; // empty the list
 
     // draw all new apps
-    this.drawMap([], this.projectsSummary);
+    this.drawMap([], this.projectsSummary());
   }
 
   public invalidateSize() {

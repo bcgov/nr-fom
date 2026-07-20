@@ -53,7 +53,7 @@
               [(ngModel)]="filter.districtName.value"
               >
               <option [ngValue]="null" selected></option> <!-- use [ngValue], not [value] so model can get a undefined value -->
-              @for (district of districtList; track district) {
+              @for (district of districtList(); track district) {
                 <option
                   [value]="district"
                   [selected]="district === filter.districtName.value">

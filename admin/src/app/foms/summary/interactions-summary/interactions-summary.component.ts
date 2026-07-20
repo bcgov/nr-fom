@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, computed, inject, input } from '@angular/core';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { InteractionResponse } from '@api-client';
 import { ConfigService } from '@utility/services/config.service';
@@ -30,20 +30,16 @@ export class InteractionsSummaryComponent implements OnInit {
   attachmentResolverSvc = inject(AttachmentResolverSvc);
 
 
-  interactions: InteractionResponse[] = [];
+  readonly interactionDetails = input<InteractionResponse[]>();
+  readonly interactions = computed(() => this.interactionDetails() ?? []);
 
-  @Input() 
-  requestError: boolean
-  
-  @ViewChild(MatAccordion) 
+  readonly requestError = input<boolean | undefined>(undefined);
+
+  @ViewChild(MatAccordion)
   accordion: MatAccordion;
 
   ngOnInit(): void {
     // Deliberately empty
-  }
-
-  @Input() set interactionDetails(interactions: InteractionResponse[]) {
-    this.interactions = interactions;
   }
 
 }

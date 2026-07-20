@@ -8,20 +8,20 @@
   </div>
 </div>
 <mat-accordion multi>
-  <mat-expansion-panel hideToggle [disabled]="requestError">
+  <mat-expansion-panel hideToggle [disabled]="requestError()">
     <mat-expansion-panel-header>
       <mat-panel-title>
         Stakeholder Engagements
       </mat-panel-title>
       <mat-panel-description>
-        <span [ngStyle]="requestError && {'color': 'red'}">
-          {{requestError? 'Request encountered error. Please try later.': ''}}
+        <span [ngStyle]="requestError() && {'color': 'red'}">
+          {{requestError()? 'Request encountered error. Please try later.': ''}}
         </span>
       </mat-panel-description>
-      <mat-icon matBadge="{{interactions?.length}}" matBadgePosition="above before"
+      <mat-icon matBadge="{{interactions().length}}" matBadgePosition="above before"
       matBadgeColor="accent" matBadgeSize="small">reply</mat-icon>
     </mat-expansion-panel-header>
-    @for (interaction of interactions; track interaction) {
+    @for (interaction of interactions(); track interaction) {
       <mat-card appearance="outlined">
         <mat-card-content>
           <ng-container [ngTemplateOutlet]="comment_fields_template"

@@ -1,6 +1,6 @@
 <!-- MAP THUMBNAIL -->
 <div class="map-thumbnail">
-  @if (!projectSpatialDetail || projectSpatialDetail.length === 0) {
+  @if (!projectSpatialDetail() || projectSpatialDetail().length === 0) {
     <div class="map-thumbnail__no-results">
       <span class="no-results-msg">No map available</span>
     </div>

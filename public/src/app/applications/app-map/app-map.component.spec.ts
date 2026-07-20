@@ -122,14 +122,14 @@ describe('AppMapComponent', () => {
 
   describe('input properties', () => {
     it('should accept loading input', () => {
-      component.loading = true;
-      expect(component.loading).toBe(true);
+      fixture.componentRef.setInput('loading', true);
+      expect(component.loading()).toBe(true);
     });
 
     it('should accept projectsSummary input', () => {
       const summary = [{ id: 1, name: 'Project 1' }] as any;
-      component.projectsSummary = summary;
-      expect(component.projectsSummary).toBe(summary);
+      fixture.componentRef.setInput('projectsSummary', summary);
+      expect(component.projectsSummary()).toBe(summary);
     });
   });
 });

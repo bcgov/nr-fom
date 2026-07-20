@@ -73,19 +73,19 @@
               <br/>
               <div class="form-btns">
                 <button class="btn btn-primary gtm-apply-filters find-btn-lg-device" type="button" title="Apply filters"
-                  [disabled]="loading"
+                  [disabled]="loading()"
                   (click)="applyAllFilters()">
                   Find
-                  <em class="spinner-border" [hidden]="!loading"></em>
+                  <em class="spinner-border" [hidden]="!loading()"></em>
                 </button>
                 <button class="btn btn-primary gtm-apply-filters find-btn-sm-device" type="button" title="Apply filters"
-                  [disabled]="loading"
+                  [disabled]="loading()"
                   (click)="applyAllFiltersMobile()">
                   Find
-                  <em class="spinner-border" [hidden]="!loading"></em>
+                  <em class="spinner-border" [hidden]="!loading()"></em>
                 </button>
                 <button class="btn btn-light" type="button" title="Clear filters"
-                  [disabled]="loading"
+                  [disabled]="loading()"
                   (click)="clear()">
                   Clear
                 </button>

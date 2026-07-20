@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, inject } from '@angular/core';
+import { Component, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input } from '@angular/core';
 import { SpatialFeaturePublicResponse, SubmissionTypeCodeEnum } from '@api-client';
 import { MapLayers } from '@utility/models/map-layers';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
@@ -35,8 +35,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   private fss = inject(FeatureSelectService);
 
 
-  @Input() 
-  projectSpatialDetail: SpatialFeaturePublicResponse[];
+  readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[]>(undefined);
   
   public map: L.Map;
   public projectFeatures: L.FeatureGroup; // group of layers for the features of a FOM project.
@@ -134,7 +133,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
   public addFeatures() {
     if (this.map) {
-      this.projectSpatialDetail.forEach(spatialDetail => {
+      this.projectSpatialDetail().forEach(spatialDetail => {
         const layer = L.geoJSON(<GeoJsonObject>spatialDetail['geometry']);
         layer.on('click', L.Util.bind(this.onSpatialFeatureClick, this, spatialDetail));
         this.projectFeatures.addLayer(layer);

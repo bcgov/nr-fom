@@ -10,20 +10,20 @@
 </div>
 <mat-accordion multi>
   <!-- Addressed Comments Panel-->
-  <mat-expansion-panel hideToggle [disabled]="requestError">
+  <mat-expansion-panel hideToggle [disabled]="requestError()">
     <mat-expansion-panel-header>
       <mat-panel-title>
         Addressed Comments
       </mat-panel-title>
       <mat-panel-description>
-        <span [ngStyle]="requestError && {'color': 'red'}">
-          {{requestError? 'Request encountered error. Please try later.': ''}}
+        <span [ngStyle]="requestError() && {'color': 'red'}">
+          {{requestError()? 'Request encountered error. Please try later.': ''}}
         </span>
       </mat-panel-description>
-      <mat-icon matBadge="{{addressedPcs?.length}}" matBadgePosition="above before"
+      <mat-icon matBadge="{{addressedPcs().length}}" matBadgePosition="above before"
       matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
     </mat-expansion-panel-header>
-    @for (comment of addressedPcs; track comment) {
+    @for (comment of addressedPcs(); track comment) {
       <mat-card appearance="outlined">
         <mat-card-content>
           <ng-container [ngTemplateOutlet]="comment_fields_template"
@@ -34,20 +34,20 @@
   </mat-expansion-panel>
 
   <!-- Considered Comments Panel-->
-  <mat-expansion-panel hideToggle [disabled]="requestError">
+  <mat-expansion-panel hideToggle [disabled]="requestError()">
     <mat-expansion-panel-header>
       <mat-panel-title>
         Considered Comments
       </mat-panel-title>
       <mat-panel-description>
-        <span [ngStyle]="requestError && {'color': 'red'}">
-          {{requestError? 'Request encountered error. Please try later.': ''}}
+        <span [ngStyle]="requestError() && {'color': 'red'}">
+          {{requestError()? 'Request encountered error. Please try later.': ''}}
         </span>
       </mat-panel-description>
-      <mat-icon matBadge="{{consideredPcs?.length}}" matBadgePosition="above before"
+      <mat-icon matBadge="{{consideredPcs().length}}" matBadgePosition="above before"
       matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
     </mat-expansion-panel-header>
-    @for (comment of consideredPcs; track comment) {
+    @for (comment of consideredPcs(); track comment) {
       <mat-card appearance="outlined">
         <mat-card-content>
           <ng-container [ngTemplateOutlet]="comment_fields_template"
@@ -58,20 +58,20 @@
   </mat-expansion-panel>
 
   <!-- Irrelevant Comments Panel-->
-  <mat-expansion-panel hideToggle [disabled]="requestError">
+  <mat-expansion-panel hideToggle [disabled]="requestError()">
     <mat-expansion-panel-header>
       <mat-panel-title>
         Non Applicable Comments
       </mat-panel-title>
       <mat-panel-description>
-        <span [ngStyle]="requestError && {'color': 'red'}">
-          {{requestError? 'Request encountered error. Please try later.': ''}}
+        <span [ngStyle]="requestError() && {'color': 'red'}">
+          {{requestError()? 'Request encountered error. Please try later.': ''}}
         </span>
       </mat-panel-description>
-      <mat-icon matBadge="{{irrelevantPcs?.length}}" matBadgePosition="above before"
+      <mat-icon matBadge="{{irrelevantPcs().length}}" matBadgePosition="above before"
       matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
     </mat-expansion-panel-header>
-    @for (comment of irrelevantPcs; track comment) {
+    @for (comment of irrelevantPcs(); track comment) {
       <mat-card appearance="outlined">
         <mat-card-content>
           <ng-container [ngTemplateOutlet]="comment_fields_template"
@@ -82,20 +82,20 @@
   </mat-expansion-panel>
 
   <!-- No-Respons Comments Panel-->
-  <mat-expansion-panel hideToggle [disabled]="requestError">
+  <mat-expansion-panel hideToggle [disabled]="requestError()">
     <mat-expansion-panel-header>
       <mat-panel-title>
         Comments not classified
       </mat-panel-title>
       <mat-panel-description>
-        <span [ngStyle]="requestError && {'color': 'red'}">
-          {{requestError? 'Request encountered error. Please try later.': ''}}
+        <span [ngStyle]="requestError() && {'color': 'red'}">
+          {{requestError()? 'Request encountered error. Please try later.': ''}}
         </span>
       </mat-panel-description>
-      <mat-icon matBadge="{{noResponsePcs?.length}}" matBadgePosition="above before"
+      <mat-icon matBadge="{{noResponsePcs().length}}" matBadgePosition="above before"
       matBadgeColor="accent" matBadgeSize="small">comment</mat-icon>
     </mat-expansion-panel-header>
-    @for (comment of noResponsePcs; track comment) {
+    @for (comment of noResponsePcs(); track comment) {
       <mat-card appearance="outlined">
         <mat-card-content>
           <ng-container [ngTemplateOutlet]="comment_fields_template"

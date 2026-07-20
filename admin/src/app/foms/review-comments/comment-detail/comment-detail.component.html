@@ -49,7 +49,7 @@
                 name="responseCode"
                 formControlName="responseCode">
                 <option [ngValue]="null" disabled>Select a Response</option>
-                @for (code of responseCodes; track code) {
+                @for (code of responseCodes(); track code) {
                   <option
                   [ngValue]="code.code">{{code.description}}</option>
                 }

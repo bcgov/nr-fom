@@ -1,5 +1,5 @@
 import { StateService } from '@admin-core/services/state.service';
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, inject, input } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PublicCommentAdminResponse, ResponseCode } from '@api-client';
 import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
@@ -30,14 +30,14 @@ export class CommentDetailComponent {
   comment: PublicCommentAdminResponse;
   responseDetailsLimit: number = 4000;
 
-  @Input() responseCodes: ResponseCode[];
-  @Input() canReplyComment: boolean;
+  readonly responseCodes = input<ResponseCode[]>(undefined);
+  readonly canReplyComment = input<boolean>(undefined);
 
   @Input() set selectedComment(comment: PublicCommentAdminResponse) {
     this.comment = comment;
     const commentFormGroup = new CommentDetailForm(comment)
     this.commentFormGroup = this.formBuilder.formGroup(commentFormGroup) as IFormGroup<CommentDetailForm>;
-    if (!this.canReplyComment) {
+    if (!this.canReplyComment()) {
       this.commentFormGroup.disable();
     }
   }

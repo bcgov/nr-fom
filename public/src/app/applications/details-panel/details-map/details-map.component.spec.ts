@@ -59,8 +59,8 @@ describe('DetailsMapComponent', () => {
       const details = [
         { featureId: 1, featureType: { code: 'cut_block' } },
       ] as any;
-      component.projectSpatialDetail = details;
-      expect(component.projectSpatialDetail).toBe(details);
+      fixture.componentRef.setInput('projectSpatialDetail', details);
+      expect(component.projectSpatialDetail()).toBe(details);
     });
   });
 });

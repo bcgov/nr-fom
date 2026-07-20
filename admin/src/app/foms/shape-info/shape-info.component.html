@@ -3,7 +3,7 @@
 <!-- Do no remove the div 'id' as it is a selector for media query -->
 <!-- Feature details as table (normal screen) -->
 <div id="si-featureTable">
-  <mat-table [dataSource]="projectSpatialDetail" >
+  <mat-table [dataSource]="projectSpatialDetail()" >
     <!--- Note that these columns can be defined in any order.
     The actual rendered columns are set as a property on the row definition" -->
     <ng-container matColumnDef="shape_id">
@@ -58,7 +58,7 @@
 <!-- Feature details as list (small devices) -->
 <div id="sifeatureList">
   <ul class="shapefile-list">
-    @for (feature of projectSpatialDetail; track feature) {
+    @for (feature of projectSpatialDetail(); track feature) {
       <li class="shapefile-list__item"
         [ngClass]="{'highlight': selectedRowIndex == feature.featureId + '-' + feature.featureType.code}"
         (click)="onRowSelected(feature)">

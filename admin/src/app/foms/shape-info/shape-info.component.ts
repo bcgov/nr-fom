@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, input } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { SpatialFeaturePublicResponse } from '@api-client';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
@@ -19,8 +19,7 @@ export class ShapeInfoComponent implements OnInit {
   displayedColumns: string[] = ['shape_id', 'type', 'name', 'submission_type', 'area_length', 'development_date'];
   selectedRowIndex: string = null;
 
-  @Input('spatialDetail')
-  projectSpatialDetail: SpatialFeaturePublicResponse[];
+  readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[]>(undefined, { alias: "spatialDetail" });
 
   ngOnInit(): void {
     // Deliberately empty

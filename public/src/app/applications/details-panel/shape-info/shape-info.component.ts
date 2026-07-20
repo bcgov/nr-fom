@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
 import { SpatialFeaturePublicResponse } from '@api-client';
@@ -19,8 +19,7 @@ export class ShapeInfoComponent {
   displayedColumns: string[] = ['shape_id', 'type', 'name', 'submission_type', 'area_length', 'development_date'];
   selectedRowIndex: string = null;
 
-  @Input('spatialDetail')
-  projectSpatialDetail: SpatialFeaturePublicResponse[];
+  readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[] | undefined>(undefined, { alias: "spatialDetail" });
 
   onRowSelected(rowData: SpatialFeaturePublicResponse) {
     this.selectedRowIndex = rowData.featureId + '-' + rowData.featureType.code; // Unique when featureType is included.
