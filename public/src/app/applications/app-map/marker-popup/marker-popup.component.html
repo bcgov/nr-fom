@@ -17,12 +17,10 @@
     }
     <ul class="status-container">
       <li class="workflow-status"
-      [ngClass]="{
-        'commenting-open':  projectSummary.workflowStateName === workflowStatus['COMMENT_OPEN'].description,
-        'commenting-closed': projectSummary.workflowStateName === workflowStatus['COMMENT_CLOSED'].description,
-        'finalized': projectSummary.workflowStateName === workflowStatus['FINALIZED'].description,
-        'expired': projectSummary.workflowStateName === workflowStatus['EXPIRED'].description
-      }">
+      [class.commenting-open]="projectSummary.workflowStateName === workflowStatus['COMMENT_OPEN'].description"
+      [class.commenting-closed]="projectSummary.workflowStateName === workflowStatus['COMMENT_CLOSED'].description"
+      [class.finalized]="projectSummary.workflowStateName === workflowStatus['FINALIZED'].description"
+      [class.expired]="projectSummary.workflowStateName === workflowStatus['EXPIRED'].description">
         {{ projectSummary.workflowStateName | titlecase }}
         {{
         (projectSummary.workflowStateName === workflowStatus['FINALIZED'].description ||

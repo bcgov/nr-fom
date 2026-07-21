@@ -62,7 +62,7 @@
           <input id="contactName" name="contactName"
             class="form-control" type="text"
             placeholder="Enter your full name" maxlength="50"
-            [ngClass]="{'has-success': !contactName.errors?.minlength && (!contactName.dirty || contactName.touched)}"
+            [class.has-success]="!contactName.errors?.minlength && (!contactName.dirty || contactName.touched)"
             [(ngModel)]="publicComment.name"
             #contactName="ngModel" />
           </div>
@@ -80,7 +80,7 @@
             <input id="email" name="email"
               class="form-control" type="email"
               placeholder="e.g. email@example.com"
-              [ngClass]="{'is-invalid': (email.invalid)}"
+              [class.is-invalid]="email.invalid"
               [(ngModel)]="publicComment.email"
               #email="ngModel"
               pattern="^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$" />
@@ -95,7 +95,7 @@
               <input id="phone" name="phone"
                 class="form-control" type="tel"
                 placeholder="e.g. 123-456-7890"
-                [ngClass]="{'is-invalid': (phone.invalid)}"
+                [class.is-invalid]="phone.invalid"
                 [(ngModel)]="publicComment.phoneNumber"
                 #phone="ngModel"
                 pattern="^(?:\+?1[\-. ]?)?\(?([0-9]{3})\)?[\-. ]?([0-9]{3})[\-. ]?([0-9]{4})$" />

@@ -13,7 +13,7 @@ import { Subject } from 'rxjs';
 import { EnddateChangeModalComponent } from './enddate-change-modal/enddate-change-modal.component';
 
 import { NewlinesPipe } from "@admin-core/pipes/newlines.pipe";
-import { DatePipe, NgClass } from "@angular/common";
+import { DatePipe } from "@angular/common";
 import { DetailsMapComponent } from "../details-map/details-map.component";
 import { ShapeInfoComponent } from "../shape-info/shape-info.component";
 
@@ -24,7 +24,6 @@ import { ShapeInfoComponent } from "../shape-info/shape-info.component";
     NgbModule,
     DetailsMapComponent,
     ShapeInfoComponent,
-    NgClass,
     DatePipe,
     NewlinesPipe
 ],

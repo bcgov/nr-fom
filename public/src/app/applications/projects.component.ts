@@ -5,7 +5,6 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProjectPublicSummaryResponse, ProjectService } from '@api-client';
 import { COMMENT_STATUS_FILTER_PARAMS, FOMFiltersService, FOM_FILTER_NAME } from '@public-core/services/fomFilters.service';
@@ -48,7 +47,6 @@ export interface IUpdateEvent {
  */
 @Component({
   imports: [
-    CommonModule, 
     FormsModule,
     FindPanelComponent,
     DetailsPanelComponent,

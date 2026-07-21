@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { TitleCasePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { ProjectPlanCodeEnum, ProjectPublicSummaryResponse } from '@api-client';
 import { StateService } from '@public-core/services/state.service';
@@ -7,7 +7,7 @@ import { indexBy } from 'remeda';
 import { Panel } from '../../../applications/utils/panel.enum';
 
 @Component({
-  imports: [CommonModule],
+  imports: [TitleCasePipe],
   templateUrl: './marker-popup.component.html',
   styleUrl: './marker-popup.component.scss'
 })

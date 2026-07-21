@@ -152,7 +152,7 @@
               <div class="row">
                 <!-- Start of Operations: disabled when COMMENT_OPEN -->
                 <div class="form-group col">
-                  <label for="op-start-year" [ngClass]="{'required': !isCommentingOpenState}">Start of Operations</label>
+                  <label for="op-start-year" [class.required]="!isCommentingOpenState">Start of Operations</label>
                   @if (!isCommentingOpenState) {
                     <div>
                       <input
@@ -191,7 +191,7 @@
                   </div>
                   <!-- End of Operations: disabled when COMMENT_OPEN -->
                   <div class="form-group col">
-                    <label for="op-end-year" [ngClass]="{'required': !isCommentingOpenState}">End of Operations</label>
+                    <label for="op-end-year" [class.required]="!isCommentingOpenState">End of Operations</label>
                     @if (!isCommentingOpenState) {
                       <div>
                         <input
@@ -239,14 +239,14 @@
                   <div class="row">
                     <div class="form-group col">
                       <!-- Type of Plan Holder: disabled after fom is created -->
-                      <label [ngClass]="{'required': isCreate}">Type of Plan Holder</label>
+                      <label [class.required]="isCreate">Type of Plan Holder</label>
                       @if (isCreate) {
                         <div>
                           <select
                             class="form-control"
                             formControlName="projectPlanCode"
                             (change)="onProjectPlanChange($event)"
-                            [ngClass]="{'is-invalid': !fg.get('projectPlanCode').value && isSubmitSaveClicked}"
+                            [class.is-invalid]="!fg.get('projectPlanCode').value && isSubmitSaveClicked"
                             id="projectPlanSelectId">
                             @for (option of projectPlanOptions; track option) {
                               <option
@@ -278,7 +278,7 @@
                     @if (fg.get('projectPlanCode').value == projectPlanCodeEnum.Fsp) {
                       <div class="form-group col"
                         >
-                        <label for="fsp-id" [ngClass]="{'required': !isCommentingOpenState}" style="white-space: nowrap;"
+                        <label for="fsp-id" [class.required]="!isCommentingOpenState" style="white-space: nowrap;"
                         >FSP ID</label>
                         @if (!isCommentingOpenState) {
                           <div>
@@ -314,7 +314,7 @@
                       @if (fg.get('projectPlanCode').value == projectPlanCodeEnum.Woodlot) {
                         <div class="form-group col"
                           >
-                          <label for="woodlot-id" [ngClass]="{'required': !isCommentingOpenState}" style="white-space: nowrap;"
+                          <label for="woodlot-id" [class.required]="!isCommentingOpenState" style="white-space: nowrap;"
                           >Woodlot Licence Number</label>
                           @if (!isCommentingOpenState) {
                             <div>
@@ -358,7 +358,7 @@
                           @if (isInitialState) {
                             <div>
                               <select
-                                class="sort-comments form-control" [ngClass]="{'is-invalid': !districtIdSelect && isSubmitSaveClicked}" (change)="changeDistrictId($event)" id="district-list">
+                                class="sort-comments form-control" [class.is-invalid]="!districtIdSelect && isSubmitSaveClicked" (change)="changeDistrictId($event)" id="district-list">
                                 @if (isCreate || !districtIdSelect) {
                                   <option>  </option>
                                 }
@@ -434,7 +434,7 @@
                               <select
                                 class="sort-comments form-control"
                                 formControlName="forestClient"
-                                [ngClass]="{'is-invalid': !forestClientSelect && isSubmitSaveClicked}"
+                                [class.is-invalid]="!forestClientSelect && isSubmitSaveClicked"
                                 (change)="onForestClientChange($event)"
                                 id="forestClient-list">
                                 @if (isCreate) {
@@ -471,7 +471,7 @@
                         @if (isHolderBctsManger()) {
                           <div class="row">
                             <div class="form-group col">
-                              <label [ngClass]="{'required': !isCommentingOpenState}">
+                              <label [class.required]="!isCommentingOpenState">
                                 Timber Sales Manager Name
                               </label>
                               @if (!isCommentingOpenState) {
@@ -529,7 +529,7 @@
                                 <div>
                                   <textarea
                                     (keyup)="changeDescription($event)"
-                                    class="form-control" [ngClass]="{'is-invalid': !descriptionValue && isSubmitSaveClicked && !isCreate}"
+                                    class="form-control" [class.is-invalid]="!descriptionValue && isSubmitSaveClicked && !isCreate"
                                     rows="3"
                                     id="description"
                                     name="description"

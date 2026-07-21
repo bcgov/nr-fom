@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
@@ -6,7 +6,7 @@ import { SpatialFeaturePublicResponse } from '@api-client';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 
 @Component({
-  imports: [CommonModule, MatTableModule],
+  imports: [DecimalPipe, MatTableModule],
   selector: 'app-shape-info',
   templateUrl: './shape-info.component.html',
   styleUrl: './shape-info.component.scss'

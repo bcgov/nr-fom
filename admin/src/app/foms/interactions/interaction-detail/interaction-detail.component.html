@@ -17,9 +17,9 @@
       <form [formGroup]="interactionFormGroup">
         <div class="form-group col-md">
           <label for="communicationDatePickerDate" class="control-label"
-          [ngClass]="{'required': editMode}">Engagement Date</label>
+          [class.required]="editMode">Engagement Date</label>
           <div class="input-group"
-            [ngClass]="{'is-invalid': interactionFormGroup.touched && !isValid('communicationDatePickerDate')}">
+            [class.is-invalid]="interactionFormGroup.touched && !isValid('communicationDatePickerDate')">
             <input
               type="text"
               class="form-control col-md-6"
@@ -61,12 +61,12 @@
             </div>
             <div id="descriptionDiv" class="form-group col-md">
               <label for="description" class="control-label"
-              [ngClass]="{'required': editMode}">Description</label>
+              [class.required]="editMode">Description</label>
               <textarea id="description"
                 name="communicationDetails"
                 class="form-control col-md-12"
                 rows="5"
-                [ngClass]="{'is-invalid': interactionFormGroup.touched && !isValid('communicationDetails')}"
+                [class.is-invalid]="interactionFormGroup.touched && !isValid('communicationDetails')"
                 maxlength="{{communicationDetailsLimit}}"
                 formControlName="communicationDetails">
               </textarea>

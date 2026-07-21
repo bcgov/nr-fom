@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, OnInit, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -7,7 +7,7 @@ import { IFilterFields } from '../../utils/filter';
 
 @Component({
   imports: [
-    CommonModule,
+    NgTemplateOutlet,
     FormsModule,
     MatExpansionModule,
     BsDatepickerModule

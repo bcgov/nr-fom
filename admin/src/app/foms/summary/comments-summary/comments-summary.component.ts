@@ -5,7 +5,7 @@ import { PublicCommentAdminResponse, ResponseCodeEnum } from '@api-client';
 import { indexBy } from 'remeda';
 
 import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
-import { DatePipe, NgStyle, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,7 +13,6 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
     imports: [
     MatExpansionModule,
-    NgStyle,
     MatIconModule,
     MatBadgeModule,
     MatCardModule,

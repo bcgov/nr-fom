@@ -1,20 +1,20 @@
-<div class="applications-view" [ngClass]="activePanel ? 'side-panel__open' : 'side-panel__closed'">
+<div class="applications-view" [class.side-panel__open]="activePanel" [class.side-panel__closed]="!activePanel">
 
   <div class="side-nav">
     <ul>
-      <li class="side-nav-item" [ngClass]="{'active': activePanel === Panel.find}">
+      <li class="side-nav-item" [class.active]="activePanel === Panel.find">
         <button class="btn" (click)="togglePanel(Panel.find)">
           <em class="material-icons">search</em>
           <div>Find</div>
         </button>
       </li>
-      <li class="side-nav-item" [ngClass]="{'active': activePanel === Panel.details}">
+      <li class="side-nav-item" [class.active]="activePanel === Panel.details">
         <button class="btn" (click)="togglePanel(Panel.details)">
           <em class="material-icons">info</em>
           <div>Details</div>
         </button>
       </li>
-      <li class="side-nav-item" [ngClass]="{'active': activePanel === Panel.publicNotices}">
+      <li class="side-nav-item" [class.active]="activePanel === Panel.publicNotices">
         <button class="btn" (click)="togglePanel(Panel.publicNotices)">
           <em class="material-icons">notifications</em>
           <div>Public Notices</div>
@@ -58,7 +58,7 @@
             <div class="select-badge-group">
               @for (filter of commentStatusFilters.filters; track filter) {
                 <div class="select-badge"
-                  [ngStyle]="loading && {'display': 'none'}">
+                  [style.display]="loading ? 'none' : null">
                   <input type="checkbox" id="project-{{filter.queryParam}}" name="{{filter.queryParam}}"
                     [checked]="filter.value"
                     (click)="toggleFilter(filter)"
@@ -71,7 +71,7 @@
           </div>
         </span>
 
-        <span class="app-results__clear" [ngStyle]="loading && {'display': 'none'}">
+        <span class="app-results__clear" [style.display]="loading ? 'none' : null">
           <button class="clear-btn btn btn-sm btn-link"
             [disabled]="loading"
           (click)="clearFilters();">Clear Filters</button>

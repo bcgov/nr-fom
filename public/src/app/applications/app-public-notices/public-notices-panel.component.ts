@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject, output, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -16,7 +16,8 @@ import { Panel } from '../utils/panel.enum';
 import { NoticeFilter, PublicNoticesFilterPanelComponent } from './notices-filter-panel/public-notices-filter-panel.component';
 @Component({
   imports: [
-    CommonModule, 
+    DatePipe,
+    NgTemplateOutlet,
     FormsModule,
     MatExpansionModule,
     MatTooltipModule,

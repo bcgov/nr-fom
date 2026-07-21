@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { DatePipe, TitleCasePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnDestroy, OnInit, inject, output, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -33,7 +33,7 @@ import { Filter } from '../utils/filter';
  */
 @Component({
   imports: [
-    FontAwesomeModule, CommonModule, ShapeInfoComponent, 
+    FontAwesomeModule, DatePipe, TitleCasePipe, ShapeInfoComponent,
     DetailsMapComponent, TooltipModule, MatTooltipModule
   ],
   selector: 'app-details-panel',

@@ -2,7 +2,7 @@ import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
-import { DatePipe, NgClass } from "@angular/common";
+import { DatePipe } from "@angular/common";
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -23,7 +23,6 @@ import { PublicNoticeForm } from './public-notice.form';
     imports: [
     FormsModule,
     ReactiveFormsModule,
-    NgClass,
     BsDatepickerModule
 ],
     selector: 'app-public-notice-edit',

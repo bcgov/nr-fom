@@ -228,7 +228,7 @@
                   <ul class="nv-list">
                     <li>
                       <span class="name">Start Year:</span>
-                      <span class="value" [ngClass]="{'invalid-type-msg': !project.operationStartYear }">
+                      <span class="value" [class.invalid-type-msg]="!project.operationStartYear">
                       {{project.operationStartYear }}</span>
                     </li>
                     <li>
@@ -246,7 +246,7 @@
                 <ul class="nv-list">
                   <li>
                     <span class="name">Start Date:</span>
-                    <span class="value" [ngClass]="{'invalid-type-msg': !project.commentingOpenDate }">
+                    <span class="value" [class.invalid-type-msg]="!project.commentingOpenDate">
                       {{project.commentingOpenDate ?
                       ( project.commentingOpenDate | date:'longDate') :
                     'Must be defined'}}</span>

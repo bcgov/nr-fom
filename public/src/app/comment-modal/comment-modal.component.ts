@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -20,7 +19,7 @@ type CommentScopeOpt = {commentScopeCode: COMMENT_SCOPE_CODE,
                         scopeId: number};
 
 @Component({
-  imports: [CommonModule, FormsModule, MatSelectModule, MatProgressBarModule],
+  imports: [FormsModule, MatSelectModule, MatProgressBarModule],
   templateUrl: './comment-modal.component.html',
   styleUrl: './comment-modal.component.scss',
   encapsulation: ViewEncapsulation.None

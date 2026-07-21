@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { TitleCasePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 
@@ -20,7 +20,7 @@ export interface DialogData {
 }
 
 @Component({
-  imports: [CommonModule, MatDialogModule],
+  imports: [TitleCasePipe, MatDialogModule],
   selector: 'app-dialog-component',
   template: `
     @if (data['title']) {

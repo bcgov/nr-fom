@@ -14,7 +14,7 @@
         Stakeholder Engagements
       </mat-panel-title>
       <mat-panel-description>
-        <span [ngStyle]="requestError() && {'color': 'red'}">
+        <span [style.color]="requestError() ? 'red' : null">
           {{requestError()? 'Request encountered error. Please try later.': ''}}
         </span>
       </mat-panel-description>

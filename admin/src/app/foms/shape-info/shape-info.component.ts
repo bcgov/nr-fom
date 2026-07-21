@@ -2,14 +2,14 @@ import { Component, OnInit, inject, input } from '@angular/core';
 import { ThemePalette } from '@angular/material/core';
 import { SpatialFeaturePublicResponse } from '@api-client';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
-import { NgClass, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 
 @Component({
     selector: 'app-shape-info',
     templateUrl: './shape-info.component.html',
     styleUrl: './shape-info.component.scss',
-    imports: [MatTableModule, NgClass, DecimalPipe]
+    imports: [MatTableModule, DecimalPipe]
 })
 export class ShapeInfoComponent implements OnInit {
   private fss = inject(FeatureSelectService);

@@ -50,7 +50,7 @@
 
     <mat-header-row *matHeaderRowDef="displayedColumns" />
     <mat-row *matRowDef="let rowData; columns: displayedColumns;"
-      [ngClass]="{'highlight': selectedRowIndex == rowData.featureId + '-' + rowData.featureType.code}"
+      [class.highlight]="selectedRowIndex == rowData.featureId + '-' + rowData.featureType.code"
       (click)="onRowSelected(rowData)" />
   </mat-table>
 </div>
@@ -60,7 +60,7 @@
   <ul class="shapefile-list">
     @for (feature of projectSpatialDetail(); track feature) {
       <li class="shapefile-list__item"
-        [ngClass]="{'highlight': selectedRowIndex == feature.featureId + '-' + feature.featureType.code}"
+        [class.highlight]="selectedRowIndex == feature.featureId + '-' + feature.featureType.code"
         (click)="onRowSelected(feature)">
         <label class="shapefile-list__id">Shape ID: {{feature.featureId}}</label>
         <ul class="meta-container">
