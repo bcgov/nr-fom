@@ -1,7 +1,7 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterOutlet } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 
 import { ModalService } from '@public-core/services/modal.service';
 import { StateService } from '@public-core/services/state.service';
@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
     });
 
     try {
-      const codeTables = await this.stateSvc.getCodeTables().toPromise();
+      const codeTables = await firstValueFrom(this.stateSvc.getCodeTables());
       this.stateSvc.setCodeTables(codeTables);
       this.stateSvc.setReady();
       this.isReady$ = this.stateSvc.isReady$;
