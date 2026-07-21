@@ -1,8 +1,7 @@
 
-import { Component, OnInit, inject } from "@angular/core";
+import { Component, DestroyRef, OnInit, inject } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { ActivatedRoute } from "@angular/router";
-import { Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
 
 @Component({
     imports: [],
@@ -12,13 +11,13 @@ import { takeUntil } from "rxjs/operators";
 })
 export class NotAuthorizedComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public loggedout = false;
 
   ngOnInit() {
     this.route.queryParamMap
-      .pipe(takeUntil(this.ngUnsubscribe))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((paramMap) => {
         this.loggedout = paramMap.get("loggedout") === "true";
       });

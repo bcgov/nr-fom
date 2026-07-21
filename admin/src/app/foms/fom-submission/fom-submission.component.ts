@@ -3,15 +3,16 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectPlanCodeEnum, ProjectResponse, ProjectService, SpatialObjectCodeEnum, SubmissionDetailResponse, SubmissionRequest, SubmissionService, SubmissionTypeCodeEnum, WorkflowStateEnum } from '@api-client';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
 import { RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
 import { User } from '@utility/security/user';
-import { Observable, Subject } from 'rxjs';
-import { map, switchMap, takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { FomSubmissionForm } from './fom-submission.form';
 import { SubmissionOverviewFaqComponent } from './submission-overview-faq.component';
 
@@ -46,6 +47,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   private submissionSvc = inject(SubmissionService);
   private cognitoService = inject(CognitoService);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
 
   public fg: RxFormGroup;
   public project: ProjectResponse;
@@ -62,7 +64,6 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   private scrollToFragment: string = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   private user: User;
   
   public findProject$ = this.projectSvc.projectControllerFindOne(this.route.snapshot.params.appId);
@@ -99,7 +100,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     this.geoTypeValues = Object.values(SpatialObjectCodeEnum);
     let submissionTypeCode = SubmissionTypeCodeEnum.Proposed; // default
     this.route.url.pipe(
-      takeUntil(this.ngUnsubscribe), 
+      takeUntilDestroyed(this.destroyRef),
       switchMap(() => {
         return this.findProject$;
       })
@@ -154,9 +155,6 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.snackBarRef) {
       this.snackBarRef.dismiss();
     }
-
-    this.ngUnsubscribe.next(null);
-    this.ngUnsubscribe.complete();
   }
 
   onFileEmit(newFile: File) {

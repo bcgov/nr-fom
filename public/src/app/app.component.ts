@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterOutlet } from '@angular/router';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { ModalService } from '@public-core/services/modal.service';
 import { StateService } from '@public-core/services/state.service';
@@ -18,17 +18,16 @@ import { HeaderComponent } from 'app/header/header.component';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit {
     router = inject(Router);
     private stateSvc = inject(StateService);
     private modalSvc = inject(ModalService);
+    private destroyRef = inject(DestroyRef);
 
     isReady$: Observable<boolean>;
 
-  private ngUnsubscribe: Subject<void> = new Subject<void>();
-
   async ngOnInit() {
-    this.router.events.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
+    this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       document.body.scrollTop = 0;
       document.documentElement.scrollTop = 0;
     });
@@ -43,10 +42,5 @@ export class AppComponent implements OnInit, OnDestroy {
       this.modalSvc.showFOMinitFailure();
       console.error(err);
     }
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
   }
 }

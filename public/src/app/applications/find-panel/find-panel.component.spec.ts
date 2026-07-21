@@ -183,13 +183,11 @@ describe('FindPanelComponent', () => {
     });
   });
 
-  describe('ngOnDestroy', () => {
-    it('should unsubscribe', () => {
-      const nextSpy = jest.spyOn(component['ngUnsubscribe'], 'next');
-      const completeSpy = jest.spyOn(component['ngUnsubscribe'], 'complete');
-      component.ngOnDestroy();
-      expect(nextSpy).toHaveBeenCalled();
-      expect(completeSpy).toHaveBeenCalled();
+  describe('teardown', () => {
+    it('should unsubscribe from filters$ when the component is destroyed', () => {
+      expect(filtersSubject.observed).toBe(true);
+      fixture.destroy();
+      expect(filtersSubject.observed).toBe(false);
     });
   });
 });

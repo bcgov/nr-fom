@@ -1,4 +1,5 @@
-import { Component, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input } from '@angular/core';
+import { Component, DestroyRef, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SpatialFeaturePublicResponse, SubmissionTypeCodeEnum } from '@api-client';
 import { MapLayers } from '@utility/models/map-layers';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
@@ -21,9 +22,6 @@ const L = (L_import as any).default || L_import;
     (might be some clue here: https://stackoverflow.com/questions/41144319/leaflet-marker-not-found-production-env)
 */
 
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-
 @Component({
     imports: [],
     selector: 'app-details-map',
@@ -33,6 +31,7 @@ import { takeUntil } from 'rxjs/operators';
 export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   private elementRef = inject(ElementRef);
   private fss = inject(FeatureSelectService);
+  private destroyRef = inject(DestroyRef);
   private resizeObserver: ResizeObserver | null = null;
 
 
@@ -41,8 +40,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   public map: L.Map;
   public projectFeatures: L.FeatureGroup; // group of layers for the features of a FOM project.
   private lastLabelMarker: L.Marker; // global variable to keep track latest layer added (as labeling popup for onClick)
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  
+
   // Key for the map is: (spatialDetail.featureId + '-' + spatialDetail.featureType.code) so it is unique.
   private featureToLayerMap = new Map();
 
@@ -239,7 +237,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
   private subscribeToFeatureSelectChange(): void {
     this.fss.$currentSelected
-      .pipe(takeUntil(this.ngUnsubscribe))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(featureIndex => {
         const feature = this.featureToLayerMap.get(featureIndex);
         if (featureIndex && feature) {
@@ -255,7 +253,5 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   
   ngOnDestroy() {
     this.resetMap();
-    this.ngUnsubscribe.next(null);
-    this.ngUnsubscribe.complete();
   }
 }

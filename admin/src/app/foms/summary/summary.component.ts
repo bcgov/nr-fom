@@ -2,7 +2,8 @@ import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSv
 import { CommonUtil } from '@admin-core/utils/commonUtil';
 import { COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,7 +17,6 @@ import {
 } from '@api-client';
 import { ConfigService } from '@utility/services/config.service';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { DetailsMapComponent } from '../details-map/details-map.component';
 import { ShapeInfoComponent } from '../shape-info/shape-info.component';
 import { CommentsSummaryComponent } from './comments-summary/comments-summary.component';
@@ -39,7 +39,7 @@ import { InteractionsSummaryComponent } from './interactions-summary/interaction
     templateUrl: './summary.component.html',
     styleUrl: './summary.component.scss'
 })
-export class SummaryComponent implements OnInit, OnDestroy {
+export class SummaryComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private projectSvc = inject(ProjectService);
   private commentSvc = inject(PublicCommentService);
@@ -49,6 +49,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
   private configSvc = inject(ConfigService);
   attachmentResolverSvc = inject(AttachmentResolverSvc);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly periodOperationsTxt = "This FOM can be relied upon by the FOM holder for the purpose of a cutting permit or road permit application, until the date three years after commencement of the public review and commenting period. FOMs published by BC Timber Sales can be relied upon for the purpose of a cutting permit or road permit application, or the issuance of a Timber Sales License until the date three years after conclusion of the public review and commenting period.";
@@ -69,7 +70,6 @@ export class SummaryComponent implements OnInit, OnDestroy {
   commentScopeOpts :Array<CommentScopeOpt> = [];
   selectedScope: CommentScopeOpt;
 
-  private ngUnsubscribe$: Subject<void> = new Subject<void>();
   private scopeOptionChange$ = new Subject<CommentScopeOpt>();
 
   async ngOnInit(): Promise<void> {
@@ -80,7 +80,7 @@ export class SummaryComponent implements OnInit, OnDestroy {
     this.getProjectInteractions(this.projectId);
     this.getProjectAttachments(this.projectId);
 
-    this.scopeOptionChange$.pipe(takeUntil(this.ngUnsubscribe$)).subscribe((nextScope) => {
+    this.scopeOptionChange$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((nextScope) => {
       this.doFiltering(nextScope);
       this.cdr.detectChanges();
     });
@@ -206,11 +206,6 @@ export class SummaryComponent implements OnInit, OnDestroy {
 
   onScopeOptionChanged(selection: CommentScopeOpt) {
     this.scopeOptionChange$.next(selection);
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe$.next();
-    this.ngUnsubscribe$.complete();
   }
 }
 

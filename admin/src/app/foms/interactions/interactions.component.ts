@@ -1,13 +1,13 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { InteractionResponse, InteractionService, ProjectResponse, WorkflowStateEnum } from '@api-client';
 import { User } from "@utility/security/user";
 import { DateTime } from "luxon";
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { InteractionDetailComponent } from './interaction-detail/interaction-detail.component';
 import { InteractionRequest } from './interaction-detail/interaction-detail.form';
 
@@ -33,13 +33,14 @@ export const ERROR_DIALOG = {
     templateUrl: './interactions.component.html',
     styleUrl: './interactions.component.scss'
 })
-export class InteractionsComponent implements OnInit, OnDestroy {
+export class InteractionsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private interactionSvc = inject(InteractionService);
   private cognitoService = inject(CognitoService);
   private modalSvc = inject(ModalService);
   private cdr = inject(ChangeDetectorRef);
   private injector = inject(Injector);
+  private destroyRef = inject(DestroyRef);
 
 
   readonly interactionDetailForm = viewChild<InteractionDetailComponent>('interactionDetailForm');
@@ -52,7 +53,6 @@ export class InteractionsComponent implements OnInit, OnDestroy {
   private user: User;
 
   data: InteractionResponse[] = null;
-  private ngUnsubscribe: Subject<void> = new Subject<void>();
   private interactionSaved$ = new Subject<void>(); // To notify when 'save' happen.
 
   constructor()
@@ -64,19 +64,15 @@ export class InteractionsComponent implements OnInit, OnDestroy {
     this.projectId = this.route.snapshot.params.appId;
     this.refreshInteractions();
 
-    this.interactionSaved$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
+    this.interactionSaved$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.refreshInteractions();
     });
 
     this.route.data
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((data: { project: ProjectResponse}) => {
           this.project = data.project;
         });
-  }
-
-  ngOnDestroy(): void {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
   }
 
   getProjectInteractions() {

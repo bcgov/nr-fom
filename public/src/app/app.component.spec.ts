@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { AppComponent } from './app.component';
 import { StateService } from '@public-core/services/state.service';
 import { ModalService } from '@public-core/services/modal.service';
@@ -72,12 +72,13 @@ describe('AppComponent', () => {
     consoleSpy.mockRestore();
   });
 
-  it('should unsubscribe on destroy', () => {
-    const nextSpy = jest.spyOn(component['ngUnsubscribe'], 'next');
-    const completeSpy = jest.spyOn(component['ngUnsubscribe'], 'complete');
-    component.ngOnDestroy();
-    expect(nextSpy).toHaveBeenCalled();
-    expect(completeSpy).toHaveBeenCalled();
+  it('should stop responding to router events after destroy', () => {
+    const events$ = new Subject<unknown>();
+    component.router = { events: events$ } as unknown as typeof component.router;
+    component.ngOnInit(); // subscribes to router.events synchronously
+    expect(events$.observed).toBe(true);
+    fixture.destroy();
+    expect(events$.observed).toBe(false);
   });
 
   it('should have header and footer components in template', () => {

@@ -1,7 +1,8 @@
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnInit, inject, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AttachmentResponse, ProjectMetricsResponse, ProjectPlanCodeEnum, ProjectResponse, ProjectService, ProjectWorkflowStateChangeRequest, SpatialFeaturePublicResponse, WorkflowStateEnum } from "@api-client";
 import { NgbModal, NgbModalRef, NgbModule, NgbNav } from '@ng-bootstrap/ng-bootstrap';
@@ -9,7 +10,6 @@ import { User } from "@utility/security/user";
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 import { DateTime } from "luxon";
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { EnddateChangeModalComponent } from './enddate-change-modal/enddate-change-modal.component';
 
 import { NewlinesPipe } from "@admin-core/pipes/newlines.pipe";
@@ -32,7 +32,7 @@ import { ShapeInfoComponent } from "../shape-info/shape-info.component";
     templateUrl: './fom-detail.component.html',
     styleUrl: './fom-detail.component.scss'
 })
-export class FomDetailComponent implements OnInit, OnDestroy {
+export class FomDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private modalSvc = inject(ModalService);
@@ -42,6 +42,7 @@ export class FomDetailComponent implements OnInit, OnDestroy {
   private ngbModalService = inject(NgbModal);
   private fss = inject(FeatureSelectService);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   public readonly scrollContainer = viewChild<ElementRef>('scrollContainer');
@@ -60,7 +61,6 @@ export class FomDetailComponent implements OnInit, OnDestroy {
   public attachments: AttachmentResponse[] = [];
   public user: User;
   public daysRemaining: number = null;
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   private workflowStateChangeRequest: ProjectWorkflowStateChangeRequest = <ProjectWorkflowStateChangeRequest>{};
   private now = new Date();
   private today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
@@ -74,8 +74,8 @@ export class FomDetailComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // get data from route resolver
     this.route.data
-        .pipe(takeUntil(this.ngUnsubscribe))
-        .subscribe((data: { projectDetail: ProjectResponse, 
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((data: { projectDetail: ProjectResponse,
                             spatialDetail: Array<SpatialFeaturePublicResponse>, 
                             projectMetrics: ProjectMetricsResponse }) => {
       if (data.projectDetail) {
@@ -100,7 +100,7 @@ export class FomDetailComponent implements OnInit, OnDestroy {
 
     // rxjs project update trigger initialization
     if (this.project.id) { // subscribe only when first project init successfully.
-      this.projectUpdateTriggered$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
+      this.projectUpdateTriggered$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
         this.projectService.projectControllerFindOne(this.project.id).subscribe((data) => {
           this.initProjectDetail(data);
           this.cdr.detectChanges();
@@ -334,11 +334,6 @@ export class FomDetailComponent implements OnInit, OnDestroy {
         );
   }
 
-  ngOnDestroy() {
-    this.ngUnsubscribe.next(null);
-    this.ngUnsubscribe.complete();
-  }
-
   private initProjectDetail(project: ProjectResponse) {
     this.project = project;
     if (this.project.workflowState['code'] === 'INITIAL') {
@@ -382,7 +377,7 @@ export class FomDetailComponent implements OnInit, OnDestroy {
   private subscribeToFeatureSelectChange(): void {
     // Scroll to top map detail section when feature is selected from the list.
     this.fss.$currentSelected
-      .pipe(takeUntil(this.ngUnsubscribe))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(featureIndex => {
         if (featureIndex) {
           setTimeout(() => {

@@ -3,7 +3,8 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
 import { DatePipe, NgClass } from "@angular/common";
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -14,7 +15,7 @@ import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
 import { DateTime } from "luxon";
 import { BsDatepickerModule } from "ngx-bootstrap/datepicker";
-import { Subject, lastValueFrom } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { PublicNoticeForm } from './public-notice.form';
 
@@ -30,7 +31,7 @@ import { PublicNoticeForm } from './public-notice.form';
     styleUrl: './public-notice-edit.component.scss',
     providers: [DatePipe]
 })
-export class PublicNoticeEditComponent implements OnInit, OnDestroy {
+export class PublicNoticeEditComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private formBuilder = inject(RxFormBuilder);
@@ -40,6 +41,7 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
   private publicNoticeService = inject(PublicNoticeService);
   private datePipe = inject(DatePipe);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
 
   user: User;
   project: ProjectResponse;
@@ -53,8 +55,6 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
   maxPostDate: Date;
   minPostDate: Date = DateTime.now().plus({days: 1}).toJSDate(); // 1 day in the future.
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  
   constructor() {
     this.user = this.cognitoService.getUser();
   }
@@ -67,6 +67,7 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
 
     this.route.data
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
         switchMap((resolverData) => {
           const publicNoticeId = resolverData['projectDetail'].publicNoticeId;
           this.isNewForm = !publicNoticeId;
@@ -252,11 +253,6 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
       this.modalSvc.openWarningDialog(`Commenting Start Date must be entered first and at least one day in the future before 
         Notice Publishing Date is available for selection.`);
     }
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next(true);
-    this.ngUnsubscribe.complete();
   }
 }
 

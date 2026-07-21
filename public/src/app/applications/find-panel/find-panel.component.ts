@@ -1,12 +1,11 @@
 
-import { Component, OnDestroy, OnInit, inject, input, output } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, input, output } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { COMMENT_STATUS_FILTER_PARAMS, FOMFiltersService, FOM_FILTER_NAME } from '@public-core/services/fomFilters.service';
 import { UrlService } from '@public-core/services/url.service';
 import { DateTime } from "luxon";
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { IUpdateEvent } from '../projects.component';
 import { Filter, FilterUtils, IFilter, IMultiFilter, IMultiFilterFields, MultiFilter } from '../utils/filter';
 
@@ -27,15 +26,15 @@ import { Filter, FilterUtils, IFilter, IMultiFilter, IMultiFilterFields, MultiFi
   templateUrl: './find-panel.component.html',
   styleUrl: './find-panel.component.scss'
 })
-export class FindPanelComponent implements OnDestroy, OnInit {
+export class FindPanelComponent implements OnInit {
   urlSvc = inject(UrlService);
   private fomFiltersSvc = inject(FOMFiltersService);
+  private destroyRef = inject(DestroyRef);
 
   readonly update = output<IUpdateEvent>();
   readonly loading = input<boolean | undefined>(undefined); // from projects component
-  
+
   public filterHash: string;
-  private ngUnsubscribe: Subject<void> = new Subject<void>();
   private fomFilters: Map<string, IFilter | IMultiFilter>;
   public fomNumberFilter = new Filter<number>({ filter: { queryParam: 'fomNumber', value: null }});
   public forestClientNameFilter = new Filter<string>({ filter: { queryParam: 'fcName', value: null }});
@@ -46,7 +45,7 @@ export class FindPanelComponent implements OnDestroy, OnInit {
   readonly maxInputLength = 9;
 
   ngOnInit(): void {
-    this.fomFiltersSvc.filters$.pipe(takeUntil(this.ngUnsubscribe)).subscribe((filters) => {
+    this.fomFiltersSvc.filters$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filters) => {
       this.fomFilters = filters;
       this.fomNumberFilter = this.fomFilters.get(FOM_FILTER_NAME.FOM_NUMBER) as Filter<number>;
       this.forestClientNameFilter = this.fomFilters.get(FOM_FILTER_NAME.FOREST_CLIENT_NAME) as Filter<string>;
@@ -163,15 +162,5 @@ export class FindPanelComponent implements OnDestroy, OnInit {
    */
   public areFiltersSet(): boolean {
     return this.forestClientNameFilter.isFilterSet();
-  }
-
-  /**
-   * On component destroy.
-   *
-   * @memberof FindPanelComponent
-   */
-  public ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
   }
 }

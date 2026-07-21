@@ -9,17 +9,22 @@ describe('DetailsMapComponent', () => {
   let fixture: ComponentFixture<DetailsMapComponent>;
   let mockMapLayersService: Partial<MapLayersService>;
   let mockFeatureSelectService: Partial<FeatureSelectService>;
+  let mapLayersChange$: Subject<void>;
+  let currentSelected$: Subject<any>;
 
   beforeEach(async () => {
+    mapLayersChange$ = new Subject<void>();
+    currentSelected$ = new Subject<any>();
+
     mockMapLayersService = {
-      $mapLayersChange: { subscribe: jest.fn() } as any,
+      $mapLayersChange: mapLayersChange$ as any,
       notifyLayersChange: jest.fn(),
       mapLayersUpdate: jest.fn(),
       applyCurrentMapLayers: jest.fn(),
     };
 
     mockFeatureSelectService = {
-      $currentSelected: new Subject<any>(),
+      $currentSelected: currentSelected$,
     };
 
     await TestBed.configureTestingModule({
@@ -44,13 +49,14 @@ describe('DetailsMapComponent', () => {
     });
   });
 
-  describe('ngOnDestroy', () => {
-    it('should unsubscribe', () => {
-      const nextSpy = jest.spyOn(component['ngUnsubscribe'], 'next');
-      const completeSpy = jest.spyOn(component['ngUnsubscribe'], 'complete');
-      component.ngOnDestroy();
-      expect(nextSpy).toHaveBeenCalled();
-      expect(completeSpy).toHaveBeenCalled();
+  describe('teardown', () => {
+    it('should unsubscribe from service streams when destroyed', () => {
+      component.ngOnInit(); // subscribes to $mapLayersChange and $currentSelected
+      expect(mapLayersChange$.observed).toBe(true);
+      expect(currentSelected$.observed).toBe(true);
+      fixture.destroy();
+      expect(mapLayersChange$.observed).toBe(false);
+      expect(currentSelected$.observed).toBe(false);
     });
   });
 

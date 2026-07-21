@@ -1,10 +1,11 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DateTime } from "luxon";
-import { Observable, Subject, lastValueFrom, of } from 'rxjs';
-import { catchError, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { Observable, lastValueFrom, of } from 'rxjs';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 
 import { AttachmentTypeEnum } from "@admin-core/models/attachmentTypeEnum";
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
@@ -62,6 +63,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   private forestSvc = inject(ForestClientService);
   private cognitoService = inject(CognitoService);
   private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly DEFAULT_ISO_DATE_FORMAT = DEFAULT_ISO_DATE_FORMAT;
@@ -106,7 +108,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private scrollToFragment: string = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
-  private ngUnsubscribe: Subject<void> = new Subject<void>();
 
   // bsDatepicker config object
   readonly bsConfig = {
@@ -153,7 +154,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
 
-    this.route.url.pipe(takeUntil(this.ngUnsubscribe), switchMap(url => {
+    this.route.url.pipe(takeUntilDestroyed(this.destroyRef), switchMap(url => {
         this.state = url[1].path === 'create' ? 'create' : 'edit';
         return this.isCreate ? of({}) : this.projectSvc.projectControllerFindOne(this.route.snapshot.params.appId);
       }
@@ -237,9 +238,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.snackBarRef) {
       this.snackBarRef.dismiss();
     }
-
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
   }
 
   validate() {

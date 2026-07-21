@@ -1,4 +1,5 @@
-import { AfterViewInit, ApplicationRef, Component, createComponent, ElementRef, Injector, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input, output } from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, createComponent, DestroyRef, ElementRef, Injector, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input, output } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProjectPlanCodeEnum, ProjectPublicSummaryResponse } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
 import { UrlService } from '@public-core/services/url.service';
@@ -7,8 +8,6 @@ import * as L_import from 'leaflet';
 import 'leaflet.markercluster';
 const L = (L_import as any).default || L_import;
 import { differenceWith, findIndex, funnel } from 'remeda';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { destroyMap, initMap, mapContainer, observeMapSize } from '../utils/leaflet-host';
 import { MarkerPopupComponent } from './marker-popup/marker-popup.component';
 
@@ -39,6 +38,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   urlService = inject(UrlService);
   private injector = inject(Injector);
   private mapLayersService = inject(MapLayersService);
+  private destroyRef = inject(DestroyRef);
 
   readonly loading = input<boolean | undefined>(undefined); // from projects component
   readonly updateCoordinates = output(); // to applications component
@@ -50,7 +50,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   private markerClusterGroup: any;
   private isMapReady = false;
   private doNotify = true; // whether to emit notification
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   private mapLayers = new MapLayers();
   private resizeObserver: ResizeObserver | null = null;
 
@@ -72,7 +71,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
   ngOnInit(): void {
     this.mapLayersService.$mapLayersChange
-      .pipe(takeUntil(this.ngUnsubscribe))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.updateOnLayersChange();
     });
@@ -253,8 +252,6 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     this.resizeObserver?.disconnect();
     destroyMap(this.map);
     this.map = null;
-    this.ngUnsubscribe.next(null);
-    this.ngUnsubscribe.complete();
   }
 
   /**

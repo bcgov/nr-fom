@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject, firstValueFrom } from 'rxjs';
 
@@ -18,7 +19,6 @@ import {
 } from '@api-client';
 import { User } from "@utility/security/user";
 import { indexBy } from 'remeda';
-import { takeUntil } from 'rxjs/operators';
 import { CommentDetailComponent } from './comment-detail/comment-detail.component';
 import { ExportTermsModalComponent } from './export-terms-modal/export-terms-modal.component';
 
@@ -46,6 +46,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   private modalSvc = inject(ModalService);
   private cdr = inject(ChangeDetectorRef);
   private injector = inject(Injector);
+  private destroyRef = inject(DestroyRef);
 
 
   public readonly commentListScrollContainer = viewChild.required('commentListScrollContainer', { read: ElementRef });
@@ -66,7 +67,6 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   public hasAnyPublicComments = false;
   public exportInProgress = false;
   public exportSuccess = false;
-  private ngUnsubscribe: Subject<void> = new Subject<void>();
   private triggered$ = new Subject<void>(); // To notify when 'save' or scope 'select' happen.
   private exportFeedbackTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly exportDateTimeFormatter = new Intl.DateTimeFormat('en-US', {
@@ -92,8 +92,8 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       });
 
-    this.triggered$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
-      this.commentSvc.publicCommentControllerFind(this.projectId).pipe(takeUntil(this.ngUnsubscribe)).subscribe((comments) => {
+    this.triggered$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.commentSvc.publicCommentControllerFind(this.projectId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((comments) => {
         this.allPublicComments = comments ?? [];
         this.hasAnyPublicComments = this.allPublicComments.length > 0;
         this.filteredPublicComments = this.filterProjectComments(this.allPublicComments, this.selectedScope);
@@ -255,7 +255,5 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     if (this.exportFeedbackTimeout) {
       clearTimeout(this.exportFeedbackTimeout);
     }
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
   }
 }
