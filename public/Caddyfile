@@ -3,6 +3,8 @@
 #        Then access local frontend app: http://localhost:4300/public/projects
 
 :4300 {
+	# Redirect the base URL (e.g. fom.nrs.gov.bc.ca/) to the public front-end.
+	redir / /public/
 	redir /public /public/
 
 	log {
