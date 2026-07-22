@@ -1,9 +1,9 @@
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnInit, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnInit, inject, input, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AttachmentResponse, ProjectMetricsResponse, ProjectPlanCodeEnum, ProjectResponse, ProjectService, ProjectWorkflowStateChangeRequest, SpatialFeaturePublicResponse, WorkflowStateEnum } from "@api-client";
 import { NgbModal, NgbModalRef, NgbModule, NgbNav } from '@ng-bootstrap/ng-bootstrap';
 import { User } from "@utility/security/user";
@@ -32,7 +32,6 @@ import { ShapeInfoComponent } from "../shape-info/shape-info.component";
     styleUrl: './fom-detail.component.scss'
 })
 export class FomDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private modalSvc = inject(ModalService);
   projectService = inject(ProjectService);
@@ -54,8 +53,10 @@ export class FomDetailComponent implements OnInit {
   public isSettingCommentClassification = false;
   public application: ProjectResponse = null;
   public project: ProjectResponse = null;
-  public spatialDetail: SpatialFeaturePublicResponse[];
-  public projectMetrics: ProjectMetricsResponse;
+  // Route resolver data, bound as inputs (a/:appId resolve keys).
+  readonly projectDetail = input<ProjectResponse>();
+  readonly spatialDetail = input.required<SpatialFeaturePublicResponse[]>();
+  readonly projectMetrics = input.required<ProjectMetricsResponse>();
   public isProjectActive = false;
   public attachments: AttachmentResponse[] = [];
   public user: User;
@@ -71,30 +72,23 @@ export class FomDetailComponent implements OnInit {
   }
 
   ngOnInit() {
-    // get data from route resolver
-    this.route.data
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe((data: { projectDetail: ProjectResponse,
-                            spatialDetail: Array<SpatialFeaturePublicResponse>, 
-                            projectMetrics: ProjectMetricsResponse }) => {
-      if (data.projectDetail) {
-        this.initProjectDetail(data.projectDetail);
-      } else {
-        alert("Uh-oh, couldn't load fom");
-        // application not found --> navigate back to search
-        this.router.navigate(['/search']);
-      }
+    // route resolver data is bound to inputs (projectDetail/spatialDetail/projectMetrics)
+    const projectDetail = this.projectDetail();
+    if (projectDetail) {
+      this.initProjectDetail(projectDetail);
+    } else {
+      alert("Uh-oh, couldn't load fom");
+      // application not found --> navigate back to search
+      this.router.navigate(['/search']);
+    }
 
-      this.spatialDetail = data.spatialDetail;
-      this.projectMetrics = data.projectMetrics;
-      this.attachmentResolverSvc.getAttachments(this.project.id)
-        .then( (result) => {
-          this.attachments = result;
-          //Sorting by Public Notice and Supporting Document
-          this.attachments.sort((a,b) => (a.attachmentType.code < b.attachmentType.code? -1 : 1));
-        }).catch((error) => {
-        console.error(error);
-      });
+    this.attachmentResolverSvc.getAttachments(this.project.id)
+      .then( (result) => {
+        this.attachments = result;
+        //Sorting by Public Notice and Supporting Document
+        this.attachments.sort((a,b) => (a.attachmentType.code < b.attachmentType.code? -1 : 1));
+      }).catch((error) => {
+      console.error(error);
     });
 
     // rxjs project update trigger initialization
@@ -361,7 +355,7 @@ export class FomDetailComponent implements OnInit {
       this.modalSvc.openWarningDialog('Comment End Date must be at least 30 days after Comment Start Date when "Publish" is pushed.');
     }
 
-    if (!this.spatialDetail || this.spatialDetail.length == 0) {
+    if (!this.spatialDetail() || this.spatialDetail().length == 0) {
       ready = false;
       this.modalSvc.openWarningDialog('Proposed FOM spatial file should be uploaded before "Publish" is pushed.');
     }

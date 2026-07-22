@@ -1,11 +1,10 @@
 import { ANALYTICS_DATA_DEFAULT_SIZE, DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, Component, OnInit, signal, inject, viewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, inject, input, linkedSignal, viewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { ActivatedRoute } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
 import {
   ChartOptions, commentsByDistrictChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions,
@@ -36,11 +35,13 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
     providers: [DatePipe]
 })
 export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
-  private route = inject(ActivatedRoute);
   private analyticsDashboardDataService = inject(AnalyticsDashboardDataService);
 
   isInitialized = false; // Is Angular view done initialization
-  analyticsData = signal<AnalyticsDashboardData>(null);
+  // Resolved analytics data, bound from the route's `analyticsData` resolver key.
+  readonly initialAnalyticsData = input.required<AnalyticsDashboardData>({ alias: 'analyticsData' });
+  // Writable working copy, seeded from the resolved input and re-set() when filters change.
+  readonly analyticsData = linkedSignal(() => this.initialAnalyticsData());
   startDate: Date;
   endDate: Date;
   planFilterOptions = [
@@ -84,7 +85,6 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.analyticsData.set(this.route.snapshot.data['analyticsData']);
     console.log('Initial analytics data loaded:', this.analyticsData());
     this.selectedPlan = this.planFilterOptions[0]?.value;
     this.startDate = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();

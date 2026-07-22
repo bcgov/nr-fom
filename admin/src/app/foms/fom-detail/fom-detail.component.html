@@ -198,9 +198,9 @@
                   <ng-template ngbNavContent>
                     <h2>Geographic Shape Information</h2>
 
-                    <app-details-map [projectSpatialDetail]="spatialDetail" />
+                    <app-details-map [projectSpatialDetail]="spatialDetail()" />
 
-                    <app-shape-info [spatialDetail]="spatialDetail" />
+                    <app-shape-info [spatialDetail]="spatialDetail()" />
 
                   </ng-template>
 
@@ -291,11 +291,11 @@
                 <ul class="nv-list" style="margin-top: 1em;">
                   <li>
                     <span class="name">Total:</span>
-                    <span class="value">{{projectMetrics.totalCommentsCount}}</span>
+                    <span class="value">{{projectMetrics().totalCommentsCount}}</span>
                   </li>
                   <li>
                     <span class="name">Classified:</span>
-                    <span class="value">{{projectMetrics.respondedToCommentsCount}}</span>
+                    <span class="value">{{projectMetrics().respondedToCommentsCount}}</span>
                   </li>
 
                   <li>
@@ -340,7 +340,7 @@
                 <ul class="nv-list" style="margin-top: 1em;">
                   <li>
                     <span class="name">Total:</span>
-                    <span class="value">{{projectMetrics.totalInteractionsCount}}</span>
+                    <span class="value">{{projectMetrics().totalInteractionsCount}}</span>
                   </li>
                 </ul>
 
@@ -350,7 +350,7 @@
               <div class="aside-card">
                 <h3 class="title">FOM Spatial Submission</h3>
                 <div class="body">
-                  @if (spatialDetail.length === 0) {
+                  @if (spatialDetail().length === 0) {
                     <span  class="invalid-type-msg"> Proposed FOM Spatial Upload Required </span>
                   }
                   <div class="btn-container">
