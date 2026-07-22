@@ -1,7 +1,5 @@
 
-import { Component, DestroyRef, OnInit, inject } from "@angular/core";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { ActivatedRoute } from "@angular/router";
+import { Component, input } from "@angular/core";
 
 @Component({
     imports: [],
@@ -9,19 +7,9 @@ import { ActivatedRoute } from "@angular/router";
     templateUrl: "./not-authorized.component.html",
     styleUrl: "./not-authorized.component.scss"
 })
-export class NotAuthorizedComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private destroyRef = inject(DestroyRef);
-
-  public loggedout = false;
-
-  ngOnInit() {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((paramMap) => {
-        this.loggedout = paramMap.get("loggedout") === "true";
-      });
-  }
+export class NotAuthorizedComponent {
+  // `loggedout` query param, bound as an input (string "true" → boolean).
+  readonly loggedout = input(false, { transform: (v: string | boolean) => v === true || v === 'true' });
 
   login() {
     window.location.href = window.location.origin + "/admin";

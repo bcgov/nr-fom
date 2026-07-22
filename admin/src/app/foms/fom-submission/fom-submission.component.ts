@@ -3,10 +3,10 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { ProjectPlanCodeEnum, ProjectResponse, ProjectService, SpatialObjectCodeEnum, SubmissionDetailResponse, SubmissionRequest, SubmissionService, SubmissionTypeCodeEnum, WorkflowStateEnum } from '@api-client';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
 import { RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
@@ -37,7 +37,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     providers: [DatePipe]
 })
 export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy {
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
   snackBar = inject(MatSnackBar);
   private projectSvc = inject(ProjectService);
@@ -65,8 +64,8 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   private scrollToFragment: string = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private user: User;
-  
-  public findProject$ = this.projectSvc.projectControllerFindOne(this.route.snapshot.params.appId);
+
+  readonly appId = input.required<string>();
 
   get isLoading() {
     return this.stateSvc.loading;
@@ -99,13 +98,9 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   ngOnInit() {
     this.geoTypeValues = Object.values(SpatialObjectCodeEnum);
     let submissionTypeCode = SubmissionTypeCodeEnum.Proposed; // default
-    this.route.url.pipe(
+    const findProject$ = this.projectSvc.projectControllerFindOne(Number(this.appId()));
+    findProject$.pipe(
       takeUntilDestroyed(this.destroyRef),
-      switchMap(() => {
-        return this.findProject$;
-      })
-    )
-    .pipe(
       switchMap((projectResponse: ProjectResponse) => {
         if (projectResponse.workflowState.code === WorkflowStateEnum.CommentClosed) {
           submissionTypeCode = SubmissionTypeCodeEnum.Final;

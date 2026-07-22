@@ -1,11 +1,11 @@
-import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { DateTime } from "luxon";
 import { Observable, lastValueFrom, of } from 'rxjs';
-import { catchError, switchMap, tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 
 import { AttachmentTypeEnum } from "@admin-core/models/attachmentTypeEnum";
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
@@ -49,7 +49,6 @@ type ApplicationPageType = 'create' | 'edit';
     providers: [DatePipe]
 })
 export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
   snackBar = inject(MatSnackBar);
   private projectSvc = inject(ProjectService);
@@ -67,6 +66,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly DEFAULT_ISO_DATE_FORMAT = DEFAULT_ISO_DATE_FORMAT;
   fg: RxFormGroup;
+  // Route-bound inputs: `mode` from route data (create/edit), `appId` param (edit route only).
+  readonly mode = input.required<ApplicationPageType>();
+  readonly appId = input<string>();
   state: ApplicationPageType;
   originalProjectResponse: ProjectResponse;
   districts: DistrictResponse[] = this.stateSvc.getCodeTable('district');
@@ -152,12 +154,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-
-    this.route.url.pipe(takeUntilDestroyed(this.destroyRef), switchMap(url => {
-        this.state = url[1].path === 'create' ? 'create' : 'edit';
-        return this.isCreate ? of({}) : this.projectSvc.projectControllerFindOne(this.route.snapshot.params.appId);
-      }
-    )).subscribe((data: ProjectResponse) => {
+    this.state = this.mode();
+    const load$ = this.isCreate ? of({}) : this.projectSvc.projectControllerFindOne(Number(this.appId()));
+    load$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((data: ProjectResponse) => {
       if (!this.isCreate) {
         this.originalProjectResponse = data;
         if (data.district) {

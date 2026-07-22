@@ -28,7 +28,8 @@ export const AppRoutes: Routes = [
   // Note! From previous fom-routing.modules.ts
   {
     path: 'a/create',
-    loadComponent: () => import('./foms/fom-add-edit/fom-add-edit.component').then(m => m.FomAddEditComponent)
+    loadComponent: () => import('./foms/fom-add-edit/fom-add-edit.component').then(m => m.FomAddEditComponent),
+    data: { mode: 'create' }
   },
   {
     path: 'a/:appId',
@@ -41,7 +42,8 @@ export const AppRoutes: Routes = [
   },
   {
     path: 'a/:appId/edit',
-    loadComponent: () => import('./foms/fom-add-edit/fom-add-edit.component').then(m => m.FomAddEditComponent)
+    loadComponent: () => import('./foms/fom-add-edit/fom-add-edit.component').then(m => m.FomAddEditComponent),
+    data: { mode: 'edit' }
   },
   {
     path: 'comments/:appId',
