@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { DistrictService, ProjectService, PublicCommentService } from '@api-client';
 import { CodeTables } from '@public-core/models/code-tables';
 import { BehaviorSubject, forkJoin } from 'rxjs';
@@ -13,7 +13,8 @@ export class StateService {
   private projectSvc = inject(ProjectService);
   private modalSvc = inject(ModalService);
 
-  private _loading = false;
+  private readonly _inFlight = signal(0);
+  readonly loading = computed(() => this._inFlight() > 0);
   private _isReadySub = new BehaviorSubject(false);
   private _codeTables: CodeTables;
   setReady() {
@@ -31,12 +32,14 @@ export class StateService {
   }
 
 
-  get loading() {
-    return this._loading;
+  /** Called only by the HTTP interceptor when a request starts. */
+  requestStarted(): void {
+    this._inFlight.update((n) => n + 1);
   }
 
-  set loading(state: boolean) {
-    this._loading = state
+  /** Called only by the HTTP interceptor when a request settles (finalize). */
+  requestFinished(): void {
+    this._inFlight.update((n) => Math.max(0, n - 1));
   }
 
   setCodeTables(codeTables: CodeTables) {

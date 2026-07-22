@@ -22,7 +22,7 @@
               (click)="submit()"
               [disabled]="!fg.isModified"
               >{{ isLoading ? "Submitting" : "Submit" }}
-              <em class="spinner rotating" [hidden]="!stateSvc.loading"></em>
+              <em class="spinner rotating" [hidden]="!stateSvc.loading()"></em>
             </button>
           } @else {
             <button
@@ -32,7 +32,7 @@
               (click)="saveApplication()"
               [disabled]="isPublishState"
               >{{ isLoading ? "Saving" : "Save" }}
-              <em class="spinner rotating" [hidden]="!stateSvc.loading"></em>
+              <em class="spinner rotating" [hidden]="!stateSvc.loading()"></em>
             </button>
           }
         </div>

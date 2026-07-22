@@ -128,7 +128,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get isLoading() {
-    return this.stateSvc.loading;
+    return this.stateSvc.loading();
   }
 
   // check for unsaved changes before navigating away from current route (ie, this page)
@@ -191,11 +191,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.cdr.detectChanges();
 
-      // stateSvc.loading flips back to false in the HTTP interceptor's finalize(),
-      // which runs after this callback returns — defer so the Submit/Save button
-      // spinners pick up the settled value instead of a stale "true".
-      setTimeout(() => this.cdr.detectChanges());
-
       this.loadForestClients().then( (result) => {
         this.forestClients = result;
         this.cdr.detectChanges();
@@ -251,7 +246,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isSubmitSaveClicked = true;
     this.validate();
     if (!this.fg.valid) return;
-    if (this.stateSvc.loading) return;
+    if (this.stateSvc.loading()) return;
     const projectCreate = this.fg.value as ProjectCreateRequest
     projectCreate['districtId'] = this.districtIdSelect;
     projectCreate.forestClientNumber = this.fg.get('forestClient').value.id;
@@ -269,10 +264,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
         }),
         catchError((error) => {
           console.error(error);
-          // stateSvc.loading flips back to false in the HTTP interceptor's finalize(),
-          // which runs after this callback returns — defer so the Submit/Save button
-          // spinners pick up the settled value instead of a stale "true".
-          setTimeout(() => this.cdr.detectChanges());
           return of(null);
         })
       )
@@ -320,10 +311,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       return this.onSuccess(id);
     } catch (err) {
       console.error(err);
-      // stateSvc.loading flips back to false in the HTTP interceptor's finalize(),
-      // which runs after this callback returns — defer so the Submit/Save button
-      // spinners pick up the settled value instead of a stale "true".
-      setTimeout(() => this.cdr.detectChanges());
     }
   }
 

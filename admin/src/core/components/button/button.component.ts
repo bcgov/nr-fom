@@ -11,7 +11,7 @@ import { StateService } from '@admin-core/services/state.service';
             class="btn btn-primary ms-1"
             type="button"
           >
-            <i class="spinner rotating" [hidden]="!stateSvc.loading"></i>
+            <i class="spinner rotating" [hidden]="!stateSvc.loading()"></i>
             <ng-content />
           </button>
           <span title="{{title()}}"></span>

@@ -54,10 +54,14 @@ describe('StateService', () => {
     expect(service.codeTables).toBe(tables);
   });
 
-  it('should set and get loading state', () => {
-    service.loading = true;
-    expect(service.loading).toBe(true);
-    service.loading = false;
-    expect(service.loading).toBe(false);
+  it('should track loading via in-flight request count', () => {
+    expect(service.loading()).toBe(false);
+    service.requestStarted();
+    expect(service.loading()).toBe(true);
+    service.requestStarted(); // two overlapping requests
+    service.requestFinished();
+    expect(service.loading()).toBe(true); // one still in flight
+    service.requestFinished();
+    expect(service.loading()).toBe(false);
   });
 });

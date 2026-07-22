@@ -68,7 +68,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly appId = input.required<string>();
 
   get isLoading() {
-    return this.stateSvc.loading;
+    return this.stateSvc.loading();
   }
 
   constructor() {
@@ -126,11 +126,6 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
       this.fg.get('projectId').setValue(this.originalSubmissionRequest.projectId);
       this.fg.get('submissionTypeCode').setValue(this.originalSubmissionRequest.submissionTypeCode);
       this.cdr.detectChanges();
-
-      // stateSvc.loading flips back to false in the HTTP interceptor's finalize(),
-      // which runs after this callback returns — defer so the View FOM button
-      // spinner picks up the settled value instead of a stale "true".
-      setTimeout(() => this.cdr.detectChanges());
     });
   }
 

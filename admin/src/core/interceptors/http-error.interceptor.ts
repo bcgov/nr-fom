@@ -9,9 +9,9 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
   const modalSvc = inject(ModalService);
   const stateSvc = inject(StateService);
 
-  stateSvc.loading = true;
+  stateSvc.requestStarted();
   return next(request).pipe(
-    finalize(() => (stateSvc.loading = false)),
+    finalize(() => stateSvc.requestFinished()),
     catchError((err) => {
       const error = err?.error?.message || err.statusText;
       const statusCode = err?.status;
