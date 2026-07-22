@@ -3,7 +3,7 @@
     <div class="title-container">
       <div class="title-container__title">
         <h1 class="text-muted">
-          {{ editMode? (isAddNewNotice()? 'New': 'Edit' ): '' }}  Online Public Notice &nbsp; FOM Number: {{projectId}}
+          {{ editMode()? (isAddNewNotice()? 'New': 'Edit' ): '' }}  Online Public Notice &nbsp; FOM Number: {{projectId}}
         </h1>
       </div>
       @if (publicNoticeFormGroup) {
@@ -16,7 +16,7 @@
             (click)="cancelChanges()">
             Cancel
           </button>
-          @if (editMode) {
+          @if (editMode()) {
             <button
               class="btn btn-primary ms-1"
               form="publicNoticeForm"
@@ -93,14 +93,14 @@
             </div>
             <div class="row" >
               <div class="form-group col-md-12">
-                <label for="review-fom-address" [class.required]="editMode">Physical address to review FOM</label>
+                <label for="review-fom-address" [class.required]="editMode()">Physical address to review FOM</label>
                 <textarea class="form-control mb" rows="3"
                   id="review-fom-address" name="review-fom-address"
-                  [placeholder]="editMode? '101-11234 West 12th Avenue &#10;Vancouver BC V6H 1L9': ''"
+                  [placeholder]="editMode()? '101-11234 West 12th Avenue &#10;Vancouver BC V6H 1L9': ''"
                   formControlName="reviewAddress"
                   maxlength="{{addressLimit}}">
                 </textarea>
-                @if (editMode) {
+                @if (editMode()) {
                   <small>{{addressLimit-publicNoticeFormGroup.get('reviewAddress').value?.length}} characters remaining.</small>
                 }
                 @if ((form.submitted || fieldTouchedOrDirty('reviewAddress')) &&
@@ -114,10 +114,10 @@
             </div>
             <div class="row" >
               <div class="form-group col-md-6">
-                <label for="review-fom-hours" [class.required]="editMode">Business Hours to physically review FOM</label>
+                <label for="review-fom-hours" [class.required]="editMode()">Business Hours to physically review FOM</label>
                 <input type="text"
                   id="review-fom-hours" name="review-fom-hours"
-                  [placeholder]="editMode? 'Monday to Friday 8am-4pm, Saturday 10am - 2pm': ''"
+                  [placeholder]="editMode()? 'Monday to Friday 8am-4pm, Saturday 10am - 2pm': ''"
                   maxlength="{{businessHoursLimit}}"
                   class="form-control"
                   formControlName="reviewBusinessHours"/>
@@ -132,7 +132,7 @@
               </div>
               <div class="row">
                 <div class="form-group col-md-12">
-                  <label for="sameAsReviewInd" [class.required]="editMode">Receive Comments Same as Review:</label>&nbsp;&nbsp;&nbsp;
+                  <label for="sameAsReviewInd" [class.required]="editMode()">Receive Comments Same as Review:</label>&nbsp;&nbsp;&nbsp;
                   <input type="checkbox" class="medium-check-box"
                     id="sameAsReviewInd" name="sameAsReviewInd"
                     formControlName="isReceiveCommentsSameAsReview"
@@ -148,16 +148,16 @@
                 <div class="row" >
                   <div class="form-group col-md-12">
                     <label for="receive-fom-address"
-                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview').value && editMode">
+                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview').value && editMode()">
                       Physical address to submit comments
                     </label>
                     <textarea class="form-control mb" rows="3"
                       id="receive-fom-address" name="receive-fom-address"
-                      [placeholder]="editMode? '101-11234 West 12th Avenue &#10;Vancouver BC V6H 1L9': ''"
+                      [placeholder]="editMode()? '101-11234 West 12th Avenue &#10;Vancouver BC V6H 1L9': ''"
                       formControlName="receiveCommentsAddress"
                       maxlength="{{addressLimit}}">
                     </textarea>
-                    @if (editMode) {
+                    @if (editMode()) {
                       <small>{{addressLimit-publicNoticeFormGroup.get('receiveCommentsAddress').value?.length}} characters remaining.</small>
                     }
                     @if ((form.submitted || fieldTouchedOrDirty('receiveCommentsAddress')) &&
@@ -172,12 +172,12 @@
                 <div class="row" >
                   <div class="form-group col-md-6">
                     <label for="receive-fom-hours"
-                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview').value && editMode">
+                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview').value && editMode()">
                       Business hours to physically submit comments
                     </label>
                     <input type="text"
                       id="receive-fom-hours" name="receive-fom-hours"
-                      [placeholder]="editMode? 'Monday to Friday 8am-4pm, Saturday 10am - 2pm': ''"
+                      [placeholder]="editMode()? 'Monday to Friday 8am-4pm, Saturday 10am - 2pm': ''"
                       maxlength="{{businessHoursLimit}}"
                       class="form-control"
                       formControlName="receiveCommentsBusinessHours"/>
@@ -192,14 +192,14 @@
                   </div>
                   <div class="row" >
                     <div class="form-group col-md-12">
-                      <label for="mailing-address" [class.required]="editMode">Mailing Address</label>
+                      <label for="mailing-address" [class.required]="editMode()">Mailing Address</label>
                       <textarea class="form-control mb" rows="3"
                         id="mailing-address" name="mailing-address"
-                        [placeholder]="editMode? 'Box 123 Surrey BC': ''"
+                        [placeholder]="editMode()? 'Box 123 Surrey BC': ''"
                         formControlName="mailingAddress"
                         maxlength="{{addressLimit}}">
                       </textarea>
-                      @if (editMode) {
+                      @if (editMode()) {
                         <small>{{addressLimit-publicNoticeFormGroup.get('mailingAddress').value?.length}} characters remaining.</small>
                       }
                       @if ((form.submitted || fieldTouchedOrDirty('mailingAddress')) &&
@@ -213,11 +213,11 @@
                   </div>
                   <div class="row" >
                     <div class="form-group col-md-12">
-                      <label for="email" [class.required]="editMode">Email for Public Comment</label>
+                      <label for="email" [class.required]="editMode()">Email for Public Comment</label>
                       <input type="text"
                         id="email" name="email"
                         maxlength="100"
-                        [placeholder]="editMode? 'name@industry.com': ''"
+                        [placeholder]="editMode()? 'name@industry.com': ''"
                         class="form-control"
                         formControlName="email"/>
                         @if ((form.submitted || fieldTouchedOrDirty('email')) && getErrorMessage('email', 'required')) {

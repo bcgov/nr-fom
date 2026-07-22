@@ -3,10 +3,10 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
 import { DatePipe } from "@angular/common";
-import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   ProjectResponse, PublicNoticeCreateRequest, PublicNoticeResponse,
   PublicNoticeService, PublicNoticeUpdateRequest, WorkflowStateEnum
@@ -16,7 +16,6 @@ import { User } from "@utility/security/user";
 import { DateTime } from "luxon";
 import { BsDatepickerModule } from "ngx-bootstrap/datepicker";
 import { lastValueFrom } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
 import { PublicNoticeForm } from './public-notice.form';
 
 @Component({
@@ -31,7 +30,6 @@ import { PublicNoticeForm } from './public-notice.form';
     providers: [DatePipe]
 })
 export class PublicNoticeEditComponent implements OnInit {
-  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private formBuilder = inject(RxFormBuilder);
   stateSvc = inject(StateService);
@@ -42,6 +40,11 @@ export class PublicNoticeEditComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
 
+  // Route-bound inputs: appId param, projectDetail resolver data, and editMode from route `data`.
+  readonly appId = input.required<string>();
+  readonly projectDetail = input.required<ProjectResponse>();
+  readonly editMode = input.required<boolean>(); // 'edit'/'view' mode, from route data
+
   user: User;
   project: ProjectResponse;
   projectId: number;
@@ -50,7 +53,6 @@ export class PublicNoticeEditComponent implements OnInit {
   publicNoticeFormGroup: IFormGroup<PublicNoticeForm>;
   addressLimit: number = 500;
   businessHoursLimit: number = 100;
-  editMode: boolean; // 'edit'/'view' mode.
   maxPostDate: Date;
   minPostDate: Date = DateTime.now().plus({days: 1}).toJSDate(); // 1 day in the future.
 
@@ -59,47 +61,29 @@ export class PublicNoticeEditComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.projectId = this.route.snapshot.params.appId;
-    this.editMode = this.route.snapshot.url.filter(
-      (seg)=> seg.path.includes('edit')
-    ).length != 0;
+    this.projectId = Number(this.appId());
 
-    this.route.data
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        switchMap((resolverData) => {
-          const publicNoticeId = resolverData['projectDetail'].publicNoticeId;
-          this.isNewForm = !publicNoticeId;
-          if (!publicNoticeId) {
-            return this.publicNoticeService
-              .publicNoticeControllerFindLatestPublicNotice(resolverData['projectDetail'].forestClient.id)
-              .pipe(
-                map(pn => {
-                  return {data: resolverData, publicNotice: pn}
-                })
-              );
-          }
-          else {
-            return this.publicNoticeService
-              .publicNoticeControllerFindOne(publicNoticeId)
-              .pipe(
-                map(pn => {
-                  return {data: resolverData, publicNotice: pn}
-                })
-              );
-          }
-        })
-      )
-      .subscribe((result) => {
-        this.project = result.data.projectDetail;
-        this.publicNoticeResponse = result.publicNotice;
+    // projectDetail comes from the route resolver (bound as an input); fetch the matching
+    // public notice — the latest for the forest client when the project has none yet.
+    const projectDetail = this.projectDetail();
+    const publicNoticeId = projectDetail.publicNoticeId;
+    this.isNewForm = !publicNoticeId;
+    const publicNotice$ = publicNoticeId
+      ? this.publicNoticeService.publicNoticeControllerFindOne(publicNoticeId)
+      : this.publicNoticeService.publicNoticeControllerFindLatestPublicNotice(projectDetail.forestClient.id);
+
+    publicNotice$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((pn) => {
+        this.project = projectDetail;
+        this.publicNoticeResponse = pn;
         this.maxPostDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
         this.processBeforeFormGroupInitialized()
-        
+
         const publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse);
         this.publicNoticeFormGroup = this.formBuilder.formGroup(publicNoticeForm) as IFormGroup<PublicNoticeForm>;
         this.onSameAsReviewIndToggled();
-        if (!this.editMode) {
+        if (!this.editMode()) {
           this.publicNoticeFormGroup.disable();
         }
         this.cdr.detectChanges();
@@ -108,12 +92,11 @@ export class PublicNoticeEditComponent implements OnInit {
         // which runs after this callback returns — defer so the Save/Delete button
         // spinners pick up the settled value instead of a stale "true".
         setTimeout(() => this.cdr.detectChanges());
-      }
-    );
+      });
   }
 
   processBeforeFormGroupInitialized() {
-    if (!this.editMode) return;
+    if (!this.editMode()) return;
     
     if (this.isNewForm) {
       // Don't inherit operation years from previous public notice from the forest client.
@@ -144,7 +127,7 @@ export class PublicNoticeEditComponent implements OnInit {
   }
 
   isAddNewNotice() {
-    return this.editMode && this.isNewForm;
+    return this.editMode() && this.isNewForm;
   }
 
   onSameAsReviewIndToggled(): void {
@@ -197,7 +180,7 @@ export class PublicNoticeEditComponent implements OnInit {
   }
 
   async onSubmit() {
-    if (this.editMode && this.publicNoticeFormGroup.valid) {
+    if (this.editMode() && this.publicNoticeFormGroup.valid) {
       await lastValueFrom(this.submitPublicNotice());
       this.router.navigate(['/a', this.projectId]);
     }

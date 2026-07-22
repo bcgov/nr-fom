@@ -67,14 +67,16 @@ export const AppRoutes: Routes = [
     loadComponent: () => import('./foms/public-notice/public-notice-edit.component').then(m => m.PublicNoticeEditComponent),
     resolve: {
       projectDetail: projectDetailResolver
-    }
+    },
+    data: { editMode: false }
   },
   {
     path: 'publicNotice/:appId/edit',
     loadComponent: () => import('./foms/public-notice/public-notice-edit.component').then(m => m.PublicNoticeEditComponent),
     resolve: {
       projectDetail: projectDetailResolver
-    }
+    },
+    data: { editMode: true }
   },
   {
     path: 'analytics-dashboard',
