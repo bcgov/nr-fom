@@ -12,6 +12,7 @@ import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSv
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
+import { LoadingService } from '@admin-core/services/loading.service';
 import { AttachmentUploadService } from "@admin-core/utils/attachmentUploadService";
 import { DEFAULT_ISO_DATE_FORMAT, MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
@@ -56,6 +57,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   private attachmentUploadSvc = inject(AttachmentUploadService);
   private formBuilder = inject(RxFormBuilder);
   stateSvc = inject(StateService);
+  loadingSvc = inject(LoadingService);
   private modalSvc = inject(ModalService);
   private datePipe = inject(DatePipe);
   private forestSvc = inject(ForestClientService);
@@ -128,7 +130,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get isLoading() {
-    return this.stateSvc.loading();
+    return this.loadingSvc.loading();
   }
 
   // check for unsaved changes before navigating away from current route (ie, this page)
@@ -246,7 +248,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isSubmitSaveClicked = true;
     this.validate();
     if (!this.fg.valid) return;
-    if (this.stateSvc.loading()) return;
+    if (this.loadingSvc.loading()) return;
     const projectCreate = this.fg.value as ProjectCreateRequest
     projectCreate['districtId'] = this.districtIdSelect;
     projectCreate.forestClientNumber = this.fg.get('forestClient').value.id;

@@ -2,16 +2,16 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { throwError } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
-import { StateService } from '@public-core/services/state.service';
+import { LoadingService } from '@public-core/services/loading.service';
 import { ModalService } from '@public-core/services/modal.service';
 
 export const errorInterceptor: HttpInterceptorFn = (request, next) => {
-  const stateSvc = inject(StateService);
+  const loadingSvc = inject(LoadingService);
   const modalSvc = inject(ModalService);
 
-  stateSvc.requestStarted();
+  loadingSvc.requestStarted();
   return next(request).pipe(
-    finalize(() => stateSvc.requestFinished()),
+    finalize(() => loadingSvc.requestFinished()),
     catchError((err) => {
       const error = err?.error?.message || err.statusText;
       console.error({

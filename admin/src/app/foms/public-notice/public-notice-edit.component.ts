@@ -1,6 +1,6 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { StateService } from '@admin-core/services/state.service';
+import { LoadingService } from '@admin-core/services/loading.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
 import { DatePipe } from "@angular/common";
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject, input } from '@angular/core';
@@ -32,7 +32,7 @@ import { PublicNoticeForm } from './public-notice.form';
 export class PublicNoticeEditComponent implements OnInit {
   private router = inject(Router);
   private formBuilder = inject(RxFormBuilder);
-  stateSvc = inject(StateService);
+  loadingSvc = inject(LoadingService);
   private cognitoService = inject(CognitoService);
   private modalSvc = inject(ModalService);
   private publicNoticeService = inject(PublicNoticeService);
@@ -118,7 +118,7 @@ export class PublicNoticeEditComponent implements OnInit {
   }
 
   get isLoading() {
-    return this.stateSvc.loading();
+    return this.loadingSvc.loading();
   }
 
   isAddNewNotice() {

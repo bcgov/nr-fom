@@ -1,5 +1,5 @@
 import { Component, booleanAttribute, inject, input } from '@angular/core';
-import { StateService } from '@admin-core/services/state.service';
+import { LoadingService } from '@admin-core/services/loading.service';
 
 @Component({
     selector: 'app-button',
@@ -11,7 +11,7 @@ import { StateService } from '@admin-core/services/state.service';
             class="btn btn-primary ms-1"
             type="button"
           >
-            <i class="spinner rotating" [hidden]="!stateSvc.loading()"></i>
+            <i class="spinner rotating" [hidden]="!loadingSvc.loading()"></i>
             <ng-content />
           </button>
           <span title="{{title()}}"></span>
@@ -22,7 +22,7 @@ import { StateService } from '@admin-core/services/state.service';
     styleUrl: './button.component.scss'
 })
 export class ButtonComponent {
-  stateSvc = inject(StateService);
+  loadingSvc = inject(LoadingService);
 
   readonly title = input('');
   readonly disabled = input(false, { transform: booleanAttribute });

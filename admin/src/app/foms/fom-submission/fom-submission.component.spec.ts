@@ -4,7 +4,6 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FomSubmissionComponent } from './fom-submission.component';
 import { CognitoService } from '@admin-core/services/cognito.service';
 import { ModalService } from '@admin-core/services/modal.service';
-import { StateService } from '@admin-core/services/state.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RxFormBuilder } from '@rxweb/reactive-form-validators';
@@ -32,7 +31,6 @@ describe('FomSubmissionComponent', () => {
         },
         { provide: ProjectService, useValue: { projectControllerFindOne: jest.fn().mockReturnValue(of({})) } },
         { provide: SubmissionService, useValue: { submissionControllerFindSubmissionDetailForCurrentSubmissionType: jest.fn().mockReturnValue(of({})) } },
-        { provide: StateService, useValue: { loading: false } },
         { provide: ModalService, useValue: { openErrorDialog: jest.fn(), openConfirmationDialog: jest.fn() } },
         { provide: CognitoService, useValue: { getUser: jest.fn().mockReturnValue({ isAuthorizedForClientId: jest.fn() }) } },
         { provide: RxFormBuilder, useValue: { formGroup: jest.fn().mockReturnValue({ get: jest.fn().mockReturnValue({ setValue: jest.fn() }), value: {} }) } },

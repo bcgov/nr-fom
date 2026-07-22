@@ -1,6 +1,6 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { StateService } from '@admin-core/services/state.service';
+import { LoadingService } from '@admin-core/services/loading.service';
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
 import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject, input } from '@angular/core';
@@ -41,7 +41,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   snackBar = inject(MatSnackBar);
   private projectSvc = inject(ProjectService);
   private formBuilder = inject(RxFormBuilder);
-  private stateSvc = inject(StateService);
+  private loadingSvc = inject(LoadingService);
   private modalSvc = inject(ModalService);
   private submissionSvc = inject(SubmissionService);
   private cognitoService = inject(CognitoService);
@@ -68,7 +68,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly appId = input.required<string>();
 
   get isLoading() {
-    return this.stateSvc.loading();
+    return this.loadingSvc.loading();
   }
 
   constructor() {
