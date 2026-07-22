@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnDestroy, OnInit, afterNextRender, inject, input, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Subject, firstValueFrom } from 'rxjs';
 
 import { CognitoService } from "@admin-core/services/cognito.service";
@@ -37,7 +37,6 @@ import { ExportTermsModalComponent } from './export-terms-modal/export-terms-mod
     styleUrl: './review-comments.component.scss'
 })
 export class ReviewCommentsComponent implements OnInit, OnDestroy {
-  private route = inject(ActivatedRoute);
   private commentSvc = inject(PublicCommentService);
   private stateSvc = inject(StateService);
   private projectSvc = inject(ProjectService);
@@ -47,6 +46,8 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private injector = inject(Injector);
   private destroyRef = inject(DestroyRef);
+
+  readonly appId = input.required<string>();
 
 
   public readonly commentListScrollContainer = viewChild.required('commentListScrollContainer', { read: ElementRef });
@@ -85,7 +86,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       commentListScrollContainer.nativeElement.scrollTop = 0;
     }
     
-    this.projectId = this.route.snapshot.params.appId;
+    this.projectId = Number(this.appId());
     firstValueFrom(this.projectSvc.projectControllerFindOne(this.projectId))
       .then((result) => {
         this.project = result;

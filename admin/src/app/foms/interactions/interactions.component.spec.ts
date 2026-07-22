@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { from, of } from 'rxjs';
 
@@ -42,13 +42,6 @@ describe('InteractionsComponent', () => {
       providers: [
         provideRouter([]),
         {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: { params: { appId: '1' } },
-            data: of({ project }),
-          },
-        },
-        {
           provide: InteractionService,
           useValue: {
             interactionControllerFind: findMock,
@@ -69,6 +62,9 @@ describe('InteractionsComponent', () => {
 
     fixture = TestBed.createComponent(InteractionsComponent);
     component = fixture.componentInstance;
+    // Route-bound inputs (withComponentInputBinding in production) supplied directly in the test.
+    fixture.componentRef.setInput('appId', '1');
+    fixture.componentRef.setInput('project', project);
   });
 
   function listText(): string {

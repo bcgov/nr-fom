@@ -1,9 +1,9 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnInit, afterNextRender, inject, input, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { InteractionResponse, InteractionService, ProjectResponse, WorkflowStateEnum } from '@api-client';
 import { User } from "@utility/security/user";
 import { DateTime } from "luxon";
@@ -34,7 +34,6 @@ export const ERROR_DIALOG = {
     styleUrl: './interactions.component.scss'
 })
 export class InteractionsComponent implements OnInit {
-  private route = inject(ActivatedRoute);
   private interactionSvc = inject(InteractionService);
   private cognitoService = inject(CognitoService);
   private modalSvc = inject(ModalService);
@@ -46,8 +45,9 @@ export class InteractionsComponent implements OnInit {
   readonly interactionDetailForm = viewChild<InteractionDetailComponent>('interactionDetailForm');
   public readonly interactionListScrollContainer = viewChild('interactionListScrollContainer', { read: ElementRef });
   
+  readonly appId = input.required<string>();
+  readonly project = input.required<ProjectResponse>();
   projectId: number;
-  project: ProjectResponse;
   selectedItem: InteractionResponse;
   loading = false;
   private user: User;
@@ -61,18 +61,12 @@ export class InteractionsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.projectId = this.route.snapshot.params.appId;
+    this.projectId = Number(this.appId());
     this.refreshInteractions();
 
     this.interactionSaved$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.refreshInteractions();
     });
-
-    this.route.data
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe((data: { project: ProjectResponse}) => {
-          this.project = data.project;
-        });
   }
 
   getProjectInteractions() {
@@ -107,10 +101,10 @@ export class InteractionsComponent implements OnInit {
 
   // Verify if condition is met to allow user modifying this Interaction.
   canModifyInteraction() {
-    return this.user.isAuthorizedForClientId(this.project.forestClient.id) &&
+    return this.user.isAuthorizedForClientId(this.project().forestClient.id) &&
           (
-            (this.project.workflowState.code == WorkflowStateEnum.CommentOpen)
-            || (this.project.workflowState.code == WorkflowStateEnum.CommentClosed)
+            (this.project().workflowState.code == WorkflowStateEnum.CommentOpen)
+            || (this.project().workflowState.code == WorkflowStateEnum.CommentClosed)
           );
   }
 
@@ -127,7 +121,7 @@ export class InteractionsComponent implements OnInit {
   setMinDate() {
     const interactionDetailForm = this.interactionDetailForm();
     if (interactionDetailForm) {
-      interactionDetailForm.minDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
+      interactionDetailForm.minDate = DateTime.fromISO(this.project().commentingOpenDate).toJSDate();
     }
   }
 

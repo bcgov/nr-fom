@@ -9,7 +9,7 @@
           <div class="title-container__title">
             <h1>Stakeholder Engagements for FOM Number:{{projectId}}</h1>
           </div>
-          @if (project.workflowState.code == 'COMMENT_OPEN' || project.workflowState.code == 'COMMENT_CLOSED') {
+          @if (project().workflowState.code == 'COMMENT_OPEN' || project().workflowState.code == 'COMMENT_CLOSED') {
             <div class="title-container__actions"
               >
               @if (canModifyInteraction()) {

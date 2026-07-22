@@ -2,13 +2,13 @@ import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSv
 import { CommonUtil } from '@admin-core/utils/commonUtil';
 import { COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import {
     AttachmentResponse, AttachmentService, InteractionResponse, InteractionService,
     ProjectPlanCodeEnum,
@@ -40,7 +40,6 @@ import { InteractionsSummaryComponent } from './interactions-summary/interaction
     styleUrl: './summary.component.scss'
 })
 export class SummaryComponent implements OnInit {
-  private route = inject(ActivatedRoute);
   private projectSvc = inject(ProjectService);
   private commentSvc = inject(PublicCommentService);
   private spatialFeatureSvc = inject(SpatialFeatureService);
@@ -50,6 +49,8 @@ export class SummaryComponent implements OnInit {
   attachmentResolverSvc = inject(AttachmentResolverSvc);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
+
+  readonly appId = input.required<string>();
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly periodOperationsTxt = "This FOM can be relied upon by the FOM holder for the purpose of a cutting permit or road permit application, until the date three years after commencement of the public review and commenting period. FOMs published by BC Timber Sales can be relied upon for the purpose of a cutting permit or road permit application, or the issuance of a Timber Sales License until the date three years after conclusion of the public review and commenting period.";
@@ -73,7 +74,7 @@ export class SummaryComponent implements OnInit {
   private scopeOptionChange$ = new Subject<CommentScopeOpt>();
 
   async ngOnInit(): Promise<void> {
-    this.projectId = this.route.snapshot.params.appId;
+    this.projectId = Number(this.appId());
     this.getProject(this.projectId); 
     this.getpublicComments(this.projectId);
     this.getSpatialDetails(this.projectId);
