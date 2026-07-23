@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, DestroyRef, Injector, OnDestroy, OnInit, afterNextRender, computed, inject, viewChild } from '@angular/core';
+import { Component, DestroyRef, Injector, OnDestroy, OnInit, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
@@ -63,7 +63,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   urlService = inject(UrlService);
   private fomFiltersSvc = inject(FOMFiltersService);
   private destroyRef = inject(DestroyRef);
-  private cdr = inject(ChangeDetectorRef);
   private injector = inject(Injector);
 
   readonly appmap = viewChild<AppMapComponent>('appmap');
@@ -78,7 +77,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   public Panel = Panel;
 
   // indicates which side panel should be shown
-  public activePanel: Panel;
+  readonly activePanel = signal<Panel>(undefined);
 
   // Active filters, and the FOM list fetched reactively from them. `loading` is this fetch's own
   // in-flight state (per-resource, not the global interceptor loading), so it won't react to
@@ -123,21 +122,17 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           break;
         case Panel.find:
           this.closeSplashModal();
-          this.activePanel = Panel.find;
+          this.activePanel.set(Panel.find);
           break;
         case Panel.details:
           this.closeSplashModal();
-          this.activePanel = Panel.details;
+          this.activePanel.set(Panel.details);
           break;
         default:
           this.closeSplashModal();
           break;
       }
-      // This fragment change is driven by a router NavigationEnd delivered from a
-      // debounced funnel timer in UrlService, which doesn't reliably trigger a zone
-      // change-detection tick that reaches this view. Detect changes explicitly so the
-      // side panel opens/closes when navigated from the map popup "View Details".
-      this.cdr.detectChanges();
+      // activePanel is a signal, so the side panel opens/closes reactively when it is set above
     });
   }
 
@@ -181,8 +176,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   public closeSidePanel() {
-    if (this.activePanel) {
-      this.activePanel = null;
+    if (this.activePanel()) {
+      this.activePanel.set(null);
       this.urlService.setFragment(null);
     }
   }
@@ -244,11 +239,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   public togglePanel(panel: Panel) {
-    if (this.activePanel === panel) {
-      this.activePanel = null;
+    if (this.activePanel() === panel) {
+      this.activePanel.set(null);
       this.urlService.setFragment(null);
     } else {
-      this.activePanel = panel;
+      this.activePanel.set(panel);
       this.urlService.setFragment(panel);
     }
   }

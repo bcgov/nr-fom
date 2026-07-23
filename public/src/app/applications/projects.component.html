@@ -1,20 +1,20 @@
-<div class="applications-view" [class.side-panel__open]="activePanel" [class.side-panel__closed]="!activePanel">
+<div class="applications-view" [class.side-panel__open]="activePanel()" [class.side-panel__closed]="!activePanel()">
 
   <div class="side-nav">
     <ul>
-      <li class="side-nav-item" [class.active]="activePanel === Panel.find">
+      <li class="side-nav-item" [class.active]="activePanel() === Panel.find">
         <button class="btn" (click)="togglePanel(Panel.find)">
           <em class="material-icons">search</em>
           <div>Find</div>
         </button>
       </li>
-      <li class="side-nav-item" [class.active]="activePanel === Panel.details">
+      <li class="side-nav-item" [class.active]="activePanel() === Panel.details">
         <button class="btn" (click)="togglePanel(Panel.details)">
           <em class="material-icons">info</em>
           <div>Details</div>
         </button>
       </li>
-      <li class="side-nav-item" [class.active]="activePanel === Panel.publicNotices">
+      <li class="side-nav-item" [class.active]="activePanel() === Panel.publicNotices">
         <button class="btn" (click)="togglePanel(Panel.publicNotices)">
           <em class="material-icons">notifications</em>
           <div>Public Notices</div>
@@ -30,12 +30,12 @@
     <app-find-panel #findPanel
       (update)="handleFindUpdate($event)"
       [loading]="loading()"
-      [hidden]="activePanel !== Panel.find" />
+      [hidden]="activePanel() !== Panel.find" />
     <app-details-panel #detailsPanel
-      [hidden]="activePanel !== Panel.details" />
+      [hidden]="activePanel() !== Panel.details" />
     <app-public-notices-panel #publicNoticesPanel
       (update)="handlePublicNoticesUpdate($event)"
-      [hidden]="activePanel !== Panel.publicNotices" />
+      [hidden]="activePanel() !== Panel.publicNotices" />
   </div>
 
   <div class="main-panel">
