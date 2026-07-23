@@ -9,13 +9,13 @@
           <button type="button" title="Clear search filters"
             class="btn btn-light"
             (click)="clearQueryParameters()"
-            [disabled]="searching">
+            [disabled]="searching()">
             Clear
           </button>
           <button type="submit" class="filter-btn-search btn btn-primary"
-            [disabled]="searching" title="Search for FOMs">
+            [disabled]="searching()" title="Search for FOMs">
             Search
-            <em class="spinner-border" [hidden]="!searching"></em>
+            <em class="spinner-border" [hidden]="!searching()"></em>
           </button>
         </div>
       </div>
@@ -36,7 +36,7 @@
             class="form-control"
             style="font-size: 14px;"
             [(ngModel)]="fNumber"
-            [disabled]="searching" autofocus/>
+            [disabled]="searching()" autofocus/>
           </div>
 
           <div class="form-group col-md-2">
@@ -49,7 +49,7 @@
               class="form-control"
               style="font-size: 14px;"
               [(ngModel)]="fFspId"
-              [disabled]="searching" autofocus/>
+              [disabled]="searching()" autofocus/>
             </div>
 
             <div class="form-group col-md-3">
@@ -61,7 +61,7 @@
                 style="font-size: 14px;"
                 name="fHolder"
                 [(ngModel)]="fHolder"
-                [disabled]="searching" autofocus/>
+                [disabled]="searching()" autofocus/>
               </div>
 
               <div class="form-group col-md-2">
@@ -70,7 +70,7 @@
                 </label>
                 <select id="fStatus" name="fStatus"
                   class="form-control"
-                  [disabled]="searching"
+                  [disabled]="searching()"
                   [(ngModel)]="fStatus">
                   <option [value]="undefined"></option> <!-- Note, for 'string' type use "undefined" so it can pre-selected -->
                   @for (status of statusCodes; track status) {
@@ -89,7 +89,7 @@
                 <select id="fDistrict" name="fDistrict"
                   class="form-control filter-select"
                   title="Filter by District"
-                  [disabled]="searching"
+                  [disabled]="searching()"
                   [(ngModel)]="fDistrict">
                   <option [value]="null" selected></option> <!-- Note, for 'number' type use "null" so it can pre-selected -->
                   @for (district of districts; track district) {
@@ -105,19 +105,19 @@
 
           <div class="container-fluid">
             <div class="search-results-container">
-              @if (searched && !searching && count == 0) {
+              @if (searched() && !searching() && count() == 0) {
                 <h2>
                   <strong>No results found.</strong>
                 </h2>
               }
-              @if (!searching && count > 0) {
+              @if (!searching() && count() > 0) {
                 <div>
-                  {{count}} result@if (count != 1) {
+                  {{count()}} result@if (count() != 1) {
                   <span>s</span>
                   } found.
                 </div>
               }
-              @if (count > 0) {
+              @if (count() > 0) {
                 <table class="table" aria-label="Search Results">
                   <thead>
                     <tr>
@@ -131,7 +131,7 @@
                       <th id="actions" class="actions"></th>
                     </tr>
                   </thead>
-                  @for (project of projects; track project) {
+                  @for (project of projects(); track project) {
                     <tr class="app-details">
                       <td class="fom-number">
                         <strong>{{project.id }}</strong>
