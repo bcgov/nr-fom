@@ -101,8 +101,10 @@ describe('ProjectsComponent', () => {
     expect(component.activePanel).toBeUndefined();
   });
 
-  it('should start with loading false', () => {
-    expect(component.loading).toBe(false);
+  it('should be loading while the initial FOM fetch (keyed on the default filters) is in flight', () => {
+    // The resource starts fetching as soon as the (BehaviorSubject-backed) filters are available,
+    // so loading() is true on construction until that first fetch resolves.
+    expect(component.loading()).toBe(true);
   });
 
   describe('closeSidePanel', () => {

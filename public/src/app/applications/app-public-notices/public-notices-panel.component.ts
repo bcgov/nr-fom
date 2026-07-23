@@ -1,5 +1,6 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject, output, viewChild } from '@angular/core';
+import { Component, computed, inject, output, signal, viewChild } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
@@ -29,37 +30,51 @@ import { NoticeFilter, PublicNoticesFilterPanelComponent } from './notices-filte
   templateUrl: './public-notices-panel.component.html',
   styleUrl: './public-notices-panel.component.scss'
 })
-export class PublicNoticesPanelComponent implements OnInit {
+export class PublicNoticesPanelComponent {
   urlService = inject(UrlService);
   publicNoticeService = inject(PublicNoticeService);
-  private changeDetectorRef = inject(ChangeDetectorRef);
 
   readonly update = output<IUpdateEvent>();
   readonly accordion = viewChild(MatAccordion);
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly periodOperationsTxt = periodOperationsTxt;
   readonly woodlotOperationsTxt = woodlotOperationsTxt;
-  isLoading = false;
-  pNotices: Array<PublicNoticePublicFrontEndResponse>;
-  initialPNotices: Array<PublicNoticePublicFrontEndResponse>;
-  districtList: string[]
 
-  ngOnInit(): void {
-    this.publicNoticeService
-      .publicNoticeControllerFindListForPublicFrontEnd()
-      .subscribe((results) => {
-        this.initialPNotices = results;
-        if (this.initialPNotices) {
-          this.pNotices = [...this.initialPNotices];
-          this.districtList = [...new Set(
-              this.pNotices
-                .filter(pn => pn.project.district != undefined)
-                .map(pn => pn.project.district?.name)
-            )].sort();
-        }
-        this.changeDetectorRef.detectChanges();
-      });
-  }
+  // Load the public notices once. isLoading() now actually reflects the in-flight fetch
+  private readonly noticesResource = rxResource({
+    stream: () => this.publicNoticeService.publicNoticeControllerFindListForPublicFrontEnd(),
+  });
+
+  readonly isLoading = this.noticesResource.isLoading;
+
+  // Full list as returned (undefined until loaded / on error — value() throws in the error state).
+  readonly initialPNotices = computed<PublicNoticePublicFrontEndResponse[] | undefined>(() =>
+    this.noticesResource.hasValue() ? this.noticesResource.value() : undefined);
+
+  private readonly noticeFilter = signal<NoticeFilter | null>(null);
+
+  // Filtered view shown in the template. Undefined until loaded, so the template can still
+  // distinguish "loading / not loaded" from an empty (but loaded) result set.
+  readonly pNotices = computed<PublicNoticePublicFrontEndResponse[] | undefined>(() => {
+    const all = this.initialPNotices();
+    if (!all) {
+      return undefined;
+    }
+    const filter = this.noticeFilter();
+    return filter ? this.applyNoticeFilter(all, filter) : [...all];
+  });
+
+  readonly districtList = computed<string[]>(() => {
+    const all = this.initialPNotices();
+    if (!all) {
+      return [];
+    }
+    return [...new Set(
+        all
+          .filter(pn => pn.project.district != undefined)
+          .map(pn => pn.project.district?.name)
+      )].sort();
+  });
 
   public showDetails(id: number) {
     this.update.emit({ search: false, resetMap: false, hidePanel: true });
@@ -70,24 +85,28 @@ export class PublicNoticesPanelComponent implements OnInit {
   }
 
   public handlePublicNoticesFilterUpdate(updateEvent: NoticeFilter) {
+    this.noticeFilter.set(updateEvent);
+  }
+
+  private applyNoticeFilter(
+    all: PublicNoticePublicFrontEndResponse[],
+    updateEvent: NoticeFilter
+  ): PublicNoticePublicFrontEndResponse[] {
     const filterConditions = [
-      this.condition('project.forestClient.name', 
+      this.condition('project.forestClient.name',
         updateEvent.forestClientName?.value?.trim(), this.compareFn().in),
 
-      this.condition('project.commentingOpenDate', 
+      this.condition('project.commentingOpenDate',
         updateEvent.commentingOpenDate.value, this.compareFn().isDateOnOrAfter),
-        
-      this.condition('project.district.name', 
+
+      this.condition('project.district.name',
         updateEvent.districtName?.value?.trim(), this.compareFn().equal)
     ]
 
-    const filteredResult = [...this.initialPNotices].filter( pn => {
+    return all.filter( pn => {
       const resolved = filterConditions.map(cn => cn(pn));
       return resolved.every(x => x === true);
     });
-
-    this.pNotices = [...filteredResult];
-    this.changeDetectorRef.detectChanges();
   }
 
   isFomAvailable(commentingOpenDate) {
@@ -95,12 +114,12 @@ export class PublicNoticesPanelComponent implements OnInit {
   }
 
   getValidityStartDate(project: ProjectResponse) {
-    // Note: special rule for BCTS FOMs: validity period is 3 years from commenting close date. 
+    // Note: special rule for BCTS FOMs: validity period is 3 years from commenting close date.
     if (project.bctsMgrName)
       return project.commentingClosedDate;
-    
-    // For Non-BCTS FOMs: validity period is 3 years from commenting open date. 
-    else 
+
+    // For Non-BCTS FOMs: validity period is 3 years from commenting open date.
+    else
       return project.commentingOpenDate;
   }
 
@@ -114,7 +133,7 @@ export class PublicNoticesPanelComponent implements OnInit {
         return isNullish(filterValue) || dataValue.includes(filterValue);
       },
       isDateOnOrAfter: function(date1: Date, date2: Date) {
-        return isNullish(date2) || 
+        return isNullish(date2) ||
             DateTime.fromJSDate(date1).startOf('day') >= DateTime.fromJSDate(date2).startOf('day');
       }
     }
@@ -122,7 +141,7 @@ export class PublicNoticesPanelComponent implements OnInit {
 
   private condition(
     key: string, // can be a dot notation path string.
-    filterValue: string | Date, 
+    filterValue: string | Date,
     comparFn: Function) {
 
     if (typeof filterValue === 'string') {

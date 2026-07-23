@@ -1,15 +1,14 @@
-import { ChangeDetectorRef, Component, DestroyRef, Injector, OnDestroy, OnInit, afterNextRender, inject, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, Injector, OnDestroy, OnInit, afterNextRender, computed, inject, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
-import { Observable, Subscription } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Observable } from 'rxjs';
+import { rxResource, takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 
 import { FormsModule } from '@angular/forms';
 import { ProjectPublicSummaryResponse, ProjectService } from '@api-client';
 import { COMMENT_STATUS_FILTER_PARAMS, FOMFiltersService, FOM_FILTER_NAME } from '@public-core/services/fomFilters.service';
 import { UrlService } from '@public-core/services/url.service';
-import { takeUntil } from 'rxjs/operators';
 import { AppMapComponent } from './app-map/app-map.component';
 import { PublicNoticesPanelComponent } from './app-public-notices/public-notices-panel.component';
 import { DetailsPanelComponent } from './details-panel/details-panel.component';
@@ -80,13 +79,21 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   // indicates which side panel should be shown
   public activePanel: Panel;
-  public loading = false;
-  public observablesSub: Subscription = null;
-  public coordinates: string = null;
-  public projectsSummary: Array<ProjectPublicSummaryResponse>;
-  public projectsSummary$: Observable<Array<ProjectPublicSummaryResponse>>;
-  public totalNumber: number;
-  public commentStatusFilters: MultiFilter<boolean>;
+
+  // Active filters, and the FOM list fetched reactively from them. `loading` is this fetch's own
+  // in-flight state (per-resource, not the global interceptor loading), so it won't react to
+  // unrelated requests (map tiles, code tables, public notices).
+  private readonly filters = toSignal(this.fomFiltersSvc.filters$);
+  private readonly projectsResource = rxResource({
+    params: () => this.filters(),
+    stream: ({ params }) => this.fetchFOMs(params),
+  });
+  readonly projectsSummary = computed<Array<ProjectPublicSummaryResponse> | undefined>(() =>
+    this.projectsResource.hasValue() ? this.projectsResource.value() : undefined);
+  readonly totalNumber = computed(() => this.projectsSummary()?.length);
+  readonly loading = this.projectsResource.isLoading;
+  readonly commentStatusFilters = computed(() =>
+    this.filters()?.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>);
 
   /**
    * @memberof ProjectsComponent
@@ -103,11 +110,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     if (initialFragment) {
       this.handleFragment(initialFragment);
     }
-
-    this.fomFiltersSvc.filters$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filters) => {
-      this.fetchFOMs(filters);
-      this.commentStatusFilters = filters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>;
-    });
   }
 
   private handleFragment(fragment: string) {
@@ -185,7 +187,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     }
   }
 
-  fetchFOMs(fomFilters: Map<string, IFilter | IMultiFilter>) {
+  private fetchFOMs(fomFilters: Map<string, IFilter | IMultiFilter>): Observable<Array<ProjectPublicSummaryResponse>> {
     const fomNumberParam = (fomFilters.get(FOM_FILTER_NAME.FOM_NUMBER) as Filter<number>).filter.value;
     const forestClientNameParam = (fomFilters.get(FOM_FILTER_NAME.FOREST_CLIENT_NAME) as Filter<string>).filter.value;
     const commentStatusFilters = fomFilters.get(FOM_FILTER_NAME.COMMENT_STATUS)['filters'] as Array<IMultiFilterFields<boolean>>;
@@ -193,31 +195,13 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     const commentClosedParam = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_CLOSED)[0].value;
     const openedOnOrAfterParam = (fomFilters.get(FOM_FILTER_NAME.POSTED_ON_AFTER) as Filter<Date>).filter.value?.toISOString().substring(0, 10);
 
-    this.loading = true;
-    this.projectService
+    return this.projectService
         .projectControllerFindPublicSummary(
           fomNumberParam?.toString(),
-          commentOpenParam.toString(), 
-          commentClosedParam.toString(), 
-          forestClientNameParam, 
-          openedOnOrAfterParam)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (results) => {
-            this.projectsSummary = results;
-            this.totalNumber = results.length;
-            this.loading = false;
-            this.cdr.detectChanges();
-          },
-          error: () => {
-            this.loading = false;
-            this.cdr.detectChanges();
-          },
-          complete: () => {
-            this.loading = false;
-            this.cdr.detectChanges();
-          }
-        });
+          commentOpenParam.toString(),
+          commentClosedParam.toString(),
+          forestClientNameParam,
+          openedOnOrAfterParam);
   }
 
   /**
@@ -251,7 +235,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       this.closeSidePanel();
     }
   }
-  
+
 
   /**
    * Toggles active panel and its corresponding url fragment.
@@ -279,11 +263,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   public toggleFilter(filter: IMultiFilterFields<boolean>) {
-    if (this.loading) return;
+    if (this.loading()) return;
     filter.value = !filter.value;
-    this.fomFiltersSvc.updateFilterSelection(FOM_FILTER_NAME.COMMENT_STATUS, this.commentStatusFilters);
+    this.fomFiltersSvc.updateFilterSelection(FOM_FILTER_NAME.COMMENT_STATUS, this.commentStatusFilters());
   }
-  
+
   /**
    * On component destroy.
    *

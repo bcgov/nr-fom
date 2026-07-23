@@ -1,5 +1,5 @@
 
-@if (!isLoading && !pNotices) {
+@if (!isLoading() && !pNotices()) {
   <div class="flex-panel">
     <div class="flex-panel__header">
       <h2 class="title">No Public Notices Found</h2>
@@ -7,7 +7,7 @@
   </div>
 }
 
-@if (isLoading) {
+@if (isLoading()) {
   <div class="flex-panel">
     <div>
       <h2 class="title">Loading public notices summary...</h2>
@@ -15,7 +15,7 @@
   </div>
 }
 
-@if (pNotices) {
+@if (pNotices(); as notices) {
   <div class="flex-panel">
     <div class="flex-panel__header" style="height: auto;">
       <h3>
@@ -25,10 +25,10 @@
     <div>
       <div class="flex-panel__scroll" style="padding-top: 5px">
         <section style="margin-bottom: 15px;">
-          <notices-filter-panel [districtList]="districtList"
+          <notices-filter-panel [districtList]="districtList()"
           (filterPublicNoticesEvt)="handlePublicNoticesFilterUpdate($event)" />
         </section>
-        @if (pNotices.length > 0) {
+        @if (notices.length > 0) {
           <section>
             <div class="expansion-button">
               <button class="btn btn-primary btn-sm" (click)="accordion().openAll()">Expand</button>
@@ -36,7 +36,7 @@
             </div>
             <mat-accordion multi>
               <!-- Public Notices Summary List-->
-              @for (pn of pNotices; track pn) {
+              @for (pn of notices; track pn) {
                 <div>
                   <mat-expansion-panel>
                     <mat-expansion-panel-header>

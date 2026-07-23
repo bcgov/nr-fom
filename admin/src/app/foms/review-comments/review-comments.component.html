@@ -18,12 +18,12 @@
         <div class="review-comments__list panel">
           <div class="panel-header">
             <div class="panel-header_top">
-              <h2 style="margin: 0;">Comments ({{filteredPublicComments?.length}})</h2>
-              @if (hasAnyPublicComments) {
+              <h2 style="margin: 0;">Comments ({{filteredPublicComments().length}})</h2>
+              @if (hasAnyPublicComments()) {
                 <button
                   class="btn btn-sm btn-primary export-comments-btn"
                   [class.export-comments-btn--success]="exportSuccess || exportInProgress"
-                  [disabled]="exportInProgress || !allPublicComments?.length"
+                  [disabled]="exportInProgress || !allPublicComments().length"
                   (click)="confirmExportAllComments()"
                   type="button"
                   title="Export all comments">
@@ -34,9 +34,9 @@
             </div>
             <div class="panel-header_bottom">
               <mat-form-field>
-                <mat-select [(ngModel)]="selectedScope" name="commentScope"
-                  (selectionChange)="onScopeOptionChanged(selectedScope)">
-                  @for (opt of commentScopeOpts; track opt) {
+                <mat-select [ngModel]="selectedScope()" name="commentScope"
+                  (selectionChange)="onScopeOptionChanged($event.value)">
+                  @for (opt of commentScopeOpts(); track opt) {
                     <mat-option [value]="opt">
                       <small>{{opt.desc}} {{opt.scopeId}} {{opt.name}}</small>
                     </mat-option>
@@ -46,9 +46,9 @@
             </div>
           </div>
           <div class="panel-scroll" #commentListScrollContainer>
-            @if (hasAnyPublicComments) {
-              @for (item of filteredPublicComments; track item) {
-                <div class="comment-item" [class.active]="item?.id === selectedItem?.id"
+            @if (hasAnyPublicComments()) {
+              @for (item of filteredPublicComments(); track item) {
+                <div class="comment-item" [class.active]="item?.id === selectedItem()?.id"
                   (click)="onReviewItemClicked(item, null)">
                   <div class="comment-item-header">
                     <div class="comment-author">
@@ -79,7 +79,7 @@
           </div>
 
         </div>
-        @if (selectedItem; as activeComment) {
+        @if (selectedItem(); as activeComment) {
           <div class="review-comments__detail panel">
             <div class="panel-scroll">
               <app-comment-detail #commentDetailForm="commentForm"
@@ -89,7 +89,7 @@
                 <div class="row">
                   <button type="button" title="Save this comment response"
                     class="btn btn-sm btn-primary btn-container"
-                    [disabled]="loading"
+                    [disabled]="loadingSvc.loading()"
                     [hidden]="!canReplyComment()"
                     (click)="saveComment(commentDetailForm.commentFormGroup.value, commentDetailForm.comment)">
                     Save response

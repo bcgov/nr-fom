@@ -91,9 +91,9 @@ describe('InteractionsComponent', () => {
       {} as any, // new interaction, no id -> create path
     );
 
-    // Give the save promise chain + the follow-up refetch's subscribe callback
-    // a turn of the event loop to run, same as a real browser would provide.
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    // Give the save promise chain, the resource.reload() change-detection cycle, and the
+    // follow-up refetch a few turns of the event loop, same as a real browser would provide.
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(findMock).toHaveBeenCalledTimes(2);
     expect(listText()).toContain('Engagements (1)');

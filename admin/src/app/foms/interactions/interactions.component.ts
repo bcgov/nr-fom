@@ -1,19 +1,19 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
+import { LoadingService } from '@admin-core/services/loading.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnInit, afterNextRender, inject, input, viewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, ElementRef, Injector, OnInit, afterNextRender, computed, inject, input, signal, viewChild } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { InteractionResponse, InteractionService, ProjectResponse, WorkflowStateEnum } from '@api-client';
 import { User } from "@utility/security/user";
 import { DateTime } from "luxon";
-import { Subject } from 'rxjs';
 import { InteractionDetailComponent } from './interaction-detail/interaction-detail.component';
 import { InteractionRequest } from './interaction-detail/interaction-detail.form';
 
 export const ERROR_DIALOG = {
   // title: 'The requested project does not exist.',
-  // message: 'Please try again.',  
+  // message: 'Please try again.',
   width: '340px',
   height: '200px',
   buttons: {
@@ -37,23 +37,27 @@ export class InteractionsComponent implements OnInit {
   private interactionSvc = inject(InteractionService);
   private cognitoService = inject(CognitoService);
   private modalSvc = inject(ModalService);
-  private cdr = inject(ChangeDetectorRef);
   private injector = inject(Injector);
-  private destroyRef = inject(DestroyRef);
+  loadingSvc = inject(LoadingService);
 
 
   readonly interactionDetailForm = viewChild<InteractionDetailComponent>('interactionDetailForm');
   public readonly interactionListScrollContainer = viewChild('interactionListScrollContainer', { read: ElementRef });
-  
+
   readonly appId = input.required<string>();
   readonly project = input.required<ProjectResponse>();
   projectId: number;
-  selectedItem: InteractionResponse;
-  loading = false;
+  readonly selectedItem = signal<InteractionResponse>(null);
   private user: User;
 
-  data: InteractionResponse[] = null;
-  private interactionSaved$ = new Subject<void>(); // To notify when 'save' happen.
+  // Engagement list. reload() after a save/delete refetches it; the in-flight state for
+  // the Save/Delete buttons comes from the global loading signal (interceptor-driven).
+  private readonly interactionsResource = rxResource({
+    params: () => Number(this.appId()),
+    stream: ({ params }) => this.interactionSvc.interactionControllerFind(params),
+  });
+  readonly data = computed<InteractionResponse[] | undefined>(() =>
+    this.interactionsResource.hasValue() ? this.interactionsResource.value() : undefined);
 
   constructor()
   {
@@ -62,26 +66,10 @@ export class InteractionsComponent implements OnInit {
 
   ngOnInit(): void {
     this.projectId = Number(this.appId());
-    this.refreshInteractions();
-
-    this.interactionSaved$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.refreshInteractions();
-    });
-  }
-
-  getProjectInteractions() {
-    return this.interactionSvc.interactionControllerFind(this.projectId);
-  }
-
-  private refreshInteractions() {
-    this.getProjectInteractions().subscribe((result) => {
-      this.data = result;
-      this.cdr.detectChanges();
-    });
   }
 
   onInteractionItemClicked(item: InteractionResponse, pos: number) {
-    this.selectedItem = item;
+    this.selectedItem.set(item);
     const interactionDetailForm = this.interactionDetailForm();
     if (interactionDetailForm) {
       interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
@@ -109,7 +97,7 @@ export class InteractionsComponent implements OnInit {
   }
 
   addEmptyInteractionDetail() {
-    this.selectedItem = null;
+    this.selectedItem.set(null);
     const interactionDetailForm = this.interactionDetailForm();
     if (interactionDetailForm) {
       interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
@@ -137,16 +125,9 @@ export class InteractionsComponent implements OnInit {
     const dialogRef = this.modalSvc.openConfirmationDialog(`You are about to delete this engagement. Are you sure?`, 'Delete Engagement');
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
-        this.loading = true;
-        this.cdr.detectChanges();
-        this.interactionSvc.interactionControllerRemove(selectedInteraction.id).subscribe(()=> {
-          this.selectedItem = null;
-          setTimeout(() => {
-            this.loading = false;
-            this.interactionSaved$.next();// trigger list retrieving.
-            this.cdr.detectChanges();
-          }, 100);
-
+        this.interactionSvc.interactionControllerRemove(selectedInteraction.id).subscribe(() => {
+          this.selectedItem.set(null);
+          this.interactionsResource.reload(); // refetch the list
         });
       }
     })
@@ -179,20 +160,16 @@ export class InteractionsComponent implements OnInit {
 
   private handleSaveSuccess(result: any) {
     const pos = this.interactionListScrollContainer().nativeElement.scrollTop;
-    this.interactionSaved$.next();
-    this.selectedItem = result; // updated selected.
-    this.loading = false;
-    this.cdr.detectChanges();
+    this.selectedItem.set(result); // updated selected.
+    this.interactionsResource.reload(); // refetch the list
     setTimeout(() => {
-      this.onInteractionItemClicked(this.selectedItem, pos);
+      this.onInteractionItemClicked(this.selectedItem(), pos);
     }, 300);
   }
 
   private handleSaveError(err: any) {
     // Let HTTP Error Interceptor show the error for now.
     console.error('Failed to save', err);
-    this.loading = false;
-    this.cdr.detectChanges();
   }
 
 }
