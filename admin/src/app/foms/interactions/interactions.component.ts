@@ -126,8 +126,20 @@ export class InteractionsComponent implements OnInit {
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
         this.interactionSvc.interactionControllerRemove(selectedInteraction.id).subscribe(() => {
-          this.selectedItem.set(null);
+          // Work out the next selection from the current list minus the deleted item.
+          const remaining = (this.data() ?? []).filter(item => item.id !== selectedInteraction.id);
           this.interactionsResource.reload(); // refetch the list
+          if (remaining.length > 0) {
+            // Show the first remaining engagement in the detail panel.
+            this.onInteractionItemClicked(remaining[0], null);
+          } else {
+            // No engagements left — clear the detail panel to its empty state.
+            this.selectedItem.set(null);
+            const detailForm = this.interactionDetailForm();
+            if (detailForm) {
+              detailForm.clear(); // reset the detail panel + force its change detection
+            }
+          }
         });
       }
     })

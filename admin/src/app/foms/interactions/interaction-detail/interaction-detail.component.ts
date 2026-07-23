@@ -69,6 +69,13 @@ export class InteractionDetailComponent {
     this.cdr.detectChanges();
   }
 
+  /** Reset the panel to its empty ("No engagement selected") state. */
+  clear() {
+    this.interaction = null;
+    this.attachment = null;
+    this.cdr.detectChanges();
+  }
+
   onFileEmit(newFile: File) {
     this.file = newFile;
     if (!this.file) {
