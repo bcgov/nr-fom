@@ -89,7 +89,7 @@ export class FomAddEditForm implements Pick<ProjectResponse,
   @minDate({
     // In this case, do not use (x,y) arrow expression for validator. 
     // Use 'function(control)' expression, so it can get current field value through "this.".
-    conditionalExpression: function(control: AbstractControl) {
+    conditionalExpression: function(this: FomAddEditForm, control: AbstractControl) {
       // For 'opStartDate' and 'opEndDate', only need "year" from the date; but still use "Date" type for datePicker.
       // (This is a tricky case to set up "conditionalExpression" validator for @minDate, as date is passed from datePicker)
       // So, conditionally, if years are the same, no need to validate on @minDate().

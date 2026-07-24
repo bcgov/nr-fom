@@ -161,7 +161,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.state = this.mode();
-    const load$ = this.isCreate ? of({}) : this.projectSvc.projectControllerFindOne(Number(this.appId()));
+    // Create mode emits an unused placeholder (the subscribe body only reads `data` when !isCreate).
+    const load$ = this.isCreate ? of({} as ProjectResponse) : this.projectSvc.projectControllerFindOne(Number(this.appId()));
     load$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((data: ProjectResponse) => {
       if (!this.isCreate) {
         this.originalProjectResponse = data;
