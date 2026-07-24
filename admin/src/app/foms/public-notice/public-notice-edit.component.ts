@@ -193,7 +193,7 @@ export class PublicNoticeEditComponent implements OnInit {
   }
 
   getErrorMessage(controlName: string, messageKey: string | null = null): string | null {
-    const errors = this.publicNoticeFormGroup.controls[controlName]?.errors;
+    const errors = this.publicNoticeFormGroup.get(controlName)?.errors;
     if (errors != null && messageKey !== null) {
       const { [messageKey]: messages } = errors;
       if (messages) return messages.message;
@@ -202,8 +202,8 @@ export class PublicNoticeEditComponent implements OnInit {
   }
 
   fieldTouchedOrDirty(controlName: string): boolean {
-    const control = this.publicNoticeFormGroup.controls[controlName];
-    return control?.touched || control?.dirty;
+    const control = this.publicNoticeFormGroup.get(controlName);
+    return !!(control?.touched || control?.dirty);
   }
 
   private submitPublicNotice() {
@@ -232,7 +232,7 @@ export class PublicNoticeEditComponent implements OnInit {
     }
   }
 
-  warnIfPostDateSelectionNotAvailable(postDatePicker) {
+  warnIfPostDateSelectionNotAvailable(postDatePicker: { toggle: () => void }) {
     const startOfMinPostDate = DateTime.fromJSDate(this.minPostDate).startOf('day');
     const startOfCommentingOpenDate = DateTime.fromISO(this.project.commentingOpenDate).startOf('day');
     if (!this.project.commentingOpenDate || startOfMinPostDate > startOfCommentingOpenDate)

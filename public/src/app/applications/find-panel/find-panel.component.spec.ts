@@ -79,25 +79,25 @@ describe('FindPanelComponent', () => {
   describe('verifyFomNumberInput', () => {
     it('should parse valid integer input', () => {
       const event = { target: { value: '123' } };
-      component.verifyFomNumberInput(event);
+      component.verifyFomNumberInput(event as unknown as Event);
       expect(component.fomNumberFilter.filter.value).toBe(123);
     });
 
     it('should strip leading zeros', () => {
       const event = { target: { value: '007' } };
-      component.verifyFomNumberInput(event);
+      component.verifyFomNumberInput(event as unknown as Event);
       expect(component.fomNumberFilter.filter.value).toBe(7);
     });
 
     it('should set null for NaN input', () => {
       const event = { target: { value: 'abc' } };
-      component.verifyFomNumberInput(event);
+      component.verifyFomNumberInput(event as unknown as Event);
       expect(component.fomNumberFilter.filter.value).toBeNull();
     });
 
     it('should set null for zero input', () => {
       const event = { target: { value: '0' } };
-      component.verifyFomNumberInput(event);
+      component.verifyFomNumberInput(event as unknown as Event);
       expect(component.fomNumberFilter.filter.value).toBeNull();
     });
   });

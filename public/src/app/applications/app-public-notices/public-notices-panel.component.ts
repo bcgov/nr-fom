@@ -109,7 +109,7 @@ export class PublicNoticesPanelComponent {
     });
   }
 
-  isFomAvailable(commentingOpenDate) {
+  isFomAvailable(commentingOpenDate: string) {
     return DateTime.fromISO(commentingOpenDate).startOf('day') <= DateTime.now().startOf('day');
   }
 

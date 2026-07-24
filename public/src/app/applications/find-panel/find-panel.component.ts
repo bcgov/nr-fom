@@ -95,8 +95,8 @@ export class FindPanelComponent implements OnInit {
     }
   }
 
-  public verifyFomNumberInput(event) {
-    let parsed: number | null = parseInt(event.target.value.toString().replace(/^0+(?=\d)/, ''), 10);
+  public verifyFomNumberInput(event: Event) {
+    let parsed: number | null = parseInt((event.target as HTMLInputElement).value.toString().replace(/^0+(?=\d)/, ''), 10);
     // fomNumber search field is a positive integer excluding 0;
     if (isNaN(parsed) || parsed == 0) {
         parsed = null;

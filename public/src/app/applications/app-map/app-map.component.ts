@@ -174,7 +174,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   // for creating custom cluster icon
-  private clusterCreate(cluster): L.Icon | L.DivIcon {
+  private clusterCreate(cluster: L_import.MarkerCluster): L.Icon | L.DivIcon {
     const childCount = cluster.getChildCount();
     let c = ' marker-cluster-';
     if (childCount < 10) {
@@ -343,7 +343,8 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
         `${projectSummary.forestClientName}\n` + 
         `${fomProjectPlanTxt}\n` +
         `${projectSummary.workflowStateName}${commentingTxt}`; // This will be Leaflet hover
-      const marker = L.marker(L.latLng(projectSummary.geojson['coordinates'][1], projectSummary.geojson['coordinates'][0]), {title: title})
+      const geoCoordinates = (projectSummary.geojson as { coordinates: number[] }).coordinates;
+      const marker = L.marker(L.latLng(geoCoordinates[1], geoCoordinates[0]), {title: title})
         .setIcon(markerIcon)
         .on('click', L.Util.bind(this.onMarkerClick, this, projectSummary));
         marker.dispositionId = projectSummary.id;

@@ -25,4 +25,9 @@ export class ShapeInfoComponent {
     this.selectedRowIndex = rowData.featureId + '-' + rowData.featureType.code; // Unique when featureType is included.
     this.fss.changeSelectedFeature(this.selectedRowIndex);
   }
+
+  // `geometry` is typed `object` by the generated client; expose its GeoJSON `type` discriminator.
+  getGeometryType(feature: SpatialFeaturePublicResponse): string | undefined {
+    return (feature.geometry as { type?: string }).type;
+  }
 }

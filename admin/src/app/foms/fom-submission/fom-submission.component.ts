@@ -204,8 +204,8 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     this.isSubmitting = false;
   }
 
-  changeGeoType(e) {
-    this.fg.get('spatialObjectCode')?.setValue(e.target.value);
+  changeGeoType(e: Event) {
+    this.fg.get('spatialObjectCode')?.setValue((e.target as HTMLSelectElement).value);
   }
 
   getGeoSpatialTypeDescription(type: string){

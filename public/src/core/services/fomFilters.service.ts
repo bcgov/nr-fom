@@ -73,10 +73,10 @@ export class FOMFiltersService {
     currentFilters.forEach((currentFilter) => {
       let currentFilterName: string;
       if (currentFilter.hasOwnProperty('queryParamsKey')) {
-        currentFilterName = currentFilter['queryParamsKey'];
+        currentFilterName = (currentFilter as MultiFilter<unknown>).queryParamsKey;
       }
       else {
-        currentFilterName = currentFilter['filter']['queryParam'];
+        currentFilterName = (currentFilter as Filter<unknown>).filter.queryParam;
       }
 
       if (currentFilterName === filterName) {

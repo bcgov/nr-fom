@@ -49,7 +49,7 @@ export const RESPONSE_CODE_COLORS = {
 };
 
 /* *** Some utility functions to help with chart configuration and display *** */
-export const maxAxis = (series) => {
+export const maxAxis = (series: number[]) => {
   const maxValue = Math.max(...series);
   let maxAxis = 10;
   switch (true) {

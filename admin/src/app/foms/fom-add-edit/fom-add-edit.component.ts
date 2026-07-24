@@ -322,17 +322,18 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  changeDistrictId(e) {
-    this.fg.get('district')?.setValue(parseInt(e.target.value));
-    this.districtIdSelect = parseInt(e.target.value);
+  changeDistrictId(e: Event) {
+    const value = (e.target as HTMLSelectElement).value;
+    this.fg.get('district')?.setValue(parseInt(value));
+    this.districtIdSelect = parseInt(value);
   }
 
-  onProjectPlanChange(e) {
+  onProjectPlanChange(e: Event) {
     // reset fspId and woodlotLicenseNumber fields when plan selection changed.
     this.fg.get('fspId')?.setValue(null)
     this.fg.get('woodlotLicenseNumber')?.setValue(null)
   }
-  onForestClientChange(e) {
+  onForestClientChange(e: Event) {
     const forestClientField = this.fg.get('forestClient');
     if (!forestClientField) {
       return;
@@ -353,8 +354,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     return forestClientField?.value?.name?.toUpperCase().includes('TIMBER SALES MANAGER');
   }
 
-  changeDescription(e) {
-    this.descriptionValue = e.target.value;
+  changeDescription(e: Event) {
+    this.descriptionValue = (e.target as HTMLTextAreaElement).value;
     if(!this.descriptionValue && !this.isCreate){
       this.fg.get('description')?.setErrors({incorrect: true})
     }
@@ -444,14 +445,14 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     return item;
   }
 
-  getDistrictDesc(districtId) {
+  getDistrictDesc(districtId: number) {
     const desc = this.districts.filter((item) => {
         return item.id == districtId
     })[0]["name"];
     return desc;
   }
 
-  getformatedDate(field, format = 'yyyy') {
+  getformatedDate(field: string, format = 'yyyy') {
     const fieldVal = this.fg.get(field)?.value;
     if (typeof fieldVal === "string") {
         return DateTime.fromISO(fieldVal).toFormat(format)

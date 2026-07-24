@@ -76,13 +76,13 @@
             <div class="key">Submission Type:</div>
             <div class="value">{{feature.submissionType.description}}</div>
           </li>
-          @if (feature['geometry']['type'] === 'Polygon') {
+          @if (getGeometryType(feature) === 'Polygon') {
             <li>
               <div class="key">Area (ha):</div>
               <div class="value">{{feature.plannedAreaHa | number }} {{feature.plannedAreaHa? ' ha' : ''}}</div>
             </li>
           }
-          @if (feature['geometry']['type'] === 'LineString') {
+          @if (getGeometryType(feature) === 'LineString') {
             <li>
               <div class="key">Length (km):</div>
               <div class="value">{{feature.plannedLengthKm | number }} {{feature.plannedLengthKm? ' km' : ''}}</div>

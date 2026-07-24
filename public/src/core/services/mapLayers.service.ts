@@ -42,19 +42,20 @@ export class MapLayersService {
    *              either {baseLayer: string}
    *              or {overlay: {action: 'ADD'|'REMOVE', layerName: string}}
    */
-  notifyLayersChange(data) {
+  notifyLayersChange(data: Partial<MapLayersChangeState>) {
     const newLayersChange = Object.assign({}, this._mapLayersChange.value);
     if (data.baseLayer) {
       newLayersChange['baseLayer'] = data.baseLayer;
     }
     if (data.overlay) {
-      newLayersChange['overlay'] = data.overlay;
+      const overlay = data.overlay;
+      newLayersChange['overlay'] = overlay;
       // maintain internal overlay state.
-      if (data.overlay.action == OverlayAction.Add) {
-        this._overlayLayers.push(data.overlay.layerName);
+      if (overlay.action == OverlayAction.Add) {
+        this._overlayLayers.push(overlay.layerName);
       }
       else {
-        this._overlayLayers = this._overlayLayers.filter(e => e !== data.overlay.layerName);
+        this._overlayLayers = this._overlayLayers.filter(e => e !== overlay.layerName);
       }
     }
 

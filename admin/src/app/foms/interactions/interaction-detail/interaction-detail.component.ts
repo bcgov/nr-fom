@@ -93,7 +93,7 @@ export class InteractionDetailComponent {
   }
 
   isValid(controlName: string): boolean {
-    return this.interactionFormGroup.controls[controlName]?.errors == null;
+    return this.interactionFormGroup.get(controlName)?.errors == null;
   }
 
 }

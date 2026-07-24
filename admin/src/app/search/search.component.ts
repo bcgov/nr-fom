@@ -206,7 +206,7 @@ export class SearchComponent implements OnInit, OnDestroy {
       || project.workflowState.code === WorkflowStateEnum.CommentClosed);
   }
 
-  public getProjectPlanNumber(project) {
+  public getProjectPlanNumber(project: ProjectResponse) {
     // There are only two projectPlanCode for now.
     return project.projectPlanCode == this.projectPlanCodeEnum.Fsp?
       "FSP #" + project.fspId :

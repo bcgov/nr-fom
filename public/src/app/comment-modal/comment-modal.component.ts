@@ -45,9 +45,9 @@ export class CommentModalComponent implements OnInit {
     this.publicComment.projectId = this.projectId;
 
     // Comment Scope select options
-    const overallOpt = {commentScopeCode: this.getCommentScopeCodeOrDesc(null, true), 
-                        desc: this.getCommentScopeCodeOrDesc(null, false), 
-                        name: null, 
+    const overallOpt = {commentScopeCode: this.getCommentScopeCodeOrDesc(null, true) ?? COMMENT_SCOPE_CODE.OVERALL,
+                        desc: this.getCommentScopeCodeOrDesc(null, false) ?? '',
+                        name: null,
                         scopeId: null};
     this.selectedScope = overallOpt;
     this.commentScopeOpts.push(overallOpt);
@@ -58,9 +58,9 @@ export class CommentModalComponent implements OnInit {
           return this.getCommentScopeCodeOrDesc(detail.featureType.code, true);// filter out rention_area.
         })
         .forEach((detail) => {
-        this.commentScopeOpts.push({commentScopeCode: this.getCommentScopeCodeOrDesc(detail.featureType.code, true), 
-                                desc: this.getCommentScopeCodeOrDesc(detail.featureType.code, false),
-                                name: detail.name, 
+        this.commentScopeOpts.push({commentScopeCode: this.getCommentScopeCodeOrDesc(detail.featureType.code, true) ?? COMMENT_SCOPE_CODE.OVERALL,
+                                desc: this.getCommentScopeCodeOrDesc(detail.featureType.code, false) ?? '',
+                                name: detail.name,
                                 scopeId: detail.featureId});
       });
     }
@@ -113,13 +113,15 @@ export class CommentModalComponent implements OnInit {
     }
   }
 
-  private getCommentScopeCodeOrDesc(source: string | null, forCode: boolean) {
+  private getCommentScopeCodeOrDesc(source: string | null, forCode: true): COMMENT_SCOPE_CODE | null;
+  private getCommentScopeCodeOrDesc(source: string | null, forCode: false): string | null;
+  private getCommentScopeCodeOrDesc(source: string | null, forCode: boolean): COMMENT_SCOPE_CODE | string | null {
     switch(source) {
       case SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)?.['source'].toLowerCase():
-        return forCode? COMMENT_SCOPE_CODE.CUT_BLOCK: SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)?.['desc'];
+        return forCode? COMMENT_SCOPE_CODE.CUT_BLOCK: (SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)?.['desc'] ?? null);
 
       case SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)?.['source'].toLowerCase():
-        return forCode? COMMENT_SCOPE_CODE.ROAD_SECTION: SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)?.['desc'];
+        return forCode? COMMENT_SCOPE_CODE.ROAD_SECTION: (SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)?.['desc'] ?? null);
 
       case SpatialTypeMap.get(SpatialObjectCodeEnum.Wtra)?.['source'].toLowerCase():
         return null; // only can comment on CutBlock or RoadSection

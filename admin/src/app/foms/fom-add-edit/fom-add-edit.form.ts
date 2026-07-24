@@ -45,7 +45,7 @@ export class FomAddEditForm implements Pick<ProjectResponse,
   @prop()
   @required({
     message: 'FSP ID is required.',
-		conditionalExpression: (x) => {
+		conditionalExpression: (x: FomAddEditForm) => {
 			return x.projectPlanCode == ProjectPlanCodeEnum.Fsp
 		}
 	})
@@ -56,7 +56,7 @@ export class FomAddEditForm implements Pick<ProjectResponse,
   @prop()
   @required({
     message: 'Woodlot Licence Plan Number is required.',
-		conditionalExpression: (x) => {
+		conditionalExpression: (x: FomAddEditForm) => {
 			return x.projectPlanCode == ProjectPlanCodeEnum.Woodlot
 		}
 	})
@@ -102,7 +102,7 @@ export class FomAddEditForm implements Pick<ProjectResponse,
 
   @prop()
   @required({
-    conditionalExpression: x => {
+    conditionalExpression: (x: FomAddEditForm) => {
         return x.forestClient?.name.toUpperCase().includes('TIMBER SALES MANAGER')
     },
     message: 'Timber Sales Manager Name is required.', 
