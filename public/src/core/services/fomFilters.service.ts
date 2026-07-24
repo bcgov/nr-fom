@@ -54,8 +54,13 @@ export class FOMFiltersService {
   }
 
   updateFiltersSelection(newFilters: Map<string, IFilter|IMultiFilter>) {
-    this._resetCommentStatusFilter(newFilters);
-    this._filters$.next(newFilters);
+    // Emit a fresh Map so reference-based consumers (e.g. projects.component's rxResource keyed on
+    // toSignal(filters$)) always detect the change. Callers (the Find panel) often pass back the same
+    // Map instance after mutating its filter values; re-emitting that identical reference would be
+    // swallowed by a signal, dropping the search.
+    const nextFilters = new Map(newFilters);
+    this._resetCommentStatusFilter(nextFilters);
+    this._filters$.next(nextFilters);
   }
 
   updateFilterSelection(filterName: string, filterToUpdate: IFilter|IMultiFilter) {
