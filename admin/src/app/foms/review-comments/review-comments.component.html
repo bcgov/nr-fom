@@ -22,13 +22,13 @@
               @if (hasAnyPublicComments()) {
                 <button
                   class="btn btn-sm btn-primary export-comments-btn"
-                  [class.export-comments-btn--success]="exportSuccess || exportInProgress"
-                  [disabled]="exportInProgress || !allPublicComments().length"
+                  [class.export-comments-btn--success]="exportSuccess() || exportInProgress()"
+                  [disabled]="exportInProgress() || !allPublicComments().length"
                   (click)="confirmExportAllComments()"
                   type="button"
                   title="Export all comments">
                   <em class="material-symbols-outlined md-18">download</em>
-                  <span>{{ (exportSuccess || exportInProgress) ? 'Comments exported!' : 'Export All Comments' }}</span>
+                  <span>{{ (exportSuccess() || exportInProgress()) ? 'Comments exported!' : 'Export All Comments' }}</span>
                 </button>
               }
             </div>

@@ -1,4 +1,4 @@
-import { importProvidersFrom, inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
+import { importProvidersFrom, inject, provideAppInitializer, provideZonelessChangeDetection } from '@angular/core';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -30,9 +30,7 @@ const routesProviders = [
 ]
 
 const coreProviders = [
-    provideZoneChangeDetection({
-        eventCoalescing: true,
-    }),
+    provideZonelessChangeDetection(),
     // Order is critical - the token interceptor must run after the error interceptor
     // (it is last in the array, so it sees the response first and can refresh+retry a
     // 403 before the error interceptor would surface a "Forbidden" dialog).

@@ -1,5 +1,5 @@
 
-import { Component, DestroyRef, OnInit, inject, input, output } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject, input, output } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { COMMENT_STATUS_FILTER_PARAMS, FOMFiltersService, FOM_FILTER_NAME } from '@public-core/services/fomFilters.service';
@@ -30,6 +30,7 @@ export class FindPanelComponent implements OnInit {
   urlSvc = inject(UrlService);
   private fomFiltersSvc = inject(FOMFiltersService);
   private destroyRef = inject(DestroyRef);
+  private cdr = inject(ChangeDetectorRef);
 
   readonly update = output<IUpdateEvent>();
   readonly loading = input<boolean | undefined>(undefined); // from projects component
@@ -51,6 +52,9 @@ export class FindPanelComponent implements OnInit {
       this.forestClientNameFilter = this.fomFilters.get(FOM_FILTER_NAME.FOREST_CLIENT_NAME) as Filter<string>;
       this.commentStatusFilters = this.fomFilters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>;
       this.postedOnAfterFilter = this.fomFilters.get(FOM_FILTER_NAME.POSTED_ON_AFTER) as Filter<Date>;
+      // Zoneless: filters$ can emit from an external filter change (e.g. clear on projects view);
+      // these fields are [(ngModel)]-bound, so mark the view for check to reflect the new values.
+      this.cdr.markForCheck();
     })
   }
 

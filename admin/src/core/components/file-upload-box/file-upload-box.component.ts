@@ -1,5 +1,5 @@
 
-import { Component, OnInit, input, output } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, input, output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatError, MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
@@ -26,6 +26,7 @@ import { MatDropzone } from '@ngx-dropzone/material';
     styleUrl: './file-upload-box.component.scss'
 })
 export class UploadBoxComponent implements OnInit {
+  private cdr = inject(ChangeDetectorRef);
   readonly maxFileSizeMB = input<number>();
   readonly fileTypes = input<string[]>([
     'image/png',
@@ -70,6 +71,10 @@ export class UploadBoxComponent implements OnInit {
     this.fileCtrl.valueChanges.subscribe(value => {
       const file = this.fileCtrl.valid? value as File : null;
       this.emitFile.emit(file);
+      // Zoneless: the template reads fileCtrl.value/hasError() directly; mark for check so the
+      // selected-file name and validation messages update when the control changes (via the
+      // @ngx-dropzone fileInput directive, which is outside Angular's own event bindings).
+      this.cdr.markForCheck();
     });
   }
 

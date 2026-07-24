@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -54,10 +54,10 @@ describe('SearchComponent', () => {
     component = fixture.componentInstance;
   }
 
-  // Flush ngOnInit, the resource load, and the reactive effects.
-  function flushSearch() {
+  // Flush ngOnInit, the resource load, and the reactive effects (zoneless: await stability).
+  async function flushSearch() {
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
     fixture.detectChanges();
   }
 
@@ -67,18 +67,18 @@ describe('SearchComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('does not search on load when there are no query params', fakeAsync(() => {
+  it('does not search on load when there are no query params', async () => {
     setup({});
-    flushSearch();
+    await flushSearch();
     expect(find).not.toHaveBeenCalled();
     expect(component.searched()).toBe(false);
     expect(component.count()).toBe(0);
-  }));
+  });
 
-  it('auto-searches on load when a filter query param is present', fakeAsync(() => {
+  it('auto-searches on load when a filter query param is present', async () => {
     setup({ fFspId: '5' });
     find.mockReturnValue(of([makeProject(1), makeProject(2)]));
-    flushSearch();
+    await flushSearch();
 
     expect(find).toHaveBeenCalledTimes(1);
     // (projectId, fspId, districtId, workflowStateCode, forestClientName)
@@ -86,49 +86,49 @@ describe('SearchComponent', () => {
     expect(component.count()).toBe(2);
     expect(component.searched()).toBe(true);
     expect(component.searching()).toBe(false);
-  }));
+  });
 
-  it('auto-searches by FOM number from the URL (deep-link fix)', fakeAsync(() => {
+  it('auto-searches by FOM number from the URL (deep-link fix)', async () => {
     setup({ fNumber: '42' });
     find.mockReturnValue(of([makeProject(42)]));
-    flushSearch();
+    await flushSearch();
 
     expect(component.fNumber).toBe(42); // restored into the form
     expect(find).toHaveBeenCalledWith('42', undefined, undefined, undefined, undefined);
     expect(component.count()).toBe(1);
-  }));
+  });
 
-  it('searches on submit (empty filters search all)', fakeAsync(() => {
+  it('searches on submit (empty filters search all)', async () => {
     setup({});
-    flushSearch();
+    await flushSearch();
     expect(find).not.toHaveBeenCalled();
 
     component.onSubmit();
     fixture.detectChanges();
-    tick();
+    await fixture.whenStable();
 
     expect(find).toHaveBeenCalledWith(undefined, undefined, undefined, undefined, undefined);
     expect(component.searched()).toBe(true);
-  }));
+  });
 
-  it('warns when the maximum result cap is reached', fakeAsync(() => {
+  it('warns when the maximum result cap is reached', async () => {
     const many = Array.from({ length: 2500 }, (_, i) => makeProject(i));
     setup({ fFspId: '5' });
     find.mockReturnValue(of(many));
-    flushSearch();
+    await flushSearch();
 
     expect(openSnackBar).toHaveBeenCalledTimes(1);
     expect(component.count()).toBe(2500);
-  }));
+  });
 
-  it('shows an error snackbar and clears results when the search fails', fakeAsync(() => {
+  it('shows an error snackbar and clears results when the search fails', async () => {
     setup({ fFspId: '5' });
     find.mockReturnValue(throwError(() => new Error('boom')));
-    flushSearch();
+    await flushSearch();
 
     expect(snackBarOpen).toHaveBeenCalledWith('Error searching foms ...', undefined, { duration: 3000 });
     expect(component.count()).toBe(0);
     expect(component.searched()).toBe(true);
     expect(component.searching()).toBe(false);
-  }));
+  });
 });

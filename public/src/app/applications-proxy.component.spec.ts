@@ -24,7 +24,7 @@ describe('ApplicationsProxyComponent', () => {
     }).compileComponents();
 
     router = TestBed.inject(Router);
-    jest.spyOn(router, 'navigate');
+    jest.spyOn(router, 'navigate').mockResolvedValue(true);
     fixture = TestBed.createComponent(ApplicationsProxyComponent);
     component = fixture.componentInstance;
   });

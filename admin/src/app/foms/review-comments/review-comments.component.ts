@@ -60,8 +60,8 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   public readonly selectedItem = signal<PublicCommentAdminResponse | null>(null);
   public user: User;
 
-  public exportInProgress = false;
-  public exportSuccess = false;
+  public readonly exportInProgress = signal(false);
+  public readonly exportSuccess = signal(false);
   private exportFeedbackTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly exportDateTimeFormatter = new Intl.DateTimeFormat('en-US', {
     dateStyle: 'long',
@@ -200,12 +200,12 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   }
 
   exportAllComments(): void {
-    if (!this.allPublicComments().length || this.exportInProgress) {
+    if (!this.allPublicComments().length || this.exportInProgress()) {
       return;
     }
 
-    this.exportInProgress = true;
-    this.exportSuccess = false;
+    this.exportInProgress.set(true);
+    this.exportSuccess.set(false);
 
     try {
       const exportRows = this.allPublicComments().map((comment) => ({
@@ -226,17 +226,17 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
       CommonUtil.downloadCsvFromJson(exportRows, filename);
 
-      this.exportSuccess = true;
+      this.exportSuccess.set(true);
       if (this.exportFeedbackTimeout) {
         clearTimeout(this.exportFeedbackTimeout);
       }
       this.exportFeedbackTimeout = setTimeout(() => {
-        this.exportSuccess = false;
+        this.exportSuccess.set(false);
       }, 3000);
     } catch (err) {
       console.error('Failed to export comments.', err);
     } finally {
-      this.exportInProgress = false;
+      this.exportInProgress.set(false);
     }
   }
 

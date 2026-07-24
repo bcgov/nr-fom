@@ -28,7 +28,7 @@ describe('HomeProxyComponent', () => {
       }).compileComponents();
 
       router = TestBed.inject(Router);
-      jest.spyOn(router, 'navigate');
+      jest.spyOn(router, 'navigate').mockResolvedValue(true);
       fixture = TestBed.createComponent(HomeProxyComponent);
       component = fixture.componentInstance;
     });
@@ -63,7 +63,7 @@ describe('HomeProxyComponent', () => {
       }).compileComponents();
 
       router = TestBed.inject(Router);
-      jest.spyOn(router, 'navigate');
+      jest.spyOn(router, 'navigate').mockResolvedValue(true);
       fixture = TestBed.createComponent(HomeProxyComponent);
       component = fixture.componentInstance;
     });

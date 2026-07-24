@@ -1,5 +1,5 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { importProvidersFrom, provideZonelessChangeDetection } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading } from '@angular/router';
@@ -15,9 +15,7 @@ const apiConfig = new Configuration({
 });
 
 const coreProviders = [
-    provideZoneChangeDetection({
-        eventCoalescing: true,
-    }),
+    provideZonelessChangeDetection(),
     provideHttpClient(withInterceptors([errorInterceptor])),
     importProvidersFrom(
         ApiModule.forRoot(() => apiConfig),

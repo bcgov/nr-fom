@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Injectable, NgZone, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRoute, Event, NavigationEnd, Params, Router } from '@angular/router';
 import { funnel } from 'remeda';
 import { Observable } from 'rxjs';
@@ -19,7 +19,6 @@ export class UrlService {
   route = inject(ActivatedRoute);
   router = inject(Router);
   location = inject(Location);
-  private zone = inject(NgZone);
 
   public onNavEnd$: Observable<NavigationEnd>; // see details below
   private queryParams: Params = {};
@@ -126,10 +125,10 @@ export class UrlService {
    * @memberof UrlService
    */
   public navigate = funnel(() => {
-    this.zone.run(() => {
-      this.router
-        .navigate([], { relativeTo: this.route, queryParams: this.queryParams, fragment: this.panel ?? undefined })
-        .toString();
-    });
+    // Zoneless: router.navigate() schedules change detection on its own, so the previous
+    // NgZone.run() re-entry wrapper (a zone-era workaround for the debounced callback) is gone.
+    this.router
+      .navigate([], { relativeTo: this.route, queryParams: this.queryParams, fragment: this.panel ?? undefined })
+      .toString();
   }, { minQuietPeriodMs: 100 });
 }
