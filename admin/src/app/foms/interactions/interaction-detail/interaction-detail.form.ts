@@ -15,7 +15,7 @@ export class InteractionDetailForm implements Pick<InteractionRequest, typeof UP
   */
   @required()
   @prop()
-  communicationDatePickerDate: Date;
+  communicationDatePickerDate: Date | null;
 
   @required()
   @minLength({value: 1})
@@ -23,7 +23,7 @@ export class InteractionDetailForm implements Pick<InteractionRequest, typeof UP
   communicationDetails: string = '';
 
   @prop()
-  filename: string = null;
+  filename: string | null = null;
 
   @prop()
   fileContent: any = null;

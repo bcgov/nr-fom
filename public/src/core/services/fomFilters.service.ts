@@ -112,7 +112,7 @@ export class FOMFiltersService {
    * @param filters 
    */
   _resetCommentStatusFilter(filters: Map<string, IFilter | IMultiFilter>) {
-    const commentStatusFilters = filters.get(FOM_FILTER_NAME.COMMENT_STATUS)['filters'] as Array<IMultiFilterFields<boolean>>;
+    const commentStatusFilters = (filters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>).filters as Array<IMultiFilterFields<boolean>>;
     const commentOpen = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_OPEN)[0];
     const commentClosed = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_CLOSED)[0];
     if (!commentOpen.value && !commentClosed.value) {

@@ -43,7 +43,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
   readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[] | undefined>(undefined);
 
-  public map: L.Map;
+  public map: L.Map | null = null;
   public projectFeatures: L.FeatureGroup; // group of layers for the features of a FOM project.
   private lastLabelMarker: L.Marker; // global variable to keep track latest layer added (as labeling popup for onClick)
   private mapLayers: MapLayers = new MapLayers();
@@ -130,7 +130,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
       this.mapLayersService.notifyLayersChange({overlay: {action: OverlayAction.Remove, layerName: e.name}});
     });
     
-    this.map.on('blur', () => { this.map.scrollWheelZoom.disable(); });
+    this.map.on('blur', () => { this.map?.scrollWheelZoom.disable(); });
 
     // Initialize current app-map layers state (for the first time when this component map is shown)
     this.mapLayersService.applyCurrentMapLayers(this.map, this.mapLayers);
@@ -156,25 +156,26 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
   public addFeatures() {
     const projectSpatialDetails = this.projectSpatialDetail();
-    if (this.map) {
+    const map = this.map;
+    if (map && projectSpatialDetails) {
       projectSpatialDetails.forEach(spatialDetail => {
         const layer = L.geoJSON(<GeoJsonObject>spatialDetail['geometry']);
         layer.on('click', L.Util.bind(this.onSpatialFeatureClick, this, spatialDetail));
         this.projectFeatures.addLayer(layer);
-        this.map.on('zoomend', () => {
+        map.on('zoomend', () => {
             const style: L.PathOptions = {};
             style.weight = 5; 
-            if (this.map.getZoom() < 14) {
+            if (map.getZoom() < 14) {
                 style.weight = 2;
-            } else if (this.map.getZoom() < 15) {
+            } else if (map.getZoom() < 15) {
                 style.weight = 3;
-            } else if (this.map.getZoom() < 16) {
+            } else if (map.getZoom() < 16) {
                 style.weight = 4;
             }
             style.fillOpacity = 0.25;
             if (spatialDetail.submissionType.code == SubmissionTypeCodeEnum.Proposed) {
                 style.dashArray = '10,10';
-            if (this.map.getZoom() < 14) {
+            if (map.getZoom() < 14) {
                 style.dashArray = '7,7';
             }
             }
@@ -194,7 +195,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
             });
         });
       });
-      this.map.addLayer(this.projectFeatures);
+      map.addLayer(this.projectFeatures);
     }
   }
 
@@ -218,6 +219,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private observeMapSizing() {
+    if (!this.map) return;
     this.resizeObserver = observeMapSize(this.map, () => this.fitBounds());
   }
 
@@ -242,6 +244,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
   
   private updateOnLayersChange(): void {
+    if (!this.map) return;
     this.mapLayersService.mapLayersUpdate(this.map, this.mapLayers);
   }
 
@@ -262,7 +265,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
           setTimeout(() => {
             const layer = feature.layer;
             const bound = layer.getBounds()
-            this.map.flyToBounds(bound, { padding: [20, 20] });
+            this.map?.flyToBounds(bound, { padding: [20, 20] });
             layer.bringToFront();
           }, 700); // Delay zoom timing for page scolling to top for user experience.
         }

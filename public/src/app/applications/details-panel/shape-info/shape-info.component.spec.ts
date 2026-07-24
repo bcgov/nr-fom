@@ -68,7 +68,7 @@ describe('ShapeInfoComponent', () => {
         { featureId: 2, featureType: { code: 'road_section' }, name: 'Road 1' },
       ];
       fixture.componentRef.setInput('spatialDetail', mockSpatialDetail as any);
-      expect(component.projectSpatialDetail().length).toBe(2);
+      expect(component.projectSpatialDetail()?.length).toBe(2);
     });
   });
 });

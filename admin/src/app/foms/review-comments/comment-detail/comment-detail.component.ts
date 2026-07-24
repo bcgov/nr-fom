@@ -30,8 +30,8 @@ export class CommentDetailComponent {
   comment: PublicCommentAdminResponse;
   responseDetailsLimit: number = 4000;
 
-  readonly responseCodes = input<ResponseCode[]>(undefined);
-  readonly canReplyComment = input<boolean>(undefined);
+  readonly responseCodes = input<ResponseCode[]>();
+  readonly canReplyComment = input<boolean>();
 
   @Input() set selectedComment(comment: PublicCommentAdminResponse) {
     this.comment = comment;

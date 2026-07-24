@@ -13,7 +13,7 @@ export class ModalService {
     const { width = null } = data;
     return this.dialog.open(DialogComponent, {
       data,
-      width,
+      width: width ?? undefined,
       disableClose,
       autoFocus,
     });

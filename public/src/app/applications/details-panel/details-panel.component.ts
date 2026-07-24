@@ -54,9 +54,9 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   public readonly panelScrollContainer = viewChild<ElementRef>('panelScrollContainer');
 
   private destroyRef = inject(DestroyRef);
-  public addCommentModal: NgbModalRef = null;
+  public addCommentModal: NgbModalRef | null = null;
   public isAppLoading: boolean;
-  public project: ProjectResponse;
+  public project: ProjectResponse | null;
   public projectSpatialDetail: SpatialFeaturePublicResponse[];
   public currentPeriodDaysRemainingCount = 0;
   public workflowStatus: Record<string, WorkflowStateCode>
@@ -96,7 +96,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
    */
   public getProjectDetails() {
     this.loadQueryParameters();
-    const projectId = parseInt(this.projectIdFilter.filter.value);
+    const projectId = parseInt(this.projectIdFilter.filter.value ?? '');
     if (!projectId) {
       // no project to display
       this.project = null;
@@ -148,7 +148,8 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     });
     
     const modalInstance = this.addCommentModal.componentInstance as CommentModalComponent;
-    modalInstance.projectId = this.project.id;
+    // addComment is only reachable from the details view when a project is loaded
+    modalInstance.projectId = this.project!.id;
     modalInstance.projectSpatialDetail = this.projectSpatialDetail;
 
     // check result
@@ -195,7 +196,10 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
       .subscribe(featureIndex => {
         if (featureIndex) {
           setTimeout(() => {
-            this.panelScrollContainer().nativeElement.scrollTop = 100;
+            const el = this.panelScrollContainer()?.nativeElement;
+            if (el) {
+              el.scrollTop = 100;
+            }
           }, 500); // Delay scroll to top timing for seeing highted row for user experience.
         }
       });

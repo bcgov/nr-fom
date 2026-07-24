@@ -49,7 +49,9 @@ export class AttachmentUploadService {
     headers = headers.set('Accept', '*');
 
     const formParams: FormData = new FormData();
-    formParams.append('file', fileContent, file.name); // originalname is set in third param.
+    if (fileContent) {
+      formParams.append('file', fileContent, file.name); // originalname is set in third param.
+    }
     formParams.append('projectId', <any>projectId);
     formParams.append('attachmentTypeCode', <any>attachmentTypeCode);
 

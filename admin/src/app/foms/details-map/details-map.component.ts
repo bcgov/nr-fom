@@ -35,7 +35,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   private resizeObserver: ResizeObserver | null = null;
 
 
-  readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[]>(undefined);
+  readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[]>();
   
   public map: L.Map;
   public projectFeatures: L.FeatureGroup; // group of layers for the features of a FOM project.
@@ -132,7 +132,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
   public addFeatures() {
     if (this.map) {
-      this.projectSpatialDetail().forEach(spatialDetail => {
+      this.projectSpatialDetail()?.forEach(spatialDetail => {
         const layer = L.geoJSON(<GeoJsonObject>spatialDetail['geometry']);
         layer.on('click', L.Util.bind(this.onSpatialFeatureClick, this, spatialDetail));
         this.projectFeatures.addLayer(layer);

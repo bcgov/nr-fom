@@ -126,17 +126,17 @@ describe('InteractionsComponent', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     // Select the second engagement -> its detail is shown.
-    component.onInteractionItemClicked(component.data()[1], null);
+    component.onInteractionItemClicked(component.data()![1], null);
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(component.interactionDetailForm().interaction.id).toBe(20);
+    expect(component.interactionDetailForm()!.interaction!.id).toBe(20);
 
     // Delete the selected (second) engagement.
-    await component.deleteInteraction(component.data()[1]);
+    await component.deleteInteraction(component.data()![1]);
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     // Detail panel now shows the first remaining engagement, not the deleted one.
     expect(component.selectedItem()?.id).toBe(10);
-    expect(component.interactionDetailForm().interaction.id).toBe(10);
+    expect(component.interactionDetailForm()!.interaction!.id).toBe(10);
   });
 
   it('clears the detail panel to empty when the last engagement is deleted', async () => {
@@ -148,19 +148,19 @@ describe('InteractionsComponent', () => {
     fixture.autoDetectChanges(true);
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    component.onInteractionItemClicked(component.data()[0], null);
+    component.onInteractionItemClicked(component.data()![0], null);
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(component.interactionDetailForm().interaction.id).toBe(10);
+    expect(component.interactionDetailForm()!.interaction!.id).toBe(10);
     // The detail form is rendered for the selected engagement (empty state is gone).
     expect(listText()).not.toContain('No engagement selected');
 
-    await component.deleteInteraction(component.data()[0]);
+    await component.deleteInteraction(component.data()![0]);
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     // No engagements left -> selection cleared and the detail panel actually re-renders to its
     // empty state in the DOM (the regression: the panel used to stay showing the deleted item).
     expect(component.selectedItem()).toBeNull();
-    expect(component.interactionDetailForm().interaction).toBeNull();
+    expect(component.interactionDetailForm()!.interaction).toBeNull();
     expect(listText()).toContain('No engagement selected');
     expect(listText()).toContain('Engagements (0)');
   });

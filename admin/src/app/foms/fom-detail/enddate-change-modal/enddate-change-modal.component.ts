@@ -38,7 +38,7 @@ export class EnddateChangeModalComponent implements OnInit {
   public changeEndDate() {
     this.updating = true;
 
-    this.changeRequest.commentingClosedDate = DateTime.fromJSDate(this.newCommentingClosedDate).toISODate();
+    this.changeRequest.commentingClosedDate = DateTime.fromJSDate(this.newCommentingClosedDate).toISODate() ?? '';
     this.projectService.projectControllerCommentingClosedDateChange(this.projectId, this.changeRequest)
         .toPromise()
         .then(() => {

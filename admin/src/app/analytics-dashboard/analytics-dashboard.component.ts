@@ -69,19 +69,22 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   readonly fomsCountByForestClientChart = viewChild.required<ChartComponent>("fomsCountByForestClientChart");
 
   // chart options
-  commentsByResponseCodeChartOptions: Partial<ChartOptions>;
-  topCommentedProjectsChartOptions: Partial<ChartOptions>;
-  fomsCountByDistrictChartOptions: Partial<ChartOptions>;
-  commentsByDistrictChartOptions: Partial<ChartOptions>;
-  fomsCountByForestClientChartOptions: Partial<ChartOptions>;
+  commentsByResponseCodeChartOptions: ChartOptions;
+  topCommentedProjectsChartOptions: ChartOptions;
+  fomsCountByDistrictChartOptions: ChartOptions;
+  commentsByDistrictChartOptions: ChartOptions;
+  fomsCountByForestClientChartOptions: ChartOptions;
 
   constructor() {
-    // Initialize empty chart options earlier.
-    this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions;
-    this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;
-    this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions;
-    this.commentsByDistrictChartOptions = commentsByDistrictChartOptions;
-    this.fomsCountByForestClientChartOptions = fomsCountByForestClientChartOptions;
+    // Initialize empty chart options earlier. The seed configs omit some optional-at-runtime keys
+    // (grid/legend/stroke), so assert them as full ChartOptions — this keeps every template binding
+    // typed as the concrete Apex* member type the <apx-chart> inputs expect (ApexCharts fills the
+    // remaining keys at runtime), instead of scattering non-null assertions across the template.
+    this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions as ChartOptions;
+    this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions as ChartOptions;
+    this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions as ChartOptions;
+    this.commentsByDistrictChartOptions = commentsByDistrictChartOptions as ChartOptions;
+    this.fomsCountByForestClientChartOptions = fomsCountByForestClientChartOptions as ChartOptions;
   }
 
   ngOnInit() {
@@ -167,7 +170,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     if (apiData && !(apiData instanceof ApiError)) {
       this.commentsByResponseCodeChart().updateOptions({
         series: [{
-          name: this.commentsByResponseCodeChartOptions.series[0].name,
+          name: this.commentsByResponseCodeChartOptions.series?.[0]?.name,
           data: [
             apiData[ResponseCodeEnum.Considered] || 0,
             apiData[ResponseCodeEnum.Addressed] || 0,
@@ -188,7 +191,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
       const data = apiData.map(item => item.publicCommentCount);
       this.topCommentedProjectsChart().updateOptions({
         series: [{
-          name: this.topCommentedProjectsChartOptions.series[0].name,
+          name: this.topCommentedProjectsChartOptions.series?.[0]?.name,
           data: data
         }],
         xaxis: { 
@@ -211,7 +214,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
       const data = apiData.map(item => item.projectCount);
       this.fomsCountByDistrictChart().updateOptions({
         series: [{
-          name: this.fomsCountByDistrictChartOptions.series[0].name,
+          name: this.fomsCountByDistrictChartOptions.series?.[0]?.name,
           data: data
         }],
         xaxis: {
@@ -314,7 +317,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
         .map(item => item.projectCount);
       this.fomsCountByForestClientChart().updateOptions({
         series: [{
-          name: this.fomsCountByForestClientChartOptions.series[0].name,
+          name: this.fomsCountByForestClientChartOptions.series?.[0]?.name,
           data: data
         }],
         xaxis: {

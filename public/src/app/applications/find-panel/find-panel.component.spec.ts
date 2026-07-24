@@ -109,7 +109,7 @@ describe('FindPanelComponent', () => {
       const commentOpen = component.commentStatusFilters.filters.find(
         f => f.queryParam === COMMENT_STATUS_FILTER_PARAMS.COMMENT_OPEN
       );
-      expect(commentOpen.value).toBe(true);
+      expect(commentOpen?.value).toBe(true);
     });
 
     it('should not change values if at least one is true', () => {

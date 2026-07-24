@@ -13,13 +13,14 @@ import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
 import { isNullish } from 'remeda';
 
-// Arguments passed to projectControllerFind (all normalised to string | null).
+// Arguments passed to projectControllerFind (all normalised to string | undefined,
+// matching the generated client's optional parameters).
 interface FindArgs {
-  projectId: string | null;
-  fspId: string | null;
-  districtId: string | null;
-  workflowStateCode: string | null;
-  forestClientName: string | null;
+  projectId: string | undefined;
+  fspId: string | undefined;
+  districtId: string | undefined;
+  workflowStateCode: string | undefined;
+  forestClientName: string | undefined;
 }
 
 @Component({
@@ -49,14 +50,15 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   private destroyRef = inject(DestroyRef);
-  private paramMap: ParamMap = null;
-  private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
-  public user: User;
-  public fNumber: number; // filter: FOM Number
-  public fFspId: number; // filter: FSP ID
-  public fStatus: string; // filter: workflowStateCode
-  public fDistrict: number; // filter: district id
-  public fHolder: string; // filter: part of FOM holder name
+  private paramMap: ParamMap | null = null;
+  private snackBarRef: MatSnackBarRef<SimpleSnackBar> | null = null;
+  // Populated from the authenticated Cognito session in the constructor.
+  public user!: User;
+  public fNumber: number | null; // filter: FOM Number
+  public fFspId: number | null; // filter: FSP ID
+  public fStatus: string | undefined; // filter: workflowStateCode
+  public fDistrict: number | null; // filter: district id
+  public fHolder: string | null; // filter: part of FOM holder name
   public statusCodes = this.stateSvc.getCodeTable('workflowResponseCode');
   public districts = this.stateSvc.getCodeTable('district');
 
@@ -83,7 +85,10 @@ export class SearchComponent implements OnInit, OnDestroy {
   readonly searched = computed(() => this.projectsResource.status() !== 'idle');
 
   constructor() {
-    this.user = this.cognitoService.getUser();
+    const user = this.cognitoService.getUser();
+    if (user) {
+      this.user = user;
+    }
 
     // Warn when the backend result cap is hit (replaces the check in the old subscribe callback).
     effect(() => {
@@ -100,7 +105,7 @@ export class SearchComponent implements OnInit, OnDestroy {
       const error = this.projectsResource.error();
       if (error) {
         console.error('SearchComponent.search() - error =', error);
-        this.snackBarRef = this.snackBar.open('Error searching foms ...', null, {duration: 3000});
+        this.snackBarRef = this.snackBar.open('Error searching foms ...', undefined, {duration: 3000});
       }
     });
   }
@@ -119,18 +124,24 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   private buildFindArgs(): FindArgs {
     return {
-      projectId: (isNaN(this.fNumber) || isNullish(this.fNumber)) ? null : this.fNumber.toString(),
-      fspId: (isNaN(this.fFspId) || isNullish(this.fFspId)) ? null : this.fFspId.toString(),
-      districtId: (isNaN(this.fDistrict) || isNullish(this.fDistrict)) ? null : this.fDistrict.toString(),
-      workflowStateCode: this.fStatus === 'undefined' ? null : this.fStatus,
-      forestClientName: this.fHolder,
+      projectId: (isNullish(this.fNumber) || isNaN(this.fNumber)) ? undefined : this.fNumber.toString(),
+      fspId: (isNullish(this.fFspId) || isNaN(this.fFspId)) ? undefined : this.fFspId.toString(),
+      districtId: (isNullish(this.fDistrict) || isNaN(this.fDistrict)) ? undefined : this.fDistrict.toString(),
+      workflowStateCode: this.fStatus === 'undefined' ? undefined : this.fStatus,
+      forestClientName: this.fHolder ?? undefined,
     };
   }
 
   public setInitialQueryParameters() {
-    this.fNumber = this.paramMap.get('fNumber')? parseInt(this.paramMap.get('fNumber')): null;
-    this.fFspId = this.paramMap.get('fFspId')? parseInt(this.paramMap.get('fFspId')): null;
-    this.fDistrict = this.paramMap.get('fDistrict')? parseInt(this.paramMap.get('fDistrict')): null;
+    if (!this.paramMap) {
+      return;
+    }
+    const fNumberParam = this.paramMap.get('fNumber');
+    const fFspIdParam = this.paramMap.get('fFspId');
+    const fDistrictParam = this.paramMap.get('fDistrict');
+    this.fNumber = fNumberParam ? parseInt(fNumberParam) : null;
+    this.fFspId = fFspIdParam ? parseInt(fFspIdParam) : null;
+    this.fDistrict = fDistrictParam ? parseInt(fDistrictParam) : null;
     this.fStatus = this.paramMap.get('fStatus') || undefined;
     this.fHolder = this.paramMap.get('fHolder') || null;
   }
@@ -138,10 +149,10 @@ export class SearchComponent implements OnInit, OnDestroy {
   public saveQueryParameters() {
     const params: Params = {};
 
-    if (!isNaN(this.fFspId)) {
+    if (this.fFspId != null && !isNaN(this.fFspId)) {
       params['fFspId'] = this.fFspId;
     }
-    if (!isNaN(this.fDistrict)) {
+    if (this.fDistrict != null && !isNaN(this.fDistrict)) {
       params['fDistrict'] = this.fDistrict;
     }
     if (this.fStatus !== 'undefined') {

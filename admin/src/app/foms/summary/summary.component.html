@@ -132,7 +132,7 @@
         @if (!selectedScope?.commentScopeCode) {
           <section>
             <h4>Attachments</h4>
-            @if (attachments?.length > 0) {
+            @if ((attachments?.length ?? 0) > 0) {
               <div>
                 <table id="table-card" class="table-cards" aria-label="List of Attachments">
                   <thead>

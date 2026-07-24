@@ -12,7 +12,7 @@ export class HeaderComponent {
   private configService = inject(ConfigService);
   router = inject(Router);
 
-  environmentDisplay: string;
+  environmentDisplay: string | undefined;
   isNavMenuOpen = false; 
 
   constructor() {

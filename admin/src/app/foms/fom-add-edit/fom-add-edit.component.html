@@ -246,12 +246,12 @@
                             class="form-control"
                             formControlName="projectPlanCode"
                             (change)="onProjectPlanChange($event)"
-                            [class.is-invalid]="!fg.get('projectPlanCode').value && isSubmitSaveClicked"
+                            [class.is-invalid]="!fg.get('projectPlanCode')?.value && isSubmitSaveClicked"
                             id="projectPlanSelectId">
                             @for (option of projectPlanOptions; track option) {
                               <option
                                 [value]="option.code"
-                                [selected]="option.code === fg.get('projectPlanCode').value"
+                                [selected]="option.code === fg.get('projectPlanCode')?.value"
                               [innerHTML]="option.description"> </option>
                             }
                           </select>
@@ -275,7 +275,7 @@
                       }
                     </div>
                     <!-- FSP ID: disabled when COMMENT_OPEN -->
-                    @if (fg.get('projectPlanCode').value == projectPlanCodeEnum.Fsp) {
+                    @if (fg.get('projectPlanCode')?.value == projectPlanCodeEnum.Fsp) {
                       <div class="form-group col"
                         >
                         <label for="fsp-id" [class.required]="!isCommentingOpenState" style="white-space: nowrap;"
@@ -305,13 +305,13 @@
                               id="fsp-id"
                               name="fsp-id"
                               disabled
-                              [value]="fg.get('fspId').value"
+                              [value]="fg.get('fspId')?.value"
                               />
                           }
                         </div>
                       }
                       <!-- Woodlot Licence Number: disabled when COMMENT_OPEN -->
-                      @if (fg.get('projectPlanCode').value == projectPlanCodeEnum.Woodlot) {
+                      @if (fg.get('projectPlanCode')?.value == projectPlanCodeEnum.Woodlot) {
                         <div class="form-group col"
                           >
                           <label for="woodlot-id" [class.required]="!isCommentingOpenState" style="white-space: nowrap;"
@@ -345,7 +345,7 @@
                                 id="woodlot-id"
                                 name="woodlot-id"
                                 disabled
-                                [value]="fg.get('woodlotLicenseNumber').value"
+                                [value]="fg.get('woodlotLicenseNumber')?.value"
                                 />
                             }
                           </div>
@@ -381,7 +381,7 @@
                               id="district"
                               name="district"
                               disabled
-                              [value]="getDistrictDesc(fg.get('district').value)"
+                              [value]="getDistrictDesc(fg.get('district')?.value)"
                               />
                           }
                         </div>
@@ -423,7 +423,7 @@
                                 id="name"
                                 name="name"
                                 disabled
-                                [value]="fg.get('name').value"
+                                [value]="fg.get('name')?.value"
                                 />
                             }
                           </div>
@@ -515,7 +515,7 @@
                                     class="form-control"
                                     id="mgr-name-id"
                                     name="bctsMgrName"
-                                    [value]="fg.get('bctsMgrName').value"
+                                    [value]="fg.get('bctsMgrName')?.value"
                                     />
                                 }
                               </div>
@@ -537,7 +537,7 @@
                                     [appFormControl]="fg.get('description')"
                                     maxlength="{{descriptionLimit}}"
                                   ></textarea>
-                                  <small>{{descriptionLimit-fg.get('description').value?.length}} characters remaining.</small>
+                                  <small>{{descriptionLimit-fg.get('description')?.value?.length}} characters remaining.</small>
                                   @if ((isSubmitSaveClicked || fieldTouchedOrDirty('description'))
                                     && getErrorMessage('description', 'required')) {
                                     <div class="invalid-feedback"
@@ -553,7 +553,7 @@
                                   id="description"
                                   name="description"
                                   disabled
-                                  [value]="fg.get('description').value"
+                                  [value]="fg.get('description')?.value"
                                 ></textarea>
                               }
                             </div>

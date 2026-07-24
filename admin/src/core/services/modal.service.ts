@@ -30,7 +30,7 @@ export class ModalService {
 
   openDialog(config: { data: DialogData }): MatDialogRef<any> {
     const { data } = config;
-    const { width = null, height = null, maxWidth } = data;
+    const { width = undefined, height = undefined, maxWidth } = data;
     return this.dialog.open(DialogComponent, {
       data,
       width,

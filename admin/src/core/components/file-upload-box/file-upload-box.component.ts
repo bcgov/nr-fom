@@ -26,7 +26,7 @@ import { MatDropzone } from '@ngx-dropzone/material';
     styleUrl: './file-upload-box.component.scss'
 })
 export class UploadBoxComponent implements OnInit {
-  readonly maxFileSizeMB = input<number>(undefined);
+  readonly maxFileSizeMB = input<number>();
   readonly fileTypes = input<string[]>([
     'image/png',
     'image/jpeg',
@@ -51,7 +51,7 @@ export class UploadBoxComponent implements OnInit {
   uploadedFile: File;
 
   validators: any[];
-  fileCtrl = new FormControl(null);
+  fileCtrl = new FormControl<File | null>(null);
 
   constructor() {
     // Deliberately empty

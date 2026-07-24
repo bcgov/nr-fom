@@ -70,7 +70,7 @@
                 maxlength="{{communicationDetailsLimit}}"
                 formControlName="communicationDetails">
               </textarea>
-              <small>{{communicationDetailsLimit-interactionFormGroup.get('communicationDetails').value?.length}} characters remaining.</small>
+              <small>{{communicationDetailsLimit-interactionFormGroup.get('communicationDetails')?.value?.length}} characters remaining.</small>
               @if (interactionFormGroup.touched && !isValid('communicationDetails')) {
                 <div class="invalid-feedback">
                   Please provide description.

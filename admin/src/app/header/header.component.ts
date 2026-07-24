@@ -16,9 +16,9 @@ export class HeaderComponent implements OnInit {
   router = inject(Router);
   private cognitoService = inject(CognitoService);
 
-  isNavMenuOpen = false; 
-  environmentDisplay: string;
-  user: User;
+  isNavMenuOpen = false;
+  environmentDisplay: string | undefined;
+  user: User | null;
 
   constructor() {
     const configService = this.configService;
@@ -28,7 +28,7 @@ export class HeaderComponent implements OnInit {
   }
 
   isAdminRoleOnly(): boolean {
-    return this.user && this.user.isAdmin && !this.user.isMinistry && !this.user.isForestClient;
+    return !!this.user && this.user.isAdmin && !this.user.isMinistry && !this.user.isForestClient;
   }
 
   ngOnInit() {

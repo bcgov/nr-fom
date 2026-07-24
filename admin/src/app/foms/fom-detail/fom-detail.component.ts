@@ -45,29 +45,34 @@ export class FomDetailComponent implements OnInit {
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   public readonly scrollContainer = viewChild<ElementRef>('scrollContainer');
   
-  public changeEndDateModal : NgbModalRef = null;
+  public changeEndDateModal : NgbModalRef | null = null;
   public isPublishing = false;
   public isDeleting = false;
   public isFinalizing = false;
   public isRefreshing = false;
   public isSettingCommentClassification = false;
-  public application: ProjectResponse = null;
-  public project: ProjectResponse = null;
+  public application: ProjectResponse | null = null;
+  // Assigned from the route resolver input in ngOnInit before any use.
+  public project!: ProjectResponse;
   // Route resolver data, bound as inputs (a/:appId resolve keys).
   readonly projectDetail = input<ProjectResponse>();
   readonly spatialDetail = input.required<SpatialFeaturePublicResponse[]>();
   readonly projectMetrics = input.required<ProjectMetricsResponse>();
   public isProjectActive = false;
   public attachments: AttachmentResponse[] = [];
-  public user: User;
-  public daysRemaining: number = null;
+  // Populated from the authenticated Cognito session in the constructor.
+  public user!: User;
+  public daysRemaining: number | null = null;
   private workflowStateChangeRequest: ProjectWorkflowStateChangeRequest = <ProjectWorkflowStateChangeRequest>{};
   private now = new Date();
   private today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
   private projectUpdateTriggered$ = new Subject(); // To notify when project update happen.
 
   constructor() {
-    this.user = this.cognitoService.getUser();
+    const user = this.cognitoService.getUser();
+    if (user) {
+      this.user = user;
+    }
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
   }
 
@@ -374,7 +379,10 @@ export class FomDetailComponent implements OnInit {
       .subscribe(featureIndex => {
         if (featureIndex) {
           setTimeout(() => {
-            this.scrollContainer().nativeElement.scrollTop = 200;
+            const container = this.scrollContainer();
+            if (container) {
+              container.nativeElement.scrollTop = 200;
+            }
           }, 500); // Delay scroll to top timing for seeing highted row for user experience.
         }
       });

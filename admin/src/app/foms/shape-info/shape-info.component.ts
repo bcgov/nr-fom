@@ -17,7 +17,7 @@ export class ShapeInfoComponent implements OnInit {
 
   slideColor: ThemePalette = 'primary';
   displayedColumns: string[] = ['shape_id', 'type', 'name', 'submission_type', 'area_length', 'development_date'];
-  selectedRowIndex: string = null;
+  selectedRowIndex: string | null = null;
 
   readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[]>(undefined, { alias: "spatialDetail" });
 

@@ -141,7 +141,7 @@ export class PublicNoticesPanelComponent {
 
   private condition(
     key: string, // can be a dot notation path string.
-    filterValue: string | Date,
+    filterValue: string | Date | null | undefined,
     comparFn: Function) {
 
     if (typeof filterValue === 'string') {

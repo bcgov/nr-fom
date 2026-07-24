@@ -50,7 +50,7 @@ describe('PublicNoticesFilterPanelComponent', () => {
   describe('districtList input', () => {
     it('should accept districtList input', () => {
       fixture.componentRef.setInput('districtList', ['District A', 'District B']);
-      expect(component.districtList().length).toBe(2);
+      expect(component.districtList()?.length).toBe(2);
       expect(component.districtList()).toContain('District A');
     });
   });

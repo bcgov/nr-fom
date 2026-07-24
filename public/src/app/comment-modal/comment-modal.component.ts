@@ -15,8 +15,8 @@ enum COMMENT_SCOPE_CODE {
 
 type CommentScopeOpt = {commentScopeCode: COMMENT_SCOPE_CODE,
                         desc: string,
-                        name: string, 
-                        scopeId: number};
+                        name: string | null,
+                        scopeId: number | null};
 
 @Component({
   imports: [FormsModule, MatSelectModule, MatProgressBarModule],
@@ -92,10 +92,12 @@ export class CommentModalComponent implements OnInit {
  
     this.publicComment.commentScopeCode = this.selectedScope.commentScopeCode;
     if (this.selectedScope.commentScopeCode === COMMENT_SCOPE_CODE.CUT_BLOCK) {
-      this.publicComment.scopeCutBlockId = this.selectedScope.scopeId;
+      // scopeId is always set for CUT_BLOCK/ROAD_SECTION options (built from a real feature's featureId)
+      this.publicComment.scopeCutBlockId = this.selectedScope.scopeId!;
     }
     else if (this.selectedScope.commentScopeCode === COMMENT_SCOPE_CODE.ROAD_SECTION) {
-      this.publicComment.scopeRoadSectionId = this.selectedScope.scopeId;
+      // scopeId is always set for CUT_BLOCK/ROAD_SECTION options (built from a real feature's featureId)
+      this.publicComment.scopeRoadSectionId = this.selectedScope.scopeId!;
     }
  
     try {
@@ -111,15 +113,15 @@ export class CommentModalComponent implements OnInit {
     }
   }
 
-  private getCommentScopeCodeOrDesc(source: string, forCode: boolean) {
+  private getCommentScopeCodeOrDesc(source: string | null, forCode: boolean) {
     switch(source) {
-      case SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)['source'].toLowerCase():
-        return forCode? COMMENT_SCOPE_CODE.CUT_BLOCK: SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)['desc'];
+      case SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)?.['source'].toLowerCase():
+        return forCode? COMMENT_SCOPE_CODE.CUT_BLOCK: SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)?.['desc'];
 
-      case SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)['source'].toLowerCase():
-        return forCode? COMMENT_SCOPE_CODE.ROAD_SECTION: SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)['desc'];
+      case SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)?.['source'].toLowerCase():
+        return forCode? COMMENT_SCOPE_CODE.ROAD_SECTION: SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)?.['desc'];
 
-      case SpatialTypeMap.get(SpatialObjectCodeEnum.Wtra)['source'].toLowerCase():
+      case SpatialTypeMap.get(SpatialObjectCodeEnum.Wtra)?.['source'].toLowerCase():
         return null; // only can comment on CutBlock or RoadSection
 
       default:

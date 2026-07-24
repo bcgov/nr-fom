@@ -82,7 +82,7 @@ describe('SearchComponent', () => {
 
     expect(find).toHaveBeenCalledTimes(1);
     // (projectId, fspId, districtId, workflowStateCode, forestClientName)
-    expect(find).toHaveBeenCalledWith(null, '5', null, undefined, null);
+    expect(find).toHaveBeenCalledWith(undefined, '5', undefined, undefined, undefined);
     expect(component.count()).toBe(2);
     expect(component.searched()).toBe(true);
     expect(component.searching()).toBe(false);
@@ -94,7 +94,7 @@ describe('SearchComponent', () => {
     flushSearch();
 
     expect(component.fNumber).toBe(42); // restored into the form
-    expect(find).toHaveBeenCalledWith('42', null, null, undefined, null);
+    expect(find).toHaveBeenCalledWith('42', undefined, undefined, undefined, undefined);
     expect(component.count()).toBe(1);
   }));
 
@@ -107,7 +107,7 @@ describe('SearchComponent', () => {
     fixture.detectChanges();
     tick();
 
-    expect(find).toHaveBeenCalledWith(null, null, null, undefined, null);
+    expect(find).toHaveBeenCalledWith(undefined, undefined, undefined, undefined, undefined);
     expect(component.searched()).toBe(true);
   }));
 
@@ -126,7 +126,7 @@ describe('SearchComponent', () => {
     find.mockReturnValue(throwError(() => new Error('boom')));
     flushSearch();
 
-    expect(snackBarOpen).toHaveBeenCalledWith('Error searching foms ...', null, { duration: 3000 });
+    expect(snackBarOpen).toHaveBeenCalledWith('Error searching foms ...', undefined, { duration: 3000 });
     expect(component.count()).toBe(0);
     expect(component.searched()).toBe(true);
     expect(component.searching()).toBe(false);

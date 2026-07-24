@@ -54,16 +54,17 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   public originalSubmissionRequest:  SubmissionRequest;
   public applicationFiles: File[] = [];
   public fileTypesParent: string[] = ['text/plain', 'application/json']
-  public file: File = null;
+  public file: File | null = null;
   public geoTypeValues: string[] = [];
   public contentFile: string;
   public maxSpatialFileSize: number = MAX_FILEUPLOAD_SIZE.SPATIAL;
   public isSubmitting = false;
   readonly SpatialObjectCodeEnum = SpatialObjectCodeEnum;
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
-  private scrollToFragment: string = null;
-  private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
-  private user: User;
+  private scrollToFragment: string | null = null;
+  private snackBarRef: MatSnackBarRef<SimpleSnackBar> | null = null;
+  // Populated from the authenticated Cognito session in the constructor.
+  private user!: User;
 
   readonly appId = input.required<string>();
 
@@ -72,7 +73,10 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   constructor() {
-    this.user = this.cognitoService.getUser();
+    const user = this.cognitoService.getUser();
+    if (user) {
+      this.user = user;
+    }
   }
 
   // check for unsaved changes before navigating away from current route (ie, this page)
@@ -123,8 +127,8 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
       }
       const form = new FomSubmissionForm(this.originalSubmissionRequest);
       this.fg = <RxFormGroup>this.formBuilder.formGroup(form);
-      this.fg.get('projectId').setValue(this.originalSubmissionRequest.projectId);
-      this.fg.get('submissionTypeCode').setValue(this.originalSubmissionRequest.submissionTypeCode);
+      this.fg.get('projectId')?.setValue(this.originalSubmissionRequest.projectId);
+      this.fg.get('submissionTypeCode')?.setValue(this.originalSubmissionRequest.submissionTypeCode);
       this.cdr.detectChanges();
     });
   }
@@ -147,7 +151,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     }
   }
 
-  onFileEmit(newFile: File) {
+  onFileEmit(newFile: File | null) {
     this.file = newFile;
     if (!this.file) {
       this.modalSvc.openErrorDialog('Please select a JSON file to continue.');
@@ -168,7 +172,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
           }
 
           this.originalSubmissionRequest.jsonSpatialSubmission = JSON.parse(content);
-          this.fg.get('jsonSpatialSubmission').setValue(this.originalSubmissionRequest.jsonSpatialSubmission);
+          this.fg.get('jsonSpatialSubmission')?.setValue(this.originalSubmissionRequest.jsonSpatialSubmission);
         } catch (_parseError) {
           this.modalSvc.openErrorDialog('The selected file is not valid JSON. Please fix the file and try again.');
         }
@@ -201,7 +205,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   changeGeoType(e) {
-    this.fg.get('spatialObjectCode').setValue(e.target.value);
+    this.fg.get('spatialObjectCode')?.setValue(e.target.value);
   }
 
   getGeoSpatialTypeDescription(type: string){

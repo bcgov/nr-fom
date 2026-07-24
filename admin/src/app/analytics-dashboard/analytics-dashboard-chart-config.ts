@@ -78,7 +78,7 @@ export const maxAxis = (series) => {
 
 /* *** Below are initial config, component will change it. *** */
 // Chart options for: Total comments received by category
-export const commentsByResponseCodeChartOptions = {
+export const commentsByResponseCodeChartOptions: Partial<ChartOptions> = {
   title: {
     text: "Total comments received by category"
   },
@@ -145,7 +145,7 @@ export const commentsByResponseCodeChartOptions = {
 };
 
 // Chart options for: Top most commentted FOMs
-export const topCommentedProjectsChartOptions = {
+export const topCommentedProjectsChartOptions: Partial<ChartOptions> = {
   title: {
     text: "Total 15 FOMs with most public comments"
   },
@@ -172,7 +172,6 @@ export const topCommentedProjectsChartOptions = {
   },
   dataLabels: {
     enabled: true,
-    position: 'right',
     formatter: function(val: number) {
       return '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0' + val;
     },
@@ -218,7 +217,7 @@ export const topCommentedProjectsChartOptions = {
 };
 
 // Chart options for: Comments by district and category
-export const commentsByDistrictChartOptions = {
+export const commentsByDistrictChartOptions: Partial<ChartOptions> = {
   title: {
     text: "Public comments by district and category"
   },
@@ -243,7 +242,6 @@ export const commentsByDistrictChartOptions = {
   },
   dataLabels: {
     enabled: true,
-    position: 'right',
     formatter: function(val: number) {
       //'offsetX' does not work well so using non-breaking spaces \u00A0 for manual offset for label position.
       return val === 0 ? '' : '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0' + val; 
@@ -310,7 +308,7 @@ export const commentsByDistrictChartOptions = {
 };
 
 // Chart options for: FOMs published for public comments in each district
-export const fomsCountByDistrictChartOptions = {
+export const fomsCountByDistrictChartOptions: Partial<ChartOptions> = {
   title: {
     text: "FOMs published for public comments in each district"
   },
@@ -337,7 +335,6 @@ export const fomsCountByDistrictChartOptions = {
   },
   dataLabels: {
     enabled: true,
-    position: 'right',
     formatter: function(val: number) {
       return '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0' + val;
     },
@@ -383,7 +380,7 @@ export const fomsCountByDistrictChartOptions = {
 };
 
 // Chart options for: FOM submissions by forest client
-export const fomsCountByForestClientChartOptions = {
+export const fomsCountByForestClientChartOptions: Partial<ChartOptions> = {
   title: {
     text: "FOM submissions by forest client"
   },
@@ -410,7 +407,6 @@ export const fomsCountByForestClientChartOptions = {
   },
   dataLabels: {
     enabled: true,
-    position: 'right',
     formatter: function(val: number) {
       return '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0' + val;
     },

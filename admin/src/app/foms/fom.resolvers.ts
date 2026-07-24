@@ -5,7 +5,7 @@ import { ProjectMetricsResponse, ProjectResponse, ProjectService, SpatialFeature
 
 export const projectDetailResolver: ResolveFn<ProjectResponse> = 
     (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-        const projectId = parseInt(route.paramMap.get(PROJECT_ID_PARAM_KEY));
+        const projectId = parseInt(route.paramMap.get(PROJECT_ID_PARAM_KEY) ?? '');
         const projectService = inject(ProjectService)
         if (isNaN(projectId)) {
             return projectService.projectControllerFindOne(projectId)
@@ -17,14 +17,14 @@ export const projectDetailResolver: ResolveFn<ProjectResponse> =
 
 export const projectMetricsDetailResolver: ResolveFn<ProjectMetricsResponse> = 
     (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-        const projectId = parseInt(route.paramMap.get(PROJECT_ID_PARAM_KEY));
+        const projectId = parseInt(route.paramMap.get(PROJECT_ID_PARAM_KEY) ?? '');
         const projectService = inject(ProjectService)
         return projectService.projectControllerFindProjectMetrics(projectId);
     };
 
 export const projectSpatialDetailResolver: ResolveFn<Array<SpatialFeaturePublicResponse>> = 
     (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-        const projectId = parseInt(route.paramMap.get(PROJECT_ID_PARAM_KEY));
+        const projectId = parseInt(route.paramMap.get(PROJECT_ID_PARAM_KEY) ?? '');
         const spatialFeatureService = inject(SpatialFeatureService)
         return spatialFeatureService.spatialFeatureControllerGetForProject(projectId);
     }; 

@@ -47,8 +47,9 @@ export class InteractionsComponent implements OnInit {
   readonly appId = input.required<string>();
   readonly project = input.required<ProjectResponse>();
   projectId: number;
-  readonly selectedItem = signal<InteractionResponse>(null);
-  private user: User;
+  readonly selectedItem = signal<InteractionResponse | null>(null);
+  // Populated from the authenticated Cognito session in the constructor.
+  private user!: User;
 
   // Engagement list. reload() after a save/delete refetches it; the in-flight state for
   // the Save/Delete buttons comes from the global loading signal (interceptor-driven).
@@ -61,14 +62,17 @@ export class InteractionsComponent implements OnInit {
 
   constructor()
   {
-    this.user = this.cognitoService.getUser();
+    const user = this.cognitoService.getUser();
+    if (user) {
+      this.user = user;
+    }
   }
 
   ngOnInit(): void {
     this.projectId = Number(this.appId());
   }
 
-  onInteractionItemClicked(item: InteractionResponse, pos: number) {
+  onInteractionItemClicked(item: InteractionResponse, pos: number | null) {
     this.selectedItem.set(item);
     const interactionDetailForm = this.interactionDetailForm();
     if (interactionDetailForm) {
@@ -113,7 +117,10 @@ export class InteractionsComponent implements OnInit {
     }
   }
 
-  async saveInteraction(saveReq: InteractionRequest, selectedInteraction: InteractionResponse) {
+  async saveInteraction(saveReq: InteractionRequest, selectedInteraction: InteractionResponse | null) {
+    if (!selectedInteraction) {
+      return;
+    }
     const {id} = selectedInteraction;
     const resultPromise = this.saveRequest(id, this.projectId, saveReq, selectedInteraction);
     resultPromise
@@ -146,9 +153,9 @@ export class InteractionsComponent implements OnInit {
   }
 
   private saveRequest(id: number, projectId: number, saveReq: InteractionRequest, selectedInteraction: InteractionResponse)
-          : Promise<InteractionResponse> {
-    let resultPromise: Promise<InteractionResponse>;
-    saveReq.communicationDate = DateTime.fromJSDate(saveReq.communicationDatePickerDate).toISODate(); // convert datePicker value to YYYY-MM-DD string.
+          : Promise<InteractionResponse | undefined> {
+    let resultPromise: Promise<InteractionResponse | undefined>;
+    saveReq.communicationDate = DateTime.fromJSDate(saveReq.communicationDatePickerDate).toISODate() ?? ''; // convert datePicker value to YYYY-MM-DD string.
 
     if (!id) {
       resultPromise = this.interactionSvc.interactionControllerCreate(saveReq.fileContent, projectId,
@@ -171,11 +178,14 @@ export class InteractionsComponent implements OnInit {
   }
 
   private handleSaveSuccess(result: any) {
-    const pos = this.interactionListScrollContainer().nativeElement.scrollTop;
+    const pos = this.interactionListScrollContainer()?.nativeElement.scrollTop ?? 0;
     this.selectedItem.set(result); // updated selected.
     this.interactionsResource.reload(); // refetch the list
     setTimeout(() => {
-      this.onInteractionItemClicked(this.selectedItem(), pos);
+      const selected = this.selectedItem();
+      if (selected) {
+        this.onInteractionItemClicked(selected, pos);
+      }
     }, 300);
   }
 

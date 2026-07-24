@@ -137,7 +137,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
    *            component and at the same time passing 'pos' to scroll to correct position for the list. Will need
    *            setTimeout to delay scrolling after view is good.
    */
-  onReviewItemClicked(item: PublicCommentAdminResponse, pos: number) {
+  onReviewItemClicked(item: PublicCommentAdminResponse, pos: number | null) {
     this.selectedItem.set(item);
     if (pos) {
       // Restore the list scroll position after the selection re-render lands in the DOM.
@@ -174,8 +174,9 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
       this.commentsResource.reload();
       this.selectedItem.set(result); // updated selected.
       setTimeout(() => {
-        if (this.selectedItem()) {
-          this.onReviewItemClicked(this.selectedItem(), pos);
+        const selected = this.selectedItem();
+        if (selected) {
+          this.onReviewItemClicked(selected, pos);
         }
       }, 300);
 

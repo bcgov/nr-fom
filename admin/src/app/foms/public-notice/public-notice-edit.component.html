@@ -101,7 +101,7 @@
                   maxlength="{{addressLimit}}">
                 </textarea>
                 @if (editMode()) {
-                  <small>{{addressLimit-publicNoticeFormGroup.get('reviewAddress').value?.length}} characters remaining.</small>
+                  <small>{{addressLimit-publicNoticeFormGroup.get('reviewAddress')?.value?.length}} characters remaining.</small>
                 }
                 @if ((form.submitted || fieldTouchedOrDirty('reviewAddress')) &&
                   (getErrorMessage('reviewAddress', 'required') || getErrorMessage('reviewAddress', 'notEmpty'))) {
@@ -148,7 +148,7 @@
                 <div class="row" >
                   <div class="form-group col-md-12">
                     <label for="receive-fom-address"
-                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview').value && editMode()">
+                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview')?.value && editMode()">
                       Physical address to submit comments
                     </label>
                     <textarea class="form-control mb" rows="3"
@@ -158,7 +158,7 @@
                       maxlength="{{addressLimit}}">
                     </textarea>
                     @if (editMode()) {
-                      <small>{{addressLimit-publicNoticeFormGroup.get('receiveCommentsAddress').value?.length}} characters remaining.</small>
+                      <small>{{addressLimit-publicNoticeFormGroup.get('receiveCommentsAddress')?.value?.length}} characters remaining.</small>
                     }
                     @if ((form.submitted || fieldTouchedOrDirty('receiveCommentsAddress')) &&
                       (getErrorMessage('receiveCommentsAddress', 'required') || getErrorMessage('receiveCommentsAddress', 'notEmpty'))) {
@@ -172,7 +172,7 @@
                 <div class="row" >
                   <div class="form-group col-md-6">
                     <label for="receive-fom-hours"
-                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview').value && editMode()">
+                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview')?.value && editMode()">
                       Business hours to physically submit comments
                     </label>
                     <input type="text"
@@ -200,7 +200,7 @@
                         maxlength="{{addressLimit}}">
                       </textarea>
                       @if (editMode()) {
-                        <small>{{addressLimit-publicNoticeFormGroup.get('mailingAddress').value?.length}} characters remaining.</small>
+                        <small>{{addressLimit-publicNoticeFormGroup.get('mailingAddress')?.value?.length}} characters remaining.</small>
                       }
                       @if ((form.submitted || fieldTouchedOrDirty('mailingAddress')) &&
                         (getErrorMessage('mailingAddress', 'required') || getErrorMessage('mailingAddress', 'notEmpty'))) {

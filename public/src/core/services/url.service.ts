@@ -23,7 +23,7 @@ export class UrlService {
 
   public onNavEnd$: Observable<NavigationEnd>; // see details below
   private queryParams: Params = {};
-  private panel: string = null;
+  private panel: string | null = null;
 
   constructor() {
     // Create a new observable that publishes only the NavigationEnd event used for subscribers to know when to
@@ -74,7 +74,7 @@ export class UrlService {
    * @param {string} value query paramter url value
    * @memberof UrlService
    */
-  public setQueryParam(key: string, value: string): void {
+  public setQueryParam(key: string, value: string | null): void {
     if (value === this.getQueryParam(key)) {
       // query param exists and has not changed
       return;
@@ -100,7 +100,7 @@ export class UrlService {
    * @param {string} fragment url fragment
    * @memberof UrlService
    */
-  public setFragment(fragment: string): void {
+  public setFragment(fragment: string | null): void {
     if (fragment === this.panel) {
       // fragment exists and has not changed
       return;
@@ -116,7 +116,7 @@ export class UrlService {
    * @returns {string}
    * @memberof UrlService
    */
-  public getFragment(): string {
+  public getFragment(): string | null {
     return this.panel;
   }
 
@@ -128,7 +128,7 @@ export class UrlService {
   public navigate = funnel(() => {
     this.zone.run(() => {
       this.router
-        .navigate([], { relativeTo: this.route, queryParams: this.queryParams, fragment: this.panel })
+        .navigate([], { relativeTo: this.route, queryParams: this.queryParams, fragment: this.panel ?? undefined })
         .toString();
     });
   }, { minQuietPeriodMs: 100 });

@@ -44,9 +44,9 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   readonly updateCoordinates = output(); // to applications component
   readonly projectsSummary = input<Array<ProjectPublicSummaryResponse> | undefined>(undefined); // from projects component
 
-  private map: L.Map = null;
+  private map: L.Map | null = null;
   private markerList: L.Marker[] = []; // list of markers
-  private currentMarker: L.Marker = null; // for removing previous marker
+  private currentMarker: L.Marker | null = null; // for removing previous marker
   private markerClusterGroup: any;
   private isMapReady = false;
   private doNotify = true; // whether to emit notification
@@ -134,7 +134,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     this.map.addLayer(this.markerClusterGroup);
 
     this.mapLayers.getAllLayers().forEach( layer => {
-      this.map.addLayer(layer);
+      this.map?.addLayer(layer);
     })
 
     this.mapLayers.addLayerControl(this.map);
@@ -194,6 +194,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   private observeMapSizing() {
+    if (!this.map) return;
     this.resizeObserver = observeMapSize(this.map, () => this.applyInitialView());
   }
 
@@ -202,7 +203,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     const lng = this.urlService.getQueryParam('lng');
     const zoom = this.urlService.getQueryParam('zoom');
     if (lat && lng && zoom) {
-      this.map.setView(L.latLng(+lat, +lng), +zoom); // NOTE: unary operators
+      this.map?.setView(L.latLng(+lat, +lng), +zoom); // NOTE: unary operators
     } else {
       this.fitBounds();
     }
@@ -241,7 +242,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     this.markerList = []; // empty the list
 
     // draw all new apps
-    this.drawMap([], this.projectsSummary());
+    this.drawMap([], this.projectsSummary() ?? []);
   }
 
   public invalidateSize() {
@@ -278,7 +279,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
    */
   public getCoordinates(): string {
     let bounds: L.LatLngBounds;
-    if (this.isMapReady && this.elementRef.nativeElement.offsetParent) {
+    if (this.isMapReady && this.map && this.elementRef.nativeElement.offsetParent) {
       // actual bounds
       bounds = this.map.getBounds();
     } else {
@@ -302,7 +303,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
 
   // NB: do not animate fitBounds() as it can lead to getting
   // the latest apps BEFORE the final coordinates are set
-  private fitBounds(bounds: L.LatLngBounds = null) {
+  private fitBounds(bounds: L.LatLngBounds | null = null) {
     if (!this.map) return; // map not yet initialized
     const fitBoundsOptions: L.FitBoundsOptions = {
       animate: false,
@@ -382,12 +383,12 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
     compRef.onDestroy(() => this.appRef.detachView(compRef.hostView));
     const div = document.createElement('div').appendChild(compRef.location.nativeElement);
 
-    popup = L.popup(popupOptions)
+    const boundPopup = L.popup(popupOptions)
       .setLatLng(marker.getLatLng())
       .setContent(div);
 
     // bind popup to marker so it automatically closes when marker is removed
-    marker.bindPopup(popup).openPopup();
+    marker.bindPopup(boundPopup).openPopup();
   }
 
   public unhighlightApplications() {
@@ -398,6 +399,7 @@ export class AppMapComponent implements OnInit, AfterViewInit, OnChanges, OnDest
   }
 
   private updateOnLayersChange() {
+    if (!this.map) return;
     this.mapLayersService.mapLayersUpdate(this.map, this.mapLayers);
   }
 }

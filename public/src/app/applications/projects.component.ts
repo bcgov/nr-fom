@@ -70,14 +70,14 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   readonly detailsPanel = viewChild<DetailsPanelComponent>('detailsPanel');
   readonly publicNoticesPanel = viewChild<PublicNoticesPanelComponent>('publicNoticesPanel');
 
-  private splashModal: NgbModalRef = null;
+  private splashModal: NgbModalRef | null = null;
   private fragmentTimeout: any;
 
   // necessary to allow referencing the enum in the html
   public Panel = Panel;
 
   // indicates which side panel should be shown
-  readonly activePanel = signal<Panel>(undefined);
+  readonly activePanel = signal<Panel | null | undefined>(undefined);
 
   // Active filters, and the FOM list fetched reactively from them. `loading` is this fetch's own
   // in-flight state (per-resource, not the global interceptor loading), so it won't react to
@@ -89,7 +89,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   });
   readonly projectsSummary = computed<Array<ProjectPublicSummaryResponse> | undefined>(() =>
     this.projectsResource.hasValue() ? this.projectsResource.value() : undefined);
-  readonly totalNumber = computed(() => this.projectsSummary()?.length);
+  readonly totalNumber = computed(() => this.projectsSummary()?.length ?? 0);
   readonly loading = this.projectsResource.isLoading;
   readonly commentStatusFilters = computed(() =>
     this.filters()?.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>);
@@ -111,7 +111,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleFragment(fragment: string) {
+  private handleFragment(fragment: string | null) {
     if (this.fragmentTimeout) {
       clearTimeout(this.fragmentTimeout);
     }
@@ -185,7 +185,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   private fetchFOMs(fomFilters: Map<string, IFilter | IMultiFilter>): Observable<Array<ProjectPublicSummaryResponse>> {
     const fomNumberParam = (fomFilters.get(FOM_FILTER_NAME.FOM_NUMBER) as Filter<number>).filter.value;
     const forestClientNameParam = (fomFilters.get(FOM_FILTER_NAME.FOREST_CLIENT_NAME) as Filter<string>).filter.value;
-    const commentStatusFilters = fomFilters.get(FOM_FILTER_NAME.COMMENT_STATUS)['filters'] as Array<IMultiFilterFields<boolean>>;
+    const commentStatusFilters = (fomFilters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>).filters as Array<IMultiFilterFields<boolean>>;
     const commentOpenParam = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_OPEN)[0].value;
     const commentClosedParam = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_CLOSED)[0].value;
     const openedOnOrAfterParam = (fomFilters.get(FOM_FILTER_NAME.POSTED_ON_AFTER) as Filter<Date>).filter.value?.toISOString().substring(0, 10);
@@ -193,9 +193,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     return this.projectService
         .projectControllerFindPublicSummary(
           fomNumberParam?.toString(),
-          commentOpenParam.toString(),
-          commentClosedParam.toString(),
-          forestClientNameParam,
+          commentOpenParam?.toString(),
+          commentClosedParam?.toString(),
+          forestClientNameParam ?? undefined,
           openedOnOrAfterParam);
   }
 
@@ -209,7 +209,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
     const appmap = this.appmap();
     if (updateEvent.search) {
-      this.detailsPanel().clearAllFilters();
+      this.detailsPanel()?.clearAllFilters();
 
       if (appmap) {
         appmap.unhighlightApplications();
@@ -217,7 +217,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     }
 
     if (updateEvent.resetMap) {
-      appmap.resetView(false);
+      appmap?.resetView(false);
     }
 
     if (updateEvent.hidePanel) {

@@ -56,17 +56,17 @@ export class SummaryComponent implements OnInit {
   readonly periodOperationsTxt = "This FOM can be relied upon by the FOM holder for the purpose of a cutting permit or road permit application, until the date three years after commencement of the public review and commenting period. FOMs published by BC Timber Sales can be relied upon for the purpose of a cutting permit or road permit application, or the issuance of a Timber Sales License until the date three years after conclusion of the public review and commenting period.";
   readonly woodlotOperationsTxt = "Woodlots are not legally required to publish FOMs for public review and comment prior to cutting permit or road permit application. However, woodlot licensees may choose to publish FOMs on a voluntary basis to facilitate public engagement.";
   projectId: number;
-  project: ProjectResponse;
+  project: ProjectResponse | undefined;
   projectReqError: boolean;
-  publicComments: PublicCommentAdminResponse[];
+  publicComments: PublicCommentAdminResponse[] | undefined;
   filteredPublicComments: PublicCommentAdminResponse[];
   publicCommentsReqError: boolean;
-  spatialDetail: SpatialFeaturePublicResponse[];
+  spatialDetail: SpatialFeaturePublicResponse[] | undefined;
   filteredSpatialDetail: SpatialFeaturePublicResponse[];
   spatialDetailReqError: boolean;
-  interactions: InteractionResponse[]
+  interactions: InteractionResponse[] | undefined
   interactionsReqError: boolean;
-  attachments: AttachmentResponse[];
+  attachments: AttachmentResponse[] | undefined;
   attachmentsReqError: boolean;
   commentScopeOpts :Array<CommentScopeOpt> = [];
   selectedScope: CommentScopeOpt;
@@ -113,7 +113,7 @@ export class SummaryComponent implements OnInit {
     this.commentSvc.publicCommentControllerFind(projectId).toPromise()
         .then(
           (result) => {
-            this.filteredPublicComments = this.publicComments = [...result];
+            this.filteredPublicComments = this.publicComments = [...(result ?? [])];
             this.syncScopeFilter();
             this.cdr.detectChanges();
           },
@@ -130,8 +130,8 @@ export class SummaryComponent implements OnInit {
     this.spatialFeatureSvc.spatialFeatureControllerGetForProject(projectId).toPromise()
     .then(
       (result) => {
-        this.spatialDetail = this.filteredSpatialDetail = [...result];
-        this.commentScopeOpts =  CommonUtil.buildCommentScopeOptions(result);
+        this.spatialDetail = this.filteredSpatialDetail = [...(result ?? [])];
+        this.commentScopeOpts =  CommonUtil.buildCommentScopeOptions(result ?? []);
         this.commentScopeOpts = this.commentScopeOpts.filter((opt) => opt.commentScopeCode !== null);
         const mainRptOpt = {commentScopeCode: null, desc: 'Main Report', name: null, scopeId: null} as CommentScopeOpt;
         this.selectedScope = mainRptOpt;
@@ -168,7 +168,7 @@ export class SummaryComponent implements OnInit {
     this.attachmentSvc.attachmentControllerFind(projectId).toPromise()
     .then(
       (result) => {
-        this.attachments  = result.sort((a: AttachmentResponse, b: AttachmentResponse) => 
+        this.attachments  = (result ?? []).sort((a: AttachmentResponse, b: AttachmentResponse) =>
             a.attachmentType.code.localeCompare(b.attachmentType.code)
         );
         this.cdr.detectChanges();
@@ -185,14 +185,14 @@ export class SummaryComponent implements OnInit {
   private doFiltering(nextScope: CommentScopeOpt) {
 
     // filtering on spatialDetail
-    this.filteredSpatialDetail = this.spatialDetail.filter((sDetail) => {
+    this.filteredSpatialDetail = (this.spatialDetail ?? []).filter((sDetail) => {
       return (nextScope.commentScopeCode == null || nextScope.commentScopeCode === COMMENT_SCOPE_CODE.OVERALL) 
           || (sDetail.featureType.code === nextScope.commentScopeCode.toLowerCase() &&
               sDetail.featureId == nextScope.scopeId);
     });
 
     // filtering on publicComments
-    this.filteredPublicComments = this.publicComments.filter((comment) => {
+    this.filteredPublicComments = (this.publicComments ?? []).filter((comment) => {
       if (!nextScope || nextScope.commentScopeCode == null) {
         return true; // Everything.
       }

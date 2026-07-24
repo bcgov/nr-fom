@@ -25,8 +25,8 @@ export class CognitoService {
   public awsCognitoConfig: AwsCognitoConfig;
   private loadRemoteConfigPromise: Promise<void> | null = null;
   private cognitoAuthToken: CognitoAuthToken;
-  private loggedOut: string;
-  private fakeUser: User;
+  private loggedOut: string | null;
+  private fakeUser: User | null;
   public initialized: boolean = false;
 
   /*
@@ -202,8 +202,11 @@ export class CognitoService {
    */
   private async refreshAndObtainAwsCognitoUserSession(): Promise<CognitoAuthToken> {
     const authSession = await fetchAuthSession({ forceRefresh: true });
-    const idToken = authSession.tokens.idToken.toString();
-    const accessToken = authSession.tokens.accessToken.toString();
+    const idToken = authSession.tokens?.idToken?.toString();
+    const accessToken = authSession.tokens?.accessToken?.toString();
+    if (!idToken || !accessToken) {
+      throw new Error("Unable to obtain Cognito auth session tokens.");
+    }
     return {
         decodedIdToken: jwtDecode(idToken),
         decodedAccessToken: jwtDecode(accessToken),

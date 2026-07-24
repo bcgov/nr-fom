@@ -79,8 +79,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     {"code": this.projectPlanCodeEnum.Woodlot, "description": "Woodlot Licence Plan"}
   ];
   forestClients: ForestClientResponse[] = [];
-  public publicNotice: File = null;
-  public supportingDocument: File = null;
+  public publicNotice: File | null = null;
+  public supportingDocument: File | null = null;
   public districtIdSelect: any = null;
   public forestClientSelect: any = null;
   public isInitialState: boolean = true;
@@ -89,8 +89,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   public isPublishState: boolean = false;
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
   public isSubmitSaveClicked = false;
-  public descriptionValue: string = null;
-  public user: User;
+  public descriptionValue: string | null = null;
+  // Populated from the authenticated Cognito session in the constructor.
+  public user!: User;
   public attachments: AttachmentResponse[] = [];
   public attachmentsInitialNotice: AttachmentResponse[] = [];
   public isDeleting = false;
@@ -109,8 +110,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public descriptionLimit: number = 500; // Based on project.dto.ts for limit.
 
-  private scrollToFragment: string = null;
-  private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
+  private scrollToFragment: string | null = null;
+  private snackBarRef: MatSnackBarRef<SimpleSnackBar> | null = null;
 
   // bsDatepicker config object
   readonly bsConfig = {
@@ -122,7 +123,10 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   } as Partial<BsDatepickerConfig>
 
   constructor() {
-    this.user = this.cognitoService.getUser();
+    const user = this.cognitoService.getUser();
+    if (user) {
+      this.user = user;
+    }
   }
 
   get isCreate() {
@@ -208,11 +212,11 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  onFileEmitForPublicNotice(newFile: File) {
+  onFileEmitForPublicNotice(newFile: File | null) {
     this.publicNotice = newFile;
   }
 
-  onFileEmitForSupportingDocument(newFile: File) {
+  onFileEmitForSupportingDocument(newFile: File | null) {
     this.supportingDocument = newFile;
     this.supportingDocument = newFile;
   }
@@ -251,13 +255,15 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.loadingSvc.loading()) return;
     const projectCreate = this.fg.value as ProjectCreateRequest
     projectCreate['districtId'] = this.districtIdSelect;
-    projectCreate.forestClientNumber = this.fg.get('forestClient').value.id;
+    projectCreate.forestClientNumber = this.fg.get('forestClient')?.value.id;
     const cmoDateIsoVal = this.getformatedDate('commentingOpenDate', this.DEFAULT_ISO_DATE_FORMAT);
     const cmcDateIsoVal = this.getformatedDate('commentingClosedDate', this.DEFAULT_ISO_DATE_FORMAT);
-    projectCreate.commentingOpenDate = cmoDateIsoVal? cmoDateIsoVal: null;
-    projectCreate.commentingClosedDate = cmcDateIsoVal? cmcDateIsoVal: null;
-    projectCreate.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
-    projectCreate.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
+    // commentingOpenDate/ClosedDate are non-optional strings in the generated type but the backend
+    // accepts null when no date is set; `null!` keeps the null runtime value the API expects.
+    projectCreate.commentingOpenDate = cmoDateIsoVal? cmoDateIsoVal: null!;
+    projectCreate.commentingClosedDate = cmcDateIsoVal? cmcDateIsoVal: null!;
+    projectCreate.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate')?.value).year;
+    projectCreate.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate')?.value).year;
     
     lastValueFrom(
       this.projectSvc.projectControllerCreate(projectCreate).pipe(
@@ -290,8 +296,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       const cmcDateIsoVal = this.getformatedDate('commentingClosedDate', this.DEFAULT_ISO_DATE_FORMAT);
       projectUpdateRequest.commentingOpenDate = cmoDateIsoVal? cmoDateIsoVal: null;
       projectUpdateRequest.commentingClosedDate = cmcDateIsoVal? cmcDateIsoVal: null;
-      projectUpdateRequest.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate').value).year;
-      projectUpdateRequest.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate').value).year;
+      projectUpdateRequest.operationStartYear = DateTime.fromJSDate(this.fg.get('opStartDate')?.value).year;
+      projectUpdateRequest.operationEndYear = DateTime.fromJSDate(this.fg.get('opEndDate')?.value).year;
 
       await lastValueFrom(this.projectSvc.projectControllerUpdate(id, projectUpdateRequest));
 
@@ -317,18 +323,21 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   changeDistrictId(e) {
-    this.fg.get('district').setValue(parseInt(e.target.value));
+    this.fg.get('district')?.setValue(parseInt(e.target.value));
     this.districtIdSelect = parseInt(e.target.value);
   }
 
   onProjectPlanChange(e) {
     // reset fspId and woodlotLicenseNumber fields when plan selection changed.
-    this.fg.get('fspId').setValue(null)
-    this.fg.get('woodlotLicenseNumber').setValue(null)
+    this.fg.get('fspId')?.setValue(null)
+    this.fg.get('woodlotLicenseNumber')?.setValue(null)
   }
   onForestClientChange(e) {
     const forestClientField = this.fg.get('forestClient');
-    this.fg.get('forestClient').setValue(forestClientField.value);
+    if (!forestClientField) {
+      return;
+    }
+    forestClientField.setValue(forestClientField.value);
     this.forestClientSelect = parseInt(forestClientField.value.id);
 
     // 'TIMBER SALES MANAGER' name field is required (to be validated) based on forestClient name
@@ -336,18 +345,18 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     // (using @rxweb/reactive-form-validators), when forestClient is changed, bctsMgrName does not get
     // rerenderred (no ngIf, ngFor etc on this field).
     // Just trigger the dynamic form field (with enable()) is probably easier than using 'ChangeDetectorRef'.
-    this.fg.get('bctsMgrName').enable();
+    this.fg.get('bctsMgrName')?.enable();
   }
 
   isHolderBctsManger() {
     const forestClientField = this.fg.get('forestClient');
-    return forestClientField.value?.name?.toUpperCase().includes('TIMBER SALES MANAGER');
+    return forestClientField?.value?.name?.toUpperCase().includes('TIMBER SALES MANAGER');
   }
 
   changeDescription(e) {
     this.descriptionValue = e.target.value;
     if(!this.descriptionValue && !this.isCreate){
-      this.fg.get('description').setErrors({incorrect: true})
+      this.fg.get('description')?.setErrors({incorrect: true})
     }
   }
 
@@ -355,10 +364,11 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   * Closed Date cannot be before (30 days after Comment Opening Date)
   * if FOM status is in 'Commenting Open".
   */
-  validateClosedDate(closedDate: Date): void {
+  validateClosedDate(closedDate: Date | null): void {
     if (!closedDate) return;
 
     const commentingOpenDateField = this.fg.get('commentingOpenDate');
+    if (!commentingOpenDateField) return;
     const defaultClosedDate = DateTime.fromJSDate(commentingOpenDateField.value).plus({days: 30});
     const diff = DateTime.fromJSDate(closedDate).diff(defaultClosedDate, 'days');
     if (diff.days < 0 ) {
@@ -370,16 +380,17 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
       if (!this.isCreate) {
         const closeDatePipe = this.datePipe.transform(this.originalProjectResponse.commentingClosedDate, DEFAULT_ISO_DATE_FORMAT);
-        this.fg.get('commentingClosedDate').setValue(closeDatePipe)
+        this.fg.get('commentingClosedDate')?.setValue(closeDatePipe)
       }
       else {
-        this.fg.get('commentingClosedDate').setValue(null);
+        this.fg.get('commentingClosedDate')?.setValue(null);
       }
     }
   }
 
   toggleClosedDate(newCommentingOpenDate: Date): void {
     const commentingClosedDateField = this.fg.get('commentingClosedDate');
+    if (!commentingClosedDateField) return;
     // Only enable commenting_closed_date when commenting_open_date is present.
     if (newCommentingOpenDate) {
       commentingClosedDateField.enable();
@@ -441,7 +452,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getformatedDate(field, format = 'yyyy') {
-    const fieldVal = this.fg.get(field).value;
+    const fieldVal = this.fg.get(field)?.value;
     if (typeof fieldVal === "string") {
         return DateTime.fromISO(fieldVal).toFormat(format)
     }
@@ -458,6 +469,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Converting commentingOpenDate date to 'yyyy-MM-dd'
     const commentingOpenDateField = fg.get('commentingOpenDate');
+    if (!commentingOpenDateField) return;
     const openDatePipe = this.datePipe.transform(fg.value.commentingOpenDate, DEFAULT_ISO_DATE_FORMAT);
     commentingOpenDateField.setValue(openDatePipe);
 
@@ -468,6 +480,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Converting commentingClosedDate date to 'yyyy-MM-dd'
     const commentingClosedDateField = fg.get('commentingClosedDate');
+    if (!commentingClosedDateField) return;
     const closeDatePipe = this.datePipe.transform(fg.value.commentingClosedDate, DEFAULT_ISO_DATE_FORMAT);
     commentingClosedDateField.setValue(closeDatePipe);
     if ((user.isMinistry && !user.isForestClient) ||
@@ -475,12 +488,12 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
       commentingClosedDateField.disable();
     }
 
-    fg.get('district').setValue(project?.district.id);
+    fg.get('district')?.setValue(project?.district.id);
   }
 
-  getErrorMessage(controlName: string, messageKey: string = null): string {
+  getErrorMessage(controlName: string, messageKey: string | null = null): string | null {
     const errors = this.fg.controls[controlName]?.errors;
-    if (errors !== null) {
+    if (errors != null && messageKey !== null) {
       const { [messageKey]: messages } = errors;
       if (messages) return messages.message;
     }

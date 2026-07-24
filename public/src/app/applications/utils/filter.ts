@@ -23,7 +23,7 @@ export interface IFilterFields<T> {
    * @type {T}
    * @memberof IFilterFields
    */
-  value: T;
+  value: T | null;
 }
 
 export interface IFilter {

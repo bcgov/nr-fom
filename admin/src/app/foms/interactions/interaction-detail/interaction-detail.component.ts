@@ -34,7 +34,7 @@ export class InteractionDetailComponent {
 
   today = new Date();
   maxDate = this.today;
-  interaction: InteractionResponse;
+  interaction: InteractionResponse | null;
   @Input()
   editMode: boolean;
   @Input()
@@ -42,7 +42,7 @@ export class InteractionDetailComponent {
 
   interactionFormGroup: IFormGroup<InteractionRequest>;
   
-  file: File = null; // only 1 attachment for Interaction.
+  file: File | null = null; // only 1 attachment for Interaction.
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
  
   // Note - browser often fails to recognize 'application/vnd.ms-outlook'; for .msg files use '.msg' instead.
@@ -53,7 +53,7 @@ export class InteractionDetailComponent {
     'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/rtf', '.msg'
   ]
-  attachment: AttachmentResponse;
+  attachment: AttachmentResponse | null;
   communicationDetailsLimit: number = 4000;
 
   @Input() set selectedInteraction(interaction: InteractionResponse) {
@@ -76,20 +76,20 @@ export class InteractionDetailComponent {
     this.cdr.detectChanges();
   }
 
-  onFileEmit(newFile: File) {
+  onFileEmit(newFile: File | null) {
     this.file = newFile;
     if (!this.file) {
-      this.interactionFormGroup.get('filename').setValue(null);
+      this.interactionFormGroup.get('filename')?.setValue(null);
     }
     else {
-      this.interactionFormGroup.get('filename').setValue(this.file .name);
+      this.interactionFormGroup.get('filename')?.setValue(this.file .name);
     }
-    this.interactionFormGroup.get('fileContent').setValue(this.file);
+    this.interactionFormGroup.get('fileContent')?.setValue(this.file);
   }
 
   private async retrieveAttachment(attachmentId: number) {
     this.attachment = await this.attachmentSvc
-                      .attachmentControllerFindOne(attachmentId).toPromise();
+                      .attachmentControllerFindOne(attachmentId).toPromise() ?? null;
   }
 
   isValid(controlName: string): boolean {

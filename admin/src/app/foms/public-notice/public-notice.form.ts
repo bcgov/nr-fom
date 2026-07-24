@@ -82,7 +82,7 @@ export class PublicNoticeForm {
     this.initProposedOperations(pn);
   }
 
-  initProposedOperations(pn: PublicNoticeResponse) {
+  initProposedOperations(pn: PublicNoticeResponse | undefined) {
     if (pn?.postDate) {
         this.pnPostDate = DateTime.fromISO(pn.postDate).toJSDate();
     }

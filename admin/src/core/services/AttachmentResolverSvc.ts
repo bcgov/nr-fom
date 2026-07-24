@@ -15,7 +15,8 @@ export class AttachmentResolverSvc {
 
 
   public async getAttachments(projectId: number): Promise<AttachmentResponse[]> {
-      return this.attachmentService.attachmentControllerFind(projectId).toPromise()
+      const attachments = await this.attachmentService.attachmentControllerFind(projectId).toPromise();
+      return attachments ?? [];
   }
 
   public async attachmentControllerRemove(attachmentId: number): Promise<any> {

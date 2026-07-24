@@ -11,7 +11,7 @@ describe('FOMFiltersService', () => {
   });
 
   function latest(): Map<string, IFilter | IMultiFilter> {
-    let value: Map<string, IFilter | IMultiFilter>;
+    let value!: Map<string, IFilter | IMultiFilter>;
     service.filters$.subscribe((m) => (value = m)).unsubscribe();
     return value;
   }

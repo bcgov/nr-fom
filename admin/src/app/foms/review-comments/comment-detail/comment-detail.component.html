@@ -68,7 +68,7 @@
                 formControlName="responseDetails"
                 maxlength="{{responseDetailsLimit}}">
               </textarea>
-              <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails').value?.length}} characters remaining.</small>
+              <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails')?.value?.length}} characters remaining.</small>
             </div>
           </div>
           &nbsp;

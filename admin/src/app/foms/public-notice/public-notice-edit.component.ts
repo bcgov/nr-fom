@@ -45,7 +45,8 @@ export class PublicNoticeEditComponent implements OnInit {
   readonly projectDetail = input.required<ProjectResponse>();
   readonly editMode = input.required<boolean>(); // 'edit'/'view' mode, from route data
 
-  user: User;
+  // Populated from the authenticated Cognito session in the constructor.
+  user!: User;
   project: ProjectResponse;
   projectId: number;
   isNewForm: boolean;
@@ -57,7 +58,10 @@ export class PublicNoticeEditComponent implements OnInit {
   minPostDate: Date = DateTime.now().plus({days: 1}).toJSDate(); // 1 day in the future.
 
   constructor() {
-    this.user = this.cognitoService.getUser();
+    const user = this.cognitoService.getUser();
+    if (user) {
+      this.user = user;
+    }
   }
 
   ngOnInit() {
@@ -95,7 +99,8 @@ export class PublicNoticeEditComponent implements OnInit {
     
     if (this.isNewForm) {
       // Don't inherit operation years from previous public notice from the forest client.
-      delete this.publicNoticeResponse?.postDate;
+      // Cast to Partial so the (non-optional in the generated type) postDate can be deleted.
+      delete (this.publicNoticeResponse as Partial<PublicNoticeResponse>)?.postDate;
     }
     else { // a case there was public notice saved for the project.
       // This is a tricky case. "bsDatepicker" when (minDate=maxDate) and when previous field date falls
@@ -108,11 +113,13 @@ export class PublicNoticeEditComponent implements OnInit {
       const startOfMaxPostDate = DateTime.fromJSDate(this.maxPostDate).startOf('day');
       if (pnPostDate && startOfMinPostDate <= startOfCommentingOpenDate) {
         if ((startOfPnPostDate < startOfMinPostDate) || (startOfPnPostDate > startOfMaxPostDate)){
-          this.publicNoticeResponse.postDate = startOfMinPostDate.toISODate();
+          // startOfMinPostDate is derived from a valid date, so toISODate() is non-null here.
+          this.publicNoticeResponse.postDate = startOfMinPostDate.toISODate()!;
         }
       }
       else if (pnPostDate && (startOfMinPostDate > startOfCommentingOpenDate)) {
-        this.publicNoticeResponse.postDate = null;
+        // Clear the post date; postDate is non-optional in the generated type, so cast to Partial.
+        (this.publicNoticeResponse as Partial<PublicNoticeResponse>).postDate = undefined;
       }
     }
   }
@@ -129,6 +136,10 @@ export class PublicNoticeEditComponent implements OnInit {
     const sameAsReviewIndField = this.publicNoticeFormGroup.get('isReceiveCommentsSameAsReview');
     const receiveCommentsAddressField = this.publicNoticeFormGroup.get('receiveCommentsAddress');
     const receiveCommentsBusinessHoursField = this.publicNoticeFormGroup.get('receiveCommentsBusinessHours');
+
+    if (!sameAsReviewIndField || !receiveCommentsAddressField || !receiveCommentsBusinessHoursField) {
+      return;
+    }
 
     if (sameAsReviewIndField.value) {
       receiveCommentsAddressField.disable();
@@ -181,9 +192,9 @@ export class PublicNoticeEditComponent implements OnInit {
     }
   }
 
-  getErrorMessage(controlName: string, messageKey: string = null): string {
+  getErrorMessage(controlName: string, messageKey: string | null = null): string | null {
     const errors = this.publicNoticeFormGroup.controls[controlName]?.errors;
-    if (errors !== null) {
+    if (errors != null && messageKey !== null) {
       const { [messageKey]: messages } = errors;
       if (messages) return messages.message;
     }
