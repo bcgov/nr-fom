@@ -52,7 +52,6 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
 
 
   public readonly commentListScrollContainer = viewChild.required('commentListScrollContainer', { read: ElementRef });
-  readonly commentDetailForm = viewChild.required<CommentDetailComponent>('commentDetailForm');
 
   public responseCodes = this.stateSvc.getCodeTable('responseCode')
   public commentScopeCodes = indexBy(this.stateSvc.getCodeTable('commentScopeCode'), (x) => x.code);

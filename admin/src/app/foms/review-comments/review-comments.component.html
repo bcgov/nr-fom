@@ -89,9 +89,9 @@
                 <div class="row">
                   <button type="button" title="Save this comment response"
                     class="btn btn-sm btn-primary btn-container"
-                    [disabled]="loadingSvc.loading()"
+                    [disabled]="loadingSvc.loading() || commentDetailForm.commentForm().invalid()"
                     [hidden]="!canReplyComment()"
-                    (click)="saveComment(commentDetailForm.commentFormGroup.value, commentDetailForm.comment)">
+                    (click)="saveComment(commentDetailForm.value, commentDetailForm.comment)">
                     Save response
                   </button>
                 </div>

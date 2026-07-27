@@ -37,7 +37,7 @@
       </div>
       <div class="comment-detail__body" [innerHTML]="comment.feedback | newlines"></div>
       <hr>
-        <form [formGroup]="commentFormGroup">
+        <form>
           <div class="row">
             <div class="col-md-4">
               <label>Response to Commment</label>
@@ -46,12 +46,11 @@
           <div class="row">
             <div class="col-md-4">
               <select class="sort-comments form-control mb-3" id="responseCode"
-                name="responseCode"
-                formControlName="responseCode">
-                <option [ngValue]="null" disabled>Select a Response</option>
+                [formField]="commentForm.responseCode">
+                <option value="" disabled>Select a Response</option>
                 @for (code of responseCodes(); track code) {
                   <option
-                  [ngValue]="code.code">{{code.description}}</option>
+                  [value]="code.code">{{code.description}}</option>
                 }
               </select>
             </div>
@@ -64,11 +63,14 @@
           <div class="row">
             <div class="col-md-12">
               <textarea class="form-control  mb" rows="3" id="detail"
-                name="detail"
-                formControlName="responseDetails"
-                maxlength="{{responseDetailsLimit}}">
-              </textarea>
-              <small>{{responseDetailsLimit-commentFormGroup.get('responseDetails')?.value?.length}} characters remaining.</small>
+                [class.is-invalid]="detailsOverLimit()"
+                [formField]="commentForm.responseDetails"></textarea>
+              <small>{{remainingChars()}} characters remaining.</small>
+              @if (detailsOverLimit()) {
+                <div class="invalid-feedback">
+                  Response Details cannot exceed {{responseDetailsLimit}} characters. Please shorten your response before saving.
+                </div>
+              }
             </div>
           </div>
           &nbsp;
