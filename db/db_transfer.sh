@@ -27,7 +27,7 @@ fi
 
 SOURCE_DEPLOYMENT="${1}"
 TARGET_DEPLOYMENT="${2}"
-DUMP_PARAMETERS="${DUMP_PARAMETERS:---exclude-schema=tiger --exclude-schema=tiger_data --exclude-schema=topology}"
+DUMP_PARAMETERS="${DUMP_PARAMETERS:---exclude-schema=tiger --exclude-schema=tiger_data --exclude-schema=topology --exclude-extension=postgis_tiger_geocoder --exclude-extension=postgis_topology}"
 
 # Fail fast if pods aren't found
 if ! oc get po -l deployment="${SOURCE_DEPLOYMENT}" | grep -q .; then
