@@ -1,5 +1,5 @@
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
-import { ChangeDetectorRef, Component, Input, inject } from '@angular/core';
+import { Component, Input, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AttachmentResponse, AttachmentService, InteractionResponse } from '@api-client';
 import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
@@ -29,12 +29,12 @@ export class InteractionDetailComponent {
   private configSvc = inject(ConfigService);
   attachmentSvc = inject(AttachmentService);
   attachmentResolverSvc = inject(AttachmentResolverSvc);
-  private cdr = inject(ChangeDetectorRef);
-
 
   today = new Date();
   maxDate = this.today;
-  interaction: InteractionResponse | null;
+  // Signalized so writes (setter, async attachment fetch, clear) schedule zoneless change detection
+  // on their own — replaces the former cdr.detectChanges() calls.
+  readonly interaction = signal<InteractionResponse | null>(null);
   @Input()
   editMode: boolean;
   @Input()
@@ -53,27 +53,24 @@ export class InteractionDetailComponent {
     'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/rtf', '.msg'
   ]
-  attachment: AttachmentResponse | null;
+  readonly attachment = signal<AttachmentResponse | null>(null);
   communicationDetailsLimit: number = 4000;
 
   @Input() set selectedInteraction(interaction: InteractionResponse) {
-    this.interaction = interaction;
+    this.interaction.set(interaction);
     const interactionForm = new InteractionDetailForm(interaction)
     this.interactionFormGroup = this.formBuilder.formGroup(interactionForm)as IFormGroup<InteractionRequest>;
     if (!this.editMode) {
       this.interactionFormGroup.disable();
     }
-    this.interaction.attachmentId? this.retrieveAttachment(this.interaction.attachmentId)
-                                 : this.attachment = null;
-    // Force change detection to ensure child components render
-    this.cdr.detectChanges();
+    interaction.attachmentId ? this.retrieveAttachment(interaction.attachmentId)
+                             : this.attachment.set(null);
   }
 
   /** Reset the panel to its empty ("No engagement selected") state. */
   clear() {
-    this.interaction = null;
-    this.attachment = null;
-    this.cdr.detectChanges();
+    this.interaction.set(null);
+    this.attachment.set(null);
   }
 
   onFileEmit(newFile: File | null) {
@@ -88,8 +85,8 @@ export class InteractionDetailComponent {
   }
 
   private async retrieveAttachment(attachmentId: number) {
-    this.attachment = await this.attachmentSvc
-                      .attachmentControllerFindOne(attachmentId).toPromise() ?? null;
+    this.attachment.set(await this.attachmentSvc
+                      .attachmentControllerFindOne(attachmentId).toPromise() ?? null);
   }
 
   isValid(controlName: string): boolean {

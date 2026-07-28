@@ -3,7 +3,7 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { LoadingService } from '@admin-core/services/loading.service';
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject, input } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -45,12 +45,12 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   private modalSvc = inject(ModalService);
   private submissionSvc = inject(SubmissionService);
   private cognitoService = inject(CognitoService);
-  private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
 
-  public fg: RxFormGroup;
-  public project: ProjectResponse;
-  public spatialSubmission: SubmissionDetailResponse;
+  // Signal so the template's `@if (fg())` gate is reactive
+  public readonly fg = signal<RxFormGroup | undefined>(undefined);
+  public readonly project = signal<ProjectResponse | undefined>(undefined);
+  public readonly spatialSubmission = signal<SubmissionDetailResponse | undefined>(undefined);
   public originalSubmissionRequest:  SubmissionRequest;
   public applicationFiles: File[] = [];
   public fileTypesParent: string[] = ['text/plain', 'application/json']
@@ -81,12 +81,13 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // check for unsaved changes before navigating away from current route (ie, this page)
   public canDeactivate(): Observable<boolean> | boolean {
-    if (!this.fg) {
+    const fg = this.fg();
+    if (!fg) {
       return true;
     }
 
     // allow synchronous navigation if everything is OK
-    if (!this.fg.dirty && !this.fg.isModified) {
+    if (!fg.dirty && !fg.isModified) {
       return true;
     }
 
@@ -95,7 +96,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
 
   public cancelChanges() {
     // can't call location back() - fails when cancel is cancelled due to dirty form or unsaved documents multiple times
-    const routerFragment = ['/a', this.project.id]
+    const routerFragment = ['/a', this.project()?.id]
     this.router.navigate(routerFragment);
   }
 
@@ -117,19 +118,19 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
       })
     )
     .subscribe((data) => {
-      this.project = data.projectResponse;
-      this.spatialSubmission = data.spatialSubmission;
+      this.project.set(data.projectResponse);
+      this.spatialSubmission.set(data.spatialSubmission);
       this.originalSubmissionRequest = <SubmissionRequest> {
-        projectId: this.project.id,
+        projectId: data.projectResponse.id,
         submissionTypeCode: submissionTypeCode,
         spatialObjectCode: SpatialObjectCodeEnum.CutBlock,
         jsonSpatialSubmission: Object
       }
       const form = new FomSubmissionForm(this.originalSubmissionRequest);
-      this.fg = <RxFormGroup>this.formBuilder.formGroup(form);
-      this.fg.get('projectId')?.setValue(this.originalSubmissionRequest.projectId);
-      this.fg.get('submissionTypeCode')?.setValue(this.originalSubmissionRequest.submissionTypeCode);
-      this.cdr.detectChanges();
+      const fg = <RxFormGroup>this.formBuilder.formGroup(form);
+      fg.get('projectId')?.setValue(this.originalSubmissionRequest.projectId);
+      fg.get('submissionTypeCode')?.setValue(this.originalSubmissionRequest.submissionTypeCode);
+      this.fg.set(fg);
     });
   }
 
@@ -172,7 +173,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
           }
 
           this.originalSubmissionRequest.jsonSpatialSubmission = JSON.parse(content);
-          this.fg.get('jsonSpatialSubmission')?.setValue(this.originalSubmissionRequest.jsonSpatialSubmission);
+          this.fg()?.get('jsonSpatialSubmission')?.setValue(this.originalSubmissionRequest.jsonSpatialSubmission);
         } catch (_parseError) {
           this.modalSvc.openErrorDialog('The selected file is not valid JSON. Please fix the file and try again.');
         }
@@ -190,7 +191,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
 
   submit() {
     const {projectId, submissionTypeCode, ...rest} = this.originalSubmissionRequest;
-    const submissionRequest = {...rest, ...this.fg.value}
+    const submissionRequest = {...rest, ...this.fg()!.value}
     this.isSubmitting = true;
     this.submissionSvc.submissionControllerProcessSpatialSubmission(submissionRequest as SubmissionRequest)
         .subscribe({
@@ -205,7 +206,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   changeGeoType(e: Event) {
-    this.fg.get('spatialObjectCode')?.setValue((e.target as HTMLSelectElement).value);
+    this.fg()?.get('spatialObjectCode')?.setValue((e.target as HTMLSelectElement).value);
   }
 
   getGeoSpatialTypeDescription(type: string){
@@ -218,12 +219,12 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   public isSubmissionAllowed(){
-    return this.project.workflowState.code === WorkflowStateEnum.Initial
-      || this.project.workflowState.code === WorkflowStateEnum.CommentClosed ;
+    return this.project()?.workflowState.code === WorkflowStateEnum.Initial
+      || this.project()?.workflowState.code === WorkflowStateEnum.CommentClosed ;
   }
 
   public canDeleteSpatialSubmission() {
-    return this.user.isAuthorizedForClientId(this.project.forestClient.id) &&
+    return this.user.isAuthorizedForClientId(this.project()!.forestClient.id) &&
       this.isSubmissionAllowed();
   }
 
@@ -235,10 +236,10 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
         this.deleteSpatialSubmission(submissionId, spatialObjectCode)
         .pipe(
           switchMap(() => {
-            return this.findSpatialSubmission(this.project.id);
+            return this.findSpatialSubmission(this.project()!.id);
           })
         )
-        .subscribe(data => this.spatialSubmission = data);
+        .subscribe(data => this.spatialSubmission.set(data));
       }
     });
   }

@@ -48,4 +48,30 @@ describe('FomSubmissionComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('populates project()/spatialSubmission() signals from the load (replaces the ngOnInit cdr)', () => {
+    const projectResponse = {
+      id: 5,
+      workflowState: { code: 'INITIAL' },
+      forestClient: { id: 'c1' },
+      projectPlanCode: 'FSP',
+      fspId: 5,
+      woodlotLicenseNumber: null,
+    };
+    const spatial = { submissionId: 9, cutblocks: { count: 0 }, roadSections: { count: 0 }, retentionAreas: { count: 0 } };
+    (TestBed.inject(ProjectService).projectControllerFindOne as jest.Mock).mockReturnValue(of(projectResponse));
+    (TestBed.inject(SubmissionService).submissionControllerFindSubmissionDetailForCurrentSubmissionType as jest.Mock)
+      .mockReturnValue(of(spatial));
+
+    fixture.componentRef.setInput('appId', '5');
+    component.ngOnInit(); // the load (sync `of(...)`) sets the signals — no cdr, no template render needed
+
+    expect(component.project()).toEqual(projectResponse);
+    expect(component.spatialSubmission()).toEqual(spatial);
+    // The `@if (fg())` gate MUST be a signal so the load triggers zoneless CD and renders the form.
+    // (A blank page resulted when it was a plain field: signals read only inside a collapsed @if have
+    //  no consumer to schedule CD.) NOTE: rendering itself can't be asserted here — the fake
+    //  RxFormBuilder can't back a real [formGroup]; the render path is covered by manual/e2e checks.
+    expect(component.fg()).toBeTruthy();
+  });
 });

@@ -1,16 +1,16 @@
 
-@if (!interaction) {
+@if (!interaction()) {
   <div class="interaction-detail-container">
     <em>No engagement selected</em>
   </div>
 }
 
-@if (interaction) {
+@if (interaction(); as selected) {
   <div class="interaction-detail-container">
     <div class="title-container__title">
       <h2>&nbsp;</h2>
       <div class="interaction-detail__date">
-        {{interaction.createTimestamp || today | date:'medium'}}
+        {{selected.createTimestamp || today | date:'medium'}}
       </div>
     </div>
     <hr>
@@ -88,22 +88,22 @@
                 <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf, txt, csv, doc, docx, xls, xlsx, msg, rtf </em></div>
               </div>
             }
-            @if (attachment) {
+            @if (attachment(); as att) {
               <div id="attachmentDiv" class="form-group col-md doc-list"
                 style="padding: 0 15px"
                 >
                 <label for="upload">Attachment</label>
                 <a class="doc-list__item"
                   style="cursor:pointer"
-                  (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
-                  [title]="attachment.fileName || ''"
+                  (click)="attachmentResolverSvc.getFileContents(att.id, att.fileName)"
+                  [title]="att.fileName || ''"
                   rel="noopener">
                   <div class="cell doc-list__item-icon">
                     <em class="material-icons">
                       insert_drive_file
                     </em>
                   </div>
-                  <div class="cell doc-list__item-name">{{attachment.fileName}}</div>
+                  <div class="cell doc-list__item-name">{{att.fileName}}</div>
                 </a>
                 <span class="vert-pipe">&nbsp;</span>
               </div>

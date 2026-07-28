@@ -1,11 +1,11 @@
-@if (fg) {
+@if (fg()) {
   <div class="top-container">
     <div class="container">
       <div class="title-container">
         <div class="title-container__title">
-          <h1 class="text-muted">{{project.projectPlanCode == projectPlanCodeEnum.Fsp
-            ? "FSP ID: " + project.fspId
-            : "Woodlot Licence: "+ project.woodlotLicenseNumber
+          <h1 class="text-muted">{{project()?.projectPlanCode == projectPlanCodeEnum.Fsp
+            ? "FSP ID: " + project()?.fspId
+            : "Woodlot Licence: "+ project()?.woodlotLicenseNumber
           }}</h1>
         </div>
         <div class="title-container__actions">
@@ -34,10 +34,10 @@
   </div>
 }
 
-@if (fg) {
+@if (fg(); as fgv) {
   <div class="bottom-container">
     <div class="container">
-      <form class="mb-3" [formGroup]="fg">
+      <form class="mb-3" [formGroup]="fgv">
         <fieldset>
           <legend>FOM Spatial Submission</legend>
           <div class="row">
@@ -51,7 +51,7 @@
                 id="id"
                 name="name"
                 disabled
-                [value]="project.id"
+                [value]="project()?.id"
                 />
               </div>
             </div>
@@ -97,24 +97,25 @@
                 <div class="fileTypes"><em>Acceptable File Types: json, txt</em></div>
               </div>
             </fieldset>
-            @if (spatialSubmission?.cutblocks?.count > 0
-              || spatialSubmission?.roadSections?.count > 0
-              || spatialSubmission?.retentionAreas?.count > 0) {
+            @if (spatialSubmission(); as sub) {
+              @if (sub.cutblocks?.count > 0
+              || sub.roadSections?.count > 0
+              || sub.retentionAreas?.count > 0) {
               <fieldset class="no-margin no-border"
                 >
                 <legend> Submitted Spatial Objects </legend>
                 <ul class="nv-list">
-                  @if (spatialSubmission.cutblocks?.count > 0) {
+                  @if (sub.cutblocks?.count > 0) {
                     <li
                       style="padding-bottom: 0">
-                      <span class="name">Cut block submission - {{spatialSubmission.cutblocks.count}} blocks</span>
-                      <span class="value1">{{spatialSubmission.cutblocks.dateSubmitted | date}}</span>
+                      <span class="name">Cut block submission - {{sub.cutblocks.count}} blocks</span>
+                      <span class="value1">{{sub.cutblocks.dateSubmitted | date}}</span>
                       <span class="action">
                         @if (canDeleteSpatialSubmission()) {
                           <button class="btn btn-icon no-padding no-border" title="Remove Cutblocks"
                             type="button"
                 (click)="onDeleteSpatialSubmission(
-                  spatialSubmission.submissionId, 
+                  sub.submissionId, 
                   SpatialObjectCodeEnum.CutBlock
                   )">
                             <em class="spinner rotating" [hidden]="!isLoading"></em>
@@ -126,17 +127,17 @@
                       </span>
                     </li>
                   }
-                  @if (spatialSubmission.roadSections?.count > 0) {
+                  @if (sub.roadSections?.count > 0) {
                     <li
                       style="padding-bottom: 0">
-                      <span class="name">Road section submission - {{spatialSubmission.roadSections.count}} sections</span>
-                      <span class="value1">{{spatialSubmission.roadSections.dateSubmitted | date}}</span>
+                      <span class="name">Road section submission - {{sub.roadSections.count}} sections</span>
+                      <span class="value1">{{sub.roadSections.dateSubmitted | date}}</span>
                       <span class="action">
                         @if (canDeleteSpatialSubmission()) {
                           <button class="btn btn-icon no-padding no-border" title="Remove Road Sections"
                             type="button"
                 (click)="onDeleteSpatialSubmission(
-                  spatialSubmission.submissionId, 
+                  sub.submissionId, 
                   SpatialObjectCodeEnum.RoadSection
                   )">
                             <em class="spinner rotating" [hidden]="!isLoading"></em>
@@ -148,17 +149,17 @@
                       </span>
                     </li>
                   }
-                  @if (spatialSubmission.retentionAreas?.count > 0) {
+                  @if (sub.retentionAreas?.count > 0) {
                     <li
                       style="padding-bottom: 0">
-                      <span class="name">Retention area submission - {{spatialSubmission.retentionAreas.count}} areas</span>
-                      <span class="value1">{{spatialSubmission.retentionAreas.dateSubmitted | date}}</span>
+                      <span class="name">Retention area submission - {{sub.retentionAreas.count}} areas</span>
+                      <span class="value1">{{sub.retentionAreas.dateSubmitted | date}}</span>
                       <span class="action">
                         @if (canDeleteSpatialSubmission()) {
                           <button class="btn btn-icon no-padding no-border" title="Remove Retention Areas"
                             type="button"
                 (click)="onDeleteSpatialSubmission(
-                  spatialSubmission.submissionId, 
+                  sub.submissionId, 
                   SpatialObjectCodeEnum.Wtra
                   )">
                             <em class="spinner rotating" [hidden]="!isLoading"></em>
@@ -172,6 +173,7 @@
                   }
                 </ul>
               </fieldset>
+              }
             }
             <hr/>
             <div>

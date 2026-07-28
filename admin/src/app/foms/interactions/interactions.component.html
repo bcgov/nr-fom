@@ -70,7 +70,7 @@
                     <button type="button" title="Save this engagement"
                       class="btn btn-sm btn-primary btn-container"
                       [disabled]="loadingSvc.loading() || interactionDetailForm.interactionFormGroup?.invalid"
-                      (click)="saveInteraction(interactionDetailForm.interactionFormGroup.value, interactionDetailForm.interaction)">
+                      (click)="saveInteraction(interactionDetailForm.interactionFormGroup.value, interactionDetailForm.interaction())">
                       Save interaction
                     </button>
                   }
