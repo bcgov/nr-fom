@@ -1,4 +1,4 @@
-FROM postgis/postgis:18-master
+FROM postgis/postgis:18-3.5
 
 # PostGIS is provided by the base image's init script (10_postgis.sh) on fresh init.
 # pgcrypto is enabled via a main DB migration (CREATE EXTENSION IF NOT EXISTS pgcrypto)
