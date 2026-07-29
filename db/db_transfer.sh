@@ -68,7 +68,7 @@ fi
 # Stream dump directly from old deployment to new deployment
 echo -e "\nDatabase transfer from '${SOURCE_DEPLOYMENT}' to '${TARGET_DEPLOYMENT}' beginning."
 oc exec -i deployment/"${SOURCE_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} ${DUMP_PARAMETERS}" \
-  | grep -v -E "postgis_tiger_geocoder" \
+  | sed '/EXTENSION.*postgis_tiger_geocoder/d' \
   | oc exec -i deployment/"${TARGET_DEPLOYMENT}" -- bash -c "psql -U \${POSTGRES_USER} -d \${POSTGRES_DB}"
 
 # Results
