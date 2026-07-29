@@ -156,7 +156,8 @@ objects:
           containers:
             - name: ${NAME}
               # Override manually like this - 'image: postgis/postgis:17-master'
-              image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
+#              image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
+              image: postgis/postgis:17-master
               ports:
                 - containerPort: 5432
                   protocol: TCP
