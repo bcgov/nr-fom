@@ -65,10 +65,15 @@ else
   echo "Warning: Could not find PVCs for comparison. Proceeding without age check."
 fi
 
-# Stream dump directly from old deployment to new deployment
+# Stream binary dump directly from old deployment to new deployment, filter TOC, and restore
 echo -e "\nDatabase transfer from '${SOURCE_DEPLOYMENT}' to '${TARGET_DEPLOYMENT}' beginning."
 oc exec -i deployment/"${SOURCE_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_PARAMETERS}" \
-  | oc exec -i deployment/"${TARGET_DEPLOYMENT}" -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc"
+  | oc exec -i deployment/"${TARGET_DEPLOYMENT}" -- bash -c "
+    cat > /tmp/transfer.dump
+    pg_restore -l /tmp/transfer.dump | grep -v -iE 'postgis_tiger_geocoder|postgis_topology' > /tmp/transfer.list
+    pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} --no-owner --no-privileges -L /tmp/transfer.list /tmp/transfer.dump
+    rm -f /tmp/transfer.dump /tmp/transfer.list
+  "
 
 # Results
 echo -e "\nDatabase transfer from '${SOURCE_DEPLOYMENT}' to '${TARGET_DEPLOYMENT}' complete."

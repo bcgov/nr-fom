@@ -23,8 +23,11 @@ parameters:
     description: Image tag; e.g. PR number, latest or prod
     required: true
   - name: DB_VERSION
-    description: Database version number, e.g. v17
-    value: "17"
+    description: Database version number, e.g. v18
+    value: "18"
+  - name: PGDATA
+    description: PostgreSQL data directory path inside volume
+    value: /var/lib/postgresql/data/pgdata
   - name: CRONJOB_RESTORE_TAG
     description: Image tag for database restore cronjob; e.g. PR number, latest or prod
     value: prod
@@ -156,8 +159,7 @@ objects:
           containers:
             - name: ${NAME}
               # Override manually like this - 'image: postgis/postgis:17-master'
-#              image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
-              image: postgis/postgis:17-master
+              image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
               ports:
                 - containerPort: 5432
                   protocol: TCP
@@ -176,6 +178,8 @@ objects:
                   port: 5432
                 timeoutSeconds: 1
               env:
+                - name: PGDATA
+                  value: ${PGDATA}
                 - name: POSTGRES_DB
                   valueFrom:
                     secretKeyRef:
@@ -202,7 +206,7 @@ objects:
                   memory: ${MEMORY_LIMIT}
               volumeMounts:
                 - name: ${NAME}-${ZONE}-${COMPONENT}
-                  mountPath: /var/lib/postgresql
+                  mountPath: /var/lib/postgresql/data
               terminationMessagePath: "/dev/termination-log"
               terminationMessagePolicy: File
               imagePullPolicy: Always

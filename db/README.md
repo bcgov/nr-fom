@@ -100,6 +100,14 @@ SELECT pgp_sym_decrypt(pgp_sym_encrypt('ok', 'k'), 'k') = 'ok' AS pgcrypto_works
 
 In non-prod environments, add a new FOM and verify project counts again.
 
+#### Collation Refresh (PostgreSQL Major Upgrade)
+
+When upgrading PostgreSQL major versions or glibc base images, clear the collation version warning:
+
+```sql
+ALTER DATABASE fom REFRESH COLLATION VERSION;
+```
+
 ### 8. Scale Up the API
 
 ```bash
