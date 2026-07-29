@@ -27,7 +27,7 @@ fi
 
 SOURCE_DEPLOYMENT="${1}"
 TARGET_DEPLOYMENT="${2}"
-DUMP_PARAMETERS="${DUMP_PARAMETERS:---exclude-schema=tiger --exclude-schema=tiger_data --exclude-schema=topology --exclude-extension=postgis --exclude-extension=postgis_topology --exclude-extension=postgis_tiger_geocoder}"
+DUMP_PARAMETERS="${DUMP_PARAMETERS:---exclude-schema=tiger --exclude-schema=tiger_data --exclude-schema=topology}"
 
 # Fail fast if pods aren't found
 if ! oc get po -l deployment="${SOURCE_DEPLOYMENT}" | grep -q .; then
@@ -65,12 +65,11 @@ else
   echo "Warning: Could not find PVCs for comparison. Proceeding without age check."
 fi
 
-RESTORE_PARAMETERS="${RESTORE_PARAMETERS:---clean --if-exists --no-owner --no-privileges}"
-
 # Stream dump directly from old deployment to new deployment
 echo -e "\nDatabase transfer from '${SOURCE_DEPLOYMENT}' to '${TARGET_DEPLOYMENT}' beginning."
-oc exec -i deployment/"${SOURCE_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${DUMP_PARAMETERS}" \
-  | oc exec -i deployment/"${TARGET_DEPLOYMENT}" -- bash -c "pg_restore -U \${POSTGRES_USER} -d \${POSTGRES_DB} -Fc ${RESTORE_PARAMETERS}"
+oc exec -i deployment/"${SOURCE_DEPLOYMENT}" -- bash -c "pg_dump -U \${POSTGRES_USER} -d \${POSTGRES_DB} ${DUMP_PARAMETERS}" \
+  | grep -v -E "postgis_tiger_geocoder" \
+  | oc exec -i deployment/"${TARGET_DEPLOYMENT}" -- bash -c "psql -U \${POSTGRES_USER} -d \${POSTGRES_DB}"
 
 # Results
 echo -e "\nDatabase transfer from '${SOURCE_DEPLOYMENT}' to '${TARGET_DEPLOYMENT}' complete."
