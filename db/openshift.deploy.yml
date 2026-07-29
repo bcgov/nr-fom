@@ -25,6 +25,9 @@ parameters:
   - name: DB_VERSION
     description: Database version number, e.g. v18
     value: "18"
+  - name: PGDATA
+    description: PostgreSQL data directory path inside volume
+    value: /var/lib/postgresql/data/pgdata
   - name: CRONJOB_RESTORE_TAG
     description: Image tag for database restore cronjob; e.g. PR number, latest or prod
     value: prod
@@ -176,7 +179,7 @@ objects:
                 timeoutSeconds: 1
               env:
                 - name: PGDATA
-                  value: /var/lib/postgresql/data/pgdata
+                  value: ${PGDATA}
                 - name: POSTGRES_DB
                   valueFrom:
                     secretKeyRef:
@@ -203,7 +206,7 @@ objects:
                   memory: ${MEMORY_LIMIT}
               volumeMounts:
                 - name: ${NAME}-${ZONE}-${COMPONENT}
-                  mountPath: /var/lib/postgresql
+                  mountPath: /var/lib/postgresql/data
               terminationMessagePath: "/dev/termination-log"
               terminationMessagePolicy: File
               imagePullPolicy: Always
