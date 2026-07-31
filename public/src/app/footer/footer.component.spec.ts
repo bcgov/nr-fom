@@ -44,4 +44,14 @@ describe('FooterComponent', () => {
     expect(component.isProjectsPage).toBe(false);
     expect(fixture.nativeElement.querySelector('footer').classList).not.toContain('app-footer--sm');
   });
+
+  it('showHome navigates to /projects#splash with reload + resetMap state', () => {
+    const navSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
+    component.showHome();
+    expect(navSpy).toHaveBeenCalledWith(['/projects'], {
+      fragment: 'splash',
+      onSameUrlNavigation: 'reload',
+      state: { resetMap: true },
+    });
+  });
 });

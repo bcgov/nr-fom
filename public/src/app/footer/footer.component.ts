@@ -1,11 +1,11 @@
 import { ChangeDetectorRef, Component, DestroyRef, inject, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-footer',
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss'
 })
@@ -32,5 +32,12 @@ export class FooterComponent implements OnInit {
 
   private syncProjectsPage(url: string): void {
     this.isProjectsPage = (url || window.location.pathname).includes('projects');
+  }
+
+  /**
+   * Footer "Home": show the splash and restore the map to its initial view. 
+   */
+  showHome() {
+    this.router.navigate(['/projects'], { fragment: 'splash', onSameUrlNavigation: 'reload', state: { resetMap: true } });
   }
 }

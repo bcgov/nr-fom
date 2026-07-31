@@ -102,6 +102,14 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.urlService.onNavEnd$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
       const fragment = this.router.parseUrl(event.url).fragment || this.router.parseUrl(this.router.url).fragment;
       this.handleFragment(fragment);
+
+      // "All FOMs" (header) requests a map reset via navigation state — restore the initial map view and
+      // close any open side panel, reproducing the previous full-reload behaviour. This runs on the
+      // reloaded same-URL navigation when already on /projects (fresh navigations init the map anyway).
+      if ((history.state as { resetMap?: boolean } | null)?.resetMap) {
+        this.appmap()?.resetView(false);
+        this.closeSidePanel();
+      }
     });
 
     // Check initial fragment
