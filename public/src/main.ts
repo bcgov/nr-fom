@@ -3,7 +3,7 @@ import { importProvidersFrom, provideZonelessChangeDetection } from '@angular/co
 import { MatDialogModule } from '@angular/material/dialog';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading } from '@angular/router';
-import { ApiModule, Configuration } from '@api-client';
+import { Configuration } from '@api-client';
 import { errorInterceptor } from '@public-core/interceptors/http-error.interceptor';
 import { retrieveApiBasePath } from '@utility/services/config.service';
 import { AppComponent } from 'app/app.component';
@@ -17,8 +17,9 @@ const apiConfig = new Configuration({
 const coreProviders = [
     provideZonelessChangeDetection(),
     provideHttpClient(withInterceptors([errorInterceptor])),
+    // Generated API client config — functional provider replacing ApiModule.forRoot()
+    { provide: Configuration, useValue: apiConfig },
     importProvidersFrom(
-        ApiModule.forRoot(() => apiConfig),
         BsDatepickerModule,
         MatDialogModule
     ),

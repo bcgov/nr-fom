@@ -5,7 +5,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading } from '@angular/router';
-import { ApiModule, Configuration } from '@api-client';
+import { Configuration } from '@api-client';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
 import { retrieveApiBasePath } from '@utility/services/config.service';
@@ -35,10 +35,11 @@ const coreProviders = [
     // (it is last in the array, so it sees the response first and can refresh+retry a
     // 403 before the error interceptor would surface a "Forbidden" dialog).
     provideHttpClient(withInterceptors([errorInterceptor, cognitoTokenInterceptor])),
+    // Generated API client config — functional provider replacing ApiModule.forRoot()
+    { provide: Configuration, useValue: apiConfig },
     importProvidersFrom(
         BsDatepickerModule,
         NgbModule,
-        ApiModule.forRoot(() => apiConfig),
         RxReactiveFormsModule,
         MatDialogModule,
         MatSnackBarModule
