@@ -158,3 +158,19 @@ jobs:
             ${{ matrix.name != 'db' && format('-p REPLICA_COUNT={0}', inputs.replica_count) || '' }}
             ${{ matrix.parameters }}
           triggers: ${{ inputs.triggers }}
+
+      - name: Inject TLS Certificates (Prod Only)
+        if: ${{ inputs.target == 'prod' && matrix.name == 'public' }}
+        uses: bcgov/action-deployer-openshift@v4.2.0
+        with:
+          file: public/openshift.tls.yml
+          oc_namespace: ${{ vars.OC_NAMESPACE }}
+          oc_server: ${{ vars.OC_SERVER }}
+          oc_token: ${{ secrets.OC_TOKEN }}
+          overwrite: true
+          parameters:
+            -p ZONE=${{ inputs.target }}
+            -p URL=${{ needs.init.outputs.url }}
+            -p TLS_CERTIFICATE="${{ secrets.PROD_TLS_CERTIFICATE }}"
+            -p TLS_PRIVATE_KEY="${{ secrets.PROD_TLS_PRIVATE_KEY }}"
+            -p TLS_CA_CERTIFICATE="${{ secrets.PROD_TLS_CA_CERTIFICATE }}"
