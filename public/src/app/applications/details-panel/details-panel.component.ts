@@ -1,5 +1,5 @@
 import { DatePipe, TitleCasePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnDestroy, OnInit, inject, output, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnDestroy, OnInit, effect, inject, output, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -48,6 +48,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   private spatialFeatureService = inject(SpatialFeatureService);
   private attachmentService = inject(AttachmentService);
   private fss = inject(FeatureSelectService);
+  private injector = inject(Injector);
   private cdr = inject(ChangeDetectorRef);
 
   readonly update = output<ProjectResponse>();
@@ -191,18 +192,17 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
 
   private subscribeToFeatureSelectChange(): void {
     // Scroll to top map detail section when feature is selected from the list.
-    this.fss.$currentSelected
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(featureIndex => {
-        if (featureIndex) {
-          setTimeout(() => {
-            const el = this.panelScrollContainer()?.nativeElement;
-            if (el) {
-              el.scrollTop = 100;
-            }
-          }, 500); // Delay scroll to top timing for seeing highted row for user experience.
-        }
-      });
+    effect(() => {
+      const featureIndex = this.fss.currentSelected();
+      if (featureIndex) {
+        setTimeout(() => {
+          const el = this.panelScrollContainer()?.nativeElement;
+          if (el) {
+            el.scrollTop = 100;
+          }
+        }, 500); // Delay scroll to top timing for seeing highted row for user experience.
+      }
+    }, { injector: this.injector });
   }
 
   // Used for (click) event from <a>/<button> at Angular page to download a file.

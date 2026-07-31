@@ -1,5 +1,4 @@
-import { Injectable } from "@angular/core";
-import { BehaviorSubject } from "rxjs";
+import { Injectable, Signal, signal } from "@angular/core";
 
 
 @Injectable({
@@ -7,16 +6,14 @@ import { BehaviorSubject } from "rxjs";
 })
 export class FeatureSelectService {
 
-  private _featureSelected = new BehaviorSubject<string | null>(null);
-  $currentSelected = this._featureSelected.asObservable();
-
-  
-  constructor () { 
-    // Deliberately empty 
-  }
+  // `equal: () => false` preserves the previous BehaviorSubject semantics: every changeSelectedFeature()
+  // notifies consumers even when the index is unchanged, so re-selecting the same row re-triggers the
+  // map fly-to / scroll side effects.
+  private readonly _featureSelected = signal<string | null>(null, { equal: () => false });
+  readonly currentSelected: Signal<string | null> = this._featureSelected.asReadonly();
 
   changeSelectedFeature(featureIndex: string) {
-    this._featureSelected.next(featureIndex);
+    this._featureSelected.set(featureIndex);
   }
 
 }

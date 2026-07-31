@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, Injector, OnChanges, OnDestroy, OnInit, SimpleChanges, afterNextRender, inject, input } from '@angular/core';
+import { Component, DestroyRef, ElementRef, Injector, OnChanges, OnDestroy, OnInit, SimpleChanges, afterNextRender, effect, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SpatialFeaturePublicResponse, SubmissionTypeCodeEnum } from '@api-client';
 import { MapLayersService, OverlayAction } from '@public-core/services/mapLayers.service';
@@ -257,19 +257,18 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private subscribeToFeatureSelectChange(): void {
-    this.fss.$currentSelected
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(featureIndex => {
-        const feature = this.featureToLayerMap.get(featureIndex);
-        if (featureIndex && feature) {
-          setTimeout(() => {
-            const layer = feature.layer;
-            const bound = layer.getBounds()
-            this.map?.flyToBounds(bound, { padding: [20, 20] });
-            layer.bringToFront();
-          }, 700); // Delay zoom timing for page scolling to top for user experience.
-        }
-      });
+    effect(() => {
+      const featureIndex = this.fss.currentSelected();
+      const feature = featureIndex ? this.featureToLayerMap.get(featureIndex) : undefined;
+      if (featureIndex && feature) {
+        setTimeout(() => {
+          const layer = feature.layer;
+          const bound = layer.getBounds()
+          this.map?.flyToBounds(bound, { padding: [20, 20] });
+          layer.bringToFront();
+        }, 700); // Delay zoom timing for page scolling to top for user experience.
+      }
+    }, { injector: this.injector });
   }
 
   ngOnDestroy() {

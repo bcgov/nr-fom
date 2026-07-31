@@ -1,7 +1,7 @@
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnInit, inject, input, viewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnInit, effect, inject, input, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { AttachmentResponse, ProjectMetricsResponse, ProjectPlanCodeEnum, ProjectResponse, ProjectService, ProjectWorkflowStateChangeRequest, SpatialFeaturePublicResponse, WorkflowStateEnum } from "@api-client";
@@ -41,6 +41,7 @@ export class FomDetailComponent implements OnInit {
   private fss = inject(FeatureSelectService);
   private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   public readonly scrollContainer = viewChild<ElementRef>('scrollContainer');
@@ -374,17 +375,16 @@ export class FomDetailComponent implements OnInit {
 
   private subscribeToFeatureSelectChange(): void {
     // Scroll to top map detail section when feature is selected from the list.
-    this.fss.$currentSelected
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(featureIndex => {
-        if (featureIndex) {
-          setTimeout(() => {
-            const container = this.scrollContainer();
-            if (container) {
-              container.nativeElement.scrollTop = 200;
-            }
-          }, 500); // Delay scroll to top timing for seeing highted row for user experience.
-        }
-      });
+    effect(() => {
+      const featureIndex = this.fss.currentSelected();
+      if (featureIndex) {
+        setTimeout(() => {
+          const container = this.scrollContainer();
+          if (container) {
+            container.nativeElement.scrollTop = 200;
+          }
+        }, 500); // Delay scroll to top timing for seeing highted row for user experience.
+      }
+    }, { injector: this.injector });
   }
 }

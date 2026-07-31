@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { DetailsPanelComponent } from './details-panel.component';
@@ -49,7 +50,7 @@ describe('DetailsPanelComponent', () => {
     };
 
     mockFeatureSelectService = {
-      $currentSelected: new Subject<any>(),
+      currentSelected: signal<string | null>(null),
     };
 
     mockConfigService = {

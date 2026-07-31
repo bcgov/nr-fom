@@ -1,5 +1,4 @@
-import { Component, DestroyRef, ElementRef, OnChanges, OnDestroy, OnInit, SimpleChanges, inject, input } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, ElementRef, Injector, OnChanges, OnDestroy, OnInit, SimpleChanges, effect, inject, input } from '@angular/core';
 import { SpatialFeaturePublicResponse, SubmissionTypeCodeEnum } from '@api-client';
 import { MapLayers } from '@utility/models/map-layers';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
@@ -31,7 +30,7 @@ const L = (L_import as any).default || L_import;
 export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   private elementRef = inject(ElementRef);
   private fss = inject(FeatureSelectService);
-  private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
   private resizeObserver: ResizeObserver | null = null;
 
 
@@ -236,19 +235,18 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private subscribeToFeatureSelectChange(): void {
-    this.fss.$currentSelected
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(featureIndex => {
-        const feature = this.featureToLayerMap.get(featureIndex);
-        if (featureIndex && feature) {
-          setTimeout(() => {
-            const layer = feature.layer;
-            const bound = layer.getBounds()
-            this.map.flyToBounds(bound, { padding: [20, 20] });
-            layer.bringToFront();
-          }, 700); // Delay zoom timing for page scolling to top for user experience.
-        }
-      });
+    effect(() => {
+      const featureIndex = this.fss.currentSelected();
+      const feature = featureIndex ? this.featureToLayerMap.get(featureIndex) : undefined;
+      if (featureIndex && feature) {
+        setTimeout(() => {
+          const layer = feature.layer;
+          const bound = layer.getBounds()
+          this.map.flyToBounds(bound, { padding: [20, 20] });
+          layer.bringToFront();
+        }, 700); // Delay zoom timing for page scolling to top for user experience.
+      }
+    }, { injector: this.injector });
   }
   
   ngOnDestroy() {
