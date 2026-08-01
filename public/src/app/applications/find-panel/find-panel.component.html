@@ -13,7 +13,7 @@
           (keyup)="verifyFomNumberInput($event)"
           (keyup.enter)="applyAllFilters()"
           (mousewheel)="$event.preventDefault()"
-          [(ngModel)]="fomNumberFilter.filter.value" />
+          [(ngModel)]="fomNumberFilter().filter.value" />
         </div>
 
         <div class="form-group">
@@ -25,7 +25,7 @@
             (keydown.arrowdown)="$event.preventDefault()"
             (keyup.enter)="applyAllFilters()"
             (mousewheel)="$event.preventDefault()"
-            [(ngModel)]="forestClientNameFilter.filter.value" />
+            [(ngModel)]="forestClientNameFilter().filter.value" />
           </div>
 
           <div class="form-group">
@@ -44,7 +44,7 @@
                     [minDate]="minDate"
                     [maxDate]="maxDate"
                     onkeydown="return false"
-                    [(ngModel)]="postedOnAfterFilter.filter.value"
+                    [(ngModel)]="postedOnAfterFilter().filter.value"
                 [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
                 containerClass: 'theme-dark-blue', showWeekNumbers: false  }"
                     />
@@ -55,9 +55,9 @@
 
             <div class="form-group">
               <label class="control-label">Commenting Status</label>
-              @if (commentStatusFilters) {
+              @if (commentStatusFilters()) {
                 <div class="select-badge-group">
-                  @for (filter of commentStatusFilters.filters; track filter) {
+                  @for (filter of commentStatusFilters().filters; track filter) {
                     <div class="select-badge">
                       <input id="find-{{filter.queryParam}}" type="checkbox" name="{{filter.queryParam}}"
                         [checked]="filter.value"

@@ -80,44 +80,44 @@ describe('FindPanelComponent', () => {
     it('should parse valid integer input', () => {
       const event = { target: { value: '123' } };
       component.verifyFomNumberInput(event as unknown as Event);
-      expect(component.fomNumberFilter.filter.value).toBe(123);
+      expect(component.fomNumberFilter().filter.value).toBe(123);
     });
 
     it('should strip leading zeros', () => {
       const event = { target: { value: '007' } };
       component.verifyFomNumberInput(event as unknown as Event);
-      expect(component.fomNumberFilter.filter.value).toBe(7);
+      expect(component.fomNumberFilter().filter.value).toBe(7);
     });
 
     it('should set null for NaN input', () => {
       const event = { target: { value: 'abc' } };
       component.verifyFomNumberInput(event as unknown as Event);
-      expect(component.fomNumberFilter.filter.value).toBeNull();
+      expect(component.fomNumberFilter().filter.value).toBeNull();
     });
 
     it('should set null for zero input', () => {
       const event = { target: { value: '0' } };
       component.verifyFomNumberInput(event as unknown as Event);
-      expect(component.fomNumberFilter.filter.value).toBeNull();
+      expect(component.fomNumberFilter().filter.value).toBeNull();
     });
   });
 
   describe('verifyStatus', () => {
     it('should set commentOpen to true if both are false', () => {
-      component.commentStatusFilters.filters.forEach(f => f.value = false);
+      component.commentStatusFilters().filters.forEach(f => f.value = false);
       component.verifyStatus();
-      const commentOpen = component.commentStatusFilters.filters.find(
+      const commentOpen = component.commentStatusFilters().filters.find(
         f => f.queryParam === COMMENT_STATUS_FILTER_PARAMS.COMMENT_OPEN
       );
       expect(commentOpen?.value).toBe(true);
     });
 
     it('should not change values if at least one is true', () => {
-      component.commentStatusFilters.filters[0].value = true;
-      component.commentStatusFilters.filters[1].value = false;
+      component.commentStatusFilters().filters[0].value = true;
+      component.commentStatusFilters().filters[1].value = false;
       component.verifyStatus();
-      expect(component.commentStatusFilters.filters[0].value).toBe(true);
-      expect(component.commentStatusFilters.filters[1].value).toBe(false);
+      expect(component.commentStatusFilters().filters[0].value).toBe(true);
+      expect(component.commentStatusFilters().filters[1].value).toBe(false);
     });
   });
 
@@ -163,7 +163,7 @@ describe('FindPanelComponent', () => {
 
     it('should return true if filters have changed', () => {
       component.checkAndSetFiltersHash();
-      component.fomNumberFilter.filter.value = 42;
+      component.fomNumberFilter().filter.value = 42;
       expect(component.checkAndSetFiltersHash()).toBe(true);
     });
   });
