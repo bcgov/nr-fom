@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-footer',
@@ -9,33 +9,25 @@ import { filter } from 'rxjs/operators';
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss'
 })
-export class FooterComponent implements OnInit {
+export class FooterComponent {
   router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
 
-  public isProjectsPage = false;
-  private destroyRef = inject(DestroyRef);
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects)
+    ),
+    { initialValue: this.router.url }
+  );
 
-  ngOnInit(): void {
-    this.syncProjectsPage(this.router.url);
-    this.router.events
-      .pipe(
-        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((event) => {
-        this.syncProjectsPage(event.urlAfterRedirects);
-        // Router-driven updates (e.g. home/true → projects#splash) may not reach this view without an explicit tick.
-        this.cdr.detectChanges();
-      });
-  }
-
-  private syncProjectsPage(url: string): void {
-    this.isProjectsPage = (url || window.location.pathname).includes('projects');
-  }
+  // Conditionally render the footer based on the current URL. 
+  // The footer is hidden on the About page.
+  readonly isProjectsPage = computed(() =>
+    (this.currentUrl() || window.location.pathname).includes('projects')
+  );
 
   /**
-   * Footer "Home": show the splash and restore the map to its initial view. 
+   * Footer "Home": show the splash and restore the map to its initial view.
    */
   showHome() {
     this.router.navigate(['/projects'], { fragment: 'splash', onSameUrlNavigation: 'reload', state: { resetMap: true } });

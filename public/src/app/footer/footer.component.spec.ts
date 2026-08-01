@@ -34,14 +34,14 @@ describe('FooterComponent', () => {
   it('should apply compact footer layout on projects routes', async () => {
     await router.navigateByUrl('/projects#splash');
     fixture.detectChanges();
-    expect(component.isProjectsPage).toBe(true);
+    expect(component.isProjectsPage()).toBe(true);
     expect(fixture.nativeElement.querySelector('footer').classList).toContain('app-footer--sm');
   });
 
   it('should not apply compact footer layout off projects routes', async () => {
     await router.navigateByUrl('/about');
     fixture.detectChanges();
-    expect(component.isProjectsPage).toBe(false);
+    expect(component.isProjectsPage()).toBe(false);
     expect(fixture.nativeElement.querySelector('footer').classList).not.toContain('app-footer--sm');
   });
 
