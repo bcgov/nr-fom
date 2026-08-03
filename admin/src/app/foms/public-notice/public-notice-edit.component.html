@@ -3,10 +3,10 @@
     <div class="title-container">
       <div class="title-container__title">
         <h1 class="text-muted">
-          {{ editMode()? (isAddNewNotice()? 'New': 'Edit' ): '' }}  Online Public Notice &nbsp; FOM Number: {{projectId}}
+          {{ editMode()? (isAddNewNotice()? 'New': 'Edit' ): '' }}  Online Public Notice &nbsp; FOM Number: {{projectId()}}
         </h1>
       </div>
-      @if (publicNoticeFormGroup) {
+      @if (formReady()) {
         <div class="title-container__actions"
           >
           <button
@@ -48,7 +48,7 @@
   </div>
 
   <div class="bottom-container">
-    @if (publicNoticeFormGroup) {
+    @if (formReady()) {
       <div class="container"
         >
         <form id="publicNoticeForm"

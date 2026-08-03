@@ -3,8 +3,8 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { LoadingService } from '@admin-core/services/loading.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
 import { DatePipe } from "@angular/common";
-import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject, input } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -29,7 +29,7 @@ import { PublicNoticeForm } from './public-notice.form';
     styleUrl: './public-notice-edit.component.scss',
     providers: [DatePipe]
 })
-export class PublicNoticeEditComponent implements OnInit {
+export class PublicNoticeEditComponent {
   private router = inject(Router);
   private formBuilder = inject(RxFormBuilder);
   loadingSvc = inject(LoadingService);
@@ -37,8 +37,6 @@ export class PublicNoticeEditComponent implements OnInit {
   private modalSvc = inject(ModalService);
   private publicNoticeService = inject(PublicNoticeService);
   private datePipe = inject(DatePipe);
-  private cdr = inject(ChangeDetectorRef);
-  private destroyRef = inject(DestroyRef);
 
   // Route-bound inputs: appId param, projectDetail resolver data, and editMode from route `data`.
   readonly appId = input.required<string>();
@@ -48,7 +46,7 @@ export class PublicNoticeEditComponent implements OnInit {
   // Populated from the authenticated Cognito session in the constructor.
   user!: User;
   project: ProjectResponse;
-  projectId: number;
+  readonly projectId = computed(() => Number(this.appId()));
   isNewForm: boolean;
   publicNoticeResponse: PublicNoticeResponse;
   publicNoticeFormGroup: IFormGroup<PublicNoticeForm>;
@@ -57,41 +55,61 @@ export class PublicNoticeEditComponent implements OnInit {
   maxPostDate: Date;
   minPostDate: Date = DateTime.now().plus({days: 1}).toJSDate(); // 1 day in the future.
 
+  /**
+   * The notice to edit: the project's own notice when it already has one, otherwise the forest client's
+   * most recent notice, which is used to prefill a new one.
+   */
+  private readonly publicNoticeResource = rxResource({
+    params: () => this.projectDetail(),
+    stream: ({ params }) => params.publicNoticeId
+      ? this.publicNoticeService.publicNoticeControllerFindOne(params.publicNoticeId)
+      : this.publicNoticeService.publicNoticeControllerFindLatestPublicNotice(params.forestClient.id),
+  });
+
+  /**
+   * Flips once the @rxweb form group has been built from the fetched notice. The form group itself stays
+   * a plain field — it is built once and never replaced — so this signal is what tells the template that
+   * the form is ready to render.
+   */
+  readonly formReady = signal(false);
+
   constructor() {
     const user = this.cognitoService.getUser();
     if (user) {
       this.user = user;
     }
+
+    effect(() => {
+      const publicNotice = this.publicNoticeResource.value();
+      if (!publicNotice) {
+        return;
+      }
+      // Only the fetched notice re-triggers this; everything the initializer reads besides it is
+      // route-constant for the lifetime of one activation.
+      untracked(() => this.buildForm(publicNotice));
+    });
   }
 
-  ngOnInit() {
-    this.projectId = Number(this.appId());
-
-    // projectDetail comes from the route resolver (bound as an input); fetch the matching
-    // public notice — the latest for the forest client when the project has none yet.
+  /**
+   * Builds the edit form from the fetched notice. Mirrors the pre-fetch ordering the form depends on:
+   * `isNewForm` and the post-date bounds must be settled before `processBeforeFormGroupInitialized()`
+   * adjusts the response, which must in turn happen before the form group is created from it.
+   */
+  private buildForm(publicNotice: PublicNoticeResponse) {
     const projectDetail = this.projectDetail();
-    const publicNoticeId = projectDetail.publicNoticeId;
-    this.isNewForm = !publicNoticeId;
-    const publicNotice$ = publicNoticeId
-      ? this.publicNoticeService.publicNoticeControllerFindOne(publicNoticeId)
-      : this.publicNoticeService.publicNoticeControllerFindLatestPublicNotice(projectDetail.forestClient.id);
+    this.project = projectDetail;
+    this.isNewForm = !projectDetail.publicNoticeId;
+    this.publicNoticeResponse = publicNotice;
+    this.maxPostDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
+    this.processBeforeFormGroupInitialized()
 
-    publicNotice$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((pn) => {
-        this.project = projectDetail;
-        this.publicNoticeResponse = pn;
-        this.maxPostDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
-        this.processBeforeFormGroupInitialized()
-
-        const publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse);
-        this.publicNoticeFormGroup = this.formBuilder.formGroup(publicNoticeForm) as IFormGroup<PublicNoticeForm>;
-        this.onSameAsReviewIndToggled();
-        if (!this.editMode()) {
-          this.publicNoticeFormGroup.disable();
-        }
-        this.cdr.detectChanges();
-      });
+    const publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse);
+    this.publicNoticeFormGroup = this.formBuilder.formGroup(publicNoticeForm) as IFormGroup<PublicNoticeForm>;
+    this.onSameAsReviewIndToggled();
+    if (!this.editMode()) {
+      this.publicNoticeFormGroup.disable();
+    }
+    this.formReady.set(true);
   }
 
   processBeforeFormGroupInitialized() {
@@ -176,19 +194,19 @@ export class PublicNoticeEditComponent implements OnInit {
         await lastValueFrom(
           this.publicNoticeService.publicNoticeControllerRemove(this.publicNoticeResponse.id)
         );
-        this.router.navigate(['/a', this.projectId]);
+        this.router.navigate(['/a', this.projectId()]);
       }
     });
   }
 
   cancelChanges() {
-    this.router.navigate(['/a', this.projectId]);
+    this.router.navigate(['/a', this.projectId()]);
   }
 
   async onSubmit() {
     if (this.editMode() && this.publicNoticeFormGroup.valid) {
       await lastValueFrom(this.submitPublicNotice());
-      this.router.navigate(['/a', this.projectId]);
+      this.router.navigate(['/a', this.projectId()]);
     }
   }
 
