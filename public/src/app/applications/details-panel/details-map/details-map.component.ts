@@ -8,23 +8,14 @@ import { GeoJsonObject } from 'geojson';
 import * as L_import from 'leaflet';
 const L = (L_import as any).default || L_import;
 
-/*
-  Leaflet has bug with these warning/error on console since Angular 11:
-  http://localhost:4300/public/marker-icon-2x.png 404 (Not Found)
-  http://localhost:4300/public/marker-shadow.png 404 (Not Found)
-
-  After migrating to Angular 15 and adding below into angular.json into "build" can solve problem for "production" 
-  but serving locally still is having issue.
-        ,{
-            "glob": "........"
-            "input": "./node_modules/leaflet/dist/images/",
-            "output": "/assets/images"
-        } 
-    (reference: https://lokeshdaiya.medium.com/how-to-use-node-modules-path-or-third-party-assets-in-angular-files-75906a2ff372)
-    (might be some clue here: https://stackoverflow.com/questions/41144319/leaflet-marker-not-found-production-env)
-*/
-
 import { destroyMap, initMap, mapContainer, observeMapSize } from '../../utils/leaflet-host';
+
+/*
+  The feature label marker exists only as a positioning anchor for its permanent tooltip, so it
+  draws nothing itself. A zero-sized divIcon also keeps us off L.Icon.Default, whose path-guessing
+  heuristic reads the bundled leaflet.css `.
+*/
+const labelAnchorIcon = L.divIcon({ className: '', html: '', iconSize: [0, 0] });
 
 @Component({
   imports: [],
@@ -210,11 +201,13 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
     // Remove last label first, so it does not stay when next one is added.
     if (this.lastLabelMarker) this.projectFeatures.removeLayer(this.lastLabelMarker);
 
-    // Opacity 0 hides marker so just label is visible.
-    this.lastLabelMarker = L.marker(args[1].latlng, { opacity: 0 }); 
-    // Offset in pixels necessary to align with actual center location (unsure why leaflet has it not aligned by default)
+    // Invisible anchor marker, so just the label is visible.
+    this.lastLabelMarker = L.marker(args[1].latlng, { icon: labelAnchorIcon });
+    // Leaflet places a tooltip at (offset + the icon's tooltipAnchor). The anchor icon is zero-sized
+    // and contributes [0, 0], so this offset alone lands the label on the clicked location. The old
+    // [-15, 25] was cancelling out the default pin icon's [16, -28] tooltipAnchor; same net result.
     // See https://gis.stackexchange.com/questions/394960/marker-position-in-leaflet/395270#395270
-    this.lastLabelMarker.bindTooltip(label, { permanent: true , offset: [-15, 25]}); 
+    this.lastLabelMarker.bindTooltip(label, { permanent: true, offset: [1, -3] }); 
     this.projectFeatures.addLayer(this.lastLabelMarker);
   }
 
