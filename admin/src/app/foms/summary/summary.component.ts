@@ -2,8 +2,8 @@ import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSv
 import { CommonUtil } from '@admin-core/utils/commonUtil';
 import { COMMENT_SCOPE_CODE, CommentScopeOpt } from '@admin-core/utils/constants';
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject, input } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, inject, input, linkedSignal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,7 +16,6 @@ import {
     SpatialFeaturePublicResponse, SpatialFeatureService
 } from '@api-client';
 import { ConfigService } from '@utility/services/config.service';
-import { Subject } from 'rxjs';
 import { DetailsMapComponent } from '../details-map/details-map.component';
 import { ShapeInfoComponent } from '../shape-info/shape-info.component';
 import { CommentsSummaryComponent } from './comments-summary/comments-summary.component';
@@ -39,7 +38,7 @@ import { InteractionsSummaryComponent } from './interactions-summary/interaction
     templateUrl: './summary.component.html',
     styleUrl: './summary.component.scss'
 })
-export class SummaryComponent implements OnInit {
+export class SummaryComponent {
   private projectSvc = inject(ProjectService);
   private commentSvc = inject(PublicCommentService);
   private spatialFeatureSvc = inject(SpatialFeatureService);
@@ -47,166 +46,102 @@ export class SummaryComponent implements OnInit {
   private attachmentSvc = inject(AttachmentService);
   private configSvc = inject(ConfigService);
   attachmentResolverSvc = inject(AttachmentResolverSvc);
-  private cdr = inject(ChangeDetectorRef);
-  private destroyRef = inject(DestroyRef);
 
   readonly appId = input.required<string>();
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly periodOperationsTxt = "This FOM can be relied upon by the FOM holder for the purpose of a cutting permit or road permit application, until the date three years after commencement of the public review and commenting period. FOMs published by BC Timber Sales can be relied upon for the purpose of a cutting permit or road permit application, or the issuance of a Timber Sales License until the date three years after conclusion of the public review and commenting period.";
   readonly woodlotOperationsTxt = "Woodlots are not legally required to publish FOMs for public review and comment prior to cutting permit or road permit application. However, woodlot licensees may choose to publish FOMs on a voluntary basis to facilitate public engagement.";
-  projectId: number;
-  project: ProjectResponse | undefined;
-  projectReqError: boolean;
-  publicComments: PublicCommentAdminResponse[] | undefined;
-  filteredPublicComments: PublicCommentAdminResponse[];
-  publicCommentsReqError: boolean;
-  spatialDetail: SpatialFeaturePublicResponse[] | undefined;
-  filteredSpatialDetail: SpatialFeaturePublicResponse[];
-  spatialDetailReqError: boolean;
-  interactions: InteractionResponse[] | undefined
-  interactionsReqError: boolean;
-  attachments: AttachmentResponse[] | undefined;
-  attachmentsReqError: boolean;
-  commentScopeOpts :Array<CommentScopeOpt> = [];
-  selectedScope: CommentScopeOpt;
+  readonly projectId = computed(() => Number(this.appId()));
 
-  private scopeOptionChange$ = new Subject<CommentScopeOpt>();
+  // The five report sections load independently: one failing must not blank out the others, which is
+  // why each keeps its own resource and its own error flag rather than sharing one request.
+  private readonly projectResource = rxResource({
+    params: () => this.projectId(),
+    stream: ({ params }) => this.projectSvc.projectControllerFindOne(params),
+  });
+  private readonly commentsResource = rxResource({
+    params: () => this.projectId(),
+    stream: ({ params }) => this.commentSvc.publicCommentControllerFind(params),
+  });
+  private readonly spatialResource = rxResource({
+    params: () => this.projectId(),
+    stream: ({ params }) => this.spatialFeatureSvc.spatialFeatureControllerGetForProject(params),
+  });
+  private readonly interactionsResource = rxResource({
+    params: () => this.projectId(),
+    stream: ({ params }) => this.interactionSvc.interactionControllerFind(params),
+  });
+  private readonly attachmentsResource = rxResource({
+    params: () => this.projectId(),
+    stream: ({ params }) => this.attachmentSvc.attachmentControllerFind(params),
+  });
 
-  async ngOnInit(): Promise<void> {
-    this.projectId = Number(this.appId());
-    this.getProject(this.projectId); 
-    this.getpublicComments(this.projectId);
-    this.getSpatialDetails(this.projectId);
-    this.getProjectInteractions(this.projectId);
-    this.getProjectAttachments(this.projectId);
+  readonly project = computed(() => this.projectResource.hasValue() ? this.projectResource.value() : undefined);
+  readonly publicComments = computed(() => this.commentsResource.hasValue() ? [...this.commentsResource.value()] : undefined);
+  readonly spatialDetail = computed(() => this.spatialResource.hasValue() ? [...this.spatialResource.value()] : undefined);
+  readonly interactions = computed(() => this.interactionsResource.hasValue() ? this.interactionsResource.value() : undefined);
+  readonly attachments = computed(() => this.attachmentsResource.hasValue()
+    ? [...this.attachmentsResource.value()].sort((a: AttachmentResponse, b: AttachmentResponse) =>
+        a.attachmentType.code.localeCompare(b.attachmentType.code))
+    : undefined);
 
-    this.scopeOptionChange$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((nextScope) => {
-      this.doFiltering(nextScope);
-      this.cdr.detectChanges();
-    });
-  }
+  readonly projectReqError = computed(() => this.projectResource.status() === 'error');
+  readonly publicCommentsReqError = computed(() => this.commentsResource.status() === 'error');
+  readonly spatialDetailReqError = computed(() => this.spatialResource.status() === 'error');
+  readonly interactionsReqError = computed(() => this.interactionsResource.status() === 'error');
+  readonly attachmentsReqError = computed(() => this.attachmentsResource.status() === 'error');
 
-  private syncScopeFilter() {
-    if (this.selectedScope && this.spatialDetail && this.publicComments) {
-      this.doFiltering(this.selectedScope);
+  /** The "Main Report" entry, which shows every scope plus the engagement and attachment sections. */
+  private static readonly mainReportOpt = {
+    commentScopeCode: null, desc: 'Main Report', name: null, scopeId: null
+  } as CommentScopeOpt;
+
+  readonly commentScopeOpts = computed<Array<CommentScopeOpt>>(() => {
+    const spatial = this.spatialDetail();
+    if (!spatial) {
+      return [];
     }
-  }
+    return [
+      SummaryComponent.mainReportOpt,
+      ...CommonUtil.buildCommentScopeOptions(spatial).filter((opt) => opt.commentScopeCode !== null),
+    ];
+  });
 
-  private async getProject(projectId: number) {
-    this.projectSvc.projectControllerFindOne(projectId).toPromise()
-        .then(
-          (result) => {
-            this.project = result;
-            this.cdr.detectChanges();
-          },
-          (error) => {
-            console.error(`Error retrieving Project for Summary Report:`, error);
-            this.project = undefined;
-            this.projectReqError = true;
-            this.cdr.detectChanges();
-          }
-        );
-  }
+  /**
+   * The scope the report is filtered to. Re-seeds to "Main Report" whenever the option list is rebuilt
+   * (i.e. once the spatial features load), and is otherwise driven by the user's selection.
+   */
+  readonly selectedScope = linkedSignal<Array<CommentScopeOpt>, CommentScopeOpt>({
+    source: () => this.commentScopeOpts(),
+    computation: (opts) => opts[0] ?? SummaryComponent.mainReportOpt,
+  });
 
-  private async getpublicComments(projectId: number) {
-    this.commentSvc.publicCommentControllerFind(projectId).toPromise()
-        .then(
-          (result) => {
-            this.filteredPublicComments = this.publicComments = [...(result ?? [])];
-            this.syncScopeFilter();
-            this.cdr.detectChanges();
-          },
-          (error) => {
-            console.error(`Error retrieving Public Comments for Summary Report:`, error);
-            this.publicComments = undefined;
-            this.publicCommentsReqError = true;
-            this.cdr.detectChanges();
-          }
-        );
-  }
+  readonly filteredSpatialDetail = computed<SpatialFeaturePublicResponse[]>(() => {
+    const scope = this.selectedScope();
+    return (this.spatialDetail() ?? []).filter((sDetail) =>
+      (scope?.commentScopeCode == null || scope.commentScopeCode === COMMENT_SCOPE_CODE.OVERALL)
+        || (sDetail.featureType.code === scope.commentScopeCode.toLowerCase() &&
+            sDetail.featureId == scope.scopeId));
+  });
 
-  private async getSpatialDetails(projectId: number) {
-    this.spatialFeatureSvc.spatialFeatureControllerGetForProject(projectId).toPromise()
-    .then(
-      (result) => {
-        this.spatialDetail = this.filteredSpatialDetail = [...(result ?? [])];
-        this.commentScopeOpts =  CommonUtil.buildCommentScopeOptions(result ?? []);
-        this.commentScopeOpts = this.commentScopeOpts.filter((opt) => opt.commentScopeCode !== null);
-        const mainRptOpt = {commentScopeCode: null, desc: 'Main Report', name: null, scopeId: null} as CommentScopeOpt;
-        this.selectedScope = mainRptOpt;
-        this.commentScopeOpts.unshift(mainRptOpt);
-        this.syncScopeFilter();
-        this.cdr.detectChanges();
-      },
-      (error) => {
-        console.error(`Error retrieving Spatil Details for Summary Report:`, error);
-        this.spatialDetail = undefined;
-        this.spatialDetailReqError = true;
-        this.cdr.detectChanges();
-      }
-    );
-  }
-
-  private async getProjectInteractions(projectId: number) {
-    this.interactionSvc.interactionControllerFind(projectId).toPromise()
-    .then(
-      (result) => {
-        this.interactions = result;
-        this.cdr.detectChanges();
-      },
-      (error) => {
-        console.error(`Error retrieving Project Interactions for Summary Report:`, error);
-        this.interactions = undefined;
-        this.interactionsReqError = true;
-        this.cdr.detectChanges();
-      }
-    );
-  }
-
-  private async getProjectAttachments(projectId: number) {
-    this.attachmentSvc.attachmentControllerFind(projectId).toPromise()
-    .then(
-      (result) => {
-        this.attachments  = (result ?? []).sort((a: AttachmentResponse, b: AttachmentResponse) =>
-            a.attachmentType.code.localeCompare(b.attachmentType.code)
-        );
-        this.cdr.detectChanges();
-      },
-      (error) => {
-        console.error(`Error retrieving Project Attachments for Summary Report:`, error);
-        this.attachments = undefined;
-        this.attachmentsReqError = true;
-        this.cdr.detectChanges();
-      }
-    );
-  }
-
-  private doFiltering(nextScope: CommentScopeOpt) {
-
-    // filtering on spatialDetail
-    this.filteredSpatialDetail = (this.spatialDetail ?? []).filter((sDetail) => {
-      return (nextScope.commentScopeCode == null || nextScope.commentScopeCode === COMMENT_SCOPE_CODE.OVERALL) 
-          || (sDetail.featureType.code === nextScope.commentScopeCode.toLowerCase() &&
-              sDetail.featureId == nextScope.scopeId);
-    });
-
-    // filtering on publicComments
-    this.filteredPublicComments = (this.publicComments ?? []).filter((comment) => {
-      if (!nextScope || nextScope.commentScopeCode == null) {
+  readonly filteredPublicComments = computed<PublicCommentAdminResponse[]>(() => {
+    const scope = this.selectedScope();
+    return (this.publicComments() ?? []).filter((comment) => {
+      if (!scope || scope.commentScopeCode == null) {
         return true; // Everything.
       }
-      else if (nextScope.commentScopeCode === COMMENT_SCOPE_CODE.OVERALL) {
-        return comment.commentScope.code === nextScope.commentScopeCode;
+      else if (scope.commentScopeCode === COMMENT_SCOPE_CODE.OVERALL) {
+        return comment.commentScope.code === scope.commentScopeCode;
       }
-      return comment.commentScope.code === nextScope.commentScopeCode &&
-              ((comment.scopeCutBlockId && comment.scopeCutBlockId == nextScope.scopeId) ||
-              (comment.scopeRoadSectionId && comment.scopeRoadSectionId == nextScope.scopeId));
+      return comment.commentScope.code === scope.commentScopeCode &&
+              ((comment.scopeCutBlockId && comment.scopeCutBlockId == scope.scopeId) ||
+              (comment.scopeRoadSectionId && comment.scopeRoadSectionId == scope.scopeId));
     });
-  }
+  });
 
   onScopeOptionChanged(selection: CommentScopeOpt) {
-    this.scopeOptionChange$.next(selection);
+    this.selectedScope.set(selection);
   }
 }
 
