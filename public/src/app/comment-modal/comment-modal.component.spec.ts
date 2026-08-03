@@ -36,7 +36,7 @@ describe('CommentModalComponent', () => {
   });
 
   it('should start on page 1', () => {
-    expect(component.currentPage).toBe(1);
+    expect(component.currentPage()).toBe(1);
   });
 
   it('should start with iAgreeModel false', () => {
@@ -48,7 +48,7 @@ describe('CommentModalComponent', () => {
   });
 
   it('should not be submitting initially', () => {
-    expect(component.submitting).toBe(false);
+    expect(component.submitting()).toBe(false);
   });
 
   describe('ngOnInit', () => {
@@ -112,25 +112,25 @@ describe('CommentModalComponent', () => {
   describe('navigation', () => {
     it('should increment page on p1_next', () => {
       component.p1_next();
-      expect(component.currentPage).toBe(2);
+      expect(component.currentPage()).toBe(2);
     });
 
     it('should decrement page on p2_back', () => {
-      component.currentPage = 2;
+      component.currentPage.set(2);
       component.p2_back();
-      expect(component.currentPage).toBe(1);
+      expect(component.currentPage()).toBe(1);
     });
 
     it('should increment page on p2_next', () => {
-      component.currentPage = 2;
+      component.currentPage.set(2);
       component.p2_next();
-      expect(component.currentPage).toBe(3);
+      expect(component.currentPage()).toBe(3);
     });
 
     it('should decrement page on p3_back', () => {
-      component.currentPage = 3;
+      component.currentPage.set(3);
       component.p3_back();
-      expect(component.currentPage).toBe(2);
+      expect(component.currentPage()).toBe(2);
     });
   });
 
@@ -152,7 +152,7 @@ describe('CommentModalComponent', () => {
         new Observable<unknown>(() => {}) // never emits
       );
       component.p3_next();
-      expect(component.submitting).toBe(true);
+      expect(component.submitting()).toBe(true);
     });
 
     it('should call publicCommentControllerCreate', () => {
@@ -186,10 +186,10 @@ describe('CommentModalComponent', () => {
       (mockCommentService.publicCommentControllerCreate as jest.Mock).mockReturnValue(
         of({})
       );
-      const startingPage = component.currentPage;
+      const startingPage = component.currentPage();
       await component.p3_next();
-      expect(component.currentPage).toBe(startingPage + 1);
-      expect(component.submitting).toBe(false);
+      expect(component.currentPage()).toBe(startingPage + 1);
+      expect(component.submitting()).toBe(false);
     });
 
     it('should set submitting to false on error', async () => {
@@ -198,7 +198,7 @@ describe('CommentModalComponent', () => {
         throwError(() => new Error('submit error'))
       );
       await component.p3_next();
-      expect(component.submitting).toBe(false);
+      expect(component.submitting()).toBe(false);
       consoleSpy.mockRestore();
     });
   });

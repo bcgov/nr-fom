@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -27,11 +27,9 @@ type CommentScopeOpt = {commentScopeCode: COMMENT_SCOPE_CODE,
 export class CommentModalComponent implements OnInit {
   activeModal = inject(NgbActiveModal);
   private commentService = inject(PublicCommentService);
-  private changeDetectorRef = inject(ChangeDetectorRef);
 
-
-  public submitting = false;
-  public currentPage = 1;
+  readonly submitting = signal(false);
+  readonly currentPage = signal(1);
   public publicComment = {} as PublicCommentCreateRequest;
   public iAgreeModel = false;
   public projectId: number;
@@ -71,24 +69,23 @@ export class CommentModalComponent implements OnInit {
   }
 
   public p1_next() {
-    this.currentPage++;
+    this.currentPage.update((page) => page + 1);
   }
 
   public p2_back() {
-    this.currentPage--;
+    this.currentPage.update((page) => page - 1);
   }
 
   public p2_next() {
-    this.currentPage++;
+    this.currentPage.update((page) => page + 1);
   }
 
   public p3_back() {
-    this.currentPage--;
+    this.currentPage.update((page) => page - 1);
   }
 
   public async p3_next() {
-    this.submitting = true;
-    this.changeDetectorRef.detectChanges();
+    this.submitting.set(true);
  
     this.publicComment.commentScopeCode = this.selectedScope.commentScopeCode;
     if (this.selectedScope.commentScopeCode === COMMENT_SCOPE_CODE.CUT_BLOCK) {
@@ -102,14 +99,11 @@ export class CommentModalComponent implements OnInit {
  
     try {
       await firstValueFrom(this.commentService.publicCommentControllerCreate(this.publicComment));
-      this.currentPage++;
-      this.changeDetectorRef.detectChanges();
+      this.currentPage.update((page) => page + 1);
     } catch (err) {
       console.error(err);
-      this.changeDetectorRef.detectChanges();
     } finally {
-      this.submitting = false;
-      this.changeDetectorRef.detectChanges();
+      this.submitting.set(false);
     }
   }
 
