@@ -1,5 +1,5 @@
 import { DatePipe, TitleCasePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnDestroy, OnInit, effect, inject, output, viewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, Injector, OnDestroy, OnInit, effect, inject, output, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -49,20 +49,20 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   private attachmentService = inject(AttachmentService);
   private fss = inject(FeatureSelectService);
   private injector = inject(Injector);
-  private cdr = inject(ChangeDetectorRef);
 
   readonly update = output<ProjectResponse>();
   public readonly panelScrollContainer = viewChild<ElementRef>('panelScrollContainer');
 
   private destroyRef = inject(DestroyRef);
   public addCommentModal: NgbModalRef | null = null;
-  public isAppLoading: boolean;
-  public project: ProjectResponse | null;
-  public projectSpatialDetail: SpatialFeaturePublicResponse[];
+  // All five are written from async callbacks, so the view only learns about them through signals.
+  public readonly isAppLoading = signal(false);
+  public readonly project = signal<ProjectResponse | null>(null);
+  public readonly projectSpatialDetail = signal<SpatialFeaturePublicResponse[]>([]);
   public currentPeriodDaysRemainingCount = 0;
-  public workflowStatus: Record<string, WorkflowStateCode>
+  public readonly workflowStatus = signal<Record<string, WorkflowStateCode>>({});
   public projectIdFilter = new Filter<string>({ filter: { queryParam: 'id', value: null } });
-  public attachments: AttachmentResponse[];
+  public readonly attachments = signal<AttachmentResponse[]>([]);
   public faArrowUpRightFromSquare = faArrowUpRightFromSquare;
   public getCommentingClosingDate = getCommentingClosingDate;
   public periodOperationsTooltipTxt = "An FSP holder has three years to apply for a cutting permit or road permit for cutblocks and roads displayed on a FOM. This is called the validity period, it starts on the day commenting opens on a FOM. For BC Timber Sales the validity period starts on the day commenting closes.";
@@ -75,7 +75,7 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     // Subscribe to this first, seems to be slower and can cause minor page render issue due to no code.
     this.projectService.workflowStateCodeControllerFindAll()
     .pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
-      this.workflowStatus = indexBy(data, (x) => x.code);
+      this.workflowStatus.set(indexBy(data, (x) => x.code));
     });
     // First time component init. The `urlService.onNavEnd$` already ends, so 
     // do this initially first since queryParam is ready from route. 
@@ -100,12 +100,11 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     const projectId = parseInt(this.projectIdFilter.filter.value ?? '');
     if (!projectId) {
       // no project to display
-      this.project = null;
-      this.cdr.detectChanges();
+      this.project.set(null);
       return;
     }
 
-    this.isAppLoading = true;
+    this.isAppLoading.set(true);
     forkJoin({
       project: this.projectService.projectControllerFindOne(projectId),
       spatialDetail: this.spatialFeatureService.spatialFeatureControllerGetForProject(projectId),
@@ -114,24 +113,19 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (results) => {
-        this.project = results.project;
-        this.projectSpatialDetail = results.spatialDetail;
-        this.attachments = results.attachments.sort(
+        this.project.set(results.project);
+        this.projectSpatialDetail.set(results.spatialDetail);
+        this.attachments.set([...results.attachments].sort(
             (a, b) => a.attachmentType.code.localeCompare(b.attachmentType.code)
-        );
-        this.isAppLoading = false;
-        this.projectIdFilter.filter.value = this.project.id.toString();
+        ));
+        this.isAppLoading.set(false);
+        this.projectIdFilter.filter.value = results.project.id.toString();
         this.saveQueryParameters();
-        this.update.emit(this.project);
-        // Navigation originates from a debounced funnel timer in UrlService, so this
-        // HTTP response can resolve without a zone tick reaching this view. Detect
-        // changes explicitly so the loaded project renders in the details panel.
-        this.cdr.detectChanges();
+        this.update.emit(results.project);
       },
       error: (err) => {
         console.error(err);
-        this.isAppLoading = false;
-        this.cdr.detectChanges();
+        this.isAppLoading.set(false);
       }
     });
   }
@@ -150,8 +144,8 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     
     const modalInstance = this.addCommentModal.componentInstance as CommentModalComponent;
     // addComment is only reachable from the details view when a project is loaded
-    modalInstance.projectId = this.project!.id;
-    modalInstance.projectSpatialDetail = this.projectSpatialDetail;
+    modalInstance.projectId = this.project()!.id;
+    modalInstance.projectSpatialDetail = this.projectSpatialDetail();
 
     // check result
     this.addCommentModal.result.then(
