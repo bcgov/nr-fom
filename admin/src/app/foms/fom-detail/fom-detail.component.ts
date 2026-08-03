@@ -1,15 +1,14 @@
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, Injector, OnInit, effect, inject, input, viewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, ElementRef, Injector, OnInit, effect, inject, input, linkedSignal, signal, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AttachmentResponse, ProjectMetricsResponse, ProjectPlanCodeEnum, ProjectResponse, ProjectService, ProjectWorkflowStateChangeRequest, SpatialFeaturePublicResponse, WorkflowStateEnum } from "@api-client";
 import { NgbModal, NgbModalRef, NgbModule, NgbNav } from '@ng-bootstrap/ng-bootstrap';
 import { User } from "@utility/security/user";
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 import { DateTime } from "luxon";
-import { Subject } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { EnddateChangeModalComponent } from './enddate-change-modal/enddate-change-modal.component';
 
 import { NewlinesPipe } from "@admin-core/pipes/newlines.pipe";
@@ -39,35 +38,39 @@ export class FomDetailComponent implements OnInit {
   private cognitoService = inject(CognitoService);
   private ngbModalService = inject(NgbModal);
   private fss = inject(FeatureSelectService);
-  private cdr = inject(ChangeDetectorRef);
-  private destroyRef = inject(DestroyRef);
   private injector = inject(Injector);
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   public readonly scrollContainer = viewChild<ElementRef>('scrollContainer');
   
   public changeEndDateModal : NgbModalRef | null = null;
-  public isPublishing = false;
-  public isDeleting = false;
-  public isFinalizing = false;
+  public readonly isPublishing = signal(false);
+  public readonly isDeleting = signal(false);
+  public readonly isFinalizing = signal(false);
   public isRefreshing = false;
-  public isSettingCommentClassification = false;
+  public readonly isSettingCommentClassification = signal(false);
   public application: ProjectResponse | null = null;
-  // Assigned from the route resolver input in ngOnInit before any use.
-  public project!: ProjectResponse;
+  /**
+   * The FOM on display: seeded from the route resolver input, then replaced in place by
+   * `refreshProject()` after an update that should not reload the whole page.
+   *
+   * `linkedSignal` re-seeds from the input if it ever changes, which would discard a refetched
+   * value — safe here because the constructor opts this route out of component reuse, so a new
+   * FOM always means a new component instance.
+   */
+  readonly project = linkedSignal<ProjectResponse>(() => this.projectDetail()!);
   // Route resolver data, bound as inputs (a/:appId resolve keys).
   readonly projectDetail = input<ProjectResponse>();
   readonly spatialDetail = input.required<SpatialFeaturePublicResponse[]>();
   readonly projectMetrics = input.required<ProjectMetricsResponse>();
   public isProjectActive = false;
-  public attachments: AttachmentResponse[] = [];
+  public readonly attachments = signal<AttachmentResponse[]>([]);
   // Populated from the authenticated Cognito session in the constructor.
   public user!: User;
   public daysRemaining: number | null = null;
   private workflowStateChangeRequest: ProjectWorkflowStateChangeRequest = <ProjectWorkflowStateChangeRequest>{};
   private now = new Date();
   private today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
-  private projectUpdateTriggered$ = new Subject(); // To notify when project update happen.
 
   constructor() {
     const user = this.cognitoService.getUser();
@@ -88,24 +91,13 @@ export class FomDetailComponent implements OnInit {
       this.router.navigate(['/search']);
     }
 
-    this.attachmentResolverSvc.getAttachments(this.project.id)
+    this.attachmentResolverSvc.getAttachments(this.project().id)
       .then( (result) => {
-        this.attachments = result;
         //Sorting by Public Notice and Supporting Document
-        this.attachments.sort((a,b) => (a.attachmentType.code < b.attachmentType.code? -1 : 1));
+        this.attachments.set([...result].sort((a,b) => (a.attachmentType.code < b.attachmentType.code? -1 : 1)));
       }).catch((error) => {
       console.error(error);
     });
-
-    // rxjs project update trigger initialization
-    if (this.project.id) { // subscribe only when first project init successfully.
-      this.projectUpdateTriggered$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-        this.projectService.projectControllerFindOne(this.project.id).subscribe((data) => {
-          this.initProjectDetail(data);
-          this.cdr.detectChanges();
-        });
-      });
-    }
 
     this.subscribeToFeatureSelectChange();
   }
@@ -125,25 +117,25 @@ export class FomDetailComponent implements OnInit {
   }
 
   onSuccess() {
-    this.router.navigate([`a/${this.project.id}`])
+    this.router.navigate([`a/${this.project().id}`])
       .then( () => {
         window.location.reload();
       })
   }
 
   deleteFOM() {
-    const dialogRef = this.modalSvc.openConfirmationDialog(`You are about to withdraw FOM ${this.project.id} - ${this.project.name}. Are you sure?`, 'Withdraw FOM');
+    const dialogRef = this.modalSvc.openConfirmationDialog(`You are about to withdraw FOM ${this.project().id} - ${this.project().name}. Are you sure?`, 'Withdraw FOM');
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
-        this.isDeleting = true;
-        this.projectService.projectControllerRemove(this.project.id)
+        this.isDeleting.set(true);
+        this.projectService.projectControllerRemove(this.project().id)
         .subscribe(
           ()=> {
-            this.isDeleting = false;
+            this.isDeleting.set(false);
             this.router.navigate(['/search']); // Delete successfully, back to search.
           },
           (error) => {
-            this.isDeleting = false;
+            this.isDeleting.set(false);
             console.error(error);
           }
         );
@@ -155,21 +147,21 @@ export class FomDetailComponent implements OnInit {
     const dialogRef = this.modalSvc.openConfirmationDialog(`Finalizing your FOM will send a notification to district staff, and lock the FOM, so you will not be able to make any changes. Do you want to proceed?`, 'Finalize FOM');
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
-        this.isFinalizing = true;
+        this.isFinalizing.set(true);
         this.projectService.projectControllerStateChange(
-            this.project.id,
+            this.project().id,
             {
               workflowStateCode: WorkflowStateEnum.Finalized,
-              revisionCount: this.project.revisionCount
+              revisionCount: this.project().revisionCount
             }
         )
         .subscribe(
           (_result)=> {
-            this.isFinalizing = false;
+            this.isFinalizing.set(false);
             this.onSuccess();
           },
           (error) => {
-            this.isFinalizing = false;
+            this.isFinalizing.set(false);
             console.error(error);
           }
         );
@@ -184,13 +176,13 @@ export class FomDetailComponent implements OnInit {
         const ready = this.validatePublishReady();
         if (ready) {
           this.workflowStateChangeRequest.workflowStateCode = WorkflowStateEnum.Published;
-          this.workflowStateChangeRequest.revisionCount = this.project.revisionCount;
+          this.workflowStateChangeRequest.revisionCount = this.project().revisionCount;
 
-          this.isPublishing = true;
+          this.isPublishing.set(true);
           try {
-            await this.projectService.projectControllerStateChange(this.project.id, this.workflowStateChangeRequest).toPromise();
+            await this.projectService.projectControllerStateChange(this.project().id, this.workflowStateChangeRequest).toPromise();
           } finally {
-            this.isPublishing = false;
+            this.isPublishing.set(false);
           }
           this.onSuccess()
         }
@@ -200,31 +192,31 @@ export class FomDetailComponent implements OnInit {
 
   public goToPublicNotice() {
     if (this.canEditPublicNotice()) {
-      this.router.navigate([`publicNotice/${this.project.id}/edit`])
+      this.router.navigate([`publicNotice/${this.project().id}/edit`])
     }
     else {
-      this.router.navigate([`publicNotice/${this.project.id}`])
+      this.router.navigate([`publicNotice/${this.project().id}`])
     }
   }
 
   public async setCommentClassification() {
-    this.isSettingCommentClassification = true;
+    this.isSettingCommentClassification.set(true);
     try {
       await this.projectService.projectControllerCommentClassificationMandatoryChange(
-        this.project.id, 
+        this.project().id, 
         {
-          commentClassificationMandatory: !this.project.commentClassificationMandatory,
-          revisionCount: this.project.revisionCount
+          commentClassificationMandatory: !this.project().commentClassificationMandatory,
+          revisionCount: this.project().revisionCount
         })
       .toPromise();
 
       // in this case trigger 'this.project' update locally instead of using // this.onSuccess(); which refresh whole page.
-      this.projectUpdateTriggered$.next(null);
+      await this.refreshProject();
     } 
     catch(error) {
       console.error(error);
     } finally {
-      this.isSettingCommentClassification = false;
+      this.isSettingCommentClassification.set(false);
     }
   }
 
@@ -234,9 +226,9 @@ export class FomDetailComponent implements OnInit {
     COMMENT_CLOSED/FINALIZED/EXPIRED: gov
   */
   public canWithdraw() {
-    const workflowStateCode = this.project.workflowState.code;
+    const workflowStateCode = this.project().workflowState.code;
     if (WorkflowStateEnum.Initial === workflowStateCode) {
-      return this.user.isAuthorizedForClientId(this.project.forestClient.id);
+      return this.user.isAuthorizedForClientId(this.project().forestClient.id);
     }
     else if (!this.user.isMinistry) {
       return false;
@@ -247,49 +239,49 @@ export class FomDetailComponent implements OnInit {
   }
 
   public canFinalize() {
-    return this.user.isAuthorizedForClientId(this.project.forestClient.id)
-    && this.project.workflowState.code === WorkflowStateEnum.CommentClosed;
+    return this.user.isAuthorizedForClientId(this.project().forestClient.id)
+    && this.project().workflowState.code === WorkflowStateEnum.CommentClosed;
   }
 
   public canAccessComments(): boolean {
-    const userCanView = this.user.isMinistry || this.user.isAuthorizedForClientId(this.project.forestClient.id);
-    return userCanView && (this.project.workflowState.code !== WorkflowStateEnum.Initial
-                        && this.project.workflowState.code !== WorkflowStateEnum.Published);
+    const userCanView = this.user.isMinistry || this.user.isAuthorizedForClientId(this.project().forestClient.id);
+    return userCanView && (this.project().workflowState.code !== WorkflowStateEnum.Initial
+                        && this.project().workflowState.code !== WorkflowStateEnum.Published);
   }
 
   public canChangeEndDate(): boolean {
     return this.user.isMinistry && 
-        (this.project.workflowState.code == WorkflowStateEnum.Initial
-            || this.project.workflowState.code == WorkflowStateEnum.CommentOpen
-        ) && !!this.project.commentingOpenDate;
+        (this.project().workflowState.code == WorkflowStateEnum.Initial
+            || this.project().workflowState.code == WorkflowStateEnum.CommentOpen
+        ) && !!this.project().commentingOpenDate;
   }
 
   public canEditFOM(): boolean {
-    const userCanEdit = this.user.isAuthorizedForClientId(this.project.forestClient.id);
-    return userCanEdit && (this.project.workflowState.code !== WorkflowStateEnum.Published
-      && this.project.workflowState.code !== WorkflowStateEnum.Finalized
-      && this.project.workflowState.code !== WorkflowStateEnum.Expired);
+    const userCanEdit = this.user.isAuthorizedForClientId(this.project().forestClient.id);
+    return userCanEdit && (this.project().workflowState.code !== WorkflowStateEnum.Published
+      && this.project().workflowState.code !== WorkflowStateEnum.Finalized
+      && this.project().workflowState.code !== WorkflowStateEnum.Expired);
   }
 
   public canEditPublicNotice(): boolean {
-    const userCanEdit = this.user.isAuthorizedForClientId(this.project.forestClient.id);
-    return userCanEdit && this.project.workflowState.code === WorkflowStateEnum.Initial;
+    const userCanEdit = this.user.isAuthorizedForClientId(this.project().forestClient.id);
+    return userCanEdit && this.project().workflowState.code === WorkflowStateEnum.Initial;
   }
 
   public canViewPublicNotice(): boolean {
-    return this.user.isAuthorizedForClientId(this.project.forestClient.id)
+    return this.user.isAuthorizedForClientId(this.project().forestClient.id)
             || this.user.isMinistry;
   }
 
   public canViewSubmission(): boolean {
-    const userCanView = this.user.isAuthorizedForClientId(this.project.forestClient.id);
-    return userCanView && (this.project.workflowState.code === WorkflowStateEnum.Initial
-      || this.project.workflowState.code === WorkflowStateEnum.CommentClosed);
+    const userCanView = this.user.isAuthorizedForClientId(this.project().forestClient.id);
+    return userCanView && (this.project().workflowState.code === WorkflowStateEnum.Initial
+      || this.project().workflowState.code === WorkflowStateEnum.CommentClosed);
   }
 
   public canViewPublishing(): boolean {
-    return this.user.isAuthorizedForClientId(this.project.forestClient.id)
-      && this.project.workflowState.code === WorkflowStateEnum.Initial;
+    return this.user.isAuthorizedForClientId(this.project().forestClient.id)
+      && this.project().workflowState.code === WorkflowStateEnum.Initial;
   }
 
   public canAccessInteractions(): boolean {
@@ -297,13 +289,13 @@ export class FomDetailComponent implements OnInit {
   }
 
   public isDeleteAttachmentAllowed(attachment: AttachmentResponse) {
-    return this.attachmentResolverSvc.isDeleteAttachmentAllowed(attachment.attachmentType.code, this.project.workflowState.code);
+    return this.attachmentResolverSvc.isDeleteAttachmentAllowed(attachment.attachmentType.code, this.project().workflowState.code);
   }
 
   public canSetCommentClassification() {
     return this.user.isMinistry && 
-          (this.project.workflowState.code == WorkflowStateEnum.CommentOpen
-          || this.project.workflowState.code == WorkflowStateEnum.CommentClosed);
+          (this.project().workflowState.code == WorkflowStateEnum.CommentOpen
+          || this.project().workflowState.code == WorkflowStateEnum.CommentClosed);
   }
 
   public openChangeEndDateModal() {
@@ -315,15 +307,15 @@ export class FomDetailComponent implements OnInit {
         });
         
         const modalInstance = this.changeEndDateModal.componentInstance as EnddateChangeModalComponent;
-        modalInstance.projectId = this.project.id;
-        modalInstance.currentCommentingClosedDate = this.project.commentingClosedDate;
-        modalInstance.changeRequest.revisionCount = this.project.revisionCount;
+        modalInstance.projectId = this.project().id;
+        modalInstance.currentCommentingClosedDate = this.project().commentingClosedDate;
+        modalInstance.changeRequest.revisionCount = this.project().revisionCount;
         
         this.changeEndDateModal.result.then(
           (result) => {
             // check result
             if (result.projectUpdated) {
-              this.projectUpdateTriggered$.next(null);
+              void this.refreshProject();
             }
             this.changeEndDateModal = null;
           },
@@ -334,20 +326,32 @@ export class FomDetailComponent implements OnInit {
   }
 
   private initProjectDetail(project: ProjectResponse) {
-    this.project = project;
-    if (this.project.workflowState['code'] === 'INITIAL') {
+    if (project.workflowState['code'] === 'INITIAL') {
       this.isProjectActive = true;
     }
-    if (this.project.commentClassificationMandatory == undefined) {
-      this.project.commentClassificationMandatory = true;
+    if (project.commentClassificationMandatory == undefined) {
+      project.commentClassificationMandatory = true;
     }
+    this.project.set(project);
     this.calculateDaysRemaining();
   }
 
+  /**
+   * Refetches this FOM and re-renders in place, for updates that should not reload the whole page.
+   */
+  private async refreshProject() {
+    try {
+      this.initProjectDetail(await firstValueFrom(this.projectService.projectControllerFindOne(this.project().id)));
+    }
+    catch (error) {
+      console.error(error);
+    }
+  }
+
   private calculateDaysRemaining(){
-    this.daysRemaining = (this.project.workflowState.code === WorkflowStateEnum.Initial) ?
-    DateTime.fromISO(this.project.commentingClosedDate).diff(DateTime.fromISO(this.project.commentingOpenDate), 'days').as('days') :
-    DateTime.fromISO(this.project.commentingClosedDate).diff(DateTime.fromJSDate(this.today), 'days').as('days');
+    this.daysRemaining = (this.project().workflowState.code === WorkflowStateEnum.Initial) ?
+    DateTime.fromISO(this.project().commentingClosedDate).diff(DateTime.fromISO(this.project().commentingOpenDate), 'days').as('days') :
+    DateTime.fromISO(this.project().commentingClosedDate).diff(DateTime.fromJSDate(this.today), 'days').as('days');
 
     if(this.daysRemaining < 0){
       this.daysRemaining = 0;
@@ -356,7 +360,7 @@ export class FomDetailComponent implements OnInit {
 
   private validatePublishReady() {
     let ready = true;
-    if (DateTime.fromISO(this.project.commentingClosedDate).diff(DateTime.fromISO(this.project.commentingOpenDate), 'days').as('days') < 30) {
+    if (DateTime.fromISO(this.project().commentingClosedDate).diff(DateTime.fromISO(this.project().commentingOpenDate), 'days').as('days') < 30) {
       ready = false;
       this.modalSvc.openWarningDialog('Comment End Date must be at least 30 days after Comment Start Date when "Publish" is pushed.');
     }
@@ -366,7 +370,7 @@ export class FomDetailComponent implements OnInit {
       this.modalSvc.openWarningDialog('Proposed FOM spatial file should be uploaded before "Publish" is pushed.');
     }
 
-    if(DateTime.fromISO(this.project.commentingOpenDate).diff(DateTime.fromJSDate(this.today), 'days').as('days') < 1){
+    if(DateTime.fromISO(this.project().commentingOpenDate).diff(DateTime.fromJSDate(this.today), 'days').as('days') < 1){
       ready = false;
       this.modalSvc.openWarningDialog('Comment Start Date must be at least one day after "Publish" is pushed.');
     }

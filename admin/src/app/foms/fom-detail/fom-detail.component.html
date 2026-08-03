@@ -1,26 +1,26 @@
 <div class="top-container">
-  @if (project) {
+  @if (project()) {
     <div class="container">
       <div class="title-container">
         <div class="title-container__title">
-          <h1>FOM Number: {{project.id}}</h1>
+          <h1>FOM Number: {{project().id}}</h1>
         </div>
         <div class="title-container__actions">
           <div class="btn-container">
             <button class="btn btn-light" type="button" title="Edit Online Public Notice"
               (click)="goToPublicNotice()"
-              [disabled]="isDeleting"
-              [hidden]="!canEditPublicNotice() && !project.publicNoticeId"
+              [disabled]="isDeleting()"
+              [hidden]="!canEditPublicNotice() && !project().publicNoticeId"
               style="margin-right: 8px;">
-              {{canEditPublicNotice() ? (project.publicNoticeId?'Edit' : 'Add') + ' Online Public Notice'
+              {{canEditPublicNotice() ? (project().publicNoticeId?'Edit' : 'Add') + ' Online Public Notice'
               : 'View Online Public Notice'}}
             </button>
           </div>
           @if (canEditFOM()) {
             <div class="btn-container">
               <button class="btn btn-light" type="button" title="Edit FOM"
-                [routerLink]="['/a', project.id, 'edit']"
-                [disabled]="isDeleting">
+                [routerLink]="['/a', project().id, 'edit']"
+                [disabled]="isDeleting()">
                 Edit FOM
               </button>
               <span title="You cannot edit a finalized/expired project"></span>
@@ -28,24 +28,24 @@
           }
           <div class="btn-container">
             <button class="btn btn-primary ms-1" type="button" title="Publish FOM"
-              [disabled]="isPublishing"
+              [disabled]="isPublishing()"
               [hidden]="!canViewPublishing()"
               (click)="publishFOM()">
-              <em class="spinner rotating" [hidden]="!isPublishing"></em>
-              <span>{{isPublishing ? 'Publishing' : 'Publish'}}</span>
+              <em class="spinner rotating" [hidden]="!isPublishing()"></em>
+              <span>{{isPublishing() ? 'Publishing' : 'Publish'}}</span>
             </button>
           </div>
           <div class="btn-container">
             <button class="btn btn-primary ms-1" type="button" title="Finalize FOM"
-              [disabled]="isFinalizing"
+              [disabled]="isFinalizing()"
               [hidden]="!canFinalize()"
               (click)="finalizeFOM()">
-              <em class="spinner rotating" [hidden]="!isFinalizing"></em>
-              <span>{{isFinalizing ? 'Finalizing' : 'Finalize'}}</span>
+              <em class="spinner rotating" [hidden]="!isFinalizing()"></em>
+              <span>{{isFinalizing() ? 'Finalizing' : 'Finalize'}}</span>
             </button>
           </div>
           <button class="btn btn-primary ms-1" type="button" title="Summary Report"
-            [routerLink]="['/a', project.id, 'summary']">
+            [routerLink]="['/a', project().id, 'summary']">
             <span>Summary Report</span>
           </button>
           @if (canWithdraw()) {
@@ -54,9 +54,9 @@
           @if (canWithdraw()) {
             <button class="btn btn-icon" title="Remove this FOM"
               (click)="deleteFOM()"
-              [disabled]="isDeleting">
-              <em class="spinner-border" [hidden]="!isDeleting"></em>
-              <em class="material-icons" [hidden]="isDeleting" >
+              [disabled]="isDeleting()">
+              <em class="spinner-border" [hidden]="!isDeleting()"></em>
+              <em class="material-icons" [hidden]="isDeleting()" >
                 delete
               </em>
             </button>
@@ -74,7 +74,7 @@
         <section class="main-card">
           <!-- Tabs -->
           <ul ngbNav #nav="ngbNav" class="nav-tabs">
-            <li ngbNavItem [disabled]="isDeleting">
+            <li ngbNavItem [disabled]="isDeleting()">
               <a ngbNavLink>
                 <em class="material-icons">
                   info
@@ -85,31 +85,31 @@
                 <section>
                   <h2>Name</h2>
                   <p class="mb-0"
-                    [innerHTML]="project.name ? project.name : '<em>No applicant on this file</em>'"></p>
+                    [innerHTML]="project().name ? project().name : '<em>No applicant on this file</em>'"></p>
                   </section>
                   <section>
                     <h2>Description</h2>
                     <p class="mb-0"
-                      [innerHTML]="(project.description | newlines) || '<em>No project description available</em>'"></p>
+                      [innerHTML]="(project().description | newlines) || '<em>No project description available</em>'"></p>
                     </section>
                     <section>
                       <h2>Details</h2>
                       <ul class="nv-list">
-                        @if (project.projectPlanCode == projectPlanCodeEnum.Fsp) {
+                        @if (project().projectPlanCode == projectPlanCodeEnum.Fsp) {
                           <li>
                             <span class="name">FSP ID:</span>
                             <span
                               class="value">
-                              {{project?.fspId}}
+                              {{project()?.fspId}}
                             </span>
                           </li>
                         }
-                        @if (project.projectPlanCode == projectPlanCodeEnum.Woodlot) {
+                        @if (project().projectPlanCode == projectPlanCodeEnum.Woodlot) {
                           <li>
                             <span class="name">Woodlot Licence Number:</span>
                             <span
                               class="value">
-                              {{project?.woodlotLicenseNumber}}
+                              {{project()?.woodlotLicenseNumber}}
                             </span>
                           </li>
                         }
@@ -118,15 +118,15 @@
                           <span class="name">FOM Holder:</span>
                           <span
                             class="value">
-                            {{project.forestClient.name}}
+                            {{project().forestClient.name}}
                           </span>
                         </li>
-                        @if (project.bctsMgrName && project.bctsMgrName.length > 0) {
+                        @if (project().bctsMgrName && project().bctsMgrName.length > 0) {
                           <li>
                             <span class="name">Timber Sales Manager Name:</span>
                             <span
                               class="value">
-                              {{project.bctsMgrName}}
+                              {{project().bctsMgrName}}
                             </span>
                           </li>
                         }
@@ -134,29 +134,29 @@
                           <span class="name">District:</span>
                           <span
                             class="value">
-                            {{project.district ? project.district?.name : 'A district has not been specified'}}
+                            {{project().district ? project().district?.name : 'A district has not been specified'}}
                           </span>
                         </li>
                         <li>
                           <span class="name">Online Public Notice:</span>
                           <span
                             class="value">
-                            {{project.publicNoticeId? 'Yes' : 'No'}}
+                            {{project().publicNoticeId? 'Yes' : 'No'}}
                           </span>
                         </li>
-                        @if (project.publicNoticeId) {
+                        @if (project().publicNoticeId) {
                           <li>
                             <span class="name">Notice Publishing Date:</span>
-                            <span class="value">{{project.noticePostDate}}</span>
+                            <span class="value">{{project().noticePostDate}}</span>
                           </li>
                         }
                       </ul>
                     </section>
                     <br />
                     <h2>Attachments</h2>
-                    @if (attachments.length > 0) {
+                    @if (attachments().length > 0) {
                       <section>
-                        @for (attachment of attachments; track attachment) {
+                        @for (attachment of attachments(); track attachment) {
                           <div class="doc-list row">
                             <a class="doc-list__item" style="width: 90%;cursor:pointer"
                               (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
@@ -174,7 +174,7 @@
                               <button class="btn btn-icon row doc-list__item"
                                 title="Delete this attachment"
                                 (click)="deleteAttachment(attachment.id)"
-                                [disabled]="isDeleting">
+                                [disabled]="isDeleting()">
                                 <em class="material-icons">
                                   delete
                                 </em>
@@ -186,7 +186,7 @@
                     }
                   </ng-template>
                 </li>
-                <li ngbNavItem [disabled]="isDeleting">
+                <li ngbNavItem [disabled]="isDeleting()">
 
                   <a ngbNavLink>
                     <em class="material-icons">
@@ -216,24 +216,24 @@
               <div class="body">
                 <div
                   class="app-status">
-                  {{project.workflowState ? project.workflowState.description: '-'}}
+                  {{project().workflowState ? project().workflowState.description: '-'}}
                 </div>
               </div>
             </div>
 
-            @if (project.operationStartYear && project.operationEndYear) {
+            @if (project().operationStartYear && project().operationEndYear) {
               <div class="aside-card">
                 <h3 class="title">Operations Period</h3>
                 <div class="body">
                   <ul class="nv-list">
                     <li>
                       <span class="name">Start Year:</span>
-                      <span class="value" [class.invalid-type-msg]="!project.operationStartYear">
-                      {{project.operationStartYear }}</span>
+                      <span class="value" [class.invalid-type-msg]="!project().operationStartYear">
+                      {{project().operationStartYear }}</span>
                     </li>
                     <li>
                       <span class="name">End Year:</span>
-                      <span class="value">{{project.operationEndYear }}</span>
+                      <span class="value">{{project().operationEndYear }}</span>
                     </li>
                   </ul>
                 </div>
@@ -246,14 +246,14 @@
                 <ul class="nv-list">
                   <li>
                     <span class="name">Start Date:</span>
-                    <span class="value" [class.invalid-type-msg]="!project.commentingOpenDate">
-                      {{project.commentingOpenDate ?
-                      ( project.commentingOpenDate | date:'longDate') :
+                    <span class="value" [class.invalid-type-msg]="!project().commentingOpenDate">
+                      {{project().commentingOpenDate ?
+                      ( project().commentingOpenDate | date:'longDate') :
                     'Must be defined'}}</span>
                   </li>
                   <li>
                     <span class="name">End Date:</span>
-                    <span class="value">{{project.commentingClosedDate| date:'longDate'}}</span>
+                    <span class="value">{{project().commentingClosedDate| date:'longDate'}}</span>
                   </li>
                   <li>
                     <span class="name">Days Remaining:</span>
@@ -261,13 +261,13 @@
                   </li>
                 </ul>
 
-                @if (project) {
+                @if (project()) {
                   <div class="btn-container">
                     @if (canChangeEndDate()) {
                       <button class="cta-btn btn btn-sm btn-outline-primary"
                         type="button"
                         title="Change Commenting End Date"
-                        [disabled]="isDeleting"
+                        [disabled]="isDeleting()"
                         (click)="openChangeEndDateModal()">
                         Change Commenting End Date
                       </button>
@@ -275,14 +275,14 @@
                   </div>
                 }
 
-                @if (project) {
+                @if (project()) {
                   <div class="btn-container">
                     <button class="cta-btn btn btn-sm btn-outline-primary"
                       type="button"
                       title="Review comments"
-                      [disabled]="isDeleting"
+                      [disabled]="isDeleting()"
                       [hidden]="!canAccessComments()"
-                      [routerLink]="['/comments', project.id]">
+                      [routerLink]="['/comments', project().id]">
                       Review Comments
                     </button>
                   </div>
@@ -301,7 +301,7 @@
                   <li>
                     <span class="name">Comment Classification:</span>
                     <span class="value">
-                      {{project.commentClassificationMandatory? 'Mandatory' : 'Not Mandatory'}}
+                      {{project().commentClassificationMandatory? 'Mandatory' : 'Not Mandatory'}}
                     </span>
                   </li>
                 </ul>
@@ -312,9 +312,9 @@
                     type="button"
                     title="Set Comment Classification"
                     (click)="setCommentClassification()"
-                    [disabled]="isSettingCommentClassification">
-                    {{'Change to ' + (project.commentClassificationMandatory? 'Not Mandatory' : 'Mandatory')}}
-                    <em class="spinner-border" [hidden]="!isSettingCommentClassification"></em>
+                    [disabled]="isSettingCommentClassification()">
+                    {{'Change to ' + (project().commentClassificationMandatory? 'Not Mandatory' : 'Mandatory')}}
+                    <em class="spinner-border" [hidden]="!isSettingCommentClassification()"></em>
                   </button>
                 </div>
 
@@ -331,8 +331,8 @@
                 <div class="btn-container">
                   <button class="cta-btn btn btn-sm btn-outline-primary" type="button"
                     title="Record and edit stakeholder engagements"
-                    [disabled]="isDeleting"
-                    [routerLink]="['/interactions', project.id]">
+                    [disabled]="isDeleting()"
+                    [routerLink]="['/interactions', project().id]">
                     Stakeholder Engagements
                   </button>
                 </div>
@@ -355,8 +355,8 @@
                   }
                   <div class="btn-container">
                     <button class="cta-btn btn btn-sm btn-outline-primary" type="button" title="Edit fom documents"
-                      [disabled]="isDeleting"
-                      [routerLink]="['/a', project.id, 'upload']">
+                      [disabled]="isDeleting()"
+                      [routerLink]="['/a', project().id, 'upload']">
                       Edit FOM Spatial Submission
                     </button>
                   </div>
