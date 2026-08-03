@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject, input } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, OnDestroy, OnInit, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
@@ -62,12 +62,17 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   private datePipe = inject(DatePipe);
   private forestSvc = inject(ForestClientService);
   private cognitoService = inject(CognitoService);
-  private cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly DEFAULT_ISO_DATE_FORMAT = DEFAULT_ISO_DATE_FORMAT;
   fg: RxFormGroup;
+  /**
+   * Flips once the form group has been built from the loaded FOM. `fg` itself stays a plain field —
+   * it is built once and never replaced — so this signal is what tells the template the form, and the
+   * workflow-state flags set alongside it, are ready to render.
+   */
+  readonly formReady = signal(false);
   // Route-bound inputs: `mode` from route data (create/edit), `appId` param (edit route only).
   readonly mode = input.required<ApplicationPageType>();
   readonly appId = input<string>();
@@ -78,7 +83,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     {"code": this.projectPlanCodeEnum.Fsp, "description": "Forest Stewardship Plan"},
     {"code": this.projectPlanCodeEnum.Woodlot, "description": "Woodlot Licence Plan"}
   ];
-  forestClients: ForestClientResponse[] = [];
+  readonly forestClients = signal<ForestClientResponse[]>([]);
   public publicNotice: File | null = null;
   public supportingDocument: File | null = null;
   public districtIdSelect: any = null;
@@ -92,8 +97,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   public descriptionValue: string | null = null;
   // Populated from the authenticated Cognito session in the constructor.
   public user!: User;
-  public attachments: AttachmentResponse[] = [];
-  public attachmentsInitialNotice: AttachmentResponse[] = [];
+  public readonly attachments = signal<AttachmentResponse[]>([]);
+  public readonly attachmentsInitialNotice = signal<AttachmentResponse[]>([]);
   public isDeleting = false;
   public minOpeningDate: Date = DateTime.now().plus({days: 1}).toJSDate(); // 1 day in the future.
   public minClosedDate: Date;
@@ -178,13 +183,17 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.attachmentResolverSvc.getAttachments(this.originalProjectResponse.id)
           .then( (result) => {
+            const initialNotice: AttachmentResponse[] = [];
+            const supporting: AttachmentResponse[] = [];
             for(const attachmentResponse of result ) {
               if(attachmentResponse.attachmentType.code === AttachmentTypeEnum.PUBLIC_NOTICE)
-                this.attachmentsInitialNotice.push(attachmentResponse);
+                initialNotice.push(attachmentResponse);
               else
-                this.attachments.push(attachmentResponse);
+                supporting.push(attachmentResponse);
             }
-            this.cdr.detectChanges();
+            // Replace rather than mutate: a signal holding a mutated array does not notify.
+            this.attachmentsInitialNotice.set(initialNotice);
+            this.attachments.set(supporting);
           }).catch((error) => {
           console.error(error);
         });
@@ -196,11 +205,10 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
         this.descriptionValue = data.description;
       }
 
-      this.cdr.detectChanges();
+      this.formReady.set(true);
 
       this.loadForestClients().then( (result) => {
-        this.forestClients = result;
-        this.cdr.detectChanges();
+        this.forestClients.set(result);
       }).catch((error)=> {
         console.error(error);
       });
