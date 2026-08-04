@@ -56,7 +56,7 @@
         <div class="form-group">
           @if (commentStatusFilters(); as commentStatusFilters) {
             <div class="select-badge-group">
-              @for (filter of commentStatusFilters.filters; track filter) {
+              @for (filter of commentStatusFilters.filters; track filter.queryParam) {
                 <div class="select-badge"
                   [style.display]="loading() ? 'none' : null">
                   <input type="checkbox" id="project-{{filter.queryParam}}" name="{{filter.queryParam}}"

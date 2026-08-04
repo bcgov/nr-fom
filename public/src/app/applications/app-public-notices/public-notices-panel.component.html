@@ -36,7 +36,7 @@
             </div>
             <mat-accordion multi>
               <!-- Public Notices Summary List-->
-              @for (pn of notices; track pn) {
+              @for (pn of notices; track pn.projectId) {
                 <div>
                   <mat-expansion-panel>
                     <mat-expansion-panel-header>

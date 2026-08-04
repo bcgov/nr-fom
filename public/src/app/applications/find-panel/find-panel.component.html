@@ -57,7 +57,7 @@
               <label class="control-label">Commenting Status</label>
               @if (commentStatusFilters()) {
                 <div class="select-badge-group">
-                  @for (filter of commentStatusFilters().filters; track filter) {
+                  @for (filter of commentStatusFilters().filters; track filter.queryParam) {
                     <div class="select-badge">
                       <input id="find-{{filter.queryParam}}" type="checkbox" name="{{filter.queryParam}}"
                         [checked]="filter.value"

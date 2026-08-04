@@ -56,7 +56,7 @@
 <!-- Feature details as list (small devices) -->
 <div id="sifeatureList">
   <ul class="shapefile-list">
-    @for (feature of projectSpatialDetail(); track feature) {
+    @for (feature of projectSpatialDetail(); track feature.featureId + '-' + feature.featureType.code) {
       <li class="shapefile-list__item"
         [class.highlight]="selectedRowIndex == feature.featureId + '-' + feature.featureType.code"
         (click)="onRowSelected(feature)">

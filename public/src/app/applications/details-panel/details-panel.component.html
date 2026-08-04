@@ -154,7 +154,7 @@
             <section>
               <h3>Attachments</h3>
               <div class="doc-list" style="width: 25rem;">
-                @for (attachment of attachments(); track attachment) {
+                @for (attachment of attachments(); track attachment.id) {
                   <a class="doc-list__item"
                     style="cursor:pointer"
                     (click)="getFileContents(attachment.id, attachment.fileName)"
