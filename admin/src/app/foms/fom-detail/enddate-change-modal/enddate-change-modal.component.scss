@@ -13,4 +13,21 @@
   width: 95%; // The position is still 'centered' but I shrink the <ngb-modal-window> down to 95%, so it will off the center 
               // slightly to the left. This will make the modal not to cover the 'Comment Period Details' side panel as what
               // we wanted.
+
+  .modal-dialog {
+    max-width: 34rem;
+  }
+
+  .modal-header {
+    gap: 1.5rem; // Keeps the close button clear of the title text.
+
+    .modal-title {
+      flex: 1 1 auto;
+      min-width: 0; // Let a long title wrap rather than crowd the close button out of the header.
+    }
+
+    .close-btn {
+      flex: 0 0 auto; // Never let the button shrink to make room for the title.
+    }
+  }
 }

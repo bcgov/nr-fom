@@ -73,8 +73,8 @@ export class ModalService {
       data: {
         message: message,
         title: title,
-        width: options?.width ?? '340px',
-        height: options?.height ?? '200px',
+        width: options?.width ?? '460px',
+        height: options?.height,
         maxWidth: options?.maxWidth,
         buttons: {confirm: {text: 'OK'}, cancel: { text: 'Cancel' }}
       }
