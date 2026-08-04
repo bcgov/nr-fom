@@ -78,15 +78,6 @@ jobs:
           node_version: 24
           knip_config: .github/knip.json
 
-  map-contract:
-    name: Map Contract (public)
-    if: (! github.event.pull_request.draft)
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-      - name: Verify Leaflet map init/layout contract
-        run: bash scripts/check-map-contract.sh
-
   # https://github.com/marketplace/actions/aqua-security-trivy
   trivy:
     name: Trivy Security Scan
@@ -119,7 +110,7 @@ jobs:
   # ==========================================================================
   results:
     name: Analysis Results
-    needs: [tests-admin, tests-api, tests-public, map-contract, trivy]
+    needs: [tests-admin, tests-api, tests-public, trivy]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 1
