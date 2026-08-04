@@ -125,8 +125,6 @@ export class UrlService {
    * @memberof UrlService
    */
   public navigate = funnel(() => {
-    // Zoneless: router.navigate() schedules change detection on its own, so the previous
-    // NgZone.run() re-entry wrapper (a zone-era workaround for the debounced callback) is gone.
     this.router
       .navigate([], { relativeTo: this.route, queryParams: this.queryParams, fragment: this.panel ?? undefined })
       .toString();
