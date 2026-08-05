@@ -1,10 +1,10 @@
 <footer class="app-footer" id="footer"
-  [ngClass]="{'app-footer--sm': isProjectsPage}">
+  [class.app-footer--sm]="isProjectsPage()">
   <div class="app-footer__inner">
     <div class="footer-admin clearfix row">
       <div class="col-xs-12">
         <ul class="gov-links">
-          <li><a routerLink="/">Home</a></li>
+          <li><a style="cursor: pointer" (click)="showHome()">Home</a></li>
           <li><a href="http://www2.gov.bc.ca/gov/content/home/copyright" target="_blank" rel="noopener">Copyright</a></li>
           <li><a href="http://www2.gov.bc.ca/gov/content/home/disclaimer" target="_blank" rel="noopener">Disclaimer</a></li>
           <li><a href="http://www2.gov.bc.ca/gov/content/home/privacy" target="_blank" rel="noopener">Privacy</a></li>

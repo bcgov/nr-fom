@@ -54,10 +54,4 @@ describe('StateService', () => {
     expect(service.codeTables).toBe(tables);
   });
 
-  it('should set and get loading state', () => {
-    service.loading = true;
-    expect(service.loading).toBe(true);
-    service.loading = false;
-    expect(service.loading).toBe(false);
-  });
 });

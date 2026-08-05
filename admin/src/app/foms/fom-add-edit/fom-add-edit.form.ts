@@ -30,11 +30,13 @@ export class FomAddEditForm implements Pick<ProjectResponse,
   @required({message: 'FOM Description is required.'})
   description: string;
 
+  // Form starts with empty (null) date fields; populated to a string before submission.
+  // `null!` keeps the existing null runtime default while satisfying the non-null ProjectResponse type.
   @prop()
-  commentingOpenDate: string = null; 
+  commentingOpenDate: string = null!;
 
   @prop({})
-  commentingClosedDate: string = null; 
+  commentingClosedDate: string = null!;
 
   @prop()
   @required({message: 'Type of Plan Holder is required.'})
@@ -43,18 +45,18 @@ export class FomAddEditForm implements Pick<ProjectResponse,
   @prop()
   @required({
     message: 'FSP ID is required.',
-		conditionalExpression: (x) => {
+		conditionalExpression: (x: FomAddEditForm) => {
 			return x.projectPlanCode == ProjectPlanCodeEnum.Fsp
 		}
 	})
   @minLength({value: 1})
   @numeric({message: 'Must be a number.'})
-  fspId?: number = null;
+  fspId?: number = null!;
 
   @prop()
   @required({
     message: 'Woodlot Licence Plan Number is required.',
-		conditionalExpression: (x) => {
+		conditionalExpression: (x: FomAddEditForm) => {
 			return x.projectPlanCode == ProjectPlanCodeEnum.Woodlot
 		}
 	})
@@ -63,7 +65,7 @@ export class FomAddEditForm implements Pick<ProjectResponse,
     expression:{'woodlotFormat': /^W\d{4}$/},
     message: 'Must starts with "W" followed by 4 digits.'
   })
-  woodlotLicenseNumber?: string = null;
+  woodlotLicenseNumber?: string = null!;
 
   @prop()
   @required({message: 'District is required.'})
@@ -87,7 +89,7 @@ export class FomAddEditForm implements Pick<ProjectResponse,
   @minDate({
     // In this case, do not use (x,y) arrow expression for validator. 
     // Use 'function(control)' expression, so it can get current field value through "this.".
-    conditionalExpression: function(control: AbstractControl) {
+    conditionalExpression: function(this: FomAddEditForm, control: AbstractControl) {
       // For 'opStartDate' and 'opEndDate', only need "year" from the date; but still use "Date" type for datePicker.
       // (This is a tricky case to set up "conditionalExpression" validator for @minDate, as date is passed from datePicker)
       // So, conditionally, if years are the same, no need to validate on @minDate().
@@ -100,7 +102,7 @@ export class FomAddEditForm implements Pick<ProjectResponse,
 
   @prop()
   @required({
-    conditionalExpression: x => {
+    conditionalExpression: (x: FomAddEditForm) => {
         return x.forestClient?.name.toUpperCase().includes('TIMBER SALES MANAGER')
     },
     message: 'Timber Sales Manager Name is required.', 
@@ -118,7 +120,7 @@ export class FomAddEditForm implements Pick<ProjectResponse,
     this.initProposedOperations(project);
   }
 
-  initProposedOperations(project: Partial<ProjectResponse>) {
+  initProposedOperations(project: Partial<ProjectResponse> | undefined) {
     // Extra conversion for form: 'opStartDate' and 'opEndDate'
     if (project?.operationStartYear) {
       this.opStartDate = DateTime.now().set({year: project.operationStartYear})

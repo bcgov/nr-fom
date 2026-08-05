@@ -1,46 +1,37 @@
-import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, Injector, OnChanges, OnDestroy, OnInit, SimpleChanges, effect, inject, input } from '@angular/core';
 import { SpatialFeaturePublicResponse, SubmissionTypeCodeEnum } from '@api-client';
 import { MapLayers } from '@utility/models/map-layers';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 import { GeoJsonObject } from 'geojson';
 import * as L_import from 'leaflet';
 const L = (L_import as any).default || L_import;
-/*
-  Leaflet has bug with these warning/error on console since Angular 11:
-  http://localhost:4300/public/marker-icon-2x.png 404 (Not Found)
-  http://localhost:4300/public/marker-shadow.png 404 (Not Found)
 
-  After migrating to Angular 15 and adding below into angular.json into "build" can solve problem for "production" 
-  but serving locally still is having issue.
-        ,{
-            "glob": "........"
-            "input": "./node_modules/leaflet/dist/images/",
-            "output": "/assets/images"
-        } 
-    (reference: https://lokeshdaiya.medium.com/how-to-use-node-modules-path-or-third-party-assets-in-angular-files-75906a2ff372)
-    (might be some clue here: https://stackoverflow.com/questions/41144319/leaflet-marker-not-found-production-env)
+/*
+  The feature label marker exists only as a positioning anchor for its permanent tooltip, so it
+  draws nothing itself. A zero-sized divIcon also keeps us off L.Icon.Default, whose path-guessing
+  heuristic reads the bundled leaflet.css `.
 */
-import { NgIf } from '@angular/common';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+const labelAnchorIcon = L.divIcon({ className: '', html: '', iconSize: [0, 0] });
 
 @Component({
-    standalone: true,
-    imports: [NgIf],
+    imports: [],
     selector: 'app-details-map',
     templateUrl: './details-map.component.html',
-    styleUrls: ['./details-map.component.scss']
+    styleUrl: './details-map.component.scss'
 })
 export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
+  private elementRef = inject(ElementRef);
+  private fss = inject(FeatureSelectService);
+  private injector = inject(Injector);
+  private resizeObserver: ResizeObserver | null = null;
 
-  @Input() 
-  projectSpatialDetail: SpatialFeaturePublicResponse[];
+
+  readonly projectSpatialDetail = input<SpatialFeaturePublicResponse[]>();
   
   public map: L.Map;
   public projectFeatures: L.FeatureGroup; // group of layers for the features of a FOM project.
   private lastLabelMarker: L.Marker; // global variable to keep track latest layer added (as labeling popup for onClick)
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  
+
   // Key for the map is: (spatialDetail.featureId + '-' + spatialDetail.featureType.code) so it is unique.
   private featureToLayerMap = new Map();
 
@@ -65,11 +56,6 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
     }
   });
 
-  constructor(
-    private elementRef: ElementRef,
-    private fss: FeatureSelectService
-  ) {}
-
   ngOnInit(): void {
     this.subscribeToFeatureSelectChange();
   }
@@ -88,7 +74,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
     this.addZoomControl();
     this.addResetViewControl();
     this.addFeatures();
-    this.fixMap();
+    this.observeMapSizing();
   }
 
   public createBasicMap() {
@@ -137,12 +123,12 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
 
   public addFeatures() {
     if (this.map) {
-      this.projectSpatialDetail.forEach(spatialDetail => {
+      this.projectSpatialDetail()?.forEach(spatialDetail => {
         const layer = L.geoJSON(<GeoJsonObject>spatialDetail['geometry']);
         layer.on('click', L.Util.bind(this.onSpatialFeatureClick, this, spatialDetail));
         this.projectFeatures.addLayer(layer);
         this.map.on('zoomend', () => {
-          let style: L.PathOptions = {};
+          const style: L.PathOptions = {};
           style.weight = 5; 
           if (this.map.getZoom() < 14) {
             style.weight = 2;
@@ -188,24 +174,36 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
     // Remove last label first, so it does not stay when next one is added.
     if (this.lastLabelMarker) this.projectFeatures.removeLayer(this.lastLabelMarker);
 
-    // Opacity 0 hides marker so just label is visible.
-    this.lastLabelMarker = L.marker(args[1].latlng, { opacity: 0 }); 
-    // Offset in pixels necessary to align with actual center location (unsure why leaflet has it not aligned by default)
+    // Invisible anchor marker, so just the label is visible.
+    this.lastLabelMarker = L.marker(args[1].latlng, { icon: labelAnchorIcon });
+    // Leaflet places a tooltip at (offset + the icon's tooltipAnchor). The anchor icon is zero-sized
+    // and contributes [0, 0], so this offset alone lands the label on the clicked location. The old
+    // [-15, 25] was cancelling out the default pin icon's [16, -28] tooltipAnchor; same net result.
     // See https://gis.stackexchange.com/questions/394960/marker-position-in-leaflet/395270#395270
-    this.lastLabelMarker.bindTooltip(label, { permanent: true , offset: [-15, 25]}); 
+    this.lastLabelMarker.bindTooltip(label, { permanent: true, offset: [1, -3] }); 
     this.projectFeatures.addLayer(this.lastLabelMarker);
   }
 
-  // to avoid timing conflict with animations (resulting in small map tile at top left of page),
-  // ensure map component is visible in the DOM then update it; otherwise wait a bit and try again
+  // Keep the map sized to its container via a single ResizeObserver (initial layout +
+  // every later resize), replacing the former 50ms offsetParent poll. The one-time
+  // fitBounds runs on the first callback where the container is actually visible.
   // ref: https://github.com/Leaflet/Leaflet/issues/4835
-  // ref: https://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-  private fixMap() {
-    if (this.elementRef.nativeElement.offsetParent) {
-      this.fitBounds();
-    } else {
-      setTimeout(this.fixMap.bind(this), 50);
-    }
+  private observeMapSizing() {
+    let didFit = false;
+    this.resizeObserver = new ResizeObserver((entries) => {
+      if (!this.map) {
+        return;
+      }
+      this.map.invalidateSize();
+      // Gate the one-time fitBounds on the observed map container actually having a size
+      // (not the component host element, which can be zero-width even when the map is sized).
+      const width = entries?.[0]?.contentRect.width ?? 0;
+      if (!didFit && width > 0) {
+        didFit = true;
+        this.fitBounds();
+      }
+    });
+    this.resizeObserver.observe(this.map.getContainer());
   }
 
   private fitBounds() {
@@ -218,6 +216,9 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public resetMap() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+
     if (this.map) {
       this.map.remove();
     }
@@ -228,24 +229,21 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private subscribeToFeatureSelectChange(): void {
-    this.fss.$currentSelected
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(featureIndex => {
-        const feature = this.featureToLayerMap.get(featureIndex);
-        if (featureIndex && feature) {
-          setTimeout(() => {
-            const layer = feature.layer;
-            const bound = layer.getBounds()
-            this.map.flyToBounds(bound, { padding: [20, 20] });
-            layer.bringToFront();
-          }, 700); // Delay zoom timing for page scolling to top for user experience.
-        }
-      });
+    effect(() => {
+      const featureIndex = this.fss.currentSelected();
+      const feature = featureIndex ? this.featureToLayerMap.get(featureIndex) : undefined;
+      if (featureIndex && feature) {
+        setTimeout(() => {
+          const layer = feature.layer;
+          const bound = layer.getBounds()
+          this.map.flyToBounds(bound, { padding: [20, 20] });
+          layer.bringToFront();
+        }, 700); // Delay zoom timing for page scolling to top for user experience.
+      }
+    }, { injector: this.injector });
   }
   
   ngOnDestroy() {
     this.resetMap();
-    this.ngUnsubscribe.next(null);
-    this.ngUnsubscribe.complete();
   }
 }

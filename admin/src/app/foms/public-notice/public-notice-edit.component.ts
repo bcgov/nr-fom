@@ -1,11 +1,12 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
-import { StateService } from '@admin-core/services/state.service';
+import { LoadingService } from '@admin-core/services/loading.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
-import { DatePipe, NgClass, NgIf } from "@angular/common";
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { DatePipe } from "@angular/common";
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   ProjectResponse, PublicNoticeCreateRequest, PublicNoticeResponse,
   PublicNoticeService, PublicNoticeUpdateRequest, WorkflowStateEnum
@@ -14,112 +15,110 @@ import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
 import { DateTime } from "luxon";
 import { BsDatepickerModule } from "ngx-bootstrap/datepicker";
-import { Subject, lastValueFrom } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { lastValueFrom } from 'rxjs';
 import { PublicNoticeForm } from './public-notice.form';
 
 @Component({
-    standalone: true,
     imports: [
-        NgIf, 
-        FormsModule, 
-        ReactiveFormsModule, 
-        NgClass, 
-        BsDatepickerModule
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    BsDatepickerModule
+],
     selector: 'app-public-notice-edit',
     templateUrl: './public-notice-edit.component.html',
-    styleUrls: ['./public-notice-edit.component.scss'],
+    styleUrl: './public-notice-edit.component.scss',
     providers: [DatePipe]
 })
-export class PublicNoticeEditComponent implements OnInit, OnDestroy {
-  user: User;
+export class PublicNoticeEditComponent {
+  private router = inject(Router);
+  private formBuilder = inject(RxFormBuilder);
+  loadingSvc = inject(LoadingService);
+  private cognitoService = inject(CognitoService);
+  private modalSvc = inject(ModalService);
+  private publicNoticeService = inject(PublicNoticeService);
+  private datePipe = inject(DatePipe);
+
+  // Route-bound inputs: appId param, projectDetail resolver data, and editMode from route `data`.
+  readonly appId = input.required<string>();
+  readonly projectDetail = input.required<ProjectResponse>();
+  readonly editMode = input.required<boolean>(); // 'edit'/'view' mode, from route data
+
+  // Populated from the authenticated Cognito session in the constructor.
+  user!: User;
   project: ProjectResponse;
-  projectId: number;
+  readonly projectId = computed(() => Number(this.appId()));
   isNewForm: boolean;
   publicNoticeResponse: PublicNoticeResponse;
   publicNoticeFormGroup: IFormGroup<PublicNoticeForm>;
   addressLimit: number = 500;
   businessHoursLimit: number = 100;
-  editMode: boolean; // 'edit'/'view' mode.
   maxPostDate: Date;
   minPostDate: Date = DateTime.now().plus({days: 1}).toJSDate(); // 1 day in the future.
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private formBuilder: RxFormBuilder,
-    public stateSvc: StateService,
-    private cognitoService: CognitoService,
-    private modalSvc: ModalService,
-    private publicNoticeService: PublicNoticeService,
-    private datePipe: DatePipe,
-    private cdr: ChangeDetectorRef
-  ) {
-    this.user = this.cognitoService.getUser();
+  /**
+   * The notice to edit: the project's own notice when it already has one, otherwise the forest client's
+   * most recent notice, which is used to prefill a new one.
+   */
+  private readonly publicNoticeResource = rxResource({
+    params: () => this.projectDetail(),
+    stream: ({ params }) => params.publicNoticeId
+      ? this.publicNoticeService.publicNoticeControllerFindOne(params.publicNoticeId)
+      : this.publicNoticeService.publicNoticeControllerFindLatestPublicNotice(params.forestClient.id),
+  });
+
+  /**
+   * Flips once the @rxweb form group has been built from the fetched notice. The form group itself stays
+   * a plain field — it is built once and never replaced — so this signal is what tells the template that
+   * the form is ready to render.
+   */
+  readonly formReady = signal(false);
+
+  constructor() {
+    const user = this.cognitoService.getUser();
+    if (user) {
+      this.user = user;
+    }
+
+    effect(() => {
+      const publicNotice = this.publicNoticeResource.value();
+      if (!publicNotice) {
+        return;
+      }
+      // Only the fetched notice re-triggers this; everything the initializer reads besides it is
+      // route-constant for the lifetime of one activation.
+      untracked(() => this.buildForm(publicNotice));
+    });
   }
 
-  ngOnInit() {
-    this.projectId = this.route.snapshot.params.appId;
-    this.editMode = this.route.snapshot.url.filter(
-      (seg)=> seg.path.includes('edit')
-    ).length != 0;
+  /**
+   * Builds the edit form from the fetched notice. Mirrors the pre-fetch ordering the form depends on:
+   * `isNewForm` and the post-date bounds must be settled before `processBeforeFormGroupInitialized()`
+   * adjusts the response, which must in turn happen before the form group is created from it.
+   */
+  private buildForm(publicNotice: PublicNoticeResponse) {
+    const projectDetail = this.projectDetail();
+    this.project = projectDetail;
+    this.isNewForm = !projectDetail.publicNoticeId;
+    this.publicNoticeResponse = publicNotice;
+    this.maxPostDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
+    this.processBeforeFormGroupInitialized()
 
-    this.route.data
-      .pipe(
-        switchMap((resolverData) => {
-          const publicNoticeId = resolverData['projectDetail'].publicNoticeId;
-          this.isNewForm = !publicNoticeId;
-          if (!publicNoticeId) {
-            return this.publicNoticeService
-              .publicNoticeControllerFindLatestPublicNotice(resolverData['projectDetail'].forestClient.id)
-              .pipe(
-                map(pn => {
-                  return {data: resolverData, publicNotice: pn}
-                })
-              );
-          }
-          else {
-            return this.publicNoticeService
-              .publicNoticeControllerFindOne(publicNoticeId)
-              .pipe(
-                map(pn => {
-                  return {data: resolverData, publicNotice: pn}
-                })
-              );
-          }
-        })
-      )
-      .subscribe((result) => {
-        this.project = result.data.projectDetail;
-        this.publicNoticeResponse = result.publicNotice;
-        this.maxPostDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
-        this.processBeforeFormGroupInitialized()
-        
-        let publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse);
-        this.publicNoticeFormGroup = this.formBuilder.formGroup(publicNoticeForm) as IFormGroup<PublicNoticeForm>;
-        this.onSameAsReviewIndToggled();
-        if (!this.editMode) {
-          this.publicNoticeFormGroup.disable();
-        }
-        this.cdr.detectChanges();
-
-        // stateSvc.loading flips back to false in the HTTP interceptor's finalize(),
-        // which runs after this callback returns — defer so the Save/Delete button
-        // spinners pick up the settled value instead of a stale "true".
-        setTimeout(() => this.cdr.detectChanges());
-      }
-    );
+    const publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse);
+    this.publicNoticeFormGroup = this.formBuilder.formGroup(publicNoticeForm) as IFormGroup<PublicNoticeForm>;
+    this.onSameAsReviewIndToggled();
+    if (!this.editMode()) {
+      this.publicNoticeFormGroup.disable();
+    }
+    this.formReady.set(true);
   }
 
   processBeforeFormGroupInitialized() {
-    if (!this.editMode) return;
+    if (!this.editMode()) return;
     
     if (this.isNewForm) {
       // Don't inherit operation years from previous public notice from the forest client.
-      delete this.publicNoticeResponse?.postDate;
+      // Cast to Partial so the (non-optional in the generated type) postDate can be deleted.
+      delete (this.publicNoticeResponse as Partial<PublicNoticeResponse>)?.postDate;
     }
     else { // a case there was public notice saved for the project.
       // This is a tricky case. "bsDatepicker" when (minDate=maxDate) and when previous field date falls
@@ -132,27 +131,33 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
       const startOfMaxPostDate = DateTime.fromJSDate(this.maxPostDate).startOf('day');
       if (pnPostDate && startOfMinPostDate <= startOfCommentingOpenDate) {
         if ((startOfPnPostDate < startOfMinPostDate) || (startOfPnPostDate > startOfMaxPostDate)){
-          this.publicNoticeResponse.postDate = startOfMinPostDate.toISODate();
+          // startOfMinPostDate is derived from a valid date, so toISODate() is non-null here.
+          this.publicNoticeResponse.postDate = startOfMinPostDate.toISODate()!;
         }
       }
       else if (pnPostDate && (startOfMinPostDate > startOfCommentingOpenDate)) {
-        this.publicNoticeResponse.postDate = null;
+        // Clear the post date; postDate is non-optional in the generated type, so cast to Partial.
+        (this.publicNoticeResponse as Partial<PublicNoticeResponse>).postDate = undefined;
       }
     }
   }
 
   get isLoading() {
-    return this.stateSvc.loading;
+    return this.loadingSvc.loading();
   }
 
   isAddNewNotice() {
-    return this.editMode && this.isNewForm;
+    return this.editMode() && this.isNewForm;
   }
 
   onSameAsReviewIndToggled(): void {
     const sameAsReviewIndField = this.publicNoticeFormGroup.get('isReceiveCommentsSameAsReview');
     const receiveCommentsAddressField = this.publicNoticeFormGroup.get('receiveCommentsAddress');
     const receiveCommentsBusinessHoursField = this.publicNoticeFormGroup.get('receiveCommentsBusinessHours');
+
+    if (!sameAsReviewIndField || !receiveCommentsAddressField || !receiveCommentsBusinessHoursField) {
+      return;
+    }
 
     if (sameAsReviewIndField.value) {
       receiveCommentsAddressField.disable();
@@ -189,25 +194,25 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
         await lastValueFrom(
           this.publicNoticeService.publicNoticeControllerRemove(this.publicNoticeResponse.id)
         );
-        this.router.navigate(['/a', this.projectId]);
+        this.router.navigate(['/a', this.projectId()]);
       }
     });
   }
 
   cancelChanges() {
-    this.router.navigate(['/a', this.projectId]);
+    this.router.navigate(['/a', this.projectId()]);
   }
 
   async onSubmit() {
-    if (this.editMode && this.publicNoticeFormGroup.valid) {
+    if (this.editMode() && this.publicNoticeFormGroup.valid) {
       await lastValueFrom(this.submitPublicNotice());
-      this.router.navigate(['/a', this.projectId]);
+      this.router.navigate(['/a', this.projectId()]);
     }
   }
 
-  getErrorMessage(controlName: string, messageKey: string = null): string {
-    const errors = this.publicNoticeFormGroup.controls[controlName]?.errors;
-    if (errors !== null) {
+  getErrorMessage(controlName: string, messageKey: string | null = null): string | null {
+    const errors = this.publicNoticeFormGroup.get(controlName)?.errors;
+    if (errors != null && messageKey !== null) {
       const { [messageKey]: messages } = errors;
       if (messages) return messages.message;
     }
@@ -215,8 +220,8 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
   }
 
   fieldTouchedOrDirty(controlName: string): boolean {
-    const control = this.publicNoticeFormGroup.controls[controlName];
-    return control?.touched || control?.dirty;
+    const control = this.publicNoticeFormGroup.get(controlName);
+    return !!(control?.touched || control?.dirty);
   }
 
   private submitPublicNotice() {
@@ -245,7 +250,7 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  warnIfPostDateSelectionNotAvailable(postDatePicker) {
+  warnIfPostDateSelectionNotAvailable(postDatePicker: { toggle: () => void }) {
     const startOfMinPostDate = DateTime.fromJSDate(this.minPostDate).startOf('day');
     const startOfCommentingOpenDate = DateTime.fromISO(this.project.commentingOpenDate).startOf('day');
     if (!this.project.commentingOpenDate || startOfMinPostDate > startOfCommentingOpenDate)
@@ -254,11 +259,6 @@ export class PublicNoticeEditComponent implements OnInit, OnDestroy {
       this.modalSvc.openWarningDialog(`Commenting Start Date must be entered first and at least one day in the future before 
         Notice Publishing Date is available for selection.`);
     }
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next(true);
-    this.ngUnsubscribe.complete();
   }
 }
 

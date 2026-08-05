@@ -1,6 +1,6 @@
 import { User } from "@utility/security/user";
 
-export function getFakeUser():User {
+export function getFakeUser():User | null {
   const userType:string = 'AllAccess'; // NoAccess, ForestClient, Ministry, AdminOnly, AllAccess
   switch (userType) {
     case 'NoAccess':

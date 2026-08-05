@@ -23,22 +23,22 @@ export class PublicNoticeForm {
   isReceiveCommentsSameAsReview: boolean = false;
   
   @required({
-    conditionalExpression:x => x.isReceiveCommentsSameAsReview === false,
+    conditionalExpression:(x: PublicNoticeForm) => x.isReceiveCommentsSameAsReview === false,
     message: 'Address to Receive Comments is required.'
   })
   @notEmpty({
-    conditionalExpression:x => x.isReceiveCommentsSameAsReview === false,
+    conditionalExpression:(x: PublicNoticeForm) => x.isReceiveCommentsSameAsReview === false,
     message: 'Address to Receive Comments can not be empty.'
   })
   @prop()
   receiveCommentsAddress: string;
 
   @required({
-    conditionalExpression:x => x.isReceiveCommentsSameAsReview === false,
+    conditionalExpression:(x: PublicNoticeForm) => x.isReceiveCommentsSameAsReview === false,
     message: 'Business Hours to Receive Comments is required.'
   })
   @notEmpty({
-    conditionalExpression:x => x.isReceiveCommentsSameAsReview === false,
+    conditionalExpression:(x: PublicNoticeForm) => x.isReceiveCommentsSameAsReview === false,
     message: 'Business Hours to Receive Comments can not be empty.'
   })
   @prop()
@@ -82,7 +82,7 @@ export class PublicNoticeForm {
     this.initProposedOperations(pn);
   }
 
-  initProposedOperations(pn: PublicNoticeResponse) {
+  initProposedOperations(pn: PublicNoticeResponse | undefined) {
     if (pn?.postDate) {
         this.pnPostDate = DateTime.fromISO(pn.postDate).toJSDate();
     }

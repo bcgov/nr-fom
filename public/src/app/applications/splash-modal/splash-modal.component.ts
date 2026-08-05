@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -13,20 +13,17 @@ export enum SplashModalResult {
 }
 
 @Component({
-  standalone: true,
   imports: [FontAwesomeModule],
   templateUrl: './splash-modal.component.html',
-  styleUrls: ['./splash-modal.component.scss']
+  styleUrl: './splash-modal.component.scss'
 })
 export class SplashModalComponent {
-  public faArrowUpRightFromSquare = faArrowUpRightFromSquare;
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private urlSvc = inject(UrlService);
+  activeModal = inject(NgbActiveModal);
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private urlSvc: UrlService,    
-    public activeModal: NgbActiveModal // also used in template
-  ) {}
+  public faArrowUpRightFromSquare = faArrowUpRightFromSquare;
 
   public dismiss() {
     this.activeModal.close(SplashModalResult.Dismissed);

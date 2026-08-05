@@ -1,22 +1,24 @@
 
-  <div class="top-container">
-    <div class="container">
-      <div class="breadcrumb-container">
-        <a [routerLink]="['/a', projectId]">
-          <em class="material-icons md-20">arrow_back </em> Back to FOM Details</a>
+<div class="top-container">
+  <div class="container">
+    <div class="breadcrumb-container">
+      <a [routerLink]="['/a', projectId()]">
+        <em class="material-icons md-20">arrow_back </em> Back to FOM Details</a>
       </div>
       <div class="title-container row">
         <div class="col col-sm-5 title-container__title">
-          <h1>Summary for FOM Number: {{project?.id}}</h1>
+          <h1>Summary for FOM Number: {{project()?.id}}</h1>
         </div>
         <div class="col col-sm-3">
           <mat-form-field [style.width.px]=500>
             <mat-label>Comment Scope</mat-label>
-            <mat-select [(ngModel)]="selectedScope" name="commentScope"
-              (selectionChange)="onScopeOptionChanged(selectedScope)">
-              <mat-option *ngFor="let opt of commentScopeOpts" [value]="opt">
-                <small>{{opt.desc}} {{opt.scopeId}} {{opt.name}}</small>
-              </mat-option>
+            <mat-select [ngModel]="selectedScope()" name="commentScope"
+              (ngModelChange)="onScopeOptionChanged($event)">
+              @for (opt of commentScopeOpts(); track opt) {
+                <mat-option [value]="opt">
+                  <small>{{opt.desc}} {{opt.scopeId}} {{opt.name}}</small>
+                </mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
@@ -31,65 +33,71 @@
         <section class="project-info">
           <div>
             <h4>Name</h4>
-            {{project?.name}}
+            {{project()?.name}}
           </div>
 
           <div>
             <h4>Description</h4>
-            {{project?.description}}
+            {{project()?.description}}
           </div>
 
           <div>
             <h4>Details</h4>
             <ul class="nv-list">
-              <li *ngIf="project?.projectPlanCode == projectPlanCodeEnum.Fsp">
-                <span class="name">FSP ID:</span>
-                <span class="value">
-                  {{project?.fspId}}
-                </span>
-              </li>
-              <li *ngIf="project?.projectPlanCode == projectPlanCodeEnum.Woodlot">
-                <span class="name">Woodlot Licence Number:</span>
-                <span class="value">
-                  {{project?.woodlotLicenseNumber}}
-                </span>
-              </li>
+              @if (project()?.projectPlanCode == projectPlanCodeEnum.Fsp) {
+                <li>
+                  <span class="name">FSP ID:</span>
+                  <span class="value">
+                    {{project()?.fspId}}
+                  </span>
+                </li>
+              }
+              @if (project()?.projectPlanCode == projectPlanCodeEnum.Woodlot) {
+                <li>
+                  <span class="name">Woodlot Licence Number:</span>
+                  <span class="value">
+                    {{project()?.woodlotLicenseNumber}}
+                  </span>
+                </li>
+              }
 
               <li>
                 <span class="name">FOM Holder:</span>
                 <span class="value">
-                  {{project?.forestClient?.name}}
+                  {{project()?.forestClient?.name}}
                 </span>
               </li>
-              <li *ngIf="project?.bctsMgrName && project.bctsMgrName.length > 0">
-                <span class="name">Timber Sales Manager Name:</span>
-                <span
-                  class="value">
-                  {{project.bctsMgrName}}
-                </span>
-              </li>
+              @if ((project()?.bctsMgrName?.length ?? 0) > 0) {
+                <li>
+                  <span class="name">Timber Sales Manager Name:</span>
+                  <span
+                    class="value">
+                    {{project()?.bctsMgrName}}
+                  </span>
+                </li>
+              }
               <li>
                 <span class="name">District:</span>
                 <span class="value">
-                  {{project?.district?.name}}
+                  {{project()?.district?.name}}
                 </span>
               </li>
               <li>
                 <span class="name">FOM Status:</span>
                 <span class="value">
-                  {{project?.workflowState? project.workflowState.description : 'Unknown'}}
+                  {{project()?.workflowState ? project()?.workflowState?.description : 'Unknown'}}
                 </span>
               </li>
               <li>
                 <span class="name">Commenting Open Date:</span>
                 <span class="value">
-                  {{project?.commentingOpenDate}}
+                  {{project()?.commentingOpenDate}}
                 </span>
               </li>
               <li>
                 <span class="name">Commenting Closed Date:</span>
                 <span class="value">
-                  {{project?.commentingClosedDate}}
+                  {{project()?.commentingClosedDate}}
                 </span>
               </li>
             </ul>
@@ -98,83 +106,83 @@
 
         <section>
           <h4>Geographic Shape Information</h4>
-          <app-details-map
-            [projectSpatialDetail]="filteredSpatialDetail">
-          </app-details-map>
+          <app-details-map [projectSpatialDetail]="filteredSpatialDetail()" />
 
-          <app-shape-info
-            [spatialDetail]="filteredSpatialDetail">
-          </app-shape-info>
+          <app-shape-info [spatialDetail]="filteredSpatialDetail()" />
         </section>
 
         <section class="project-relations">
           <section>
             <div>
-              <app-comments-summary
-                [publicCommentDetails]="filteredPublicComments"
-                [requestError]="publicCommentsReqError">
-              </app-comments-summary>
+              <app-comments-summary [publicCommentDetails]="filteredPublicComments()"
+                [requestError]="publicCommentsReqError()" />
             </div>
           </section>
 
-          <section *ngIf="!selectedScope?.commentScopeCode">
-            <div>
-              <app-interactions-summary
-                [interactionDetails]="interactions"
-                [requestError]="interactionsReqError">
-              </app-interactions-summary>
-            </div>
+          @if (!selectedScope()?.commentScopeCode) {
+            <section>
+              <div>
+                <app-interactions-summary [interactionDetails]="interactions()"
+                  [requestError]="interactionsReqError()" />
+              </div>
+            </section>
+          }
+        </section>
+
+        @if (!selectedScope()?.commentScopeCode) {
+          <section>
+            <h4>Attachments</h4>
+            @if ((attachments()?.length ?? 0) > 0) {
+              <div>
+                <table id="table-card" class="table-cards" aria-label="List of Attachments">
+                  <thead>
+                    <tr>
+                      <th scope="col" id="dateUploaded" style="width: 10%;">Date Uploaded</th>
+                      <th scope="col" id="fileName">File Name</th>
+                      <th scope="col" id="type" style="width: 10%;">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (attachment of attachments(); track attachment) {
+                      <tr>
+                        <td>
+                          <span>{{attachment.createTimestamp | date: 'medium'}}</span>
+                        </td>
+                        <td data-label="File Name">
+                          <a id="attachment-link"
+                            style="cursor:pointer"
+                            (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
+                            [title]="attachment.fileName || ''"
+                            rel="noopener">
+                            {{attachment.fileName}}
+                          </a>
+                        </td>
+                        <td data-label="Type">
+                          <span>{{attachment.attachmentType.description}}</span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div>
+                {{ attachmentsReqError()? 'Request encountered error. Please try later.': 'No Attachment' }}.
+              </div>
+            }
           </section>
-        </section>
+        }
 
-        <section *ngIf="!selectedScope?.commentScopeCode">
-          <h4>Attachments</h4>
-          <div *ngIf="attachments?.length > 0; else noAttachment">
-            <table id="table-card" class="table-cards" aria-label="List of Attachments">
-              <thead>
-                <tr>
-                  <th scope="col" id="dateUploaded" style="width: 10%;">Date Uploaded</th>
-                  <th scope="col" id="fileName">File Name</th>
-                  <th scope="col" id="type" style="width: 10%;">Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let attachment of attachments">
-                  <td>
-                    <span>{{attachment.createTimestamp | date: 'medium'}}</span>
-                  </td>
-                  <td data-label="File Name">
-                    <a id="attachment-link"
-                      style="cursor:pointer"
-                      (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
-                      [title]="attachment.fileName || ''"
-                      rel="noopener">
-                      {{attachment.fileName}}
-                    </a>
-                  </td>
-                  <td data-label="Type">
-                    <span>{{attachment.attachmentType.description}}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <ng-template #noAttachment>
-            <div>
-              {{ attachmentsReqError? 'Request encountered error. Please try later.': 'No Attachment' }}.
-            </div>
-          </ng-template>
-        </section>
-
-        <section *ngIf="!selectedScope?.commentScopeCode">
-          <small>
-            {{project?.projectPlanCode == projectPlanCodeEnum.Fsp
-                ? periodOperationsTxt
-                : woodlotOperationsTxt
-            }}
-          </small>
-        </section>
+        @if (!selectedScope()?.commentScopeCode) {
+          <section>
+            <small>
+              {{project()?.projectPlanCode == projectPlanCodeEnum.Fsp
+              ? periodOperationsTxt
+              : woodlotOperationsTxt
+              }}
+            </small>
+          </section>
+        }
 
       </section>
     </div>

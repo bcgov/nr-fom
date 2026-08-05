@@ -13,7 +13,7 @@ describe('Filter', () => {
     });
 
     it('should return empty string when value is undefined', () => {
-      const f = new Filter<string>({ filter: { queryParam: 'name', value: undefined } });
+      const f = new Filter<string>({ filter: { queryParam: 'name', value: undefined as unknown as null } });
       expect(f.getQueryParamsString()).toBe('');
     });
   });

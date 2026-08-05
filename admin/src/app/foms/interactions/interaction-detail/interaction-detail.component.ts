@@ -1,5 +1,5 @@
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
-import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { Component, Input, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AttachmentResponse, AttachmentService, InteractionResponse } from '@api-client';
 import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
@@ -8,30 +8,33 @@ import { InteractionDetailForm, InteractionRequest } from './interaction-detail.
 
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSvc';
-import { DatePipe, NgClass, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 @Component({
-    standalone: true,
     imports: [
-        NgIf, 
-        FormsModule, 
-        ReactiveFormsModule, 
-        NgClass, 
-        BsDatepickerModule, 
-        DatePipe, 
-        UploadBoxComponent
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    BsDatepickerModule,
+    DatePipe,
+    UploadBoxComponent
+],
     selector: 'app-interaction-detail',
     templateUrl: './interaction-detail.component.html',
-    styleUrls: ['./interaction-detail.component.scss'],
+    styleUrl: './interaction-detail.component.scss',
     exportAs: 'interactionForm'
 })
 export class InteractionDetailComponent {
+  private formBuilder = inject(RxFormBuilder);
+  private configSvc = inject(ConfigService);
+  attachmentSvc = inject(AttachmentService);
+  attachmentResolverSvc = inject(AttachmentResolverSvc);
 
   today = new Date();
   maxDate = this.today;
-  interaction: InteractionResponse;
+  // Signalized so writes (setter, async attachment fetch, clear) schedule zoneless change detection
+  // on their own — replaces the former cdr.detectChanges() calls.
+  readonly interaction = signal<InteractionResponse | null>(null);
   @Input()
   editMode: boolean;
   @Input()
@@ -39,7 +42,7 @@ export class InteractionDetailComponent {
 
   interactionFormGroup: IFormGroup<InteractionRequest>;
   
-  file: File = null; // only 1 attachment for Interaction.
+  file: File | null = null; // only 1 attachment for Interaction.
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
  
   // Note - browser often fails to recognize 'application/vnd.ms-outlook'; for .msg files use '.msg' instead.
@@ -50,48 +53,44 @@ export class InteractionDetailComponent {
     'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/rtf', '.msg'
   ]
-  attachment: AttachmentResponse;
+  readonly attachment = signal<AttachmentResponse | null>(null);
   communicationDetailsLimit: number = 4000;
 
-  constructor(
-    private formBuilder: RxFormBuilder,
-    private configSvc: ConfigService,
-    public attachmentSvc: AttachmentService,
-    public attachmentResolverSvc: AttachmentResolverSvc,
-    private cdr: ChangeDetectorRef
-  ) { }
-
   @Input() set selectedInteraction(interaction: InteractionResponse) {
-    this.interaction = interaction;
+    this.interaction.set(interaction);
     const interactionForm = new InteractionDetailForm(interaction)
     this.interactionFormGroup = this.formBuilder.formGroup(interactionForm)as IFormGroup<InteractionRequest>;
     if (!this.editMode) {
       this.interactionFormGroup.disable();
     }
-    this.interaction.attachmentId? this.retrieveAttachment(this.interaction.attachmentId)
-                                 : this.attachment = null;
-    // Force change detection to ensure child components render
-    this.cdr.detectChanges();
+    interaction.attachmentId ? this.retrieveAttachment(interaction.attachmentId)
+                             : this.attachment.set(null);
   }
 
-  onFileEmit(newFile: File) {
+  /** Reset the panel to its empty ("No engagement selected") state. */
+  clear() {
+    this.interaction.set(null);
+    this.attachment.set(null);
+  }
+
+  onFileEmit(newFile: File | null) {
     this.file = newFile;
     if (!this.file) {
-      this.interactionFormGroup.get('filename').setValue(null);
+      this.interactionFormGroup.get('filename')?.setValue(null);
     }
     else {
-      this.interactionFormGroup.get('filename').setValue(this.file .name);
+      this.interactionFormGroup.get('filename')?.setValue(this.file .name);
     }
-    this.interactionFormGroup.get('fileContent').setValue(this.file);
+    this.interactionFormGroup.get('fileContent')?.setValue(this.file);
   }
 
   private async retrieveAttachment(attachmentId: number) {
-    this.attachment = await this.attachmentSvc
-                      .attachmentControllerFindOne(attachmentId).toPromise();
+    this.attachment.set(await this.attachmentSvc
+                      .attachmentControllerFindOne(attachmentId).toPromise() ?? null);
   }
 
   isValid(controlName: string): boolean {
-    return this.interactionFormGroup.controls[controlName]?.errors == null;
+    return this.interactionFormGroup.get(controlName)?.errors == null;
   }
 
 }

@@ -1,29 +1,15 @@
-import { NgIf } from "@angular/common";
-import { Component, OnInit } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
-import { Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
+
+import { Component, input } from "@angular/core";
 
 @Component({
-    standalone: true,
-    imports: [NgIf],
+    imports: [],
     selector: "app-not-authorized",
     templateUrl: "./not-authorized.component.html",
-    styleUrls: ["./not-authorized.component.scss"]
+    styleUrl: "./not-authorized.component.scss"
 })
-export class NotAuthorizedComponent implements OnInit {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  public loggedout = false;
-
-  constructor(private route: ActivatedRoute) {}
-
-  ngOnInit() {
-    this.route.queryParamMap
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((paramMap) => {
-        this.loggedout = paramMap.get("loggedout") === "true";
-      });
-  }
+export class NotAuthorizedComponent {
+  // `loggedout` query param, bound as an input (string "true" → boolean).
+  readonly loggedout = input(false, { transform: (v: string | boolean) => v === true || v === 'true' });
 
   login() {
     window.location.href = window.location.origin + "/admin";

@@ -1,14 +1,13 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+
+import { Component, computed, inject, input, output } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { COMMENT_STATUS_FILTER_PARAMS, FOMFiltersService, FOM_FILTER_NAME } from '@public-core/services/fomFilters.service';
 import { UrlService } from '@public-core/services/url.service';
 import { DateTime } from "luxon";
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { IUpdateEvent } from '../projects.component';
-import { Filter, FilterUtils, IFilter, IMultiFilter, IMultiFilterFields, MultiFilter } from '../utils/filter';
+import { Filter, FilterUtils, IMultiFilterFields, MultiFilter } from '../utils/filter';
 
 
 /**
@@ -16,47 +15,51 @@ import { Filter, FilterUtils, IFilter, IMultiFilter, IMultiFilterFields, MultiFi
  *
  * @export
  * @class FindPanelComponent
- * @implements {OnDestroy}
  */
 @Component({
-  standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    FormsModule,
     BsDatepickerModule
-  ],
+],
   selector: 'app-find-panel',
   templateUrl: './find-panel.component.html',
-  styleUrls: ['./find-panel.component.scss']
+  styleUrl: './find-panel.component.scss'
 })
-export class FindPanelComponent implements OnDestroy, OnInit {
-  @Output() update = new EventEmitter<IUpdateEvent>();
-  @Input() loading: boolean; // from projects component
-  
+export class FindPanelComponent {
+  urlSvc = inject(UrlService);
+  private fomFiltersSvc = inject(FOMFiltersService);
+
+  readonly update = output<IUpdateEvent>();
+  readonly loading = input<boolean | undefined>(undefined); // from projects component
+
   public filterHash: string;
-  private ngUnsubscribe: Subject<void> = new Subject<void>();
-  private fomFilters: Map<string, IFilter | IMultiFilter>;
-  public fomNumberFilter = new Filter<number>({ filter: { queryParam: 'fomNumber', value: null }});
-  public forestClientNameFilter = new Filter<string>({ filter: { queryParam: 'fcName', value: null }});
-  public commentStatusFilters: MultiFilter<boolean>; // For 'Commenting Open' or 'Commenting Closed'.
-  public postedOnAfterFilter = new Filter<Date>({ filter: { queryParam: 'pdOnAfter', value: null } });
+
+  /**
+   * The shared filter set, owned by `FOMFiltersService` and read here as a signal.
+   *
+   * The service re-emits a whole new `Map` on every change (including changes made elsewhere, such as the
+   * Clear button on the projects view), so this panel must re-read its filters on each emission rather
+   * than hold its own copies.
+   *
+   * `requireSync` is safe because `filters$` is backed by a `BehaviorSubject` — a current value always
+   * exists, so the panel is never in a "no filters yet" state and needs no placeholder defaults.
+   */
+  private readonly fomFilters = toSignal(this.fomFiltersSvc.filters$, { requireSync: true });
+
+  /**
+   * The four individual filters, derived from the shared set. Reading these in the template is what makes
+   * the panel re-render when the filter set is replaced externally; the objects themselves are the
+   * service's, so mutating `.value` (via `ngModel` or the helpers below) edits the shared filter directly,
+   * exactly as before.
+   */
+  readonly fomNumberFilter = computed(() => this.fomFilters().get(FOM_FILTER_NAME.FOM_NUMBER) as Filter<number>);
+  readonly forestClientNameFilter = computed(() => this.fomFilters().get(FOM_FILTER_NAME.FOREST_CLIENT_NAME) as Filter<string>);
+  readonly commentStatusFilters = computed(() => this.fomFilters().get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>); // For 'Commenting Open' or 'Commenting Closed'.
+  readonly postedOnAfterFilter = computed(() => this.fomFilters().get(FOM_FILTER_NAME.POSTED_ON_AFTER) as Filter<Date>);
+
   readonly minDate = DateTime.fromISO('2018-03-23').toJSDate(); // first app created
   readonly maxDate = DateTime.now().toJSDate(); // today
   readonly maxInputLength = 9;
-
-  constructor(public urlSvc: UrlService,
-              private fomFiltersSvc: FOMFiltersService) {
-  }
-
-  ngOnInit(): void {
-    this.fomFiltersSvc.filters$.pipe(takeUntil(this.ngUnsubscribe)).subscribe((filters) => {
-      this.fomFilters = filters;
-      this.fomNumberFilter = this.fomFilters.get(FOM_FILTER_NAME.FOM_NUMBER) as Filter<number>;
-      this.forestClientNameFilter = this.fomFilters.get(FOM_FILTER_NAME.FOREST_CLIENT_NAME) as Filter<string>;
-      this.commentStatusFilters = this.fomFilters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>;
-      this.postedOnAfterFilter = this.fomFilters.get(FOM_FILTER_NAME.POSTED_ON_AFTER) as Filter<Date>;
-    })
-  }
 
   /**
    * Computes a hash based on the current filters, updates the local filterHash value if the newly computed hash is
@@ -67,10 +70,10 @@ export class FindPanelComponent implements OnDestroy, OnInit {
    */
   public checkAndSetFiltersHash(): boolean {
     const newFilterHash = FilterUtils.hashFilters(
-      this.fomNumberFilter,
-      this.forestClientNameFilter,
-      this.commentStatusFilters,
-      this.postedOnAfterFilter);
+      this.fomNumberFilter(),
+      this.forestClientNameFilter(),
+      this.commentStatusFilters(),
+      this.postedOnAfterFilter());
 
     if (this.filterHash === newFilterHash) {
       return false;
@@ -92,20 +95,21 @@ export class FindPanelComponent implements OnDestroy, OnInit {
 
   // checking if Comment Status filter both COMMENT_OPEN/COMMENT_CLOSED are false. If it is, default to COMMENT_OPEN.
   public verifyStatus() {
-    const commentOpen = this.commentStatusFilters.filters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_OPEN)[0];
-    const commentClosed = this.commentStatusFilters.filters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_CLOSED)[0];
+    const statusFilters = this.commentStatusFilters().filters;
+    const commentOpen = statusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_OPEN)[0];
+    const commentClosed = statusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_CLOSED)[0];
     if (!commentOpen.value && !commentClosed.value) {
       commentOpen.value = true;
     }
   }
 
-  public verifyFomNumberInput(event) {
-    let parsed = parseInt(event.target.value.toString().replace(/^0+(?=\d)/, ''), 10);
+  public verifyFomNumberInput(event: Event) {
+    let parsed: number | null = parseInt((event.target as HTMLInputElement).value.toString().replace(/^0+(?=\d)/, ''), 10);
     // fomNumber search field is a positive integer excluding 0;
     if (isNaN(parsed) || parsed == 0) {
         parsed = null;
     }
-    this.fomNumberFilter.filter.value = parsed;
+    this.fomNumberFilter().filter.value = parsed;
   }
 
   /**
@@ -125,7 +129,7 @@ export class FindPanelComponent implements OnDestroy, OnInit {
    * @memberof FindPanelComponent
    */
   public applyAllFilters() {
-    this.fomFiltersSvc.updateFiltersSelection(this.fomFilters);
+    this.fomFiltersSvc.updateFiltersSelection(this.fomFilters());
     this.emitUpdate({ search: true, resetMap: false, hidePanel: true });
   }
 
@@ -135,7 +139,7 @@ export class FindPanelComponent implements OnDestroy, OnInit {
    * @memberof ExplorePanelComponent
    */
   public applyAllFiltersMobile() {
-    this.fomFiltersSvc.updateFiltersSelection(this.fomFilters);
+    this.fomFiltersSvc.updateFiltersSelection(this.fomFilters());
     this.emitUpdate({ search: true, resetMap: false, hidePanel: true });
   }
 
@@ -165,16 +169,6 @@ export class FindPanelComponent implements OnDestroy, OnInit {
    * @memberof FindPanelComponent
    */
   public areFiltersSet(): boolean {
-    return this.forestClientNameFilter.isFilterSet();
-  }
-
-  /**
-   * On component destroy.
-   *
-   * @memberof FindPanelComponent
-   */
-  public ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    return this.forestClientNameFilter().isFilterSet();
   }
 }

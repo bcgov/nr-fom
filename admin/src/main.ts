@@ -1,77 +1,50 @@
-import { APP_INITIALIZER, enableProdMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { importProvidersFrom, inject, provideAppInitializer, provideZonelessChangeDetection } from '@angular/core';
 
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
-import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations';
-import { provideRouter } from '@angular/router';
-import { ApiModule, Configuration } from '@api-client';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading } from '@angular/router';
+import { Configuration } from '@api-client';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
 import { retrieveApiBasePath } from '@utility/services/config.service';
 import { AppRoutes } from 'app/app.routes';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { AppComponent } from './app/app.component';
-import { ErrorInterceptor } from './core/interceptors/http-error.interceptor';
+import { errorInterceptor } from './core/interceptors/http-error.interceptor';
 import { CognitoService } from './core/services/cognito.service';
-import { CognitoTokenInterceptor } from './core/utils/cognito-token-interceptor';
-import { environment } from './environments/environment';
-
-if (environment.production) {
-    enableProdMode();
-}
-
-function cognitoFactory(cognitoService: CognitoService) {
-  return () => cognitoService.init();
-}
+import { cognitoTokenInterceptor } from './core/utils/cognito-token-interceptor';
 
 const apiConfig = new Configuration({
   basePath: retrieveApiBasePath()
 })
 
 const routesProviders = [
-    provideRouter(AppRoutes)
+    provideRouter(
+        AppRoutes,
+        withComponentInputBinding(),
+        withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
+        withPreloading(PreloadAllModules)
+    )
 ]
 
 const coreProviders = [
-    provideZoneChangeDetection({
-        eventCoalescing: true,
-    }),
-    // Note! - Prefer `withInterceptors` and functional interceptors instead, as support for DI-provided
-    // interceptors may be phased out in a later release.
-    provideHttpClient(withInterceptorsFromDi()),
-    provideAnimations(),
+    provideZonelessChangeDetection(),
+    // Order is critical - the token interceptor must run after the error interceptor
+    // (it is last in the array, so it sees the response first and can refresh+retry a
+    // 403 before the error interceptor would surface a "Forbidden" dialog).
+    provideHttpClient(withInterceptors([errorInterceptor, cognitoTokenInterceptor])),
+    // Generated API client config — functional provider replacing ApiModule.forRoot()
+    { provide: Configuration, useValue: apiConfig },
     importProvidersFrom(
-        BrowserModule, 
-        FormsModule, 
-        ReactiveFormsModule,
-        BrowserAnimationsModule,
         BsDatepickerModule,
-        NgbModule, 
-        ApiModule.forRoot(() => apiConfig),
+        NgbModule,
         RxReactiveFormsModule,
         MatDialogModule,
         MatSnackBarModule
     ),
-    {
-        provide: APP_INITIALIZER,
-        useFactory: cognitoFactory,
-        deps: [CognitoService],
-        multi: true,
-    },
-    // Order of these interceptors is critical - token interceptor must be last, after error interceptor.
-    {
-        provide: HTTP_INTERCEPTORS,
-        useClass: ErrorInterceptor,
-        multi: true
-    },
-    {
-        provide: HTTP_INTERCEPTORS,
-        useClass: CognitoTokenInterceptor,
-        multi: true,
-    },
+    provideAppInitializer(() => inject(CognitoService).init()),
 ]
 
 bootstrapApplication(AppComponent, {

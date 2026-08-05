@@ -1,5 +1,5 @@
 import { ANALYTICS_DATA_DEFAULT_SIZE } from '@admin-core/utils/constants';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AnalyticsDashboardService, ProjectCountByDistrictResponse, ProjectCountByForestClientResponse, ProjectPlanCodeFilterEnum, PublicCommentCountByDistrictResponse, PublicCommentCountByProjectResponse } from '@api-client';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -23,7 +23,8 @@ export type AnalyticsDashboardData = {
  */
 @Injectable({ providedIn: 'root' })
 export class AnalyticsDashboardDataService {
-  constructor(private api: AnalyticsDashboardService) {}
+  private api = inject(AnalyticsDashboardService);
+
 
   getAnalyticsData(
     startDate: string, endDate: string, 

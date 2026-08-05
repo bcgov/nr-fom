@@ -1,5 +1,5 @@
 import { DataService } from '@core';
-import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from "@utility/security/user";
 import { PinoLogger } from 'nestjs-pino';
@@ -68,11 +68,11 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
 
     const objectName = this.createObjectUrl(request.projectId, primaryKey, request.fileName);
 
-    minioClient.putObject(process.env.OBJECT_STORAGE_BUCKET, objectName, request.fileContents, function(error, objInfo) {
+    minioClient.putObject(process.env.OBJECT_STORAGE_BUCKET, objectName, request.fileContents, (error, objInfo) => {
       if(error) {
-        throw new InternalServerErrorException(error, 
-          `Minio Client encountered problem while uploading file to storage to ${process.env.OBJECT_STORAGE_BUCKET},
-           location: ${objectName}`);
+        this.logger.error(
+          `Minio Client encountered problem while uploading file to storage to ${process.env.OBJECT_STORAGE_BUCKET}, location: ${objectName}`,
+          error);
       }
     });
   }

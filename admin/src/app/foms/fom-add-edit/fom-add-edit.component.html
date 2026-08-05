@@ -1,586 +1,671 @@
-<div class="top-container" *ngIf="fg">
-  <div class="container">
-    <div class="title-container">
-      <div class="title-container__title">
-        <h1 class="text-muted">{{isCreate ? 'Add New' : 'Edit'}} FOM {{isCreate ? '' : 'ID: '+originalProjectResponse.id}}</h1>
-      </div>
-      <div class="title-container__actions">
-        <button
-          class="btn btn-light"
-          type="button"
-          title="Cancel changes"
-          (click)="cancelChanges()"
-        >
-          Cancel
-        </button>
-        <button *ngIf="isCreate; else saveButton"
-          class="btn btn-primary ms-1"
-          type="button"
-          title="Create FOM"
-          (click)="submit()"
-          [disabled]="!fg.isModified"
-        >{{ isLoading ? "Submitting" : "Submit" }}
-          <em class="spinner rotating" [hidden]="!stateSvc.loading"></em>
-        </button>
+@if (formReady()) {
+  <div class="top-container">
+    <div class="container">
+      <div class="title-container">
+        <div class="title-container__title">
+          <h1 class="text-muted">{{isCreate ? 'Add New' : 'Edit'}} FOM {{isCreate ? '' : 'ID: '+originalProjectResponse.id}}</h1>
+        </div>
+        <div class="title-container__actions">
+          <button
+            class="btn btn-light"
+            type="button"
+            title="Cancel changes"
+            (click)="cancelChanges()"
+            >
+            Cancel
+          </button>
+          @if (isCreate) {
+            <button
+              class="btn btn-primary ms-1"
+              type="button"
+              title="Create FOM"
+              (click)="submit()"
+              [disabled]="!fg.isModified"
+              >{{ isLoading ? "Submitting" : "Submit" }}
+              <em class="spinner rotating" [hidden]="!loadingSvc.loading()"></em>
+            </button>
+          } @else {
+            <button
+              class="btn btn-primary ms-1"
+              type="button"
+              title="Save your changes"
+              (click)="saveApplication()"
+              [disabled]="isPublishState"
+              >{{ isLoading ? "Saving" : "Save" }}
+              <em class="spinner rotating" [hidden]="!loadingSvc.loading()"></em>
+            </button>
+          }
+        </div>
       </div>
     </div>
   </div>
-</div>
+}
 
-<div class="bottom-container" *ngIf="fg">
-
-  <div class="container">
-
-    <form class="mb-3" [formGroup]="fg">
-      <div class="row">
-        <legend>Application Details</legend>
-      </div>
-
-      <div class="row" >
-          <div class="form-group col-md-2" *ngIf="!isCreate">
-            <!-- FOM ID: disabled after fom is created -->
-            <label>ID</label>
-            <input
-              type="text"
-              class="form-control"
-              id="id"
-              name="name"
-              disabled
-              [value]="originalProjectResponse.id"
-            />
-          </div>
-
-          <!-- Commenting Open Date: disabled when COMMENT_CLOSED -->
-          <div class="form-group col-md">
-            <label>Commenting Open Date</label>
-              <div class="input-group" *ngIf="!isCommentingClosedState">
-                <input
-                  readonly
-                  type="text"
-                  class="form-control readonly-normal"
-                  placeholder="YYYY-MM-DD"
-                  bsDatepicker
-                  [minDate]="minOpeningDate"
-                  (keydown)="$event.preventDefault()"
-                  #openDate="bsDatepicker"
-                  id="commentingOpenDate"
-                  name="commentingOpenDate"
-                  formControlName="commentingOpenDate"
+@if (formReady()) {
+  <div class="bottom-container">
+    <div class="container">
+      <form class="mb-3" [formGroup]="fg">
+        <div class="row">
+          <legend>Application Details</legend>
+        </div>
+        <div class="row" >
+          @if (!isCreate) {
+            <div class="form-group col-md-2">
+              <!-- FOM ID: disabled after fom is created -->
+              <label>ID</label>
+              <input
+                type="text"
+                class="form-control"
+                id="id"
+                name="name"
+                disabled
+                [value]="originalProjectResponse.id"
+                />
+              </div>
+            }
+            <!-- Commenting Open Date: disabled when COMMENT_CLOSED -->
+            <div class="form-group col-md">
+              <label>Commenting Open Date</label>
+              @if (!isCommentingClosedState) {
+                <div class="input-group">
+                  <input
+                    readonly
+                    type="text"
+                    class="form-control readonly-normal"
+                    placeholder="YYYY-MM-DD"
+                    bsDatepicker
+                    [minDate]="minOpeningDate"
+                    (keydown)="$event.preventDefault()"
+                    #openDate="bsDatepicker"
+                    id="commentingOpenDate"
+                    name="commentingOpenDate"
+                    formControlName="commentingOpenDate"
                   [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
                                 containerClass: 'theme-dark-blue', showWeekNumbers: false }"
-                  (bsValueChange)="toggleClosedDate($event)"
-                  [appFormControl]="fg.get('commentingOpenDate')"
-                />
-                <div class="input-group-append">
-                  <button
-                    class="btn btn-icon" type="button" tabindex="-1" (click)="openDate.show()"
-                    [attr.aria-expanded]="openDate.isOpen">
-                    <em class="material-icons">date_range</em>
-                  </button>
-                </div>
+                    (bsValueChange)="toggleClosedDate($event)"
+                    [appFormControl]="fg.get('commentingOpenDate')"
+                    />
+                    <div class="input-group-append">
+                      <button
+                        class="btn btn-icon" type="button" tabindex="-1" (click)="openDate.show()"
+                        [attr.aria-expanded]="openDate.isOpen">
+                        <em class="material-icons">date_range</em>
+                      </button>
+                    </div>
+                  </div>
+                }
+                @if (isCommentingClosedState) {
+                  <input
+                    disabled
+                    id="commentingOpenDate"
+                    name="commentingOpenDate"
+                    class="form-control"
+                    type="text"
+                    placeholder="YYYY-MM-DD"
+                    [value]="getformatedDate('commentingOpenDate', DEFAULT_ISO_DATE_FORMAT)"
+                    />
+                }
               </div>
-              <input
-                *ngIf="isCommentingClosedState"
-                disabled
-                id="commentingOpenDate"
-                name="commentingOpenDate"
-                class="form-control"
-                type="text"
-                placeholder="YYYY-MM-DD"
-                [value]="getformatedDate('commentingOpenDate', DEFAULT_ISO_DATE_FORMAT)"
-              />
-          </div>
-
-          <!-- Commenting Closed Date: disabled when COMMENT_CLOSED -->
-          <div class="form-group col-md">
-            <label>Commenting Closed Date</label>
-            <div class="input-group" *ngIf="!isCommentingClosedState">
-              <input
-                readonly
-                type="text"
-                class="form-control readonly-normal"
-                placeholder="YYYY-MM-DD"
-                bsDatepicker
-                [minDate]="minClosedDate"
-                (keydown)="$event.preventDefault()"
-                #closedDate="bsDatepicker"
-                id="commentingClosedDate"
-                name="commentingClosedDate"
-                formControlName="commentingClosedDate"
-                (bsValueChange)="validateClosedDate($event)"
+              <!-- Commenting Closed Date: disabled when COMMENT_CLOSED -->
+              <div class="form-group col-md">
+                <label>Commenting Closed Date</label>
+                @if (!isCommentingClosedState) {
+                  <div class="input-group">
+                    <input
+                      readonly
+                      type="text"
+                      class="form-control readonly-normal"
+                      placeholder="YYYY-MM-DD"
+                      bsDatepicker
+                      [minDate]="minClosedDate"
+                      (keydown)="$event.preventDefault()"
+                      #closedDate="bsDatepicker"
+                      id="commentingClosedDate"
+                      name="commentingClosedDate"
+                      formControlName="commentingClosedDate"
+                      (bsValueChange)="validateClosedDate($event)"
                 [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
                 containerClass: 'theme-dark-blue', showWeekNumbers: false  }"
-                [appFormControl]="fg.get('commentingClosedDate')"
-              />
-              <div class="input-group-append">
-                <button class="btn btn-icon"  type="button" tabindex="-1" (click)="closedDate.show()"
-                    [attr.aria-expanded]="closedDate.isOpen">
-                  <em class="material-icons">date_range</em>
-                </button>
-              </div>
-            </div>
-            <input
-              *ngIf="isCommentingClosedState"
-              disabled
-              id="commentingClosedDate"
-              name="commentingClosedDate"
-              class="form-control"
-              type="text"
-              placeholder="YYYY-MM-DD"
-              [value]="getformatedDate('commentingClosedDate', DEFAULT_ISO_DATE_FORMAT)"
-            />
-          </div>
-        </div>
-
-        <div class="row">
-          <!-- Start of Operations: disabled when COMMENT_OPEN -->
-          <div class="form-group col">
-            <label for="op-start-year" [ngClass]="{'required': !isCommentingOpenState}">Start of Operations</label>
-            <div *ngIf="!isCommentingOpenState">
-              <input
-                readonly
-                id="op-start-year"
-                name="op-start-year"
-                class="form-control readonly-normal"
-                type="text"
-                placeholder="YYYY"
-                formControlName="opStartDate"
-                bsDatepicker
-                (keydown)="$event.preventDefault()"
-                [bsConfig]="bsConfig"
-                [appFormControl]="fg.get('opStartDate')"
-              />
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('opStartDate')) 
-                  && getErrorMessage('opStartDate', 'required')">
-                  {{getErrorMessage('opStartDate', 'required')}}
-              </div>
-            </div>
-
-            <input
-              *ngIf="isCommentingOpenState"
-              disabled
-              id="op-start-year"
-              name="op-start-year"
-              class="form-control"
-              type="text"
-              placeholder="YYYY"
-              [value]="getformatedDate('opStartDate')"
-            />
-          </div>
-
-          <!-- End of Operations: disabled when COMMENT_OPEN -->
-          <div class="form-group col">
-            <label for="op-end-year" [ngClass]="{'required': !isCommentingOpenState}">End of Operations</label>
-            <div *ngIf="!isCommentingOpenState">
-              <input
-                readonly
-                id="op-end-year"
-                name="op-end-year"
-                class="form-control readonly-normal"
-                type="text"
-                placeholder="YYYY"
-                formControlName="opEndDate"
-                bsDatepicker
-                (keydown)="$event.preventDefault()"
-                [bsConfig]="bsConfig"
-                [appFormControl]="fg.get('opEndDate')"
-              />
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('opEndDate')) 
-                  && getErrorMessage('opEndDate', 'required')">
-                  {{getErrorMessage('opEndDate', 'required')}}
-              </div>
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('opEndDate')) 
-                  && getErrorMessage('opEndDate', 'minDate')">
-                  {{getErrorMessage('opEndDate', 'minDate')}}
-              </div>
-            </div>
-            <input
-              *ngIf="isCommentingOpenState"
-              disabled
-              id="op-end-year"
-              name="op-end-year"
-              class="form-control"
-              type="text"
-              placeholder="YYYY"
-              [value]="getformatedDate('opEndDate')"
-            />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="form-group col">
-            <!-- Type of Plan Holder: disabled after fom is created -->
-            <label [ngClass]="{'required': isCreate}">Type of Plan Holder</label>
-            <div *ngIf="isCreate">
-              <select
-                  class="form-control"
-                  formControlName="projectPlanCode"
-                  (change)="onProjectPlanChange($event)"
-                  [ngClass]="{'is-invalid': !fg.get('projectPlanCode').value && isSubmitSaveClicked}" 
-                  id="projectPlanSelectId">
-                <option *ngFor="let option of projectPlanOptions" 
-                  [value]="option.code"
-                  [selected]="option.code === fg.get('projectPlanCode').value" 
-                  [innerHTML]="option.description"> </option>
-              </select>
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('projectPlanCode')) 
-                && getErrorMessage('projectPlanCode', 'required')">
-                {{getErrorMessage('projectPlanCode', 'required')}}
-              </div>
-            </div>
-            <input *ngIf="!isCreate" type="text"
-              class="form-control"
-              id="projectPlanDescId"
-              name="projectPlanDescription"
-              disabled
-              [value]="getProjectPlanDesc()"
-            />
-          </div>
-
-          <!-- FSP ID: disabled when COMMENT_OPEN -->
-          <div class="form-group col"
-            *ngIf="fg.get('projectPlanCode').value == projectPlanCodeEnum.Fsp">
-            <label for="fsp-id" [ngClass]="{'required': !isCommentingOpenState}" style="white-space: nowrap;"
-            >FSP ID</label>
-            <div *ngIf="!isCommentingOpenState">
-              <input
-                type="number"
-                class="form-control"
-                id="fsp-id"
-                name="fsp-id"
-                formControlName="fspId"
-                [appFormControl]="fg.get('fspId')"
-              />
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('fspId'))">
-                <div>{{getErrorMessage('fspId', 'required')}}</div>
-                <div>{{getErrorMessage('fspId', 'numeric')}}</div>
-              </div>
-            </div>
-            <input *ngIf="isCommentingOpenState" type="text"
-              class="form-control"
-              id="fsp-id"
-              name="fsp-id"
-              disabled
-              [value]="fg.get('fspId').value"
-            />
-          </div>
-
-          <!-- Woodlot Licence Number: disabled when COMMENT_OPEN -->
-          <div class="form-group col"
-            *ngIf="fg.get('projectPlanCode').value == projectPlanCodeEnum.Woodlot">
-            <label for="woodlot-id" [ngClass]="{'required': !isCommentingOpenState}" style="white-space: nowrap;"
-            >Woodlot Licence Number</label>
-            <div *ngIf="!isCommentingOpenState">
-              <input
-                type="text"
-                class="form-control"
-                id="woodlot-id"
-                name="woodlot-id"
-                formControlName="woodlotLicenseNumber"
-                [appFormControl]="fg.get('woodlotLicenseNumber')"
-              />
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('woodlotLicenseNumber'))">
-                <div>
-                  {{getErrorMessage('woodlotLicenseNumber', 'required')}}
-                </div>
-                <div>
-                  {{getErrorMessage('woodlotLicenseNumber', 'woodlotFormat')}}
+                      [appFormControl]="fg.get('commentingClosedDate')"
+                      />
+                      <div class="input-group-append">
+                        <button class="btn btn-icon"  type="button" tabindex="-1" (click)="closedDate.show()"
+                          [attr.aria-expanded]="closedDate.isOpen">
+                          <em class="material-icons">date_range</em>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                  @if (isCommentingClosedState) {
+                    <input
+                      disabled
+                      id="commentingClosedDate"
+                      name="commentingClosedDate"
+                      class="form-control"
+                      type="text"
+                      placeholder="YYYY-MM-DD"
+                      [value]="getformatedDate('commentingClosedDate', DEFAULT_ISO_DATE_FORMAT)"
+                      />
+                  }
                 </div>
               </div>
-            </div>
-            <input *ngIf="isCommentingOpenState" type="text"
-              class="form-control"
-              id="woodlot-id"
-              name="woodlot-id"
-              disabled
-              [value]="fg.get('woodlotLicenseNumber').value"
-            />
-          </div>
-        </div>
-
-        <!-- District: disabled after INITIAL -->
-        <div class="row">
-          <div class="form-group col">
-            <label for="district-list" style="white-space: nowrap;">District</label>
-            <div *ngIf="isInitialState">
-              <select
-                class="sort-comments form-control" [ngClass]="{'is-invalid': !districtIdSelect && isSubmitSaveClicked}" (change)="changeDistrictId($event)" id="district-list">
-                <option *ngIf="isCreate || !districtIdSelect">  </option>
-                <option  [value]="district.id" *ngFor="let district of districts" [selected]="district.id === districtIdSelect" [innerHTML]=" district.name "> </option>
-              </select>
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('district')) 
-                && getErrorMessage('district', 'required')">
-                {{getErrorMessage('district', 'required')}}
-              </div>
-            </div>
-            <input *ngIf="!isInitialState" type="text"
-              class="form-control"
-              id="district"
-              name="district"
-              disabled
-              [value]="getDistrictDesc(fg.get('district').value)"
-            />
-          </div>
-        </div>
-
-        <!-- FOM Name disabled when COMMENT_OPEN -->
-        <div class="row">
-          <div class="form-group col">
-            <label>FOM Name</label>
-            <div *ngIf="!isCommentingOpenState">
-              <input
-                type="text"
-                class="form-control"
-                id="name"
-                name="name"
-                formControlName="name"
-                [appFormControl]="fg.get('name')"
-              />
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('name')) 
-                && getErrorMessage('name', 'required')">
-                {{getErrorMessage('name', 'required')}}
-              </div>
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('name')) 
-                  && getErrorMessage('name', 'minLength')">
-                  {{getErrorMessage('name', 'minLength')}}
-              </div>
-            </div>
-            <input
-              *ngIf="isCommentingOpenState"
-              type="text"
-              class="form-control"
-              id="name"
-              name="name"
-              disabled
-              [value]="fg.get('name').value"
-            />
-          </div>
-
-          <!-- FOM Holder: disabled after fom is created -->
-          <div class="form-group col">
-            <label>FOM Holder</label>
-            <select *ngIf="isCreate" 
-                class="sort-comments form-control"
-                formControlName="forestClient"
-                [ngClass]="{'is-invalid': !forestClientSelect && isSubmitSaveClicked}" 
-                (change)="onForestClientChange($event)" 
-                id="forestClient-list">
-              <option *ngIf="isCreate">  </option>
-              <option *ngFor="let client of forestClients" 
-                [ngValue]="client"  
-                [selected]="client.id === forestClientSelect" 
-                [innerHTML]=" client.name"> </option>
-            </select>
-            <input *ngIf="!isCreate"
-                   type="text"
-              class="form-control"
-              id="forestId"
-              name="forestName"
-              disabled
-              [value]="originalProjectResponse.forestClient.name"
-            />
-            <div class="invalid-feedback" 
-              *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('forestClient')) 
-              && getErrorMessage('forestClient', 'required')">
-              {{getErrorMessage('forestClient', 'required')}}
-            </div>
-          </div>
-        </div>
-
-        <!-- Timber Sales Manager Name: disabled when COMMENT_OPEN -->
-        <div class="row" *ngIf="isHolderBctsManger()">
-          <div class="form-group col">
-            <label [ngClass]="{'required': !isCommentingOpenState}">
-                Timber Sales Manager Name
-            </label>
-            <div *ngIf="!isCommentingOpenState">
-              <input
-                type="text"
-                class="form-control"
-                id="mgr-name-id"
-                name="bctsMgrName"
-                maxlength="50"
-                formControlName="bctsMgrName"
-                [appFormControl]="fg.get('bctsMgrName')"
-              />
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('bctsMgrName')) 
-                && getErrorMessage('bctsMgrName', 'required')">
-                {{getErrorMessage('bctsMgrName', 'required')}}
-              </div>
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('bctsMgrName')) 
-                  && getErrorMessage('bctsMgrName', 'minLength')">
-                  {{getErrorMessage('bctsMgrName', 'minLength')}}
-              </div>
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('bctsMgrName')) 
-                  && getErrorMessage('bctsMgrName', 'maxLength')">
-                  {{getErrorMessage('bctsMgrName', 'maxLength')}}
-              </div>
-            </div>
-            <input
-              *ngIf="isCommentingOpenState"
-              type="text"
-              disabled
-              class="form-control"
-              id="mgr-name-id"
-              name="bctsMgrName"
-              [value]="fg.get('bctsMgrName').value"
-            />
-          </div>
-        </div>
-
-        <!-- Description: disabled when COMMENT_OPEN -->
-        <div class="row">
-          <div class="form-group col-md">
-            <label>Description</label>
-            <div *ngIf="!isCommentingOpenState">
-              <textarea
-                (keyup)="changeDescription($event)"
-                class="form-control" [ngClass]="{'is-invalid': !descriptionValue && isSubmitSaveClicked && !isCreate}"
-                rows="3"
-                id="description"
-                name="description"
-                formControlName="description"
-                [appFormControl]="fg.get('description')"
-                maxlength="{{descriptionLimit}}"
-              ></textarea>
-              <small>{{descriptionLimit-fg.get('description').value?.length}} characters remaining.</small>
-              <div class="invalid-feedback" 
-                *ngIf="(isSubmitSaveClicked || fieldTouchedOrDirty('description')) 
-                && getErrorMessage('description', 'required')">
-                {{getErrorMessage('description', 'required')}}
-              </div>
-            </div>
-            <textarea
-              *ngIf="isCommentingOpenState"
-              class="form-control"
-              id="description"
-              name="description"
-              disabled
-              [value]="fg.get('description').value"
-            ></textarea>
-          </div>
-        </div>
-
-      <section *ngIf="!isCreate && isCreateAttachmentAllowed()">
-        <div class="row">
-          <div class="form-group col-md-6">
-            <strong>Newspaper Public Notice</strong>
-          </div>
-          <div class="form-group col-md-6">
-              <strong>Attachment</strong>
-          </div>
-        </div>
-        <div class="row">
-          <div class="form-group col-md-6" >
-            <app-upload-box [fileTypes]="fileTypesParentInitial"
-                            (emitFile)="onFileEmitForPublicNotice($event)"
-                            [maxFileSizeMB]="maxFileSize"
-            ></app-upload-box>
-            <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf </em></div>
-          </div>
-          <div class="form-group col-md-6">
-            <div class="doc-list row"
-                  *ngFor="let attachment of attachmentsInitialNotice">
-                <a class="doc-list__item"
-                    style="width: 90%;cursor:pointer"
-                    (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
-                    [title]="attachment.fileName || ''"
-                    rel="noopener">
-                  <div class="cell doc-list__item-icon">
-                    <em class="material-icons">
-                      insert_drive_file
-                    </em>
+              <div class="row">
+                <!-- Start of Operations: disabled when COMMENT_OPEN -->
+                <div class="form-group col">
+                  <label for="op-start-year" [class.required]="!isCommentingOpenState">Start of Operations</label>
+                  @if (!isCommentingOpenState) {
+                    <div>
+                      <input
+                        readonly
+                        id="op-start-year"
+                        name="op-start-year"
+                        class="form-control readonly-normal"
+                        type="text"
+                        placeholder="YYYY"
+                        formControlName="opStartDate"
+                        bsDatepicker
+                        (keydown)="$event.preventDefault()"
+                        [bsConfig]="bsConfig"
+                        [appFormControl]="fg.get('opStartDate')"
+                        />
+                        @if ((isSubmitSaveClicked || fieldTouchedOrDirty('opStartDate'))
+                          && getErrorMessage('opStartDate', 'required')) {
+                          <div class="invalid-feedback"
+                            >
+                            {{getErrorMessage('opStartDate', 'required')}}
+                          </div>
+                        }
+                      </div>
+                    }
+                    @if (isCommentingOpenState) {
+                      <input
+                        disabled
+                        id="op-start-year"
+                        name="op-start-year"
+                        class="form-control"
+                        type="text"
+                        placeholder="YYYY"
+                        [value]="getformatedDate('opStartDate')"
+                        />
+                    }
                   </div>
-                  <div class="cell doc-list__item-name">{{attachment.fileName}} &nbsp;</div>
-                  <div style="text-align: right;margin-right: 5px;">({{attachment.attachmentType.description}})</div>
-                </a>
-                <span *ngIf="isDeleteAttachmentAllowed(attachment)" class="vert-pipe">&nbsp;</span>
-                <button *ngIf="isDeleteAttachmentAllowed(attachment)" class="btn btn-icon row doc-list__item" title="Delete this attachment"
-                      (click)="deleteAttachment(attachment.id)"
-                      [disabled]="isDeleting">
-                  <em class="material-icons">
-                    delete
-                  </em>
-                </button>
-            </div>
-          </div>
-          <div class="row" *ngIf="attachmentsInitialNotice.length > 0">
-            <div class="col-md-12">
-              <h6><em>Uploading this Public Notice attachment will overwrite the existing, saved Public Notice. If you need to save multiple Public Notices, please upload additional notices to the FOM Supporting Documents area.</em></h6>
-            </div>
-          </div>
-        </div>
-
-        <hr>
-        <div class="row">
-          <div class="form-group col-md-6">
-            <strong>FOM Supporting Documents</strong>
-          </div>
-          <div class="form-group col-md-6">
-            <strong>Attachments</strong>
-          </div>
-        </div>
-          <div class="row">
-            <div class="form-group col-md-6">
-              <app-upload-box [fileTypes]="fileTypesParentSupporting"
-                              (emitFile)="onFileEmitForSupportingDocument($event)"
-                              [maxFileSizeMB]="maxFileSize">
-              </app-upload-box>
-              <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf, txt, csv, doc, docx, xls, xlsx </em></div>
-            </div>
-            <div class="form-group col-md-6">
-              <div class="doc-list row"
-                 *ngFor="let attachment of attachments">
-                <a class="doc-list__item"
-                    style="width: 90%;cursor:pointer"
-                    (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
-                    [title]="attachment.fileName || ''"
-                    rel="noopener">
-                  <div class="cell doc-list__item-icon">
-                    <em class="material-icons">
-                      insert_drive_file
-                    </em>
+                  <!-- End of Operations: disabled when COMMENT_OPEN -->
+                  <div class="form-group col">
+                    <label for="op-end-year" [class.required]="!isCommentingOpenState">End of Operations</label>
+                    @if (!isCommentingOpenState) {
+                      <div>
+                        <input
+                          readonly
+                          id="op-end-year"
+                          name="op-end-year"
+                          class="form-control readonly-normal"
+                          type="text"
+                          placeholder="YYYY"
+                          formControlName="opEndDate"
+                          bsDatepicker
+                          (keydown)="$event.preventDefault()"
+                          [bsConfig]="bsConfig"
+                          [appFormControl]="fg.get('opEndDate')"
+                          />
+                          @if ((isSubmitSaveClicked || fieldTouchedOrDirty('opEndDate'))
+                            && getErrorMessage('opEndDate', 'required')) {
+                            <div class="invalid-feedback"
+                              >
+                              {{getErrorMessage('opEndDate', 'required')}}
+                            </div>
+                          }
+                          @if ((isSubmitSaveClicked || fieldTouchedOrDirty('opEndDate'))
+                            && getErrorMessage('opEndDate', 'minDate')) {
+                            <div class="invalid-feedback"
+                              >
+                              {{getErrorMessage('opEndDate', 'minDate')}}
+                            </div>
+                          }
+                        </div>
+                      }
+                      @if (isCommentingOpenState) {
+                        <input
+                          disabled
+                          id="op-end-year"
+                          name="op-end-year"
+                          class="form-control"
+                          type="text"
+                          placeholder="YYYY"
+                          [value]="getformatedDate('opEndDate')"
+                          />
+                      }
+                    </div>
                   </div>
-                  <div class="cell doc-list__item-name">{{attachment.fileName}}</div>
-                  <div style="text-align: right;margin-right: 5px;">({{attachment.attachmentType.description}})</div>
-                </a>
-                <button *ngIf="isDeleteAttachmentAllowed(attachment)" class="btn btn-icon row doc-list__item" title="Delete this attachment"
-                      (click)="deleteAttachment(attachment.id)"
-                      [disabled]="isDeleting">
-                  <em class="material-icons">
-                    delete
-                  </em>
-                </button>
-            </div>
-          </div>
+                  <div class="row">
+                    <div class="form-group col">
+                      <!-- Type of Plan Holder: disabled after fom is created -->
+                      <label [class.required]="isCreate">Type of Plan Holder</label>
+                      @if (isCreate) {
+                        <div>
+                          <select
+                            class="form-control"
+                            formControlName="projectPlanCode"
+                            (change)="onProjectPlanChange($event)"
+                            [class.is-invalid]="!fg.get('projectPlanCode')?.value && isSubmitSaveClicked"
+                            id="projectPlanSelectId">
+                            @for (option of projectPlanOptions; track option) {
+                              <option
+                                [value]="option.code"
+                                [selected]="option.code === fg.get('projectPlanCode')?.value"
+                              [innerHTML]="option.description"> </option>
+                            }
+                          </select>
+                          @if ((isSubmitSaveClicked || fieldTouchedOrDirty('projectPlanCode'))
+                            && getErrorMessage('projectPlanCode', 'required')) {
+                            <div class="invalid-feedback"
+                              >
+                              {{getErrorMessage('projectPlanCode', 'required')}}
+                            </div>
+                          }
+                        </div>
+                      }
+                      @if (!isCreate) {
+                        <input type="text"
+                          class="form-control"
+                          id="projectPlanDescId"
+                          name="projectPlanDescription"
+                          disabled
+                          [value]="getProjectPlanDesc()"
+                          />
+                      }
+                    </div>
+                    <!-- FSP ID: disabled when COMMENT_OPEN -->
+                    @if (fg.get('projectPlanCode')?.value == projectPlanCodeEnum.Fsp) {
+                      <div class="form-group col"
+                        >
+                        <label for="fsp-id" [class.required]="!isCommentingOpenState" style="white-space: nowrap;"
+                        >FSP ID</label>
+                        @if (!isCommentingOpenState) {
+                          <div>
+                            <input
+                              type="number"
+                              class="form-control"
+                              id="fsp-id"
+                              name="fsp-id"
+                              formControlName="fspId"
+                              [appFormControl]="fg.get('fspId')"
+                              />
+                              @if ((isSubmitSaveClicked || fieldTouchedOrDirty('fspId'))) {
+                                <div class="invalid-feedback"
+                                  >
+                                  <div>{{getErrorMessage('fspId', 'required')}}</div>
+                                  <div>{{getErrorMessage('fspId', 'numeric')}}</div>
+                                </div>
+                              }
+                            </div>
+                          }
+                          @if (isCommentingOpenState) {
+                            <input type="text"
+                              class="form-control"
+                              id="fsp-id"
+                              name="fsp-id"
+                              disabled
+                              [value]="fg.get('fspId')?.value"
+                              />
+                          }
+                        </div>
+                      }
+                      <!-- Woodlot Licence Number: disabled when COMMENT_OPEN -->
+                      @if (fg.get('projectPlanCode')?.value == projectPlanCodeEnum.Woodlot) {
+                        <div class="form-group col"
+                          >
+                          <label for="woodlot-id" [class.required]="!isCommentingOpenState" style="white-space: nowrap;"
+                          >Woodlot Licence Number</label>
+                          @if (!isCommentingOpenState) {
+                            <div>
+                              <input
+                                type="text"
+                                class="form-control"
+                                id="woodlot-id"
+                                name="woodlot-id"
+                                formControlName="woodlotLicenseNumber"
+                                [appFormControl]="fg.get('woodlotLicenseNumber')"
+                                />
+                                @if ((isSubmitSaveClicked || fieldTouchedOrDirty('woodlotLicenseNumber'))) {
+                                  <div class="invalid-feedback"
+                                    >
+                                    <div>
+                                      {{getErrorMessage('woodlotLicenseNumber', 'required')}}
+                                    </div>
+                                    <div>
+                                      {{getErrorMessage('woodlotLicenseNumber', 'woodlotFormat')}}
+                                    </div>
+                                  </div>
+                                }
+                              </div>
+                            }
+                            @if (isCommentingOpenState) {
+                              <input type="text"
+                                class="form-control"
+                                id="woodlot-id"
+                                name="woodlot-id"
+                                disabled
+                                [value]="fg.get('woodlotLicenseNumber')?.value"
+                                />
+                            }
+                          </div>
+                        }
+                      </div>
+                      <!-- District: disabled after INITIAL -->
+                      <div class="row">
+                        <div class="form-group col">
+                          <label for="district-list" style="white-space: nowrap;">District</label>
+                          @if (isInitialState) {
+                            <div>
+                              <select
+                                class="sort-comments form-control" [class.is-invalid]="!districtIdSelect && isSubmitSaveClicked" (change)="changeDistrictId($event)" id="district-list">
+                                @if (isCreate || !districtIdSelect) {
+                                  <option>  </option>
+                                }
+                                @for (district of districts; track district) {
+                                  <option  [value]="district.id" [selected]="district.id === districtIdSelect" [innerHTML]=" district.name "> </option>
+                                }
+                              </select>
+                              @if ((isSubmitSaveClicked || fieldTouchedOrDirty('district'))
+                                && getErrorMessage('district', 'required')) {
+                                <div class="invalid-feedback"
+                                  >
+                                  {{getErrorMessage('district', 'required')}}
+                                </div>
+                              }
+                            </div>
+                          }
+                          @if (!isInitialState) {
+                            <input type="text"
+                              class="form-control"
+                              id="district"
+                              name="district"
+                              disabled
+                              [value]="getDistrictDesc(fg.get('district')?.value)"
+                              />
+                          }
+                        </div>
+                      </div>
+                      <!-- FOM Name disabled when COMMENT_OPEN -->
+                      <div class="row">
+                        <div class="form-group col">
+                          <label>FOM Name</label>
+                          @if (!isCommentingOpenState) {
+                            <div>
+                              <input
+                                type="text"
+                                class="form-control"
+                                id="name"
+                                name="name"
+                                formControlName="name"
+                                [appFormControl]="fg.get('name')"
+                                />
+                                @if ((isSubmitSaveClicked || fieldTouchedOrDirty('name'))
+                                  && getErrorMessage('name', 'required')) {
+                                  <div class="invalid-feedback"
+                                    >
+                                    {{getErrorMessage('name', 'required')}}
+                                  </div>
+                                }
+                                @if ((isSubmitSaveClicked || fieldTouchedOrDirty('name'))
+                                  && getErrorMessage('name', 'minLength')) {
+                                  <div class="invalid-feedback"
+                                    >
+                                    {{getErrorMessage('name', 'minLength')}}
+                                  </div>
+                                }
+                              </div>
+                            }
+                            @if (isCommentingOpenState) {
+                              <input
+                                type="text"
+                                class="form-control"
+                                id="name"
+                                name="name"
+                                disabled
+                                [value]="fg.get('name')?.value"
+                                />
+                            }
+                          </div>
+                          <!-- FOM Holder: disabled after fom is created -->
+                          <div class="form-group col">
+                            <label>FOM Holder</label>
+                            @if (isCreate) {
+                              <select
+                                class="sort-comments form-control"
+                                formControlName="forestClient"
+                                [class.is-invalid]="!forestClientSelect && isSubmitSaveClicked"
+                                (change)="onForestClientChange($event)"
+                                id="forestClient-list">
+                                @if (isCreate) {
+                                  <option>  </option>
+                                }
+                                @for (client of forestClients(); track client) {
+                                  <option
+                                    [ngValue]="client"
+                                    [selected]="client.id === forestClientSelect"
+                                  [innerHTML]=" client.name"> </option>
+                                }
+                              </select>
+                            }
+                            @if (!isCreate) {
+                              <input
+                                type="text"
+                                class="form-control"
+                                id="forestId"
+                                name="forestName"
+                                disabled
+                                [value]="originalProjectResponse.forestClient.name"
+                                />
+                            }
+                            @if ((isSubmitSaveClicked || fieldTouchedOrDirty('forestClient'))
+                              && getErrorMessage('forestClient', 'required')) {
+                              <div class="invalid-feedback"
+                                >
+                                {{getErrorMessage('forestClient', 'required')}}
+                              </div>
+                            }
+                          </div>
+                        </div>
+                        <!-- Timber Sales Manager Name: disabled when COMMENT_OPEN -->
+                        @if (isHolderBctsManger()) {
+                          <div class="row">
+                            <div class="form-group col">
+                              <label [class.required]="!isCommentingOpenState">
+                                Timber Sales Manager Name
+                              </label>
+                              @if (!isCommentingOpenState) {
+                                <div>
+                                  <input
+                                    type="text"
+                                    class="form-control"
+                                    id="mgr-name-id"
+                                    name="bctsMgrName"
+                                    maxlength="50"
+                                    formControlName="bctsMgrName"
+                                    [appFormControl]="fg.get('bctsMgrName')"
+                                    />
+                                    @if ((isSubmitSaveClicked || fieldTouchedOrDirty('bctsMgrName'))
+                                      && getErrorMessage('bctsMgrName', 'required')) {
+                                      <div class="invalid-feedback"
+                                        >
+                                        {{getErrorMessage('bctsMgrName', 'required')}}
+                                      </div>
+                                    }
+                                    @if ((isSubmitSaveClicked || fieldTouchedOrDirty('bctsMgrName'))
+                                      && getErrorMessage('bctsMgrName', 'minLength')) {
+                                      <div class="invalid-feedback"
+                                        >
+                                        {{getErrorMessage('bctsMgrName', 'minLength')}}
+                                      </div>
+                                    }
+                                    @if ((isSubmitSaveClicked || fieldTouchedOrDirty('bctsMgrName'))
+                                      && getErrorMessage('bctsMgrName', 'maxLength')) {
+                                      <div class="invalid-feedback"
+                                        >
+                                        {{getErrorMessage('bctsMgrName', 'maxLength')}}
+                                      </div>
+                                    }
+                                  </div>
+                                }
+                                @if (isCommentingOpenState) {
+                                  <input
+                                    type="text"
+                                    disabled
+                                    class="form-control"
+                                    id="mgr-name-id"
+                                    name="bctsMgrName"
+                                    [value]="fg.get('bctsMgrName')?.value"
+                                    />
+                                }
+                              </div>
+                            </div>
+                          }
+                          <!-- Description: disabled when COMMENT_OPEN -->
+                          <div class="row">
+                            <div class="form-group col-md">
+                              <label>Description</label>
+                              @if (!isCommentingOpenState) {
+                                <div>
+                                  <textarea
+                                    (keyup)="changeDescription($event)"
+                                    class="form-control" [class.is-invalid]="!descriptionValue && isSubmitSaveClicked && !isCreate"
+                                    rows="3"
+                                    id="description"
+                                    name="description"
+                                    formControlName="description"
+                                    [appFormControl]="fg.get('description')"
+                                    maxlength="{{descriptionLimit}}"
+                                  ></textarea>
+                                  <small>{{descriptionLimit-fg.get('description')?.value?.length}} characters remaining.</small>
+                                  @if ((isSubmitSaveClicked || fieldTouchedOrDirty('description'))
+                                    && getErrorMessage('description', 'required')) {
+                                    <div class="invalid-feedback"
+                                      >
+                                      {{getErrorMessage('description', 'required')}}
+                                    </div>
+                                  }
+                                </div>
+                              }
+                              @if (isCommentingOpenState) {
+                                <textarea
+                                  class="form-control"
+                                  id="description"
+                                  name="description"
+                                  disabled
+                                  [value]="fg.get('description')?.value"
+                                ></textarea>
+                              }
+                            </div>
+                          </div>
+                          @if (!isCreate && isCreateAttachmentAllowed()) {
+                            <section>
+                              <div class="row">
+                                <div class="form-group col-md-6">
+                                  <strong>Newspaper Public Notice</strong>
+                                </div>
+                                <div class="form-group col-md-6">
+                                  <strong>Attachment</strong>
+                                </div>
+                              </div>
+                              <div class="row">
+                                <div class="form-group col-md-6" >
+                                  <app-upload-box [fileTypes]="fileTypesParentInitial"
+                                    (emitFile)="onFileEmitForPublicNotice($event)"
+                                    [maxFileSizeMB]="maxFileSize"
+                                   />
+                                  <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf </em></div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                  @for (attachment of attachmentsInitialNotice(); track attachment) {
+                                    <div class="doc-list row"
+                                      >
+                                      <a class="doc-list__item"
+                                        style="width: 90%;cursor:pointer"
+                                        (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
+                                        [title]="attachment.fileName || ''"
+                                        rel="noopener">
+                                        <div class="cell doc-list__item-icon">
+                                          <em class="material-icons">
+                                            insert_drive_file
+                                          </em>
+                                        </div>
+                                        <div class="cell doc-list__item-name">{{attachment.fileName}} &nbsp;</div>
+                                        <div style="text-align: right;margin-right: 5px;">({{attachment.attachmentType.description}})</div>
+                                      </a>
+                                      @if (isDeleteAttachmentAllowed(attachment)) {
+                                        <span class="vert-pipe">&nbsp;</span>
+                                      }
+                                      @if (isDeleteAttachmentAllowed(attachment)) {
+                                        <button class="btn btn-icon row doc-list__item" title="Delete this attachment"
+                                          (click)="deleteAttachment(attachment.id)"
+                                          [disabled]="isDeleting">
+                                          <em class="material-icons">
+                                            delete
+                                          </em>
+                                        </button>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                                @if (attachmentsInitialNotice().length > 0) {
+                                  <div class="row">
+                                    <div class="col-md-12">
+                                      <h6><em>Uploading this Public Notice attachment will overwrite the existing, saved Public Notice. If you need to save multiple Public Notices, please upload additional notices to the FOM Supporting Documents area.</em></h6>
+                                    </div>
+                                  </div>
+                                }
+                              </div>
+                              <hr>
+                                <div class="row">
+                                  <div class="form-group col-md-6">
+                                    <strong>FOM Supporting Documents</strong>
+                                  </div>
+                                  <div class="form-group col-md-6">
+                                    <strong>Attachments</strong>
+                                  </div>
+                                </div>
+                                <div class="row">
+                                  <div class="form-group col-md-6">
+                                    <app-upload-box [fileTypes]="fileTypesParentSupporting"
+                                      (emitFile)="onFileEmitForSupportingDocument($event)"
+                                      [maxFileSizeMB]="maxFileSize" />
+                                    <div class="fileTypes"><em>Acceptable File Types: png, jpeg, jpg, tif, pdf, txt, csv, doc, docx, xls, xlsx </em></div>
+                                  </div>
+                                  <div class="form-group col-md-6">
+                                    @for (attachment of attachments(); track attachment) {
+                                      <div class="doc-list row"
+                                        >
+                                        <a class="doc-list__item"
+                                          style="width: 90%;cursor:pointer"
+                                          (click)="attachmentResolverSvc.getFileContents(attachment.id, attachment.fileName)"
+                                          [title]="attachment.fileName || ''"
+                                          rel="noopener">
+                                          <div class="cell doc-list__item-icon">
+                                            <em class="material-icons">
+                                              insert_drive_file
+                                            </em>
+                                          </div>
+                                          <div class="cell doc-list__item-name">{{attachment.fileName}}</div>
+                                          <div style="text-align: right;margin-right: 5px;">({{attachment.attachmentType.description}})</div>
+                                        </a>
+                                        @if (isDeleteAttachmentAllowed(attachment)) {
+                                          <button class="btn btn-icon row doc-list__item" title="Delete this attachment"
+                                            (click)="deleteAttachment(attachment.id)"
+                                            [disabled]="isDeleting">
+                                            <em class="material-icons">
+                                              delete
+                                            </em>
+                                          </button>
+                                        }
+                                      </div>
+                                    }
+                                  </div>
+                                </div>
+                              </section>
+                            }
+                          </form>
+                        </div>
+                      </div>
+                    }
 
-      </div>
-      </section>
-    </form>
-  </div>
-</div>
-
-<ng-template #saveButton>
-  <button
-          class="btn btn-primary ms-1"
-          type="button"
-          title="Save your changes"
-          (click)="saveApplication()"
-          [disabled]="isPublishState"
-  >{{ isLoading ? "Saving" : "Save" }}
-    <em class="spinner rotating" [hidden]="!stateSvc.loading"></em>
-  </button>
-
-</ng-template>

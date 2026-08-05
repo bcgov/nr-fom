@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { DatePipe, TitleCasePipe } from '@angular/common';
+import { Component, DestroyRef, ElementRef, Injector, OnDestroy, OnInit, effect, inject, output, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
@@ -32,29 +32,37 @@ import { Filter } from '../utils/filter';
  * @implements {OnDestroy}
  */
 @Component({
-  standalone: true,
   imports: [
-    FontAwesomeModule, CommonModule, ShapeInfoComponent, 
+    FontAwesomeModule, DatePipe, TitleCasePipe, ShapeInfoComponent,
     DetailsMapComponent, TooltipModule, MatTooltipModule
   ],
   selector: 'app-details-panel',
   templateUrl: './details-panel.component.html',
-  styleUrls: ['./details-panel.component.scss']
+  styleUrl: './details-panel.component.scss'
 })
 export class DetailsPanelComponent implements OnDestroy, OnInit {
-  @Output() update = new EventEmitter();
-  @ViewChild('panelScrollContainer')
-  public panelScrollContainer: ElementRef;
+  modalService = inject(NgbModal);
+  configService = inject(ConfigService);
+  urlService = inject(UrlService);
+  private projectService = inject(ProjectService);
+  private spatialFeatureService = inject(SpatialFeatureService);
+  private attachmentService = inject(AttachmentService);
+  private fss = inject(FeatureSelectService);
+  private injector = inject(Injector);
+
+  readonly update = output<ProjectResponse>();
+  public readonly panelScrollContainer = viewChild<ElementRef>('panelScrollContainer');
 
   private destroyRef = inject(DestroyRef);
-  public addCommentModal: NgbModalRef = null;
-  public isAppLoading: boolean;
-  public project: ProjectResponse;
-  public projectSpatialDetail: SpatialFeaturePublicResponse[];
+  public addCommentModal: NgbModalRef | null = null;
+  // All five are written from async callbacks, so the view only learns about them through signals.
+  public readonly isAppLoading = signal(false);
+  public readonly project = signal<ProjectResponse | null>(null);
+  public readonly projectSpatialDetail = signal<SpatialFeaturePublicResponse[]>([]);
   public currentPeriodDaysRemainingCount = 0;
-  public workflowStatus: Record<string, WorkflowStateCode>
+  public readonly workflowStatus = signal<Record<string, WorkflowStateCode>>({});
   public projectIdFilter = new Filter<string>({ filter: { queryParam: 'id', value: null } });
-  public attachments: AttachmentResponse[];
+  public readonly attachments = signal<AttachmentResponse[]>([]);
   public faArrowUpRightFromSquare = faArrowUpRightFromSquare;
   public getCommentingClosingDate = getCommentingClosingDate;
   public periodOperationsTooltipTxt = "An FSP holder has three years to apply for a cutting permit or road permit for cutblocks and roads displayed on a FOM. This is called the validity period, it starts on the day commenting opens on a FOM. For BC Timber Sales the validity period starts on the day commenting closes.";
@@ -62,23 +70,12 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   readonly periodOperationsTxt = periodOperationsTxt;
   readonly woodlotOperationsTxt = woodlotOperationsTxt;
 
-  constructor(
-    public modalService: NgbModal,
-    public configService: ConfigService, // used in template
-    public urlService: UrlService,
-    private projectService: ProjectService,
-    private spatialFeatureService: SpatialFeatureService,
-    private attachmentService: AttachmentService,
-    private fss: FeatureSelectService,
-    private cdr: ChangeDetectorRef,
-  ) {}
-
   ngOnInit(): void {
     // Note, can't seem to get stateService.ts to get codeTable working here. Instead, subscribe to it.
     // Subscribe to this first, seems to be slower and can cause minor page render issue due to no code.
     this.projectService.workflowStateCodeControllerFindAll()
     .pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((data) => {
-      this.workflowStatus = indexBy(data, (x) => x.code);
+      this.workflowStatus.set(indexBy(data, (x) => x.code));
     });
     // First time component init. The `urlService.onNavEnd$` already ends, so 
     // do this initially first since queryParam is ready from route. 
@@ -100,15 +97,14 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
    */
   public getProjectDetails() {
     this.loadQueryParameters();
-    const projectId = parseInt(this.projectIdFilter.filter.value);
+    const projectId = parseInt(this.projectIdFilter.filter.value ?? '');
     if (!projectId) {
       // no project to display
-      this.project = null;
-      this.cdr.detectChanges();
+      this.project.set(null);
       return;
     }
 
-    this.isAppLoading = true;
+    this.isAppLoading.set(true);
     forkJoin({
       project: this.projectService.projectControllerFindOne(projectId),
       spatialDetail: this.spatialFeatureService.spatialFeatureControllerGetForProject(projectId),
@@ -117,24 +113,19 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (results) => {
-        this.project = results.project;
-        this.projectSpatialDetail = results.spatialDetail;
-        this.attachments = results.attachments.sort(
+        this.project.set(results.project);
+        this.projectSpatialDetail.set(results.spatialDetail);
+        this.attachments.set([...results.attachments].sort(
             (a, b) => a.attachmentType.code.localeCompare(b.attachmentType.code)
-        );
-        this.isAppLoading = false;
-        this.projectIdFilter.filter.value = this.project.id.toString();
+        ));
+        this.isAppLoading.set(false);
+        this.projectIdFilter.filter.value = results.project.id.toString();
         this.saveQueryParameters();
-        this.update.emit(this.project);
-        // Navigation originates from a debounced funnel timer in UrlService, so this
-        // HTTP response can resolve without a zone tick reaching this view. Detect
-        // changes explicitly so the loaded project renders in the details panel.
-        this.cdr.detectChanges();
+        this.update.emit(results.project);
       },
       error: (err) => {
         console.error(err);
-        this.isAppLoading = false;
-        this.cdr.detectChanges();
+        this.isAppLoading.set(false);
       }
     });
   }
@@ -151,9 +142,10 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
       windowClass: 'comment-modal'
     });
     
-    let modalInstance = this.addCommentModal.componentInstance as CommentModalComponent;
-    modalInstance.projectId = this.project.id;
-    modalInstance.projectSpatialDetail = this.projectSpatialDetail;
+    const modalInstance = this.addCommentModal.componentInstance as CommentModalComponent;
+    // addComment is only reachable from the details view when a project is loaded
+    modalInstance.projectId = this.project()!.id;
+    modalInstance.projectSpatialDetail = this.projectSpatialDetail();
 
     // check result
     this.addCommentModal.result.then(
@@ -194,15 +186,17 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
 
   private subscribeToFeatureSelectChange(): void {
     // Scroll to top map detail section when feature is selected from the list.
-    this.fss.$currentSelected
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(featureIndex => {
-        if (featureIndex) {
-          setTimeout(() => {
-            this.panelScrollContainer.nativeElement.scrollTop = 100;
-          }, 500); // Delay scroll to top timing for seeing highted row for user experience.
-        }
-      });
+    effect(() => {
+      const featureIndex = this.fss.currentSelected();
+      if (featureIndex) {
+        setTimeout(() => {
+          const el = this.panelScrollContainer()?.nativeElement;
+          if (el) {
+            el.scrollTop = 100;
+          }
+        }, 500); // Delay scroll to top timing for seeing highted row for user experience.
+      }
+    }, { injector: this.injector });
   }
 
   // Used for (click) event from <a>/<button> at Angular page to download a file.

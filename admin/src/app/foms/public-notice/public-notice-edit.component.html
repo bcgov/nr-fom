@@ -3,63 +3,68 @@
     <div class="title-container">
       <div class="title-container__title">
         <h1 class="text-muted">
-          {{ editMode? (isAddNewNotice()? 'New': 'Edit' ): '' }}  Online Public Notice &nbsp; FOM Number: {{projectId}}
+          {{ editMode()? (isAddNewNotice()? 'New': 'Edit' ): '' }}  Online Public Notice &nbsp; FOM Number: {{projectId()}}
         </h1>
       </div>
-      <div class="title-container__actions"
-        *ngIf="publicNoticeFormGroup">
-        <button
-          class="btn btn-light"
-          type="button"
-          title="Cancel changes"
-          (click)="cancelChanges()">
-          Cancel
-        </button>
-        <button
-          class="btn btn-primary ms-1"
-          form="publicNoticeForm"
-          type="submit"
-          title="Create/Edit Public Notice"
-          [disabled]="isLoading"
-          *ngIf="editMode">
-          {{ isLoading ? "Saving" : "Save" }}
-          <em class="spinner rotating" [hidden]="!isLoading"></em>
-        </button> <!-- use 'form' attribute for submit button outside of html form -->
-
-        <span class="vert-pipe" *ngIf="canDelete()">&nbsp;</span>
-        <button class="btn btn-icon" title="Remove this Online Public Notice"
-          *ngIf="canDelete()"
-          (click)="deletePublicNotice()"
-          [disabled]="isLoading">
-          <em class="spinner-border" [hidden]="!isLoading"></em>
-          <em class="material-icons" [hidden]="isLoading">
-            delete
-          </em>
-        </button>
+      @if (formReady()) {
+        <div class="title-container__actions"
+          >
+          <button
+            class="btn btn-light"
+            type="button"
+            title="Cancel changes"
+            (click)="cancelChanges()">
+            Cancel
+          </button>
+          @if (editMode()) {
+            <button
+              class="btn btn-primary ms-1"
+              form="publicNoticeForm"
+              type="submit"
+              title="Create/Edit Public Notice"
+              [disabled]="isLoading"
+              >
+              {{ isLoading ? "Saving" : "Save" }}
+              <em class="spinner rotating" [hidden]="!isLoading"></em>
+            </button>
+            } <!-- use 'form' attribute for submit button outside of html form -->
+            @if (canDelete()) {
+              <span class="vert-pipe">&nbsp;</span>
+            }
+            @if (canDelete()) {
+              <button class="btn btn-icon" title="Remove this Online Public Notice"
+                (click)="deletePublicNotice()"
+                [disabled]="isLoading">
+                <em class="spinner-border" [hidden]="!isLoading"></em>
+                <em class="material-icons" [hidden]="isLoading">
+                  delete
+                </em>
+              </button>
+            }
+          </div>
+        }
       </div>
     </div>
   </div>
-</div>
 
-<div class="bottom-container">
-  <div class="container"
-    *ngIf="publicNoticeFormGroup">
-    <form id="publicNoticeForm"
-      class="mb-3" 
-      [formGroup]="publicNoticeFormGroup"
-      (ngSubmit)="onSubmit()"
-      #form="ngForm">
-
-      <div class="row">
-        <div class="col-md-2">
-          <legend>Details</legend>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="form-group col-md-12">
-            <label for="post-date">Notice Publishing Date</label>
-            <input
+  <div class="bottom-container">
+    @if (formReady()) {
+      <div class="container"
+        >
+        <form id="publicNoticeForm"
+          class="mb-3"
+          [formGroup]="publicNoticeFormGroup"
+          (ngSubmit)="onSubmit()"
+          #form="ngForm">
+          <div class="row">
+            <div class="col-md-2">
+              <legend>Details</legend>
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group col-md-12">
+              <label for="post-date">Notice Publishing Date</label>
+              <input
                 readonly
                 type="text"
                 class="form-control readonly-normal"
@@ -76,144 +81,160 @@
                 formControlName="pnPostDate"
                 [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
                               containerClass: 'theme-dark-blue', showWeekNumbers: false }"
-              />
-            <div class="invalid-feedback" 
-              *ngIf="(form.submitted || fieldTouchedOrDirty('pnPostDate')) 
-                && getErrorMessage('pnPostDate', 'minDate')">
-                {{getErrorMessage('pnPostDate', 'minDate')}}
+                />
+                @if ((form.submitted || fieldTouchedOrDirty('pnPostDate'))
+                  && getErrorMessage('pnPostDate', 'minDate')) {
+                  <div class="invalid-feedback"
+                    >
+                    {{getErrorMessage('pnPostDate', 'minDate')}}
+                  </div>
+                }
+              </div>
             </div>
-        </div>
-        
-      </div>
-
-      <div class="row" >
-        <div class="form-group col-md-12">
-          <label for="review-fom-address" [ngClass]="{'required': editMode}">Physical address to review FOM</label>
-          <textarea class="form-control mb" rows="3" 
-            id="review-fom-address" name="review-fom-address"
-            [placeholder]="editMode? '101-11234 West 12th Avenue &#10;Vancouver BC V6H 1L9': ''"
-            formControlName="reviewAddress"
-            maxlength="{{addressLimit}}">
-          </textarea>
-          <small *ngIf="editMode">{{addressLimit-publicNoticeFormGroup.get('reviewAddress').value?.length}} characters remaining.</small>
-          <div class="invalid-feedback" 
-            *ngIf="(form.submitted || fieldTouchedOrDirty('reviewAddress')) && 
-              (getErrorMessage('reviewAddress', 'required') || getErrorMessage('reviewAddress', 'notEmpty'))">
-            {{getErrorMessage('reviewAddress', 'required') || getErrorMessage('reviewAddress', 'notEmpty')}}
-          </div>
-        </div>
-      </div>
-      
-      <div class="row" >
-        <div class="form-group col-md-6">
-          <label for="review-fom-hours" [ngClass]="{'required': editMode}">Business Hours to physically review FOM</label>
-          <input type="text"
-            id="review-fom-hours" name="review-fom-hours"
-            [placeholder]="editMode? 'Monday to Friday 8am-4pm, Saturday 10am - 2pm': ''"
-            maxlength="{{businessHoursLimit}}"
-            class="form-control"
-            formControlName="reviewBusinessHours"/>
-          <div class="invalid-feedback" 
-            *ngIf="(form.submitted || fieldTouchedOrDirty('reviewBusinessHours')) && 
-              (getErrorMessage('reviewBusinessHours', 'required') || getErrorMessage('reviewBusinessHours', 'notEmpty'))">
-            {{getErrorMessage('reviewBusinessHours', 'required') || getErrorMessage('reviewBusinessHours', 'notEmpty')}}
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="form-group col-md-12">
-          <label for="sameAsReviewInd" [ngClass]="{'required': editMode}">Receive Comments Same as Review:</label>&nbsp;&nbsp;&nbsp;
-          <input type="checkbox" class="medium-check-box"
-          id="sameAsReviewInd" name="sameAsReviewInd"
-          formControlName="isReceiveCommentsSameAsReview"
-          (change)="onSameAsReviewIndToggled()"/>
-          <div class="invalid-feedback" 
-            *ngIf="form.submitted && getErrorMessage('isReceiveCommentsSameAsReview', 'required')">
-            {{getErrorMessage('isReceiveCommentsSameAsReview', 'required')}}
-          </div>
-        </div>
-      </div>
-
-      <div class="row" >
-        <div class="form-group col-md-12">
-          <label for="receive-fom-address"
-            [ngClass]="{'required': !publicNoticeFormGroup.get('isReceiveCommentsSameAsReview').value && editMode}">
-            Physical address to submit comments
-          </label>
-          <textarea class="form-control mb" rows="3" 
-            id="receive-fom-address" name="receive-fom-address"
-            [placeholder]="editMode? '101-11234 West 12th Avenue &#10;Vancouver BC V6H 1L9': ''"
-            formControlName="receiveCommentsAddress"
-            maxlength="{{addressLimit}}">
-          </textarea>
-          <small *ngIf="editMode">{{addressLimit-publicNoticeFormGroup.get('receiveCommentsAddress').value?.length}} characters remaining.</small>
-          <div class="invalid-feedback" 
-            *ngIf="(form.submitted || fieldTouchedOrDirty('receiveCommentsAddress')) && 
-              (getErrorMessage('receiveCommentsAddress', 'required') || getErrorMessage('receiveCommentsAddress', 'notEmpty'))">
-            {{getErrorMessage('receiveCommentsAddress', 'required') || getErrorMessage('receiveCommentsAddress', 'notEmpty')}}
-          </div>
-        </div>
-      </div>
-      
-      <div class="row" >
-        <div class="form-group col-md-6">
-          <label for="receive-fom-hours"
-            [ngClass]="{'required': !publicNoticeFormGroup.get('isReceiveCommentsSameAsReview').value && editMode}">
-            Business hours to physically submit comments
-          </label>
-          <input type="text"
-            id="receive-fom-hours" name="receive-fom-hours"
-            [placeholder]="editMode? 'Monday to Friday 8am-4pm, Saturday 10am - 2pm': ''"
-            maxlength="{{businessHoursLimit}}"
-            class="form-control"
-            formControlName="receiveCommentsBusinessHours"/>
-          <div class="invalid-feedback" 
-            *ngIf="(form.submitted || fieldTouchedOrDirty('receiveCommentsBusinessHours')) && 
-              (getErrorMessage('receiveCommentsBusinessHours', 'required') || getErrorMessage('receiveCommentsBusinessHours', 'notEmpty'))">
-            {{getErrorMessage('receiveCommentsBusinessHours', 'required') || getErrorMessage('receiveCommentsBusinessHours', 'notEmpty')}}
-          </div>
-        </div>
-      </div>
-
-      <div class="row" >
-        <div class="form-group col-md-12">
-          <label for="mailing-address" [ngClass]="{'required': editMode}">Mailing Address</label>
-          <textarea class="form-control mb" rows="3" 
-            id="mailing-address" name="mailing-address"
-            [placeholder]="editMode? 'Box 123 Surrey BC': ''"
-            formControlName="mailingAddress"
-            maxlength="{{addressLimit}}">
-          </textarea>
-          <small *ngIf="editMode">{{addressLimit-publicNoticeFormGroup.get('mailingAddress').value?.length}} characters remaining.</small>
-          <div class="invalid-feedback" 
-            *ngIf="(form.submitted || fieldTouchedOrDirty('mailingAddress')) && 
-              (getErrorMessage('mailingAddress', 'required') || getErrorMessage('mailingAddress', 'notEmpty'))">
-            {{getErrorMessage('mailingAddress', 'required') || getErrorMessage('mailingAddress', 'notEmpty')}}
-          </div>
-        </div>
-      </div>
-
-      <div class="row" >
-        <div class="form-group col-md-12">
-          <label for="email" [ngClass]="{'required': editMode}">Email for Public Comment</label>
-          <input type="text"
-            id="email" name="email"
-            maxlength="100"
-            [placeholder]="editMode? 'name@industry.com': ''"
-            class="form-control"
-            formControlName="email"/>
-          <div class="invalid-feedback" 
-            *ngIf="(form.submitted || fieldTouchedOrDirty('email')) && getErrorMessage('email', 'required')">
-            {{getErrorMessage('email', 'required')}}
-          </div>
-          <div class="invalid-feedback" 
-            *ngIf="(form.submitted || fieldTouchedOrDirty('email')) && getErrorMessage('email', 'email')">
-            {{getErrorMessage('email', 'email')}}
-          </div>
-        </div>
-      </div>
-    
-    </form>
-  </div>
-</div>
+            <div class="row" >
+              <div class="form-group col-md-12">
+                <label for="review-fom-address" [class.required]="editMode()">Physical address to review FOM</label>
+                <textarea class="form-control mb" rows="3"
+                  id="review-fom-address" name="review-fom-address"
+                  [placeholder]="editMode()? '101-11234 West 12th Avenue &#10;Vancouver BC V6H 1L9': ''"
+                  formControlName="reviewAddress"
+                  maxlength="{{addressLimit}}">
+                </textarea>
+                @if (editMode()) {
+                  <small>{{addressLimit-publicNoticeFormGroup.get('reviewAddress')?.value?.length}} characters remaining.</small>
+                }
+                @if ((form.submitted || fieldTouchedOrDirty('reviewAddress')) &&
+                  (getErrorMessage('reviewAddress', 'required') || getErrorMessage('reviewAddress', 'notEmpty'))) {
+                  <div class="invalid-feedback"
+                    >
+                    {{getErrorMessage('reviewAddress', 'required') || getErrorMessage('reviewAddress', 'notEmpty')}}
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="row" >
+              <div class="form-group col-md-6">
+                <label for="review-fom-hours" [class.required]="editMode()">Business Hours to physically review FOM</label>
+                <input type="text"
+                  id="review-fom-hours" name="review-fom-hours"
+                  [placeholder]="editMode()? 'Monday to Friday 8am-4pm, Saturday 10am - 2pm': ''"
+                  maxlength="{{businessHoursLimit}}"
+                  class="form-control"
+                  formControlName="reviewBusinessHours"/>
+                  @if ((form.submitted || fieldTouchedOrDirty('reviewBusinessHours')) &&
+                    (getErrorMessage('reviewBusinessHours', 'required') || getErrorMessage('reviewBusinessHours', 'notEmpty'))) {
+                    <div class="invalid-feedback"
+                      >
+                      {{getErrorMessage('reviewBusinessHours', 'required') || getErrorMessage('reviewBusinessHours', 'notEmpty')}}
+                    </div>
+                  }
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-md-12">
+                  <label for="sameAsReviewInd" [class.required]="editMode()">Receive Comments Same as Review:</label>&nbsp;&nbsp;&nbsp;
+                  <input type="checkbox" class="medium-check-box"
+                    id="sameAsReviewInd" name="sameAsReviewInd"
+                    formControlName="isReceiveCommentsSameAsReview"
+                    (change)="onSameAsReviewIndToggled()"/>
+                    @if (form.submitted && getErrorMessage('isReceiveCommentsSameAsReview', 'required')) {
+                      <div class="invalid-feedback"
+                        >
+                        {{getErrorMessage('isReceiveCommentsSameAsReview', 'required')}}
+                      </div>
+                    }
+                  </div>
+                </div>
+                <div class="row" >
+                  <div class="form-group col-md-12">
+                    <label for="receive-fom-address"
+                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview')?.value && editMode()">
+                      Physical address to submit comments
+                    </label>
+                    <textarea class="form-control mb" rows="3"
+                      id="receive-fom-address" name="receive-fom-address"
+                      [placeholder]="editMode()? '101-11234 West 12th Avenue &#10;Vancouver BC V6H 1L9': ''"
+                      formControlName="receiveCommentsAddress"
+                      maxlength="{{addressLimit}}">
+                    </textarea>
+                    @if (editMode()) {
+                      <small>{{addressLimit-publicNoticeFormGroup.get('receiveCommentsAddress')?.value?.length}} characters remaining.</small>
+                    }
+                    @if ((form.submitted || fieldTouchedOrDirty('receiveCommentsAddress')) &&
+                      (getErrorMessage('receiveCommentsAddress', 'required') || getErrorMessage('receiveCommentsAddress', 'notEmpty'))) {
+                      <div class="invalid-feedback"
+                        >
+                        {{getErrorMessage('receiveCommentsAddress', 'required') || getErrorMessage('receiveCommentsAddress', 'notEmpty')}}
+                      </div>
+                    }
+                  </div>
+                </div>
+                <div class="row" >
+                  <div class="form-group col-md-6">
+                    <label for="receive-fom-hours"
+                      [class.required]="!publicNoticeFormGroup.get('isReceiveCommentsSameAsReview')?.value && editMode()">
+                      Business hours to physically submit comments
+                    </label>
+                    <input type="text"
+                      id="receive-fom-hours" name="receive-fom-hours"
+                      [placeholder]="editMode()? 'Monday to Friday 8am-4pm, Saturday 10am - 2pm': ''"
+                      maxlength="{{businessHoursLimit}}"
+                      class="form-control"
+                      formControlName="receiveCommentsBusinessHours"/>
+                      @if ((form.submitted || fieldTouchedOrDirty('receiveCommentsBusinessHours')) &&
+                        (getErrorMessage('receiveCommentsBusinessHours', 'required') || getErrorMessage('receiveCommentsBusinessHours', 'notEmpty'))) {
+                        <div class="invalid-feedback"
+                          >
+                          {{getErrorMessage('receiveCommentsBusinessHours', 'required') || getErrorMessage('receiveCommentsBusinessHours', 'notEmpty')}}
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <div class="row" >
+                    <div class="form-group col-md-12">
+                      <label for="mailing-address" [class.required]="editMode()">Mailing Address</label>
+                      <textarea class="form-control mb" rows="3"
+                        id="mailing-address" name="mailing-address"
+                        [placeholder]="editMode()? 'Box 123 Surrey BC': ''"
+                        formControlName="mailingAddress"
+                        maxlength="{{addressLimit}}">
+                      </textarea>
+                      @if (editMode()) {
+                        <small>{{addressLimit-publicNoticeFormGroup.get('mailingAddress')?.value?.length}} characters remaining.</small>
+                      }
+                      @if ((form.submitted || fieldTouchedOrDirty('mailingAddress')) &&
+                        (getErrorMessage('mailingAddress', 'required') || getErrorMessage('mailingAddress', 'notEmpty'))) {
+                        <div class="invalid-feedback"
+                          >
+                          {{getErrorMessage('mailingAddress', 'required') || getErrorMessage('mailingAddress', 'notEmpty')}}
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <div class="row" >
+                    <div class="form-group col-md-12">
+                      <label for="email" [class.required]="editMode()">Email for Public Comment</label>
+                      <input type="text"
+                        id="email" name="email"
+                        maxlength="100"
+                        [placeholder]="editMode()? 'name@industry.com': ''"
+                        class="form-control"
+                        formControlName="email"/>
+                        @if ((form.submitted || fieldTouchedOrDirty('email')) && getErrorMessage('email', 'required')) {
+                          <div class="invalid-feedback"
+                            >
+                            {{getErrorMessage('email', 'required')}}
+                          </div>
+                        }
+                        @if ((form.submitted || fieldTouchedOrDirty('email')) && getErrorMessage('email', 'email')) {
+                          <div class="invalid-feedback"
+                            >
+                            {{getErrorMessage('email', 'email')}}
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              }
+            </div>

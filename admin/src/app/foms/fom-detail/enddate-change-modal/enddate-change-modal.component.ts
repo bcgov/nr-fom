@@ -1,5 +1,5 @@
-import { DatePipe, NgIf } from '@angular/common';
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProjectCommentingClosedDateChangeRequest, ProjectService } from '@api-client';
@@ -8,19 +8,20 @@ import { DateTime } from 'luxon';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 @Component({
-    standalone: true,
     imports: [
-        NgIf, 
-        MatProgressBarModule, 
-        FormsModule, 
-        BsDatepickerModule, 
-        DatePipe
-    ],
+    MatProgressBarModule,
+    FormsModule,
+    BsDatepickerModule,
+    DatePipe
+],
     templateUrl: './enddate-change-modal.component.html',
-    styleUrls: ['./enddate-change-modal.component.scss'],
+    styleUrl: './enddate-change-modal.component.scss',
     encapsulation: ViewEncapsulation.None // Important to make bootstrap modal custom styling property 'windowClass' work.
 })
 export class EnddateChangeModalComponent implements OnInit {
+  private activeModal = inject(NgbActiveModal);
+  private projectService = inject(ProjectService);
+
 
   public updating = false;
   public changeRequest = {} as ProjectCommentingClosedDateChangeRequest; // Default values assigned when modal compoent was opened outside.
@@ -28,11 +29,6 @@ export class EnddateChangeModalComponent implements OnInit {
   public currentCommentingClosedDate: string;
   public newCommentingClosedDate: Date;
   public minDate: Date;
-
-  constructor(
-    private activeModal: NgbActiveModal,
-    private projectService: ProjectService
-  ) {}
 
   ngOnInit(): void {
     this.minDate = DateTime.now().plus({days: 1}).toJSDate(); // Earliest date allowed for change: tomorrow.
@@ -42,7 +38,7 @@ export class EnddateChangeModalComponent implements OnInit {
   public changeEndDate() {
     this.updating = true;
 
-    this.changeRequest.commentingClosedDate = DateTime.fromJSDate(this.newCommentingClosedDate).toISODate();
+    this.changeRequest.commentingClosedDate = DateTime.fromJSDate(this.newCommentingClosedDate).toISODate() ?? '';
     this.projectService.projectControllerCommentingClosedDateChange(this.projectId, this.changeRequest)
         .toPromise()
         .then(() => {

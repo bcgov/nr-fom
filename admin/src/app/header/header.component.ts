@@ -1,42 +1,34 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { NgIf } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { User } from "@utility/security/user";
 import { ConfigService } from '@utility/services/config.service';
 
 @Component({
-    standalone: true,
-    imports: [RouterLink, NgIf],
+    imports: [RouterLink],
     selector: 'app-header',
     templateUrl: './header.component.html',
-    styleUrls: ['./header.component.scss'],
-    animations: [
-        trigger('toggleNav', [
-            state('navClosed', style({ height: '0' })),
-            state('navOpen', style({ height: '*' })),
-            transition('navOpen => navClosed', [animate('0.2s')]),
-            transition('navClosed => navOpen', [animate('0.2s')])
-        ])
-    ]
+    styleUrl: './header.component.scss'
 })
 export class HeaderComponent implements OnInit {
-  isNavMenuOpen = false; 
-  environmentDisplay: string;
-  user: User;
+  private configService = inject(ConfigService);
+  router = inject(Router);
+  private cognitoService = inject(CognitoService);
 
-  constructor(
-    private configService: ConfigService, 
-    public router: Router, 
-    private cognitoService: CognitoService
-  ) {
+  isNavMenuOpen = false;
+  environmentDisplay: string | undefined;
+  user: User | null;
+
+  constructor() {
+    const configService = this.configService;
+
     this.environmentDisplay = configService.getEnvironmentDisplay();
     this.user = this.cognitoService.getUser();
   }
 
   isAdminRoleOnly(): boolean {
-    return this.user && this.user.isAdmin && !this.user.isMinistry && !this.user.isForestClient;
+    return !!this.user && this.user.isAdmin && !this.user.isMinistry && !this.user.isForestClient;
   }
 
   ngOnInit() {

@@ -40,8 +40,7 @@
     "object-hash": "^3.0.0",
     "remeda": "^2.25.0",
     "rxjs": "^7.8.2",
-    "tslib": "^2.8.0",
-    "zone.js": "^0.16.0"
+    "tslib": "^2.8.0"
   },
   "devDependencies": {
     "@angular-devkit/architect": "^0.2200.1",
@@ -58,6 +57,7 @@
     "@types/jest": "^30.0.0",
     "@types/leaflet": "^1.9.12",
     "@types/leaflet.markercluster": "^1.5.4",
+    "@types/object-hash": "^3.0.6",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.10.0",
     "eslint": "^10.0.0",

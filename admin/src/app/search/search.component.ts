@@ -1,10 +1,10 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
-import { DatePipe, Location, NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { DatePipe, Location, TitleCasePipe } from '@angular/common';
+import { Component, DestroyRef, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, ParamMap, Params, Router, RouterLink } from '@angular/router';
 import { ProjectPlanCodeEnum, ProjectResponse, ProjectService, WorkflowStateEnum } from "@api-client";
@@ -13,54 +13,101 @@ import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
 import { isNullish } from 'remeda';
 
+// Arguments passed to projectControllerFind (all normalised to string | undefined,
+// matching the generated client's optional parameters).
+interface FindArgs {
+  projectId: string | undefined;
+  fspId: string | undefined;
+  districtId: string | undefined;
+  workflowStateCode: string | undefined;
+  forestClientName: string | undefined;
+}
+
 @Component({
-    standalone: true,
     imports: [
-        FormsModule, 
-        RxReactiveFormsModule, 
-        NgFor, 
-        NgIf, 
-        NgbDropdown, 
-        NgbDropdownToggle, 
-        NgbDropdownMenu, 
-        RouterLink, 
-        TitleCasePipe, 
-        DatePipe
-    ],
+    FormsModule,
+    RxReactiveFormsModule,
+    NgbDropdown,
+    NgbDropdownToggle,
+    NgbDropdownMenu,
+    RouterLink,
+    TitleCasePipe,
+    DatePipe
+],
     selector: 'app-search',
     templateUrl: './search.component.html',
-    styleUrls: ['./search.component.scss']
+    styleUrl: './search.component.scss'
 })
 export class SearchComponent implements OnInit, OnDestroy {
+  private location = inject(Location);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private stateSvc = inject(StateService);
+  private cognitoService = inject(CognitoService);
+  snackBar = inject(MatSnackBar);
+  searchProjectService = inject(ProjectService);
+  private modalSvc = inject(ModalService);
+
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   private destroyRef = inject(DestroyRef);
-  private paramMap: ParamMap = null;
-  private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
-  public user: User;
-  public fNumber: number; // filter: FOM Number
-  public fFspId: number; // filter: FSP ID
-  public fStatus: string; // filter: workflowStateCode
-  public fDistrict: number; // filter: district id
-  public fHolder: string; // filter: part of FOM holder name
-  public projects: ProjectResponse[] = [];
-  public count = 0;
-  public searching = false;
+  private paramMap: ParamMap | null = null;
+  private snackBarRef: MatSnackBarRef<SimpleSnackBar> | null = null;
+  // Populated from the authenticated Cognito session in the constructor.
+  public user!: User;
+  public fNumber: number | null; // filter: FOM Number
+  public fFspId: number | null; // filter: FSP ID
+  public fStatus: string | undefined; // filter: workflowStateCode
+  public fDistrict: number | null; // filter: district id
+  public fHolder: string | null; // filter: part of FOM holder name
   public statusCodes = this.stateSvc.getCodeTable('workflowResponseCode');
   public districts = this.stateSvc.getCodeTable('district');
-  public searched = false;
 
-  constructor(
-    private location: Location,
-    private router: Router,
-    private route: ActivatedRoute,
-    private stateSvc: StateService,
-    private cognitoService: CognitoService,
-    public snackBar: MatSnackBar,
-    public searchProjectService: ProjectService,
-    private modalSvc: ModalService,
-    private cdr: ChangeDetectorRef
-  ) {
-    this.user = this.cognitoService.getUser();
+  // Committed search criteria that drives the resource. `undefined` means "no search requested yet"
+  // (the loader stays idle). A defined object — even with all-null filters — runs a search, which
+  // preserves "submit with empty filters searches all" while "load with no query params" does not.
+  private readonly criteria = signal<FindArgs | undefined>(undefined);
+
+  // Signal-native data loading. rxResource consumes the generated client's Observable directly
+  // and cancels the previous request when `criteria` changes.
+  private readonly projectsResource = rxResource({
+    params: () => this.criteria(),
+    stream: ({ params }) => this.searchProjectService.projectControllerFind(
+      params.projectId, params.fspId, params.districtId, params.workflowStateCode, params.forestClientName),
+    defaultValue: [] as ProjectResponse[],
+  });
+
+  // `value()` throws while the resource is in the error state, so guard reads with hasValue().
+  readonly projects = computed<ProjectResponse[]>(() =>
+    this.projectsResource.hasValue() ? this.projectsResource.value() : []);
+  readonly count = computed(() => this.projects().length);
+  readonly searching = this.projectsResource.isLoading;
+  // A search has been performed once the resource leaves 'idle' (i.e. resolved or errored).
+  readonly searched = computed(() => this.projectsResource.status() !== 'idle');
+
+  constructor() {
+    const user = this.cognitoService.getUser();
+    if (user) {
+      this.user = user;
+    }
+
+    // Warn when the backend result cap is hit (replaces the check in the old subscribe callback).
+    effect(() => {
+      if (!this.projectsResource.hasValue()) return;
+      const limit = 2500;
+      if (this.projectsResource.value().length >= limit) {
+        this.modalSvc.openSnackBar({message: `Warning: Maximum of ${limit} search results exceeded -
+            not all results have been displayed. Please refine your search criteria.`, button: 'OK'});
+      }
+    });
+
+    // Surface search failures (replaces the error branch of the old subscribe callback).
+    effect(() => {
+      const error = this.projectsResource.error();
+      if (error) {
+        console.error('SearchComponent.search() - error =', error);
+        this.snackBarRef = this.snackBar.open('Error searching foms ...', undefined, {duration: 3000});
+      }
+    });
   }
 
   ngOnInit() {
@@ -69,52 +116,32 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.paramMap = paramMap;
       this.setInitialQueryParameters();
 
-      if (this.fFspId || this.fStatus || this.fDistrict || this.fHolder) {
-        this.doSearch();
+      if (this.fNumber || this.fFspId || this.fStatus || this.fDistrict || this.fHolder) {
+        this.criteria.set(this.buildFindArgs());
       }
     });
   }
 
-  private doSearch() {
-    this.searching = true;
-    this.projects = [];
-    this.count = 0;
-
-    const workFlowStateCodeArg = this.fStatus === 'undefined'? null: this.fStatus;
-    const districtArg = (isNaN(this.fDistrict) || isNullish(this.fDistrict))? null : this.fDistrict.toString();
-    const fspIdArg = (isNaN(this.fFspId) || isNullish(this.fFspId))? null : this.fFspId.toString();
-    const projectIdArg = (isNaN(this.fNumber) || isNullish(this.fNumber))? null : this.fNumber.toString();
-    this.searchProjectService.projectControllerFind(projectIdArg, fspIdArg , districtArg, workFlowStateCodeArg, this.fHolder)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (projects) => {
-          this.projects = projects;
-          this.count = this.projects.length;
-          const limit = 2500;
-          if (this.count >= limit) {
-            this.modalSvc.openSnackBar({message: `Warning: Maximum of ${limit} search results exceeded -
-            not all results have been displayed. Please refine your search criteria.`, button: 'OK'});
-          }
-          this.searched = true;
-          this.searching = false;
-          // doSearch can be triggered from the route queryParamMap subscription, whose
-          // async HTTP response may resolve without a zone tick reaching this view.
-          // Detect changes explicitly so the spinner clears and results render.
-          this.cdr.detectChanges();
-        },
-        error: (error) => {
-          console.error('SearchComponent.doSearch() - error =', error);
-          this.searched = true;
-          this.searching = false;
-          this.snackBarRef = this.snackBar.open('Error searching foms ...', null, {duration: 3000});
-          this.cdr.detectChanges();
-        }
-      });
+  private buildFindArgs(): FindArgs {
+    return {
+      projectId: (isNullish(this.fNumber) || isNaN(this.fNumber)) ? undefined : this.fNumber.toString(),
+      fspId: (isNullish(this.fFspId) || isNaN(this.fFspId)) ? undefined : this.fFspId.toString(),
+      districtId: (isNullish(this.fDistrict) || isNaN(this.fDistrict)) ? undefined : this.fDistrict.toString(),
+      workflowStateCode: this.fStatus === 'undefined' ? undefined : this.fStatus,
+      forestClientName: this.fHolder ?? undefined,
+    };
   }
 
   public setInitialQueryParameters() {
-    this.fFspId = this.paramMap.get('fFspId')? parseInt(this.paramMap.get('fFspId')): null;
-    this.fDistrict = this.paramMap.get('fDistrict')? parseInt(this.paramMap.get('fDistrict')): null;
+    if (!this.paramMap) {
+      return;
+    }
+    const fNumberParam = this.paramMap.get('fNumber');
+    const fFspIdParam = this.paramMap.get('fFspId');
+    const fDistrictParam = this.paramMap.get('fDistrict');
+    this.fNumber = fNumberParam ? parseInt(fNumberParam) : null;
+    this.fFspId = fFspIdParam ? parseInt(fFspIdParam) : null;
+    this.fDistrict = fDistrictParam ? parseInt(fDistrictParam) : null;
     this.fStatus = this.paramMap.get('fStatus') || undefined;
     this.fHolder = this.paramMap.get('fHolder') || null;
   }
@@ -122,10 +149,10 @@ export class SearchComponent implements OnInit, OnDestroy {
   public saveQueryParameters() {
     const params: Params = {};
 
-    if (!isNaN(this.fFspId)) {
+    if (this.fFspId != null && !isNaN(this.fFspId)) {
       params['fFspId'] = this.fFspId;
     }
-    if (!isNaN(this.fDistrict)) {
+    if (this.fDistrict != null && !isNaN(this.fDistrict)) {
       params['fDistrict'] = this.fDistrict;
     }
     if (this.fStatus !== 'undefined') {
@@ -147,7 +174,7 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.snackBarRef.dismiss();
     }
     this.saveQueryParameters();
-    this.doSearch();
+    this.criteria.set(this.buildFindArgs());
   }
 
   public clearQueryParameters(): void {
@@ -157,9 +184,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.fHolder = null;
     this.fNumber = null;
     this.saveQueryParameters();
-    this.projects = [];
-    this.count = 0;
-    this.searched = false;
+    this.criteria.set(undefined);
   }
 
   public canAccessComments(project: ProjectResponse): boolean {
@@ -181,10 +206,10 @@ export class SearchComponent implements OnInit, OnDestroy {
       || project.workflowState.code === WorkflowStateEnum.CommentClosed);
   }
 
-  public getProjectPlanNumber(project) {
+  public getProjectPlanNumber(project: ProjectResponse) {
     // There are only two projectPlanCode for now.
-    return project.projectPlanCode == this.projectPlanCodeEnum.Fsp? 
-      "FSP #" + project.fspId : 
+    return project.projectPlanCode == this.projectPlanCodeEnum.Fsp?
+      "FSP #" + project.fspId :
       "WL #" + project.woodlotLicenseNumber
   }
 

@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { DetailsPanelComponent } from './details-panel.component';
@@ -49,7 +50,7 @@ describe('DetailsPanelComponent', () => {
     };
 
     mockFeatureSelectService = {
-      $currentSelected: new Subject<any>(),
+      currentSelected: signal<string | null>(null),
     };
 
     mockConfigService = {
@@ -92,8 +93,8 @@ describe('DetailsPanelComponent', () => {
 
   it('should populate workflowStatus', () => {
     expect(component.workflowStatus).toBeDefined();
-    expect(component.workflowStatus['INITIAL']).toBeDefined();
-    expect(component.workflowStatus['PUBLISHED']).toBeDefined();
+    expect(component.workflowStatus()['INITIAL']).toBeDefined();
+    expect(component.workflowStatus()['PUBLISHED']).toBeDefined();
   });
 
   it('should have projectPlanCodeEnum', () => {
@@ -144,7 +145,7 @@ describe('DetailsPanelComponent', () => {
     it('should set project to null when no project id in query params', () => {
       (mockUrlService.getQueryParam as jest.Mock).mockReturnValue(null);
       component.getProjectDetails();
-      expect(component.project).toBeNull();
+      expect(component.project()).toBeNull();
     });
   });
 });

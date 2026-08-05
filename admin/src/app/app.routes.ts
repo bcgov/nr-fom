@@ -3,16 +3,7 @@ import { analyticsResolver } from './analytics-dashboard/analytics.resolver';
 
 import { adminGuard } from '@admin-core/guards/admin.guard';
 
-import { AboutComponent } from 'app/about/about.component';
-import { AnalyticsDashboardComponent } from 'app/analytics-dashboard/analytics-dashboard.component';
-import { FomAddEditComponent } from 'app/foms/fom-add-edit/fom-add-edit.component';
-import { FomDetailComponent } from 'app/foms/fom-detail/fom-detail.component';
-import { FomSubmissionComponent } from 'app/foms/fom-submission/fom-submission.component';
 import { projectDetailResolver, projectMetricsDetailResolver, projectSpatialDetailResolver } from 'app/foms/fom.resolvers';
-import { InteractionsComponent } from 'app/foms/interactions/interactions.component';
-import { PublicNoticeEditComponent } from 'app/foms/public-notice/public-notice-edit.component';
-import { ReviewCommentsComponent } from 'app/foms/review-comments/review-comments.component';
-import { SummaryComponent } from 'app/foms/summary/summary.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
 import { SearchComponent } from './search/search.component';
 
@@ -32,17 +23,17 @@ export const AppRoutes: Routes = [
   },
   {
     path: 'about',
-    component: AboutComponent
+    loadComponent: () => import('./about/about.component').then(m => m.AboutComponent)
   },
   // Note! From previous fom-routing.modules.ts
-  // Probably can be improved with lazy loaded routing.
   {
     path: 'a/create',
-    component: FomAddEditComponent
+    loadComponent: () => import('./foms/fom-add-edit/fom-add-edit.component').then(m => m.FomAddEditComponent),
+    data: { mode: 'create' }
   },
   {
     path: 'a/:appId',
-    component: FomDetailComponent,
+    loadComponent: () => import('./foms/fom-detail/fom-detail.component').then(m => m.FomDetailComponent),
     resolve: {
       projectDetail: projectDetailResolver,
       spatialDetail: projectSpatialDetailResolver,
@@ -51,44 +42,47 @@ export const AppRoutes: Routes = [
   },
   {
     path: 'a/:appId/edit',
-    component: FomAddEditComponent
+    loadComponent: () => import('./foms/fom-add-edit/fom-add-edit.component').then(m => m.FomAddEditComponent),
+    data: { mode: 'edit' }
   },
   {
     path: 'comments/:appId',
-    component: ReviewCommentsComponent
+    loadComponent: () => import('./foms/review-comments/review-comments.component').then(m => m.ReviewCommentsComponent)
   },
   {
     path: 'interactions/:appId',
-    component: InteractionsComponent,
+    loadComponent: () => import('./foms/interactions/interactions.component').then(m => m.InteractionsComponent),
     resolve: {
       project: projectDetailResolver
     }
   },
   {
     path: 'a/:appId/upload',
-    component: FomSubmissionComponent
+    loadComponent: () => import('./foms/fom-submission/fom-submission.component').then(m => m.FomSubmissionComponent)
   },
   {
     path: 'a/:appId/summary',
-    component: SummaryComponent
+    loadComponent: () => import('./foms/summary/summary.component').then(m => m.SummaryComponent)
   },
   {
     path: 'publicNotice/:appId',
-    component: PublicNoticeEditComponent,
+    loadComponent: () => import('./foms/public-notice/public-notice-edit.component').then(m => m.PublicNoticeEditComponent),
     resolve: {
       projectDetail: projectDetailResolver
-    }
+    },
+    data: { editMode: false }
   },
   {
     path: 'publicNotice/:appId/edit',
-    component: PublicNoticeEditComponent,
+    loadComponent: () => import('./foms/public-notice/public-notice-edit.component').then(m => m.PublicNoticeEditComponent),
     resolve: {
       projectDetail: projectDetailResolver
-    }
+    },
+    data: { editMode: true }
   },
   {
     path: 'analytics-dashboard',
-    component: AnalyticsDashboardComponent,
+    loadComponent: () => import('./analytics-dashboard/analytics-dashboard.component').then(m => m.AnalyticsDashboardComponent),
     canActivate: [adminGuard],
     resolve: {
       analyticsData: analyticsResolver

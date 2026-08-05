@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DetailsMapComponent } from './details-map.component';
 import { MapLayersService } from '@public-core/services/mapLayers.service';
@@ -9,17 +10,20 @@ describe('DetailsMapComponent', () => {
   let fixture: ComponentFixture<DetailsMapComponent>;
   let mockMapLayersService: Partial<MapLayersService>;
   let mockFeatureSelectService: Partial<FeatureSelectService>;
+  let mapLayersChange$: Subject<void>;
 
   beforeEach(async () => {
+    mapLayersChange$ = new Subject<void>();
+
     mockMapLayersService = {
-      $mapLayersChange: { subscribe: jest.fn() } as any,
+      $mapLayersChange: mapLayersChange$ as any,
       notifyLayersChange: jest.fn(),
       mapLayersUpdate: jest.fn(),
       applyCurrentMapLayers: jest.fn(),
     };
 
     mockFeatureSelectService = {
-      $currentSelected: new Subject<any>(),
+      currentSelected: signal<string | null>(null),
     };
 
     await TestBed.configureTestingModule({
@@ -44,13 +48,12 @@ describe('DetailsMapComponent', () => {
     });
   });
 
-  describe('ngOnDestroy', () => {
-    it('should unsubscribe', () => {
-      const nextSpy = jest.spyOn(component['ngUnsubscribe'], 'next');
-      const completeSpy = jest.spyOn(component['ngUnsubscribe'], 'complete');
-      component.ngOnDestroy();
-      expect(nextSpy).toHaveBeenCalled();
-      expect(completeSpy).toHaveBeenCalled();
+  describe('teardown', () => {
+    it('should unsubscribe from the map-layers stream when destroyed', () => {
+      component.ngOnInit(); // subscribes to $mapLayersChange (featureSelect is now a signal effect)
+      expect(mapLayersChange$.observed).toBe(true);
+      fixture.destroy();
+      expect(mapLayersChange$.observed).toBe(false);
     });
   });
 
@@ -59,8 +62,8 @@ describe('DetailsMapComponent', () => {
       const details = [
         { featureId: 1, featureType: { code: 'cut_block' } },
       ] as any;
-      component.projectSpatialDetail = details;
-      expect(component.projectSpatialDetail).toBe(details);
+      fixture.componentRef.setInput('projectSpatialDetail', details);
+      expect(component.projectSpatialDetail()).toBe(details);
     });
   });
 });

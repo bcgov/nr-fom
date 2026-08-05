@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
+import { Injectable, inject } from "@angular/core";
 import { AwsCognitoConfig } from "@api-client";
 import { User } from "@utility/security/user";
 import { ConfigService } from "@utility/services/config.service";
@@ -19,14 +19,15 @@ export interface CognitoAuthToken {
     providedIn: 'root'
 })
 export class CognitoService {
+  private configService = inject(ConfigService);
+  private http = inject(HttpClient);
+
   public awsCognitoConfig: AwsCognitoConfig;
   private loadRemoteConfigPromise: Promise<void> | null = null;
   private cognitoAuthToken: CognitoAuthToken;
-  private loggedOut: string;
-  private fakeUser: User;
+  private loggedOut: string | null;
+  private fakeUser: User | null;
   public initialized: boolean = false;
-
-  constructor(private configService: ConfigService, private http: HttpClient) {}
 
   /*
       See Aws-Amplify documenation for intgration: 
@@ -180,7 +181,7 @@ export class CognitoService {
     }
   }
 
-  private getParameterByName(name) {
+  private getParameterByName(name: string) {
     const url = window.location.href;
     const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
     const results = regex.exec(url);
@@ -201,8 +202,11 @@ export class CognitoService {
    */
   private async refreshAndObtainAwsCognitoUserSession(): Promise<CognitoAuthToken> {
     const authSession = await fetchAuthSession({ forceRefresh: true });
-    const idToken = authSession.tokens.idToken.toString();
-    const accessToken = authSession.tokens.accessToken.toString();
+    const idToken = authSession.tokens?.idToken?.toString();
+    const accessToken = authSession.tokens?.accessToken?.toString();
+    if (!idToken || !accessToken) {
+      throw new Error("Unable to obtain Cognito auth session tokens.");
+    }
     return {
         decodedIdToken: jwtDecode(idToken),
         decodedAccessToken: jwtDecode(accessToken),

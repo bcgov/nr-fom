@@ -6,92 +6,96 @@
   <div class="flex-panel__scroll">
     <div class="find-form">
       <div class="form-group">
-          <label class="control-label" for="fomNumberInput">FOM Number</label>
-          <input id="fomNumberInput" type="text"
-            class="form-control limit-width-1"
-            [maxlength]="maxInputLength"
-            (keyup)="verifyFomNumberInput($event)"
-            (keyup.enter)="applyAllFilters()"
-            (mousewheel)="$event.preventDefault()"
-            [(ngModel)]="fomNumberFilter.filter.value" />
-      </div>
-
-      <div class="form-group">
-        <label class="control-label" for="forestClientNameInput">FOM Holder Name (or portion)</label>
-        <input id="forestClientNameInput" type="text"
-               class="form-control limit-width-1"
-               maxlength="40"
-          (keydown.arrowup)="$event.preventDefault()"
-          (keydown.arrowdown)="$event.preventDefault()"
+        <label class="control-label" for="fomNumberInput">FOM Number</label>
+        <input id="fomNumberInput" type="text"
+          class="form-control limit-width-1"
+          [maxlength]="maxInputLength"
+          (keyup)="verifyFomNumberInput($event)"
           (keyup.enter)="applyAllFilters()"
           (mousewheel)="$event.preventDefault()"
-          [(ngModel)]="forestClientNameFilter.filter.value" />
-      </div>
+          [(ngModel)]="fomNumberFilter().filter.value" />
+        </div>
 
-      <div class="form-group">
-        <label class="control-label" for="postedOnAfterInput">Posted As Of</label>
-        <div class="date-range">
-          <div class="date-range__input">
-            <div>
-              <input
-                id="postedOnAfterInput"
-                name="postedOnAfter"
-                style="width: 20rem;"
-                class="form-control"
-                type="text"
-                placeholder="YYYY-MM-DD"
-                bsDatepicker
-                [minDate]="minDate"
-                [maxDate]="maxDate"
-                onkeydown="return false"
-                [(ngModel)]="postedOnAfterFilter.filter.value"
+        <div class="form-group">
+          <label class="control-label" for="forestClientNameInput">FOM Holder Name (or portion)</label>
+          <input id="forestClientNameInput" type="text"
+            class="form-control limit-width-1"
+            maxlength="40"
+            (keydown.arrowup)="$event.preventDefault()"
+            (keydown.arrowdown)="$event.preventDefault()"
+            (keyup.enter)="applyAllFilters()"
+            (mousewheel)="$event.preventDefault()"
+            [(ngModel)]="forestClientNameFilter().filter.value" />
+          </div>
+
+          <div class="form-group">
+            <label class="control-label" for="postedOnAfterInput">Posted As Of</label>
+            <div class="date-range">
+              <div class="date-range__input">
+                <div>
+                  <input
+                    id="postedOnAfterInput"
+                    name="postedOnAfter"
+                    style="width: 20rem;"
+                    class="form-control"
+                    type="text"
+                    placeholder="YYYY-MM-DD"
+                    bsDatepicker
+                    [minDate]="minDate"
+                    [maxDate]="maxDate"
+                    onkeydown="return false"
+                    [(ngModel)]="postedOnAfterFilter().filter.value"
                 [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
                 containerClass: 'theme-dark-blue', showWeekNumbers: false  }"
-              />
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <div class="form-group">
+              <label class="control-label">Commenting Status</label>
+              @if (commentStatusFilters()) {
+                <div class="select-badge-group">
+                  @for (filter of commentStatusFilters().filters; track filter.queryParam) {
+                    <div class="select-badge">
+                      <input id="find-{{filter.queryParam}}" type="checkbox" name="{{filter.queryParam}}"
+                        [checked]="filter.value"
+                        (click)="toggleFilter(filter)"
+                        (change)="verifyStatus()"/>
+                        <label for="find-{{filter.queryParam}}">{{filter.displayString}}</label>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <br/>
+              <div class="form-btns">
+                <button class="btn btn-primary gtm-apply-filters find-btn-lg-device" type="button" title="Apply filters"
+                  [disabled]="loading()"
+                  (click)="applyAllFilters()">
+                  Find
+                  <em class="spinner-border" [hidden]="!loading()"></em>
+                </button>
+                <button class="btn btn-primary gtm-apply-filters find-btn-sm-device" type="button" title="Apply filters"
+                  [disabled]="loading()"
+                  (click)="applyAllFiltersMobile()">
+                  Find
+                  <em class="spinner-border" [hidden]="!loading()"></em>
+                </button>
+                <button class="btn btn-light" type="button" title="Clear filters"
+                  [disabled]="loading()"
+                  (click)="clear()">
+                  Clear
+                </button>
+              </div>
+            </div>
+            <section>
+              <h3>What is a FOM Holder Name?</h3>
+              <p>A FOM Holder Name is the name of the company performing the activity on the land base in British Columbia.<br>
+              Enter all or part of the company name and the search will be performed based on whatever you enter.</p>
+            </section>
+
           </div>
         </div>
-      </div>
-
-      <div class="form-group">
-        <label class="control-label">Commenting Status</label>
-        <div class="select-badge-group" *ngIf="commentStatusFilters">
-          <div class="select-badge" *ngFor="let filter of commentStatusFilters.filters">
-            <input id="find-{{filter.queryParam}}" type="checkbox" name="{{filter.queryParam}}" 
-                   [checked]="filter.value" 
-                   (click)="toggleFilter(filter)"
-                   (change)="verifyStatus()"/>
-            <label for="find-{{filter.queryParam}}">{{filter.displayString}}</label>
-          </div>
-        </div>
-      </div>
-
-      <br/>
-      <div class="form-btns">
-        <button class="btn btn-primary gtm-apply-filters find-btn-lg-device" type="button" title="Apply filters"
-          [disabled]="loading"
-          (click)="applyAllFilters()">
-          Find
-          <em class="spinner-border" [hidden]="!loading"></em>
-        </button>
-        <button class="btn btn-primary gtm-apply-filters find-btn-sm-device" type="button" title="Apply filters"
-          [disabled]="loading"
-          (click)="applyAllFiltersMobile()">
-          Find
-          <em class="spinner-border" [hidden]="!loading"></em>
-        </button>
-        <button class="btn btn-light" type="button" title="Clear filters"
-          [disabled]="loading"
-          (click)="clear()">
-          Clear
-        </button>
-      </div>
-    </div>
-    <section>
-      <h3>What is a FOM Holder Name?</h3>
-      <p>A FOM Holder Name is the name of the company performing the activity on the land base in British Columbia.<br>
-        Enter all or part of the company name and the search will be performed based on whatever you enter.</p>
-    </section>
-
-  </div>
-</div>

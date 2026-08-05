@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
@@ -16,20 +15,21 @@ enum COMMENT_SCOPE_CODE {
 
 type CommentScopeOpt = {commentScopeCode: COMMENT_SCOPE_CODE,
                         desc: string,
-                        name: string, 
-                        scopeId: number};
+                        name: string | null,
+                        scopeId: number | null};
 
 @Component({
-  standalone: true,
-  imports: [CommonModule, FormsModule, MatSelectModule, MatProgressBarModule],
+  imports: [FormsModule, MatSelectModule, MatProgressBarModule],
   templateUrl: './comment-modal.component.html',
-  styleUrls: ['./comment-modal.component.scss'],
+  styleUrl: './comment-modal.component.scss',
   encapsulation: ViewEncapsulation.None
 })
 export class CommentModalComponent implements OnInit {
+  activeModal = inject(NgbActiveModal);
+  private commentService = inject(PublicCommentService);
 
-  public submitting = false;
-  public currentPage = 1;
+  readonly submitting = signal(false);
+  readonly currentPage = signal(1);
   public publicComment = {} as PublicCommentCreateRequest;
   public iAgreeModel = false;
   public projectId: number;
@@ -38,20 +38,14 @@ export class CommentModalComponent implements OnInit {
   public commentScopeOpts :Array<CommentScopeOpt> = [];
   public feedbackLimit: number = 4000;
 
-  constructor(
-    public activeModal: NgbActiveModal,
-    private commentService: PublicCommentService,
-    private changeDetectorRef: ChangeDetectorRef
-  ) {}
-
   ngOnInit(): void {
     this.publicComment.commentScopeCode = 'OVERALL';
     this.publicComment.projectId = this.projectId;
 
     // Comment Scope select options
-    const overallOpt = {commentScopeCode: this.getCommentScopeCodeOrDesc(null, true), 
-                        desc: this.getCommentScopeCodeOrDesc(null, false), 
-                        name: null, 
+    const overallOpt = {commentScopeCode: this.getCommentScopeCodeOrDesc(null, true) ?? COMMENT_SCOPE_CODE.OVERALL,
+                        desc: this.getCommentScopeCodeOrDesc(null, false) ?? '',
+                        name: null,
                         scopeId: null};
     this.selectedScope = overallOpt;
     this.commentScopeOpts.push(overallOpt);
@@ -62,9 +56,9 @@ export class CommentModalComponent implements OnInit {
           return this.getCommentScopeCodeOrDesc(detail.featureType.code, true);// filter out rention_area.
         })
         .forEach((detail) => {
-        this.commentScopeOpts.push({commentScopeCode: this.getCommentScopeCodeOrDesc(detail.featureType.code, true), 
-                                desc: this.getCommentScopeCodeOrDesc(detail.featureType.code, false),
-                                name: detail.name, 
+        this.commentScopeOpts.push({commentScopeCode: this.getCommentScopeCodeOrDesc(detail.featureType.code, true) ?? COMMENT_SCOPE_CODE.OVERALL,
+                                desc: this.getCommentScopeCodeOrDesc(detail.featureType.code, false) ?? '',
+                                name: detail.name,
                                 scopeId: detail.featureId});
       });
     }
@@ -75,55 +69,55 @@ export class CommentModalComponent implements OnInit {
   }
 
   public p1_next() {
-    this.currentPage++;
+    this.currentPage.update((page) => page + 1);
   }
 
   public p2_back() {
-    this.currentPage--;
+    this.currentPage.update((page) => page - 1);
   }
 
   public p2_next() {
-    this.currentPage++;
+    this.currentPage.update((page) => page + 1);
   }
 
   public p3_back() {
-    this.currentPage--;
+    this.currentPage.update((page) => page - 1);
   }
 
   public async p3_next() {
-    this.submitting = true;
-    this.changeDetectorRef.detectChanges();
+    this.submitting.set(true);
  
     this.publicComment.commentScopeCode = this.selectedScope.commentScopeCode;
     if (this.selectedScope.commentScopeCode === COMMENT_SCOPE_CODE.CUT_BLOCK) {
-      this.publicComment.scopeCutBlockId = this.selectedScope.scopeId;
+      // scopeId is always set for CUT_BLOCK/ROAD_SECTION options (built from a real feature's featureId)
+      this.publicComment.scopeCutBlockId = this.selectedScope.scopeId!;
     }
     else if (this.selectedScope.commentScopeCode === COMMENT_SCOPE_CODE.ROAD_SECTION) {
-      this.publicComment.scopeRoadSectionId = this.selectedScope.scopeId;
+      // scopeId is always set for CUT_BLOCK/ROAD_SECTION options (built from a real feature's featureId)
+      this.publicComment.scopeRoadSectionId = this.selectedScope.scopeId!;
     }
  
     try {
       await firstValueFrom(this.commentService.publicCommentControllerCreate(this.publicComment));
-      this.currentPage++;
-      this.changeDetectorRef.detectChanges();
+      this.currentPage.update((page) => page + 1);
     } catch (err) {
       console.error(err);
-      this.changeDetectorRef.detectChanges();
     } finally {
-      this.submitting = false;
-      this.changeDetectorRef.detectChanges();
+      this.submitting.set(false);
     }
   }
 
-  private getCommentScopeCodeOrDesc(source: string, forCode: boolean) {
+  private getCommentScopeCodeOrDesc(source: string | null, forCode: true): COMMENT_SCOPE_CODE | null;
+  private getCommentScopeCodeOrDesc(source: string | null, forCode: false): string | null;
+  private getCommentScopeCodeOrDesc(source: string | null, forCode: boolean): COMMENT_SCOPE_CODE | string | null {
     switch(source) {
-      case SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)['source'].toLowerCase():
-        return forCode? COMMENT_SCOPE_CODE.CUT_BLOCK: SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)['desc'];
+      case SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)?.['source'].toLowerCase():
+        return forCode? COMMENT_SCOPE_CODE.CUT_BLOCK: (SpatialTypeMap.get(SpatialObjectCodeEnum.CutBlock)?.['desc'] ?? null);
 
-      case SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)['source'].toLowerCase():
-        return forCode? COMMENT_SCOPE_CODE.ROAD_SECTION: SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)['desc'];
+      case SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)?.['source'].toLowerCase():
+        return forCode? COMMENT_SCOPE_CODE.ROAD_SECTION: (SpatialTypeMap.get(SpatialObjectCodeEnum.RoadSection)?.['desc'] ?? null);
 
-      case SpatialTypeMap.get(SpatialObjectCodeEnum.Wtra)['source'].toLowerCase():
+      case SpatialTypeMap.get(SpatialObjectCodeEnum.Wtra)?.['source'].toLowerCase():
         return null; // only can comment on CutBlock or RoadSection
 
       default:

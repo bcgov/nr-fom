@@ -65,25 +65,25 @@ describe('PublicNoticesPanelComponent', () => {
   });
 
   it('should populate pNotices from service response', () => {
-    expect(component.pNotices).toBeDefined();
-    expect(component.pNotices.length).toBe(2);
+    expect(component.pNotices()).toBeDefined();
+    expect(component.pNotices()?.length).toBe(2);
   });
 
   it('should populate initialPNotices from service response', () => {
-    expect(component.initialPNotices).toBeDefined();
-    expect(component.initialPNotices.length).toBe(2);
+    expect(component.initialPNotices()).toBeDefined();
+    expect(component.initialPNotices()?.length).toBe(2);
   });
 
   it('should build districtList from notices', () => {
-    expect(component.districtList).toBeDefined();
-    expect(component.districtList).toContain('District 1');
-    expect(component.districtList).toContain('District 2');
+    expect(component.districtList()).toBeDefined();
+    expect(component.districtList()).toContain('District 1');
+    expect(component.districtList()).toContain('District 2');
     // Should be sorted
-    expect(component.districtList[0]).toBe('District 1');
+    expect(component.districtList()[0]).toBe('District 1');
   });
 
-  it('should start with isLoading false', () => {
-    expect(component.isLoading).toBe(false);
+  it('should not be loading after the fetch resolves', () => {
+    expect(component.isLoading()).toBe(false);
   });
 
   describe('showDetails', () => {
@@ -112,8 +112,8 @@ describe('PublicNoticesPanelComponent', () => {
         districtName: { queryParam: 'dn', value: null },
         commentingOpenDate: { queryParam: 'cod', value: null },
       } as any);
-      expect(component.pNotices.length).toBe(1);
-      expect(component.pNotices[0].project.forestClient.name).toBe('Client A');
+      expect(component.pNotices()?.length).toBe(1);
+      expect(component.pNotices()?.[0].project.forestClient.name).toBe('Client A');
     });
 
     it('should filter notices by district name', () => {
@@ -122,8 +122,8 @@ describe('PublicNoticesPanelComponent', () => {
         districtName: { queryParam: 'dn', value: 'District 2' },
         commentingOpenDate: { queryParam: 'cod', value: null },
       } as any);
-      expect(component.pNotices.length).toBe(1);
-      expect(component.pNotices[0].project.district.name).toBe('District 2');
+      expect(component.pNotices()?.length).toBe(1);
+      expect(component.pNotices()?.[0].project.district.name).toBe('District 2');
     });
 
     it('should return all notices when no filter values set', () => {
@@ -132,7 +132,7 @@ describe('PublicNoticesPanelComponent', () => {
         districtName: { queryParam: 'dn', value: null },
         commentingOpenDate: { queryParam: 'cod', value: null },
       } as any);
-      expect(component.pNotices.length).toBe(2);
+      expect(component.pNotices()?.length).toBe(2);
     });
   });
 

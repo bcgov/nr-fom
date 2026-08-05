@@ -1,4 +1,7 @@
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
+import { DestroyRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { ProjectsComponent } from './projects.component';
 import { ProjectService } from '@api-client';
@@ -69,21 +72,20 @@ describe('ProjectsComponent', () => {
       onDestroy: jest.fn(),
     };
 
-    const mockCdr = {
-      detectChanges: jest.fn(),
-      markForCheck: jest.fn(),
-    };
 
-    // Instantiate directly to avoid child component DI issues
-    component = new ProjectsComponent(
-      mockModalService as any,
-      mockRouter as any,
-      mockProjectService as any,
-      mockUrlService as any,
-      mockFomFiltersSvc as any,
-      mockDestroyRef as any,
-      mockCdr as any,
-    );
+    // Instantiate in an injection context (component now uses inject()), with
+    // mocks provided as tokens, to avoid rendering child components.
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: NgbModal, useValue: mockModalService },
+        { provide: Router, useValue: mockRouter },
+        { provide: ProjectService, useValue: mockProjectService },
+        { provide: UrlService, useValue: mockUrlService },
+        { provide: FOMFiltersService, useValue: mockFomFiltersSvc },
+        { provide: DestroyRef, useValue: mockDestroyRef },
+      ],
+    });
+    component = TestBed.runInInjectionContext(() => new ProjectsComponent());
   });
 
   it('should create', () => {
@@ -91,28 +93,30 @@ describe('ProjectsComponent', () => {
   });
 
   it('should start with no active panel', () => {
-    expect(component.activePanel).toBeUndefined();
+    expect(component.activePanel()).toBeUndefined();
   });
 
-  it('should start with loading false', () => {
-    expect(component.loading).toBe(false);
+  it('should be loading while the initial FOM fetch (keyed on the default filters) is in flight', () => {
+    // The resource starts fetching as soon as the (BehaviorSubject-backed) filters are available,
+    // so loading() is true on construction until that first fetch resolves.
+    expect(component.loading()).toBe(true);
   });
 
   describe('closeSidePanel', () => {
     it('should set activePanel to null', () => {
-      component.activePanel = Panel.find;
+      component.activePanel.set(Panel.find);
       component.closeSidePanel();
-      expect(component.activePanel).toBeNull();
+      expect(component.activePanel()).toBeNull();
     });
 
     it('should clear url fragment', () => {
-      component.activePanel = Panel.find;
+      component.activePanel.set(Panel.find);
       component.closeSidePanel();
       expect(mockUrlService.setFragment).toHaveBeenCalledWith(null);
     });
 
     it('should do nothing if no panel is active', () => {
-      component.activePanel = null;
+      component.activePanel.set(null);
       component.closeSidePanel();
       expect(mockUrlService.setFragment).not.toHaveBeenCalled();
     });
@@ -120,16 +124,16 @@ describe('ProjectsComponent', () => {
 
   describe('togglePanel', () => {
     it('should activate panel when different panel is active', () => {
-      component.activePanel = null;
+      component.activePanel.set(null);
       component.togglePanel(Panel.find);
-      expect(component.activePanel).toBe(Panel.find);
+      expect(component.activePanel()).toBe(Panel.find);
       expect(mockUrlService.setFragment).toHaveBeenCalledWith(Panel.find);
     });
 
     it('should deactivate panel when same panel is toggled', () => {
-      component.activePanel = Panel.find;
+      component.activePanel.set(Panel.find);
       component.togglePanel(Panel.find);
-      expect(component.activePanel).toBeNull();
+      expect(component.activePanel()).toBeNull();
       expect(mockUrlService.setFragment).toHaveBeenCalledWith(null);
     });
   });
@@ -182,17 +186,17 @@ describe('ProjectsComponent', () => {
 
   describe('handleFindUpdate', () => {
     it('should handle hidePanel event', () => {
-      component.activePanel = Panel.find;
+      component.activePanel.set(Panel.find);
       component.handleFindUpdate({ hidePanel: true });
-      expect(component.activePanel).toBeNull();
+      expect(component.activePanel()).toBeNull();
     });
   });
 
   describe('handlePublicNoticesUpdate', () => {
     it('should handle hidePanel event', () => {
-      component.activePanel = Panel.publicNotices;
+      component.activePanel.set(Panel.publicNotices);
       component.handlePublicNoticesUpdate({ hidePanel: true });
-      expect(component.activePanel).toBeNull();
+      expect(component.activePanel()).toBeNull();
     });
   });
 
@@ -217,7 +221,7 @@ describe('ProjectsComponent', () => {
       (component as any).handleFragment(Panel.find);
       jest.runAllTimers();
       expect(closeSpy).toHaveBeenCalled();
-      expect(component.activePanel).toBe(Panel.find);
+      expect(component.activePanel()).toBe(Panel.find);
     });
 
     it('should close splash modal and set activePanel to Panel.details when fragment is Panel.details', () => {
@@ -225,7 +229,7 @@ describe('ProjectsComponent', () => {
       (component as any).handleFragment(Panel.details);
       jest.runAllTimers();
       expect(closeSpy).toHaveBeenCalled();
-      expect(component.activePanel).toBe(Panel.details);
+      expect(component.activePanel()).toBe(Panel.details);
     });
 
     it('should close splash modal and clear activePanel when fragment is unknown or empty', () => {
@@ -267,7 +271,7 @@ describe('ProjectsComponent', () => {
       component.ngOnInit();
       jest.runAllTimers();
       expect(closeSpy).toHaveBeenCalled();
-      expect(component.activePanel).toBe(Panel.find);
+      expect(component.activePanel()).toBe(Panel.find);
     });
 
     it('should route initial details fragment correctly on ngOnInit without handleFragment mock', () => {
@@ -276,7 +280,7 @@ describe('ProjectsComponent', () => {
       component.ngOnInit();
       jest.runAllTimers();
       expect(closeSpy).toHaveBeenCalled();
-      expect(component.activePanel).toBe(Panel.details);
+      expect(component.activePanel()).toBe(Panel.details);
     });
 
     it('should route initial unknown fragment correctly on ngOnInit without handleFragment mock', () => {
@@ -285,7 +289,7 @@ describe('ProjectsComponent', () => {
       component.ngOnInit();
       jest.runAllTimers();
       expect(closeSpy).toHaveBeenCalled();
-      expect(component.activePanel).toBeUndefined();
+      expect(component.activePanel()).toBeUndefined();
     });
 
     it('should handle subsequent fragment changes via onNavEnd$ without handleFragment mock', () => {

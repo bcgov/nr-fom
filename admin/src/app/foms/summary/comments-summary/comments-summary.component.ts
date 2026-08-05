@@ -1,75 +1,73 @@
 import { StateService } from '@admin-core/services/state.service';
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, computed, inject, input, viewChild } from '@angular/core';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { PublicCommentAdminResponse, ResponseCodeEnum } from '@api-client';
 import { indexBy } from 'remeda';
 
 import { NewlinesPipe } from '@admin-core/pipes/newlines.pipe';
-import { DatePipe, NgFor, NgStyle, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
-    standalone: true,
     imports: [
-        MatExpansionModule, 
-        NgStyle, 
-        MatIconModule, 
-        MatBadgeModule, 
-        NgFor, 
-        MatCardModule, 
-        NgTemplateOutlet, 
-        DatePipe, 
-        NewlinesPipe
-    ],
+    MatExpansionModule,
+    MatIconModule,
+    MatBadgeModule,
+    MatCardModule,
+    NgTemplateOutlet,
+    DatePipe,
+    NewlinesPipe
+],
     selector: 'app-comments-summary',
     templateUrl: './comments-summary.component.html',
-    styleUrls: ['./comments-summary.component.scss'],
+    styleUrl: './comments-summary.component.scss',
 })
 export class CommentsSummaryComponent implements OnInit {
+  private stateSvc = inject(StateService);
+
 
   commentScopeCodes = indexBy(this.stateSvc.getCodeTable('commentScopeCode'), (x) => x.code);
-  publicComments: PublicCommentAdminResponse[];
-  addressedPcs: PublicCommentAdminResponse[];
-  consideredPcs: PublicCommentAdminResponse[];
-  irrelevantPcs: PublicCommentAdminResponse[];
-  noResponsePcs: PublicCommentAdminResponse[];
 
-  @Input() 
-  requestError: boolean
+  readonly publicCommentDetails = input<PublicCommentAdminResponse[]>();
+  readonly requestError = input<boolean | undefined>(undefined);
 
-  @ViewChild(MatAccordion) 
-  accordion: MatAccordion;
-  
-  constructor(private stateSvc: StateService) { }
+  // Derived comment buckets (replaces the former `publicCommentDetails` setter side-effects).
+  private readonly categorized = computed(() => {
+    const addressed: PublicCommentAdminResponse[] = [];
+    const considered: PublicCommentAdminResponse[] = [];
+    const irrelevant: PublicCommentAdminResponse[] = [];
+    const noResponse: PublicCommentAdminResponse[] = [];
 
-  ngOnInit(): void { 
-    // Deliberately empty
-  }
-
-  @Input() set publicCommentDetails(publicComments: PublicCommentAdminResponse[]) {
-    this.publicComments = publicComments;
-    this.addressedPcs = [];
-    this.consideredPcs = [];
-    this.irrelevantPcs = [];
-    this.noResponsePcs = [];
-
-    this.publicComments?.forEach((comment)=> {
+    this.publicCommentDetails()?.forEach((comment) => {
       const item = Object.assign({}, comment); // JSON.parse(JSON.stringify(comment))
       if (comment.response?.code === ResponseCodeEnum.Addressed) {
-        this.addressedPcs.push(item);
+        addressed.push(item);
       }
       else if (comment.response?.code === ResponseCodeEnum.Considered) {
-        this.consideredPcs.push(item);
+        considered.push(item);
       }
       else if (comment.response?.code === ResponseCodeEnum.Irrelevant) {
-        this.irrelevantPcs.push(item);
+        irrelevant.push(item);
       }
       else {
-        this.noResponsePcs.push(item)
+        noResponse.push(item);
       }
     });
+
+    return { addressed, considered, irrelevant, noResponse };
+  });
+
+  readonly addressedPcs = computed(() => this.categorized().addressed);
+  readonly consideredPcs = computed(() => this.categorized().considered);
+  readonly irrelevantPcs = computed(() => this.categorized().irrelevant);
+  readonly noResponsePcs = computed(() => this.categorized().noResponse);
+
+  readonly accordion = viewChild(MatAccordion);
+
+  ngOnInit(): void {
+    // Deliberately empty
   }
 
 }

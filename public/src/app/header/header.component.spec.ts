@@ -63,4 +63,20 @@ describe('HeaderComponent', () => {
   it('should have router injected', () => {
     expect(component.router).toBeDefined();
   });
+
+  it('showAllFoms navigates to /projects with reload + resetMap state (so the map resets even when already there)', () => {
+    const navSpy = jest.spyOn(component.router, 'navigate').mockResolvedValue(true);
+    component.showAllFoms();
+    expect(navSpy).toHaveBeenCalledWith(['/projects'], { onSameUrlNavigation: 'reload', state: { resetMap: true } });
+  });
+
+  it('showHome (brand) navigates to /projects#splash with reload + resetMap state', () => {
+    const navSpy = jest.spyOn(component.router, 'navigate').mockResolvedValue(true);
+    component.showHome();
+    expect(navSpy).toHaveBeenCalledWith(['/projects'], {
+      fragment: 'splash',
+      onSameUrlNavigation: 'reload',
+      state: { resetMap: true },
+    });
+  });
 });

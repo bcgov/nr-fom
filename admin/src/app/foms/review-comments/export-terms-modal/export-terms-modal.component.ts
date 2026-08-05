@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+
+import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -50,19 +50,16 @@ const TERMS_CONTENT: TermsContent = {
 };
 
 @Component({
-  standalone: true,
   selector: 'app-export-terms-modal',
   templateUrl: './export-terms-modal.component.html',
-  styleUrls: ['./export-terms-modal.component.scss'],
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
+  styleUrl: './export-terms-modal.component.scss',
+  imports: [MatDialogModule, MatButtonModule, MatIconModule],
 })
 export class ExportTermsModalComponent {
-  readonly termsContent = TERMS_CONTENT;
+  private dialogRef = inject<MatDialogRef<ExportTermsModalComponent>>(MatDialogRef);
+  data = inject(MAT_DIALOG_DATA);
 
-  constructor(
-    private dialogRef: MatDialogRef<ExportTermsModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: unknown
-  ) {}
+  readonly termsContent = TERMS_CONTENT;
 
   onAgree(): void {
     this.dialogRef.close(true);

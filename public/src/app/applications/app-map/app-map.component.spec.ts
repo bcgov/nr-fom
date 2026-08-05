@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { Subject } from 'rxjs';
 import { AppMapComponent } from './app-map.component';
 import { UrlService } from '@public-core/services/url.service';
 import { MapLayersService } from '@public-core/services/mapLayers.service';
@@ -25,14 +26,16 @@ describe('AppMapComponent', () => {
   let fixture: ComponentFixture<AppMapComponent>;
   let mockUrlService: Partial<UrlService>;
   let mockMapLayersService: Partial<MapLayersService>;
+  let mapLayersChange$: Subject<void>;
 
   beforeEach(async () => {
     mockUrlService = {
       getQueryParam: jest.fn().mockReturnValue(null),
     };
 
+    mapLayersChange$ = new Subject<void>();
     mockMapLayersService = {
-      $mapLayersChange: { subscribe: jest.fn() } as any,
+      $mapLayersChange: mapLayersChange$ as any,
       notifyLayersChange: jest.fn(),
       mapLayersUpdate: jest.fn(),
     };
@@ -66,12 +69,11 @@ describe('AppMapComponent', () => {
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
 
-    it('should unsubscribe', () => {
-      const nextSpy = jest.spyOn(component['ngUnsubscribe'], 'next');
-      const completeSpy = jest.spyOn(component['ngUnsubscribe'], 'complete');
-      component.ngOnDestroy();
-      expect(nextSpy).toHaveBeenCalled();
-      expect(completeSpy).toHaveBeenCalled();
+    it('should unsubscribe from map-layer changes when destroyed', () => {
+      component.ngOnInit(); // subscribes to $mapLayersChange
+      expect(mapLayersChange$.observed).toBe(true);
+      fixture.destroy();
+      expect(mapLayersChange$.observed).toBe(false);
     });
   });
 
@@ -81,8 +83,8 @@ describe('AppMapComponent', () => {
     });
   });
 
-  describe('fixMap resize handling', () => {
-    it('invalidates map size on init and on every container resize, and disconnects on destroy', () => {
+  describe('map sizing (ResizeObserver)', () => {
+    it('invalidates map size on every container resize callback, and disconnects on destroy', () => {
       const invalidateSize = jest.fn();
       const container = document.createElement('div');
       (component as any).map = {
@@ -107,12 +109,18 @@ describe('AppMapComponent', () => {
         return { observe, disconnect };
       });
 
-      (component as any).fixMap();
+      (component as any).observeMapSizing();
 
+      // Observer is attached to the map container; invalidateSize is now driven entirely
+      // by the observer callback (initial layout + every subsequent resize), not by a
+      // synchronous call.
       expect(observe).toHaveBeenCalledWith(container);
+      expect(invalidateSize).toHaveBeenCalledTimes(0);
+
+      resizeCb(); // initial layout callback
       expect(invalidateSize).toHaveBeenCalledTimes(1);
 
-      resizeCb(); // simulate the container settling to its real size
+      resizeCb(); // a later container resize
       expect(invalidateSize).toHaveBeenCalledTimes(2);
 
       component.ngOnDestroy();
@@ -122,14 +130,14 @@ describe('AppMapComponent', () => {
 
   describe('input properties', () => {
     it('should accept loading input', () => {
-      component.loading = true;
-      expect(component.loading).toBe(true);
+      fixture.componentRef.setInput('loading', true);
+      expect(component.loading()).toBe(true);
     });
 
     it('should accept projectsSummary input', () => {
       const summary = [{ id: 1, name: 'Project 1' }] as any;
-      component.projectsSummary = summary;
-      expect(component.projectsSummary).toBe(summary);
+      fixture.componentRef.setInput('projectsSummary', summary);
+      expect(component.projectsSummary()).toBe(summary);
     });
   });
 });

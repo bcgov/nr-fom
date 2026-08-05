@@ -17,7 +17,7 @@
   @include mixins.flex(0 0 auto);
 
     position: relative;
-    border-bottom: 2px solid theme.$gold !important;
+    border-bottom: 2px solid theme.$gold;
   background: theme.$header-bg;
   color: theme.$header-font-color;
   }
@@ -148,6 +148,23 @@
 
   .navbar-collapse {
     overflow: hidden;
+
+    // Mobile nav expand/collapse. Replaces the former `@angular/animations`
+    // `toggleNav` trigger (height 0 <-> auto over 0.2s). The grid-rows 0fr<->1fr
+    // technique animates to the true content height. At >=768px Bootstrap's
+    // `.navbar-expand-md .navbar-collapse { display: flex !important }` overrides
+    // this, so it only takes effect on mobile — matching the original.
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.2s ease;
+
+    &.nav-open {
+      grid-template-rows: 1fr;
+    }
+
+    > * {
+      min-height: 0;
+    }
   }
 
   @media screen and (max-width: 440px) {
@@ -168,8 +185,8 @@
 
       .nav-link {
         height: 4.2rem; // 60px to match the branding height
-        padding: 0.5rem 0.75rem !important;
-        border-top: none !important;
+        padding: 0.5rem 0.75rem;
+        border-top: none;
 
         span {
           margin-top: 0.9rem;
@@ -183,11 +200,11 @@
 
       > li {
         .dropdown-menu {
-          top: 100% !important;
+          top: 100%;
           right: 0;
-          left: auto !important;
+          left: auto;
           margin: 0;
-          width: auto !important;
+          width: auto;
           min-width: 10rem;
           padding: 0.5rem;
           background-color: #002663;
@@ -232,7 +249,7 @@
 
   .navbar-collapse {
     overflow: visible;
-    height: auto !important;
+    height: auto;
     flex-grow: 0;
   }
 }

@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRoute, Event, NavigationEnd, Params, Router } from '@angular/router';
 import { funnel } from 'remeda';
 import { Observable } from 'rxjs';
@@ -16,11 +16,15 @@ import { filter, share } from 'rxjs/operators';
     providedIn: 'root',
 })
 export class UrlService {
+  route = inject(ActivatedRoute);
+  router = inject(Router);
+  location = inject(Location);
+
   public onNavEnd$: Observable<NavigationEnd>; // see details below
   private queryParams: Params = {};
-  private panel: string = null;
+  private panel: string | null = null;
 
-  constructor(public route: ActivatedRoute, public router: Router, public location: Location, private zone: NgZone) {
+  constructor() {
     // Create a new observable that publishes only the NavigationEnd event used for subscribers to know when to
     // refresh their parameters
     // Use share() so this fires only once each time even with multiple subscriptions
@@ -69,7 +73,7 @@ export class UrlService {
    * @param {string} value query paramter url value
    * @memberof UrlService
    */
-  public setQueryParam(key: string, value: string): void {
+  public setQueryParam(key: string, value: string | null): void {
     if (value === this.getQueryParam(key)) {
       // query param exists and has not changed
       return;
@@ -95,7 +99,7 @@ export class UrlService {
    * @param {string} fragment url fragment
    * @memberof UrlService
    */
-  public setFragment(fragment: string): void {
+  public setFragment(fragment: string | null): void {
     if (fragment === this.panel) {
       // fragment exists and has not changed
       return;
@@ -111,7 +115,7 @@ export class UrlService {
    * @returns {string}
    * @memberof UrlService
    */
-  public getFragment(): string {
+  public getFragment(): string | null {
     return this.panel;
   }
 
@@ -121,10 +125,8 @@ export class UrlService {
    * @memberof UrlService
    */
   public navigate = funnel(() => {
-    this.zone.run(() => {
-      this.router
-        .navigate([], { relativeTo: this.route, queryParams: this.queryParams, fragment: this.panel })
-        .toString();
-    });
+    this.router
+      .navigate([], { relativeTo: this.route, queryParams: this.queryParams, fragment: this.panel ?? undefined })
+      .toString();
   }, { minQuietPeriodMs: 100 });
 }

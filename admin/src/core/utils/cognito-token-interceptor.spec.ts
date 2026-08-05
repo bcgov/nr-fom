@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
-import { CognitoTokenInterceptor } from './cognito-token-interceptor';
+import { cognitoTokenInterceptor } from './cognito-token-interceptor';
 import { CognitoService } from '@admin-core/services/cognito.service';
 
 describe('CognitoTokenInterceptor', () => {
@@ -20,13 +20,8 @@ describe('CognitoTokenInterceptor', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withInterceptors([cognitoTokenInterceptor])),
         provideHttpClientTesting(),
-        {
-          provide: HTTP_INTERCEPTORS,
-          useClass: CognitoTokenInterceptor,
-          multi: true
-        },
         { provide: CognitoService, useValue: mockCognitoService }
       ]
     });

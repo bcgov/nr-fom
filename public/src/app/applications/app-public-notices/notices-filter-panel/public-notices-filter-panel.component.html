@@ -7,8 +7,7 @@
     </mat-panel-title>
   </mat-expansion-panel-header>
 
-  <ng-container [ngTemplateOutlet]="pNotice_filter_template">
-  </ng-container>
+  <ng-container [ngTemplateOutlet]="pNotice_filter_template" />
 </mat-expansion-panel>
 
 <ng-template #pNotice_filter_template>
@@ -19,52 +18,54 @@
           FOM Holder Name (or portion)
         </label>
         <input id="pnForestClientNameInput" type="text"
-              name="forestClientName"
-              title="Filter by Holder"
-              class="form-control width-min-medium"
-              [(ngModel)]="filter.forestClientName.value"
-              maxlength="80" />
-      </div>
+          name="forestClientName"
+          title="Filter by Holder"
+          class="form-control width-min-medium"
+          [(ngModel)]="filter.forestClientName.value"
+          maxlength="80" />
+        </div>
 
-      <div>
-        <label class="control-label" for="postedAsOfInput">
-          Posted As Of
-        </label>
-        <div class="date-range__input">
-          <input id="postedAsOfInput" type="text"
-            class="form-control width-min-medium"
-            title="Filter by Posted As Of"
-            placeholder="YYYY-MM-DD"
-            bsDatepicker
-            [maxDate]="maxDate"
-            [(ngModel)]="filter.commentingOpenDate.value"
+        <div>
+          <label class="control-label" for="postedAsOfInput">
+            Posted As Of
+          </label>
+          <div class="date-range__input">
+            <input id="postedAsOfInput" type="text"
+              class="form-control width-min-medium"
+              title="Filter by Posted As Of"
+              placeholder="YYYY-MM-DD"
+              bsDatepicker
+              [maxDate]="maxDate"
+              [(ngModel)]="filter.commentingOpenDate.value"
             [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
             containerClass: 'theme-dark-blue', showWeekNumbers: false  }"
-          />
-        </div>
-      </div>
+              />
+            </div>
+          </div>
 
-      <div>
-        <label class="control-label" for="districtInput">
-          District
-        </label>
-        <select id="districtInput" name="district"
+          <div>
+            <label class="control-label" for="districtInput">
+              District
+            </label>
+            <select id="districtInput" name="district"
               class="form-control width-min-medium"
               title="Filter by District"
               [(ngModel)]="filter.districtName.value"
               >
-          <option [ngValue]="null" selected></option> <!-- use [ngValue], not [value] so model can get a undefined value -->
-          <option *ngFor="let district of districtList"
+              <option [ngValue]="null" selected></option> <!-- use [ngValue], not [value] so model can get a undefined value -->
+              @for (district of districtList(); track district) {
+                <option
                   [value]="district"
                   [selected]="district === filter.districtName.value">
-                  {{district}}</option>
-        </select>
-      </div>
-    </div>
+                {{district}}</option>
+              }
+            </select>
+          </div>
+        </div>
 
-    <div>
-      <button class="btn btn-primary btn-sm"
-        (click)="onFilterChange()">Filter</button>
-    </div>
-  </div>
-</ng-template>
+        <div>
+          <button class="btn btn-primary btn-sm"
+          (click)="onFilterChange()">Filter</button>
+        </div>
+      </div>
+    </ng-template>

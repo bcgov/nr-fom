@@ -1,31 +1,30 @@
-import { Component, Input } from '@angular/core';
-import { StateService } from '@admin-core/services/state.service';
+import { Component, booleanAttribute, inject, input } from '@angular/core';
+import { LoadingService } from '@admin-core/services/loading.service';
 
 @Component({
-    standalone: true,
     selector: 'app-button',
     template: `
         <div class="btn-container">
 
    <button
-            [disabled]="disabled"
+            [disabled]="disabled()"
             class="btn btn-primary ms-1"
             type="button"
           >
-            <i class="spinner rotating" [hidden]="!stateSvc.loading"></i>
-            <ng-content></ng-content>
+            <i class="spinner rotating" [hidden]="!loadingSvc.loading()"></i>
+            <ng-content />
           </button>
-          <span title="{{title}}"></span>
+          <span title="{{title()}}"></span>
 
         </div>
 
   `,
-    styleUrls: ['./button.component.scss']
+    styleUrl: './button.component.scss'
 })
 export class ButtonComponent {
-  @Input() title: string;
-  @Input() disabled: boolean;
+  loadingSvc = inject(LoadingService);
 
-  constructor(public stateSvc: StateService) { }
+  readonly title = input('');
+  readonly disabled = input(false, { transform: booleanAttribute });
 
 }

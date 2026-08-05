@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { FooterComponent } from './footer.component';
 
-@Component({ standalone: true, template: '' })
+@Component({ template: '' })
 class StubComponent {}
 
 describe('FooterComponent', () => {
@@ -34,14 +34,24 @@ describe('FooterComponent', () => {
   it('should apply compact footer layout on projects routes', async () => {
     await router.navigateByUrl('/projects#splash');
     fixture.detectChanges();
-    expect(component.isProjectsPage).toBe(true);
+    expect(component.isProjectsPage()).toBe(true);
     expect(fixture.nativeElement.querySelector('footer').classList).toContain('app-footer--sm');
   });
 
   it('should not apply compact footer layout off projects routes', async () => {
     await router.navigateByUrl('/about');
     fixture.detectChanges();
-    expect(component.isProjectsPage).toBe(false);
+    expect(component.isProjectsPage()).toBe(false);
     expect(fixture.nativeElement.querySelector('footer').classList).not.toContain('app-footer--sm');
+  });
+
+  it('showHome navigates to /projects#splash with reload + resetMap state', () => {
+    const navSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
+    component.showHome();
+    expect(navSpy).toHaveBeenCalledWith(['/projects'], {
+      fragment: 'splash',
+      onSameUrlNavigation: 'reload',
+      state: { resetMap: true },
+    });
   });
 });

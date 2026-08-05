@@ -1,29 +1,31 @@
 <!-- MAP THUMBNAIL -->
 <div class="map-thumbnail">
-    <div class="map-thumbnail__no-results" *ngIf="!projectSpatialDetail || projectSpatialDetail.length === 0">
-        <span class="no-results-msg">No map available</span>
+  @if (!projectSpatialDetail()?.length) {
+    <div class="map-thumbnail__no-results">
+      <span class="no-results-msg">No map available</span>
     </div>
-    <div class="map-container">
-        <div id="map" name="Thumbnail map displaying geographic shapes"></div>
+  }
+  <div class="map-container">
+    <div id="map" name="Thumbnail map displaying geographic shapes"></div>
+  </div>
+  <div class="legend-container">
+    <div class="row">
+      <div class="col-6">
+        <span style="margin-left: 12px;">Proposed:</span>
+        <ul class="legend">
+          <li><span class="proposed-submission cut-block"></span>Cut Block</li>
+          <li><span class="proposed-submission retention_area"></span> Retention Area</li>
+          <li><span class="proposed-submission road_section"></span> Road Section</li>
+        </ul>
+      </div>
+      <div class="col-6">
+        <span style="margin-left: 12px;">Finalized:</span>
+        <ul class="legend">
+          <li><span class="final-submission cut-block"></span> Cut Block</li>
+          <li><span class="final-submission retention_area"></span> Retention Area</li>
+          <li><span class="final-submission road_section"></span> Road Section</li>
+        </ul>
+      </div>
     </div>
-    <div class="legend-container">
-        <div class="row">
-            <div class="col-6">
-                <span style="margin-left: 12px;">Proposed:</span>
-                <ul class="legend">
-                    <li><span class="proposed-submission cut-block"></span>Cut Block</li>
-                    <li><span class="proposed-submission retention_area"></span> Retention Area</li>
-                    <li><span class="proposed-submission road_section"></span> Road Section</li>
-                </ul>
-            </div>
-            <div class="col-6">
-                <span style="margin-left: 12px;">Finalized:</span>
-                <ul class="legend">
-                    <li><span class="final-submission cut-block"></span> Cut Block</li>
-                    <li><span class="final-submission retention_area"></span> Retention Area</li>
-                    <li><span class="final-submission road_section"></span> Road Section</li>
-                </ul>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>

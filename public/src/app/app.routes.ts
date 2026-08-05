@@ -1,35 +1,36 @@
-import { Routes } from '@angular/router';
-
-import { AboutComponent } from './about/about.component';
-import { ApplicationsProxyComponent } from './applications-proxy.component';
-import { ProjectsComponent } from './applications/projects.component';
-import { ContactComponent } from './contact/contact.component';
-import { HomeProxyComponent } from './home-proxy.component';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 
 export const AppRoutes: Routes = [
   {
-    // proxy component is needed because fragment in redirectTo doesn't work in Angular v4
+    // Legacy landing route. Redirects to /projects, carrying the '#splash' fragment when requested so the
+    // splash modal opens. A functional redirectTo can carry the fragment — replacing the former empty HomeProxyComponent.
     path: 'home/:showSplashModal',
-    component: HomeProxyComponent
+    redirectTo: (route) => {
+      const showSplash = route.params['showSplashModal'] === 'true';
+      return inject(Router).createUrlTree(['/projects'], showSplash ? { fragment: 'splash' } : {});
+    }
   },
   {
     path: 'about',
-    component: AboutComponent
+    loadComponent: () => import('./about/about.component').then(m => m.AboutComponent)
   },
   {
     path: 'contact',
-    component: ContactComponent
+    loadComponent: () => import('./contact/contact.component').then(m => m.ContactComponent)
   },
   {
     path: 'projects',
-    component: ProjectsComponent
+    loadComponent: () => import('./applications/projects.component').then(m => m.ProjectsComponent)
   },
   {
-    // redirect from legacy route to new route
-    // eg, /a/5b15c2f743cf9c0019391cfc/application => /applications?id=5b15c2f743cf9c0019391cfc#details
-    // proxy component is needed because query parameter and fragment in redirectTo don't work in Angular v4
+    // Legacy deep link (e.g. /a/<id>/application) → the projects view with the details panel open for <id>.
+    // Replaces the former empty ApplicationsProxyComponent.
     path: 'a/:id/:tab',
-    component: ApplicationsProxyComponent
+    redirectTo: (route) => inject(Router).createUrlTree(['/projects'], {
+      queryParams: { id: route.params['id'] },
+      fragment: 'details'
+    })
   },
   {
     // default route

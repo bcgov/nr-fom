@@ -1,19 +1,19 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
+import { LoadingService } from '@admin-core/services/loading.service';
 import { ModalService } from '@admin-core/services/modal.service';
-import { DatePipe, NgFor, NgIf } from '@angular/common';
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { DatePipe } from '@angular/common';
+import { Component, ElementRef, Injector, OnInit, afterNextRender, computed, inject, input, signal, viewChild } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { InteractionResponse, InteractionService, ProjectResponse, WorkflowStateEnum } from '@api-client';
 import { User } from "@utility/security/user";
 import { DateTime } from "luxon";
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { InteractionDetailComponent } from './interaction-detail/interaction-detail.component';
 import { InteractionRequest } from './interaction-detail/interaction-detail.form';
 
 export const ERROR_DIALOG = {
   // title: 'The requested project does not exist.',
-  // message: 'Please try again.',  
+  // message: 'Please try again.',
   width: '340px',
   height: '200px',
   buttons: {
@@ -24,109 +24,103 @@ export const ERROR_DIALOG = {
 };
 
 @Component({
-    standalone: true,
     imports: [
-        NgIf,
-        RouterLink,
-        NgFor,
-        InteractionDetailComponent,
-        DatePipe
-    ],
+    RouterLink,
+    InteractionDetailComponent,
+    DatePipe
+],
     selector: 'app-interactions',
     templateUrl: './interactions.component.html',
-    styleUrls: ['./interactions.component.scss']
+    styleUrl: './interactions.component.scss'
 })
-export class InteractionsComponent implements OnInit, OnDestroy {
+export class InteractionsComponent implements OnInit {
+  private interactionSvc = inject(InteractionService);
+  private cognitoService = inject(CognitoService);
+  private modalSvc = inject(ModalService);
+  private injector = inject(Injector);
+  loadingSvc = inject(LoadingService);
 
-  @ViewChild('interactionDetailForm') 
-  interactionDetailForm: InteractionDetailComponent;
-  @ViewChild('interactionListScrollContainer', {read: ElementRef})
-  public interactionListScrollContainer: ElementRef;
-  
+
+  readonly interactionDetailForm = viewChild<InteractionDetailComponent>('interactionDetailForm');
+  public readonly interactionListScrollContainer = viewChild('interactionListScrollContainer', { read: ElementRef });
+
+  readonly appId = input.required<string>();
+  readonly project = input.required<ProjectResponse>();
   projectId: number;
-  project: ProjectResponse;
-  selectedItem: InteractionResponse;
-  loading = false;
-  private user: User;
+  readonly selectedItem = signal<InteractionResponse | null>(null);
+  // Populated from the authenticated Cognito session in the constructor.
+  private user!: User;
 
-  data: InteractionResponse[] = null;
-  private ngUnsubscribe: Subject<void> = new Subject<void>();
-  private interactionSaved$ = new Subject<void>(); // To notify when 'save' happen.
+  // Engagement list. reload() after a save/delete refetches it; the in-flight state for
+  // the Save/Delete buttons comes from the global loading signal (interceptor-driven).
+  private readonly interactionsResource = rxResource({
+    params: () => Number(this.appId()),
+    stream: ({ params }) => this.interactionSvc.interactionControllerFind(params),
+  });
+  readonly data = computed<InteractionResponse[] | undefined>(() =>
+    this.interactionsResource.hasValue() ? this.interactionsResource.value() : undefined);
 
-  constructor(
-    private route: ActivatedRoute,
-    private interactionSvc: InteractionService,
-    private cognitoService: CognitoService,
-    private modalSvc: ModalService,
-    private cdr: ChangeDetectorRef)
+  constructor()
   {
-    this.user = this.cognitoService.getUser();
+    const user = this.cognitoService.getUser();
+    if (user) {
+      this.user = user;
+    }
   }
 
   ngOnInit(): void {
-    this.projectId = this.route.snapshot.params.appId;
-    this.refreshInteractions();
-
-    this.interactionSaved$.pipe(takeUntil(this.ngUnsubscribe)).subscribe(() => {
-      this.refreshInteractions();
-    });
-
-    this.route.data
-        .subscribe((data: { project: ProjectResponse}) => {
-          this.project = data.project;
-        });
+    this.projectId = Number(this.appId());
   }
 
-  ngOnDestroy(): void {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-  }
-
-  getProjectInteractions() {
-    return this.interactionSvc.interactionControllerFind(this.projectId);
-  }
-
-  private refreshInteractions() {
-    this.getProjectInteractions().subscribe((result) => {
-      this.data = result;
-      this.cdr.detectChanges();
-    });
-  }
-
-  onInteractionItemClicked(item: InteractionResponse, pos: number) {
-    this.selectedItem = item;
-    this.interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
-    this.interactionDetailForm.selectedInteraction = item;
+  onInteractionItemClicked(item: InteractionResponse, pos: number | null) {
+    this.selectedItem.set(item);
+    const interactionDetailForm = this.interactionDetailForm();
+    if (interactionDetailForm) {
+      interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
+      interactionDetailForm.selectedInteraction = item;
+    }
     this.setMinDate();
     if (pos) {
-      // !! important to wait or will not see the effect.
-      setTimeout(() => {
-        this.interactionListScrollContainer.nativeElement.scrollTop = pos;
-      }, 150);
+      // Restore the list scroll position after the selection re-render lands in the DOM.
+      afterNextRender(() => {
+        const container = this.interactionListScrollContainer();
+        if (container) {
+          container.nativeElement.scrollTop = pos;
+        }
+      }, { injector: this.injector });
     }
   }
 
   // Verify if condition is met to allow user modifying this Interaction.
   canModifyInteraction() {
-    return this.user.isAuthorizedForClientId(this.project.forestClient.id) &&
+    return this.user.isAuthorizedForClientId(this.project().forestClient.id) &&
           (
-            (this.project.workflowState.code == WorkflowStateEnum.CommentOpen)
-            || (this.project.workflowState.code == WorkflowStateEnum.CommentClosed)
+            (this.project().workflowState.code == WorkflowStateEnum.CommentOpen)
+            || (this.project().workflowState.code == WorkflowStateEnum.CommentClosed)
           );
   }
 
   addEmptyInteractionDetail() {
-    this.selectedItem = null;
-    this.interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
-    this.interactionDetailForm.selectedInteraction = {} as InteractionResponse;
+    this.selectedItem.set(null);
+    const interactionDetailForm = this.interactionDetailForm();
+    if (interactionDetailForm) {
+      interactionDetailForm.editMode = this.canModifyInteraction(); // set this first.
+      interactionDetailForm.selectedInteraction = {} as InteractionResponse;
+    }
     this.setMinDate();
   }
 
   setMinDate() {
-    this.interactionDetailForm.minDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
+    const interactionDetailForm = this.interactionDetailForm();
+    if (interactionDetailForm) {
+      interactionDetailForm.minDate = DateTime.fromISO(this.project().commentingOpenDate).toJSDate();
+    }
   }
 
-  async saveInteraction(saveReq: InteractionRequest, selectedInteraction: InteractionResponse) {
+  async saveInteraction(saveReq: InteractionRequest, selectedInteraction: InteractionResponse | null) {
+    if (!selectedInteraction) {
+      return;
+    }
     const {id} = selectedInteraction;
     const resultPromise = this.saveRequest(id, this.projectId, saveReq, selectedInteraction);
     resultPromise
@@ -138,25 +132,30 @@ export class InteractionsComponent implements OnInit, OnDestroy {
     const dialogRef = this.modalSvc.openConfirmationDialog(`You are about to delete this engagement. Are you sure?`, 'Delete Engagement');
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
-        this.loading = true;
-        this.cdr.detectChanges();
-        this.interactionSvc.interactionControllerRemove(selectedInteraction.id).subscribe(()=> {
-          this.selectedItem = null;
-          setTimeout(() => {
-            this.loading = false;
-            this.interactionSaved$.next();// trigger list retrieving.
-            this.cdr.detectChanges();
-          }, 100);
-
+        this.interactionSvc.interactionControllerRemove(selectedInteraction.id).subscribe(() => {
+          // Work out the next selection from the current list minus the deleted item.
+          const remaining = (this.data() ?? []).filter(item => item.id !== selectedInteraction.id);
+          this.interactionsResource.reload(); // refetch the list
+          if (remaining.length > 0) {
+            // Show the first remaining engagement in the detail panel.
+            this.onInteractionItemClicked(remaining[0], null);
+          } else {
+            // No engagements left — clear the detail panel to its empty state.
+            this.selectedItem.set(null);
+            const detailForm = this.interactionDetailForm();
+            if (detailForm) {
+              detailForm.clear(); // reset the detail panel + force its change detection
+            }
+          }
         });
       }
     })
   }
 
   private saveRequest(id: number, projectId: number, saveReq: InteractionRequest, selectedInteraction: InteractionResponse)
-          : Promise<InteractionResponse> {
-    let resultPromise: Promise<InteractionResponse>;
-    saveReq.communicationDate = DateTime.fromJSDate(saveReq.communicationDatePickerDate).toISODate(); // convert datePicker value to YYYY-MM-DD string.
+          : Promise<InteractionResponse | undefined> {
+    let resultPromise: Promise<InteractionResponse | undefined>;
+    saveReq.communicationDate = DateTime.fromJSDate(saveReq.communicationDatePickerDate).toISODate() ?? ''; // convert datePicker value to YYYY-MM-DD string.
 
     if (!id) {
       resultPromise = this.interactionSvc.interactionControllerCreate(saveReq.fileContent, projectId,
@@ -179,21 +178,20 @@ export class InteractionsComponent implements OnInit, OnDestroy {
   }
 
   private handleSaveSuccess(result: any) {
-    const pos = this.interactionListScrollContainer.nativeElement.scrollTop;
-    this.interactionSaved$.next();
-    this.selectedItem = result; // updated selected.
-    this.loading = false;
-    this.cdr.detectChanges();
+    const pos = this.interactionListScrollContainer()?.nativeElement.scrollTop ?? 0;
+    this.selectedItem.set(result); // updated selected.
+    this.interactionsResource.reload(); // refetch the list
     setTimeout(() => {
-      this.onInteractionItemClicked(this.selectedItem, pos);
+      const selected = this.selectedItem();
+      if (selected) {
+        this.onInteractionItemClicked(selected, pos);
+      }
     }, 300);
   }
 
   private handleSaveError(err: any) {
     // Let HTTP Error Interceptor show the error for now.
     console.error('Failed to save', err);
-    this.loading = false;
-    this.cdr.detectChanges();
   }
 
 }

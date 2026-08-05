@@ -149,6 +149,23 @@
 
   .navbar-collapse {
     overflow: hidden;
+
+    // Mobile nav expand/collapse. Replaces the former `@angular/animations`
+    // `toggleNav` trigger (height 0 <-> auto over 0.2s). The grid-rows 0fr<->1fr
+    // technique animates to the true content height. At >=768px Bootstrap's
+    // `.navbar-expand-md .navbar-collapse { display: flex !important }` overrides
+    // this, so it only takes effect on mobile — matching the original.
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.2s ease;
+
+    &.nav-open {
+      grid-template-rows: 1fr;
+    }
+
+    > * {
+      min-height: 0;
+    }
   }
 
   @media screen and (max-width: 440px) {

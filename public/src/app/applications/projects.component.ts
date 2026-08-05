@@ -1,16 +1,14 @@
-import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, DestroyRef, Injector, OnDestroy, OnInit, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
-import { Observable, Subscription } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Observable } from 'rxjs';
+import { rxResource, takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProjectPublicSummaryResponse, ProjectService } from '@api-client';
 import { COMMENT_STATUS_FILTER_PARAMS, FOMFiltersService, FOM_FILTER_NAME } from '@public-core/services/fomFilters.service';
 import { UrlService } from '@public-core/services/url.service';
-import { takeUntil } from 'rxjs/operators';
 import { AppMapComponent } from './app-map/app-map.component';
 import { PublicNoticesPanelComponent } from './app-public-notices/public-notices-panel.component';
 import { DetailsPanelComponent } from './details-panel/details-panel.component';
@@ -47,9 +45,7 @@ export interface IUpdateEvent {
  * @implements {OnDestroy}
  */
 @Component({
-  standalone: true,
   imports: [
-    CommonModule, 
     FormsModule,
     FindPanelComponent,
     DetailsPanelComponent,
@@ -58,39 +54,45 @@ export interface IUpdateEvent {
   ],
   selector: 'app-projects',
   templateUrl: './projects.component.html',
-  styleUrls: ['./projects.component.scss']
+  styleUrl: './projects.component.scss'
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
-  @ViewChild('appmap', { static: false }) appmap: AppMapComponent;
-  @ViewChild('findPanel', { static: false }) findPanel: FindPanelComponent;
-  @ViewChild('detailsPanel', { static: false }) detailsPanel: DetailsPanelComponent;
-  @ViewChild('publicNoticesPanel', { static: false }) publicNoticesPanel: PublicNoticesPanelComponent;
+  private modalService = inject(NgbModal);
+  private router = inject(Router);
+  private projectService = inject(ProjectService);
+  urlService = inject(UrlService);
+  private fomFiltersSvc = inject(FOMFiltersService);
+  private destroyRef = inject(DestroyRef);
+  private injector = inject(Injector);
 
-  private splashModal: NgbModalRef = null;
+  readonly appmap = viewChild<AppMapComponent>('appmap');
+  readonly findPanel = viewChild<FindPanelComponent>('findPanel');
+  readonly detailsPanel = viewChild<DetailsPanelComponent>('detailsPanel');
+  readonly publicNoticesPanel = viewChild<PublicNoticesPanelComponent>('publicNoticesPanel');
+
+  private splashModal: NgbModalRef | null = null;
   private fragmentTimeout: any;
 
   // necessary to allow referencing the enum in the html
   public Panel = Panel;
 
   // indicates which side panel should be shown
-  public activePanel: Panel;
-  public loading = false;
-  public observablesSub: Subscription = null;
-  public coordinates: string = null;
-  public projectsSummary: Array<ProjectPublicSummaryResponse>;
-  public projectsSummary$: Observable<Array<ProjectPublicSummaryResponse>>;
-  public totalNumber: number;
-  public commentStatusFilters: MultiFilter<boolean>;
-  
-  constructor(
-    private modalService: NgbModal,
-    private router: Router,
-    private projectService: ProjectService,
-    public urlService: UrlService,
-    private fomFiltersSvc: FOMFiltersService,
-    private destroyRef: DestroyRef,
-    private cdr: ChangeDetectorRef
-  ) { }
+  readonly activePanel = signal<Panel | null | undefined>(undefined);
+
+  // Active filters, and the FOM list fetched reactively from them. `loading` is this fetch's own
+  // in-flight state (per-resource, not the global interceptor loading), so it won't react to
+  // unrelated requests (map tiles, code tables, public notices).
+  private readonly filters = toSignal(this.fomFiltersSvc.filters$);
+  private readonly projectsResource = rxResource({
+    params: () => this.filters(),
+    stream: ({ params }) => this.fetchFOMs(params),
+  });
+  readonly projectsSummary = computed<Array<ProjectPublicSummaryResponse> | undefined>(() =>
+    this.projectsResource.hasValue() ? this.projectsResource.value() : undefined);
+  readonly totalNumber = computed(() => this.projectsSummary()?.length ?? 0);
+  readonly loading = this.projectsResource.isLoading;
+  readonly commentStatusFilters = computed(() =>
+    this.filters()?.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>);
 
   /**
    * @memberof ProjectsComponent
@@ -100,6 +102,14 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.urlService.onNavEnd$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
       const fragment = this.router.parseUrl(event.url).fragment || this.router.parseUrl(this.router.url).fragment;
       this.handleFragment(fragment);
+
+      // "All FOMs" (header) requests a map reset via navigation state — restore the initial map view and
+      // close any open side panel, reproducing the previous full-reload behaviour. This runs on the
+      // reloaded same-URL navigation when already on /projects (fresh navigations init the map anyway).
+      if ((history.state as { resetMap?: boolean } | null)?.resetMap) {
+        this.appmap()?.resetView(false);
+        this.closeSidePanel();
+      }
     });
 
     // Check initial fragment
@@ -107,14 +117,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     if (initialFragment) {
       this.handleFragment(initialFragment);
     }
-
-    this.fomFiltersSvc.filters$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((filters) => {
-      this.fetchFOMs(filters);
-      this.commentStatusFilters = filters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>;
-    });
   }
 
-  private handleFragment(fragment: string) {
+  private handleFragment(fragment: string | null) {
     if (this.fragmentTimeout) {
       clearTimeout(this.fragmentTimeout);
     }
@@ -125,21 +130,17 @@ export class ProjectsComponent implements OnInit, OnDestroy {
           break;
         case Panel.find:
           this.closeSplashModal();
-          this.activePanel = Panel.find;
+          this.activePanel.set(Panel.find);
           break;
         case Panel.details:
           this.closeSplashModal();
-          this.activePanel = Panel.details;
+          this.activePanel.set(Panel.details);
           break;
         default:
           this.closeSplashModal();
           break;
       }
-      // This fragment change is driven by a router NavigationEnd delivered from a
-      // debounced funnel timer in UrlService, which doesn't reliably trigger a zone
-      // change-detection tick that reaches this view. Detect changes explicitly so the
-      // side panel opens/closes when navigated from the map popup "View Details".
-      this.cdr.detectChanges();
+      // activePanel is a signal, so the side panel opens/closes reactively when it is set above
     });
   }
 
@@ -160,7 +161,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   private invalidateMapSize() {
-    setTimeout(() => this.appmap?.invalidateSize(), 250);
+    // Closing the splash modal doesn't resize the map container, so the map's own
+    // ResizeObserver won't fire; refresh it once the post-close render has painted.
+    afterNextRender(() => this.appmap()?.invalidateSize(), { injector: this.injector });
   }
 
 
@@ -181,45 +184,27 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   public closeSidePanel() {
-    if (this.activePanel) {
-      this.activePanel = null;
+    if (this.activePanel()) {
+      this.activePanel.set(null);
       this.urlService.setFragment(null);
     }
   }
 
-  fetchFOMs(fomFilters: Map<string, IFilter | IMultiFilter>) {
+  private fetchFOMs(fomFilters: Map<string, IFilter | IMultiFilter>): Observable<Array<ProjectPublicSummaryResponse>> {
     const fomNumberParam = (fomFilters.get(FOM_FILTER_NAME.FOM_NUMBER) as Filter<number>).filter.value;
     const forestClientNameParam = (fomFilters.get(FOM_FILTER_NAME.FOREST_CLIENT_NAME) as Filter<string>).filter.value;
-    const commentStatusFilters = fomFilters.get(FOM_FILTER_NAME.COMMENT_STATUS)['filters'] as Array<IMultiFilterFields<boolean>>;
+    const commentStatusFilters = (fomFilters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>).filters as Array<IMultiFilterFields<boolean>>;
     const commentOpenParam = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_OPEN)[0].value;
     const commentClosedParam = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_CLOSED)[0].value;
     const openedOnOrAfterParam = (fomFilters.get(FOM_FILTER_NAME.POSTED_ON_AFTER) as Filter<Date>).filter.value?.toISOString().substring(0, 10);
 
-    this.loading = true;
-    this.projectService
+    return this.projectService
         .projectControllerFindPublicSummary(
           fomNumberParam?.toString(),
-          commentOpenParam.toString(), 
-          commentClosedParam.toString(), 
-          forestClientNameParam, 
-          openedOnOrAfterParam)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (results) => {
-            this.projectsSummary = results;
-            this.totalNumber = results.length;
-            this.loading = false;
-            this.cdr.detectChanges();
-          },
-          error: () => {
-            this.loading = false;
-            this.cdr.detectChanges();
-          },
-          complete: () => {
-            this.loading = false;
-            this.cdr.detectChanges();
-          }
-        });
+          commentOpenParam?.toString(),
+          commentClosedParam?.toString(),
+          forestClientNameParam ?? undefined,
+          openedOnOrAfterParam);
   }
 
   /**
@@ -230,16 +215,17 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    */
   public handleFindUpdate(updateEvent: IUpdateEvent) {
 
+    const appmap = this.appmap();
     if (updateEvent.search) {
-      this.detailsPanel.clearAllFilters();
+      this.detailsPanel()?.clearAllFilters();
 
-      if (this.appmap) {
-        this.appmap.unhighlightApplications();
+      if (appmap) {
+        appmap.unhighlightApplications();
       }
     }
 
     if (updateEvent.resetMap) {
-      this.appmap.resetView(false);
+      appmap?.resetView(false);
     }
 
     if (updateEvent.hidePanel) {
@@ -252,7 +238,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       this.closeSidePanel();
     }
   }
-  
+
 
   /**
    * Toggles active panel and its corresponding url fragment.
@@ -261,11 +247,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
    * @memberof ProjectsComponent
    */
   public togglePanel(panel: Panel) {
-    if (this.activePanel === panel) {
-      this.activePanel = null;
+    if (this.activePanel() === panel) {
+      this.activePanel.set(null);
       this.urlService.setFragment(null);
     } else {
-      this.activePanel = panel;
+      this.activePanel.set(panel);
       this.urlService.setFragment(panel);
     }
   }
@@ -280,11 +266,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   public toggleFilter(filter: IMultiFilterFields<boolean>) {
-    if (this.loading) return;
+    if (this.loading()) return;
     filter.value = !filter.value;
-    this.fomFiltersSvc.updateFilterSelection(FOM_FILTER_NAME.COMMENT_STATUS, this.commentStatusFilters);
+    this.fomFiltersSvc.updateFilterSelection(FOM_FILTER_NAME.COMMENT_STATUS, this.commentStatusFilters());
   }
-  
+
   /**
    * On component destroy.
    *

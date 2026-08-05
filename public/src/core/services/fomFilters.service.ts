@@ -54,8 +54,13 @@ export class FOMFiltersService {
   }
 
   updateFiltersSelection(newFilters: Map<string, IFilter|IMultiFilter>) {
-    this._resetCommentStatusFilter(newFilters);
-    this._filters$.next(newFilters);
+    // Emit a fresh Map so reference-based consumers (e.g. projects.component's rxResource keyed on
+    // toSignal(filters$)) always detect the change. Callers (the Find panel) often pass back the same
+    // Map instance after mutating its filter values; re-emitting that identical reference would be
+    // swallowed by a signal, dropping the search.
+    const nextFilters = new Map(newFilters);
+    this._resetCommentStatusFilter(nextFilters);
+    this._filters$.next(nextFilters);
   }
 
   updateFilterSelection(filterName: string, filterToUpdate: IFilter|IMultiFilter) {
@@ -64,14 +69,14 @@ export class FOMFiltersService {
     }
 
     const currentFilters = this._filters$.value;
-    let nextFilters = new Map();
+    const nextFilters = new Map();
     currentFilters.forEach((currentFilter) => {
       let currentFilterName: string;
       if (currentFilter.hasOwnProperty('queryParamsKey')) {
-        currentFilterName = currentFilter['queryParamsKey'];
+        currentFilterName = (currentFilter as MultiFilter<unknown>).queryParamsKey;
       }
       else {
-        currentFilterName = currentFilter['filter']['queryParam'];
+        currentFilterName = (currentFilter as Filter<unknown>).filter.queryParam;
       }
 
       if (currentFilterName === filterName) {
@@ -90,7 +95,7 @@ export class FOMFiltersService {
   }
 
   _getDefaultFilters(): Map<string, IFilter|IMultiFilter> {
-    let defaultFilters = new Map();
+    const defaultFilters = new Map();
     const fomNumberFilter = new Filter<string>(AppUtils.copy(DEFAULT_FOM_FILTERS.fomNumberFilter));
     const forestClientNameFilter = new Filter<string>(AppUtils.copy(DEFAULT_FOM_FILTERS.fcNameFilter));
     const postedOnAfterFilter = new Filter<Date>(AppUtils.copy(DEFAULT_FOM_FILTERS.postedOnAfterFilter));
@@ -107,7 +112,7 @@ export class FOMFiltersService {
    * @param filters 
    */
   _resetCommentStatusFilter(filters: Map<string, IFilter | IMultiFilter>) {
-    const commentStatusFilters = filters.get(FOM_FILTER_NAME.COMMENT_STATUS)['filters'] as Array<IMultiFilterFields<boolean>>;
+    const commentStatusFilters = (filters.get(FOM_FILTER_NAME.COMMENT_STATUS) as MultiFilter<boolean>).filters as Array<IMultiFilterFields<boolean>>;
     const commentOpen = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_OPEN)[0];
     const commentClosed = commentStatusFilters.filter(filter => filter.queryParam == COMMENT_STATUS_FILTER_PARAMS.COMMENT_CLOSED)[0];
     if (!commentOpen.value && !commentClosed.value) {

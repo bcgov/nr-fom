@@ -67,8 +67,8 @@ describe('ShapeInfoComponent', () => {
         { featureId: 1, featureType: { code: 'cut_block' }, name: 'Block A' },
         { featureId: 2, featureType: { code: 'road_section' }, name: 'Road 1' },
       ];
-      component.projectSpatialDetail = mockSpatialDetail as any;
-      expect(component.projectSpatialDetail.length).toBe(2);
+      fixture.componentRef.setInput('spatialDetail', mockSpatialDetail as any);
+      expect(component.projectSpatialDetail()?.length).toBe(2);
     });
   });
 });

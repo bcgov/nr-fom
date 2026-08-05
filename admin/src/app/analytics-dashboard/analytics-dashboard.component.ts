@@ -1,11 +1,10 @@
 import { ANALYTICS_DATA_DEFAULT_SIZE, DEFAULT_ISO_DATE_FORMAT, FOM_GO_LIVE_DATE } from '@admin-core/utils/constants';
-import { DatePipe, NgFor } from '@angular/common';
-import { AfterViewInit, Component, OnInit, signal, ViewChild } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { AfterViewInit, Component, OnInit, inject, input, linkedSignal, viewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { ActivatedRoute } from '@angular/router';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
 import {
   ChartOptions, commentsByDistrictChartOptions, commentsByResponseCodeChartOptions, fomsCountByDistrictChartOptions,
@@ -21,25 +20,28 @@ import {
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 @Component({
-    standalone: true,
     imports: [
-      FormsModule,
-      ReactiveFormsModule,
-      BsDatepickerModule,
-      NgApexchartsModule,
-      NgFor,
-      MatFormFieldModule,
-      MatSelectModule,
-      MatOptionModule
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    BsDatepickerModule,
+    NgApexchartsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule
+],
     selector: 'app-analytics-dashboard',
     templateUrl: './analytics-dashboard.component.html',
-    styleUrls: ['./analytics-dashboard.component.scss'],
+    styleUrl: './analytics-dashboard.component.scss',
     providers: [DatePipe]
 })
 export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
+  private analyticsDashboardDataService = inject(AnalyticsDashboardDataService);
+
   isInitialized = false; // Is Angular view done initialization
-  analyticsData = signal<AnalyticsDashboardData>(null);
+  // Resolved analytics data, bound from the route's `analyticsData` resolver key.
+  readonly initialAnalyticsData = input.required<AnalyticsDashboardData>({ alias: 'analyticsData' });
+  // Writable working copy, seeded from the resolved input and re-set() when filters change.
+  readonly analyticsData = linkedSignal(() => this.initialAnalyticsData());
   startDate: Date;
   endDate: Date;
   planFilterOptions = [
@@ -60,33 +62,32 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   maxDate: Date = new Date(); // today
   
   // chart Angular views
-  @ViewChild("commentsByResponseCodeChart") commentsByResponseCodeChart!: ChartComponent;
-  @ViewChild("topCommentedProjectsChart") topCommentedProjectsChart!: ChartComponent;
-  @ViewChild("fomsCountByDistrictChart") fomsCountByDistrictChart!: ChartComponent;
-  @ViewChild("commentsByDistrictChart") commentsByDistrictChart!: ChartComponent;
-  @ViewChild("fomsCountByForestClientChart") fomsCountByForestClientChart!: ChartComponent;
+  readonly commentsByResponseCodeChart = viewChild.required<ChartComponent>("commentsByResponseCodeChart");
+  readonly topCommentedProjectsChart = viewChild.required<ChartComponent>("topCommentedProjectsChart");
+  readonly fomsCountByDistrictChart = viewChild.required<ChartComponent>("fomsCountByDistrictChart");
+  readonly commentsByDistrictChart = viewChild.required<ChartComponent>("commentsByDistrictChart");
+  readonly fomsCountByForestClientChart = viewChild.required<ChartComponent>("fomsCountByForestClientChart");
 
   // chart options
-  commentsByResponseCodeChartOptions: Partial<ChartOptions>;
-  topCommentedProjectsChartOptions: Partial<ChartOptions>;
-  fomsCountByDistrictChartOptions: Partial<ChartOptions>;
-  commentsByDistrictChartOptions: Partial<ChartOptions>;
-  fomsCountByForestClientChartOptions: Partial<ChartOptions>;
+  commentsByResponseCodeChartOptions: ChartOptions;
+  topCommentedProjectsChartOptions: ChartOptions;
+  fomsCountByDistrictChartOptions: ChartOptions;
+  commentsByDistrictChartOptions: ChartOptions;
+  fomsCountByForestClientChartOptions: ChartOptions;
 
-  constructor(
-    private route: ActivatedRoute,
-    private analyticsDashboardDataService: AnalyticsDashboardDataService
-  ) {
-    // Initialize empty chart options earlier.
-    this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions;
-    this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions;
-    this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions;
-    this.commentsByDistrictChartOptions = commentsByDistrictChartOptions;
-    this.fomsCountByForestClientChartOptions = fomsCountByForestClientChartOptions;
+  constructor() {
+    // Initialize empty chart options earlier. The seed configs omit some optional-at-runtime keys
+    // (grid/legend/stroke), so assert them as full ChartOptions — this keeps every template binding
+    // typed as the concrete Apex* member type the <apx-chart> inputs expect (ApexCharts fills the
+    // remaining keys at runtime), instead of scattering non-null assertions across the template.
+    this.commentsByResponseCodeChartOptions = commentsByResponseCodeChartOptions as ChartOptions;
+    this.topCommentedProjectsChartOptions = topCommentedProjectsChartOptions as ChartOptions;
+    this.fomsCountByDistrictChartOptions = fomsCountByDistrictChartOptions as ChartOptions;
+    this.commentsByDistrictChartOptions = commentsByDistrictChartOptions as ChartOptions;
+    this.fomsCountByForestClientChartOptions = fomsCountByForestClientChartOptions as ChartOptions;
   }
 
   ngOnInit() {
-    this.analyticsData.set(this.route.snapshot.data['analyticsData']);
     console.log('Initial analytics data loaded:', this.analyticsData());
     this.selectedPlan = this.planFilterOptions[0]?.value;
     this.startDate = DateTime.fromISO(FOM_GO_LIVE_DATE).startOf('day').toJSDate();
@@ -167,9 +168,9 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   applyCommentsByResponseCodeChartOptions() {
     const apiData = this.analyticsData().commentCountByResponseCode;
     if (apiData && !(apiData instanceof ApiError)) {
-      this.commentsByResponseCodeChart.updateOptions({
+      this.commentsByResponseCodeChart().updateOptions({
         series: [{
-          name: this.commentsByResponseCodeChartOptions.series[0].name,
+          name: this.commentsByResponseCodeChartOptions.series?.[0]?.name,
           data: [
             apiData[ResponseCodeEnum.Considered] || 0,
             apiData[ResponseCodeEnum.Addressed] || 0,
@@ -188,9 +189,9 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const apiData = this.analyticsData().topCommentedProjects;
     if (apiData && !(apiData instanceof ApiError)) {
       const data = apiData.map(item => item.publicCommentCount);
-      this.topCommentedProjectsChart.updateOptions({
+      this.topCommentedProjectsChart().updateOptions({
         series: [{
-          name: this.topCommentedProjectsChartOptions.series[0].name,
+          name: this.topCommentedProjectsChartOptions.series?.[0]?.name,
           data: data
         }],
         xaxis: { 
@@ -211,9 +212,9 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     const apiData = this.analyticsData().nonInitialPublishedProjectCountByDistrict;
     if (apiData && !(apiData instanceof ApiError)) {
       const data = apiData.map(item => item.projectCount);
-      this.fomsCountByDistrictChart.updateOptions({
+      this.fomsCountByDistrictChart().updateOptions({
         series: [{
-          name: this.fomsCountByDistrictChartOptions.series[0].name,
+          name: this.fomsCountByDistrictChartOptions.series?.[0]?.name,
           data: data
         }],
         xaxis: {
@@ -285,7 +286,7 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
       const maxValue = maxxAxis(allValues);
 
       // Update chart
-      this.commentsByDistrictChart.updateOptions({
+      this.commentsByDistrictChart().updateOptions({
         series: series,
         xaxis: {
           categories: filteredData.map(item => item.districtName + "\u00A0\u00A0"),
@@ -314,9 +315,9 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
       const data = apiData
         .slice(0, slice)
         .map(item => item.projectCount);
-      this.fomsCountByForestClientChart.updateOptions({
+      this.fomsCountByForestClientChart().updateOptions({
         series: [{
-          name: this.fomsCountByForestClientChartOptions.series[0].name,
+          name: this.fomsCountByForestClientChartOptions.series?.[0]?.name,
           data: data
         }],
         xaxis: {

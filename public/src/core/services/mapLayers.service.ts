@@ -7,6 +7,11 @@ export const OverlayAction = {
   Remove: 'REMOVE'
 }
 
+interface MapLayersChangeState {
+  baseLayer: string | null;
+  overlay: { action: string; layerName: string } | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -15,12 +20,12 @@ export class MapLayersService {
   // Value passing for next(?):
   // - For baseLayer change: {baseLayer: string}
   // - For overlay change: {overlay: {action: 'ADD'|'REMOVE', layerName: string}}
-  private _mapLayersChange = new BehaviorSubject({baseLayer: null, overlay: null});
+  private _mapLayersChange = new BehaviorSubject<MapLayersChangeState>({baseLayer: null, overlay: null});
   $mapLayersChange = this._mapLayersChange.asObservable();
 
   // Internally maintain overlay layers.
   // Some component needs this initially.
-  private _overlayLayers = [];
+  private _overlayLayers: string[] = [];
   
   constructor () { 
     // Deliberately empty 
@@ -37,19 +42,20 @@ export class MapLayersService {
    *              either {baseLayer: string}
    *              or {overlay: {action: 'ADD'|'REMOVE', layerName: string}}
    */
-  notifyLayersChange(data) {
-    let newLayersChange = Object.assign({}, this._mapLayersChange.value);
+  notifyLayersChange(data: Partial<MapLayersChangeState>) {
+    const newLayersChange = Object.assign({}, this._mapLayersChange.value);
     if (data.baseLayer) {
       newLayersChange['baseLayer'] = data.baseLayer;
     }
     if (data.overlay) {
-      newLayersChange['overlay'] = data.overlay;
+      const overlay = data.overlay;
+      newLayersChange['overlay'] = overlay;
       // maintain internal overlay state.
-      if (data.overlay.action == OverlayAction.Add) {
-        this._overlayLayers.push(data.overlay.layerName);
+      if (overlay.action == OverlayAction.Add) {
+        this._overlayLayers.push(overlay.layerName);
       }
       else {
-        this._overlayLayers = this._overlayLayers.filter(e => e !== data.overlay.layerName);
+        this._overlayLayers = this._overlayLayers.filter(e => e !== overlay.layerName);
       }
     }
 
@@ -88,9 +94,10 @@ export class MapLayersService {
    */
   applyCurrentMapLayers(map: L.Map, componentMapLayers: MapLayers) {
     // For base layer
-    if (this.getCurrentChangeState().baseLayer) {
+    const baseLayer = this.getCurrentChangeState().baseLayer;
+    if (baseLayer) {
       const currentActiveBaseLayer = componentMapLayers.getActiveBaseLayer();
-      const newBaseLayer = componentMapLayers.getBaseLayerByName(this.getCurrentChangeState().baseLayer);
+      const newBaseLayer = componentMapLayers.getBaseLayerByName(baseLayer);
       map.removeLayer(currentActiveBaseLayer);
       map.addLayer(newBaseLayer);
     }

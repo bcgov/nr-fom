@@ -6,15 +6,17 @@
   </div>
 
   <mat-dialog-content class="export-terms-modal__content">
-    <div class="term-item" *ngFor="let section of termsContent.sections">
-      <span class="icon-wrap" aria-hidden="true">
-        <mat-icon>{{ section.icon }}</mat-icon>
-      </span>
-      <div class="term-copy">
-        <h6>{{ section.title }}</h6>
-        <p>{{ section.description }}</p>
+    @for (section of termsContent.sections; track section) {
+      <div class="term-item">
+        <span class="icon-wrap" aria-hidden="true">
+          <mat-icon>{{ section.icon }}</mat-icon>
+        </span>
+        <div class="term-copy">
+          <h6>{{ section.title }}</h6>
+          <p>{{ section.description }}</p>
+        </div>
       </div>
-    </div>
+    }
 
     <div class="contact-info">
       <p>
