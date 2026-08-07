@@ -158,3 +158,21 @@ jobs:
             ${{ matrix.name != 'db' && format('-p REPLICA_COUNT={0}', inputs.replica_count) || '' }}
             ${{ matrix.parameters }}
           triggers: ${{ inputs.triggers }}
+
+  notify:
+    name: Notify Failure
+    needs: [init, deploy]
+    if: always() && contains(needs.*.result, 'failure')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Notify Owners on Failure
+        uses: bcgov/actions/workflow-notifier@v0.5.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Deployment Failure: FOM (${{ inputs.environment || inputs.target || 'unknown' }})"
+          labels: "bug,failure,deployment"
+
