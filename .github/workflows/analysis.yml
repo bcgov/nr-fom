@@ -128,21 +128,4 @@ jobs:
 
       - name: Success Message
         run: echo "✅ All critical checks passed or were intentionally skipped!"
-
-  notify:
-    name: Notify Failure
-    needs: [tests-admin, tests-api, tests-public, trivy]
-    if: always() && contains(needs.*.result, 'failure') && (github.event_name == 'schedule' || github.ref == 'refs/heads/main')
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      issues: write
-    steps:
-      - uses: actions/checkout@v7
-      - name: Notify Owners on Failure
-        uses: bcgov/actions/workflow-notifier@v0.5.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Analysis Failure: FOM (${{ github.event_name }})"
-          labels: "bug,failure,analysis"
-
+        
