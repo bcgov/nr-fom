@@ -17,6 +17,9 @@ permissions: {}
 jobs:
   deploy:
     name: Deploy (TEST)
+    permissions:
+      contents: read
+      issues: write
     secrets: inherit
     uses: ./.github/workflows/.deploy.yml
     with:

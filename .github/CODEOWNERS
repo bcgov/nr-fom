@@ -1,0 +1,7 @@
+# Matched against repo root (asterisk)
+*                         @arcshiftsolutions @OlgaLiber2 @DerekRoberts
+
+# Matched against directories
+# /.github/workflows/       TBD
+
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners

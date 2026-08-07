@@ -50,6 +50,9 @@ jobs:
   deploy:
     name: Deploy (${{ github.event.number }})
     needs: [build]
+    permissions:
+      contents: read
+      issues: write
     secrets: inherit
     uses: ./.github/workflows/.deploy.yml
     with:
