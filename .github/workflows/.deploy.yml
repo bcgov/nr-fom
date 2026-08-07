@@ -173,6 +173,6 @@ jobs:
         uses: bcgov/actions/workflow-notifier@v0.5.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Deployment Failure: FOM (${{ inputs.environment || inputs.target || 'unknown' }})"
+          title: "Deployment Failure: FOM (${{ inputs.target }})"
           labels: "bug,failure,deployment"
 
