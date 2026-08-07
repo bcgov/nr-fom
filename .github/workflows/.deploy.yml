@@ -162,7 +162,7 @@ jobs:
   notify:
     name: Notify Failure
     needs: [init, deploy]
-    if: always() && contains(needs.*.result, 'failure')
+    if: always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
