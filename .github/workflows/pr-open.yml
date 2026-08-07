@@ -52,6 +52,7 @@ jobs:
     needs: [build]
     permissions:
       contents: read
+      issues: write
     secrets: inherit
     uses: ./.github/workflows/.deploy.yml
     with:
