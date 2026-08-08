@@ -30,7 +30,7 @@ export class CommentModalComponent implements OnInit {
 
   readonly submitting = signal(false);
   readonly currentPage = signal(1);
-  public publicComment = {} as PublicCommentCreateRequest;
+  public publicComment = { feedback: '' } as PublicCommentCreateRequest;
   public iAgreeModel = false;
   public projectId: number;
   public projectSpatialDetail: SpatialFeaturePublicResponse[];
