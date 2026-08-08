@@ -119,7 +119,7 @@
             </div>
           </section>
 
-          @if (!selectedScope()?.commentScopeCode) {
+          @if (!selectedScope().commentScopeCode) {
             <section>
               <div>
                 <app-interactions-summary [interactionDetails]="interactions()"
@@ -129,7 +129,7 @@
           }
         </section>
 
-        @if (!selectedScope()?.commentScopeCode) {
+        @if (!selectedScope().commentScopeCode) {
           <section>
             <h4>Attachments</h4>
             @if ((attachments()?.length ?? 0) > 0) {
@@ -173,7 +173,7 @@
           </section>
         }
 
-        @if (!selectedScope()?.commentScopeCode) {
+        @if (!selectedScope().commentScopeCode) {
           <section>
             <small>
               {{project()?.projectPlanCode == projectPlanCodeEnum.Fsp
