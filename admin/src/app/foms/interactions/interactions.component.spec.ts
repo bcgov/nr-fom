@@ -88,7 +88,8 @@ describe('InteractionsComponent', () => {
     // autoDetectChanges mirrors production: Angular re-renders on its own whenever
     // the zone observes the app has gone idle, exactly like a running browser tab.
     fixture.autoDetectChanges(true);
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
 
     expect(listText()).toContain('Engagements (0)');
     expect(findMock).toHaveBeenCalledTimes(1);
@@ -107,6 +108,7 @@ describe('InteractionsComponent', () => {
     // Give the save promise chain, the resource.reload() change-detection cycle, and the
     // follow-up refetch a few turns of the event loop, same as a real browser would provide.
     await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
 
     expect(findMock).toHaveBeenCalledTimes(2);
     expect(listText()).toContain('Engagements (1)');
@@ -123,16 +125,18 @@ describe('InteractionsComponent', () => {
       .mockReturnValue(asyncOf([list[0]]));     // after delete: only the first remains
 
     fixture.autoDetectChanges(true);
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
 
     // Select the second engagement -> its detail is shown.
     component.onInteractionItemClicked(component.data()![1], null);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
     expect(component.interactionDetailForm()!.interaction()!.id).toBe(20);
 
     // Delete the selected (second) engagement.
     await component.deleteInteraction(component.data()![1]);
     await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
 
     // Detail panel now shows the first remaining engagement, not the deleted one.
     expect(component.selectedItem()?.id).toBe(10);
@@ -146,16 +150,18 @@ describe('InteractionsComponent', () => {
       .mockReturnValue(asyncOf([]));       // after delete: empty
 
     fixture.autoDetectChanges(true);
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
 
     component.onInteractionItemClicked(component.data()![0], null);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    fixture.detectChanges();
     expect(component.interactionDetailForm()!.interaction()!.id).toBe(10);
     // The detail form is rendered for the selected engagement (empty state is gone).
     expect(listText()).not.toContain('No engagement selected');
 
     await component.deleteInteraction(component.data()![0]);
     await new Promise((resolve) => setTimeout(resolve, 50));
+    fixture.detectChanges();
 
     // No engagements left -> selection cleared and the detail panel actually re-renders to its
     // empty state in the DOM (the regression: the panel used to stay showing the deleted item).
