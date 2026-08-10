@@ -58,9 +58,9 @@ export class FomDetailComponent implements OnInit {
    * value — safe here because the constructor opts this route out of component reuse, so a new
    * FOM always means a new component instance.
    */
-  readonly project = linkedSignal<ProjectResponse>(() => this.projectDetail()!);
+  readonly project = linkedSignal<ProjectResponse>(() => this.projectDetail());
   // Route resolver data, bound as inputs (a/:appId resolve keys).
-  readonly projectDetail = input<ProjectResponse>();
+  readonly projectDetail = input.required<ProjectResponse>();
   readonly spatialDetail = input.required<SpatialFeaturePublicResponse[]>();
   readonly projectMetrics = input.required<ProjectMetricsResponse>();
   public isProjectActive = false;

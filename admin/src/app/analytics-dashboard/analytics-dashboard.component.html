@@ -92,7 +92,7 @@
                   Total FOMs published for public comments
                 </div>
                 <div class="total-fom-content-value">
-                  {{ analyticsData()?.nonInitialPublishedProjectCount || 0 }}
+                  {{ analyticsData().nonInitialPublishedProjectCount || 0 }}
                 </div>
               </div>
             </div>
@@ -191,7 +191,7 @@
         <div class="unique-fc-box">
           <div>Unique forest clients submitting FOMs</div>
           <div class="unique-fc-vtxt">
-            {{ analyticsData()?.uniqueForestClientCount || 0 }}
+            {{ analyticsData().uniqueForestClientCount || 0 }}
           </div>
         </div>
         <div id="foms-by-forest-client" class="mt-3">

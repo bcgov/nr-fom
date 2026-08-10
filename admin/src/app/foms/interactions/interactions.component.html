@@ -66,10 +66,14 @@
             <div class="panel-scroll">
               <app-interaction-detail #interactionDetailForm="interactionForm">
                 <div class="row">
-                  @if (canModifyInteraction()) {
+                  <!-- Also gated on interaction(): this button is projected into the child, but its
+                       bindings are evaluated in this view even while the child leaves the
+                       <ng-content> slot unrendered, and interactionFormGroup is not assigned until
+                       an interaction is selected. -->
+                  @if (canModifyInteraction() && interactionDetailForm.interaction()) {
                     <button type="button" title="Save this engagement"
                       class="btn btn-sm btn-primary btn-container"
-                      [disabled]="loadingSvc.loading() || interactionDetailForm.interactionFormGroup?.invalid"
+                      [disabled]="loadingSvc.loading() || interactionDetailForm.interactionFormGroup.invalid"
                       (click)="saveInteraction(interactionDetailForm.interactionFormGroup.value, interactionDetailForm.interaction())">
                       Save interaction
                     </button>

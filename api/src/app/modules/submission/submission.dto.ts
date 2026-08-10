@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { FeatureCollection } from 'geojson';
 import { SubmissionTypeCodeEnum } from './submission-type-code.entity';
@@ -78,12 +78,15 @@ export class SubmissionDetailResponse {
   })
   submissionTypeCode: SubmissionTypeCodeEnum;
 
-  @ApiProperty({type: SubmissionSpatialObjectDetail})
-  cutblocks: SubmissionSpatialObjectDetail; 
+  // All three are optional and only present when that spatial type was actually submitted:
+  // convertToSubmissionDetailResponse assigns each one only when its count is greater than zero
+  // (see submission.service.ts).
+  @ApiPropertyOptional({type: SubmissionSpatialObjectDetail})
+  cutblocks?: SubmissionSpatialObjectDetail;
 
-  @ApiProperty({type: SubmissionSpatialObjectDetail})
-  roadSections: SubmissionSpatialObjectDetail; 
+  @ApiPropertyOptional({type: SubmissionSpatialObjectDetail})
+  roadSections?: SubmissionSpatialObjectDetail;
 
-  @ApiProperty({type: SubmissionSpatialObjectDetail})
-  retentionAreas: SubmissionSpatialObjectDetail; 
+  @ApiPropertyOptional({type: SubmissionSpatialObjectDetail})
+  retentionAreas?: SubmissionSpatialObjectDetail;
 }

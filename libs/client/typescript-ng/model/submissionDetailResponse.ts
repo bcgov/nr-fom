@@ -17,8 +17,8 @@ export interface SubmissionDetailResponse {
     projectId: number;
     submissionId: number;
     submissionTypeCode: SubmissionTypeCodeEnum;
-    cutblocks: SubmissionSpatialObjectDetail;
-    roadSections: SubmissionSpatialObjectDetail;
-    retentionAreas: SubmissionSpatialObjectDetail;
+    cutblocks?: SubmissionSpatialObjectDetail;
+    roadSections?: SubmissionSpatialObjectDetail;
+    retentionAreas?: SubmissionSpatialObjectDetail;
 }
 

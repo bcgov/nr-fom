@@ -29,8 +29,8 @@ export interface PublicCommentAdminResponse {
      */
     createTimestamp: string;
     commentScope: CommentScopeCode;
-    response: ResponseCode;
-    responseDetails: string;
+    response?: ResponseCode;
+    responseDetails?: string;
     scopeFeatureName: string;
 }
 

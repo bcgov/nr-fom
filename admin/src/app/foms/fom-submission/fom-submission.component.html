@@ -98,18 +98,16 @@
               </div>
             </fieldset>
             @if (spatialSubmission(); as sub) {
-              @if (sub.cutblocks?.count > 0
-              || sub.roadSections?.count > 0
-              || sub.retentionAreas?.count > 0) {
+              @if (sub.cutblocks || sub.roadSections || sub.retentionAreas) {
               <fieldset class="no-margin no-border"
                 >
                 <legend> Submitted Spatial Objects </legend>
                 <ul class="nv-list">
-                  @if (sub.cutblocks?.count > 0) {
+                  @if (sub.cutblocks; as cutblocks) {
                     <li
                       style="padding-bottom: 0">
-                      <span class="name">Cut block submission - {{sub.cutblocks.count}} blocks</span>
-                      <span class="value1">{{sub.cutblocks.dateSubmitted | date}}</span>
+                      <span class="name">Cut block submission - {{cutblocks.count}} blocks</span>
+                      <span class="value1">{{cutblocks.dateSubmitted | date}}</span>
                       <span class="action">
                         @if (canDeleteSpatialSubmission()) {
                           <button class="btn btn-icon no-padding no-border" title="Remove Cutblocks"
@@ -127,11 +125,11 @@
                       </span>
                     </li>
                   }
-                  @if (sub.roadSections?.count > 0) {
+                  @if (sub.roadSections; as roadSections) {
                     <li
                       style="padding-bottom: 0">
-                      <span class="name">Road section submission - {{sub.roadSections.count}} sections</span>
-                      <span class="value1">{{sub.roadSections.dateSubmitted | date}}</span>
+                      <span class="name">Road section submission - {{roadSections.count}} sections</span>
+                      <span class="value1">{{roadSections.dateSubmitted | date}}</span>
                       <span class="action">
                         @if (canDeleteSpatialSubmission()) {
                           <button class="btn btn-icon no-padding no-border" title="Remove Road Sections"
@@ -149,11 +147,11 @@
                       </span>
                     </li>
                   }
-                  @if (sub.retentionAreas?.count > 0) {
+                  @if (sub.retentionAreas; as retentionAreas) {
                     <li
                       style="padding-bottom: 0">
-                      <span class="name">Retention area submission - {{sub.retentionAreas.count}} areas</span>
-                      <span class="value1">{{sub.retentionAreas.dateSubmitted | date}}</span>
+                      <span class="name">Retention area submission - {{retentionAreas.count}} areas</span>
+                      <span class="value1">{{retentionAreas.dateSubmitted | date}}</span>
                       <span class="action">
                         @if (canDeleteSpatialSubmission()) {
                           <button class="btn btn-icon no-padding no-border" title="Remove Retention Areas"

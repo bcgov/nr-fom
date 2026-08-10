@@ -100,7 +100,7 @@
                             <span class="name">FSP ID:</span>
                             <span
                               class="value">
-                              {{project()?.fspId}}
+                              {{project().fspId}}
                             </span>
                           </li>
                         }
@@ -109,7 +109,7 @@
                             <span class="name">Woodlot Licence Number:</span>
                             <span
                               class="value">
-                              {{project()?.woodlotLicenseNumber}}
+                              {{project().woodlotLicenseNumber}}
                             </span>
                           </li>
                         }
@@ -134,7 +134,7 @@
                           <span class="name">District:</span>
                           <span
                             class="value">
-                            {{project().district ? project().district?.name : 'A district has not been specified'}}
+                            {{project().district ? project().district.name : 'A district has not been specified'}}
                           </span>
                         </li>
                         <li>
