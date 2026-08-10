@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import {
   IsArray,
     IsEmail,
@@ -90,10 +90,11 @@ export class PublicCommentAdminResponse extends OmitType(
   @ApiProperty()
   commentScope: CommentScopeCode;
 
-  @ApiProperty()
+  // Optional: a comment that has not been actioned yet has no response code.
+  @ApiPropertyOptional()
   response?: ResponseCode;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   responseDetails?: string;
 
   @ApiProperty()

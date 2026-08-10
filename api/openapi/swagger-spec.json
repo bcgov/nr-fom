@@ -2956,8 +2956,6 @@
           "revisionCount",
           "createTimestamp",
           "commentScope",
-          "response",
-          "responseDetails",
           "scopeFeatureName"
         ]
       },
