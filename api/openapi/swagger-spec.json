@@ -3191,10 +3191,7 @@
         "required": [
           "projectId",
           "submissionId",
-          "submissionTypeCode",
-          "cutblocks",
-          "roadSections",
-          "retentionAreas"
+          "submissionTypeCode"
         ]
       },
       "SubmissionTypeCode": {
