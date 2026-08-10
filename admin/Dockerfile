@@ -4,7 +4,7 @@ ARG port=4200
 
 
 # Build container
-FROM node:24.18.0-bookworm-slim AS build
+FROM node:24.18.1-bookworm-slim AS build
 
 # Install dependencies and build static content
 ARG build_dir
