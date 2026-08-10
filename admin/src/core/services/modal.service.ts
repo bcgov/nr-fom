@@ -67,7 +67,14 @@ export class ModalService {
   openConfirmationDialog(
     message: string,
     title: string,
-    options?: { width?: string; height?: string; maxWidth?: string }
+    options?: {
+      width?: string;
+      height?: string;
+      maxWidth?: string;
+      // Button labels are rendered verbatim.
+      confirmText?: string;
+      cancelText?: string;
+    }
   ): MatDialogRef<any> {
     return this.openDialog({
       data: {
@@ -76,7 +83,10 @@ export class ModalService {
         width: options?.width ?? '460px',
         height: options?.height,
         maxWidth: options?.maxWidth,
-        buttons: {confirm: {text: 'OK'}, cancel: { text: 'Cancel' }}
+        buttons: {
+          confirm: {text: options?.confirmText ?? 'OK'},
+          cancel: {text: options?.cancelText ?? 'Cancel'}
+        }
       }
     });
   }
