@@ -24,6 +24,10 @@ import _ = require('lodash');
 
 type SpatialObject = CutBlock | RoadSection | RetentionArea;
 
+// Optional GeoJSON feature property, used as the spatial object's business name and to
+// identify a feature in validation error messages.
+const OPTIONAL_PROP_NAME = "NAME";
+
 @Injectable()
 export class SubmissionService extends DataService<Submission, Repository<Submission>, SubmissionDetailResponse> {
 
@@ -196,7 +200,6 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     await this.basicSpatialFileChecks(spatialObjectCode, jsonSpatialSubmission);
 
     const features = jsonSpatialSubmission.features;
-    const OPTIONAL_PROP_NAME = "NAME";
 
     return features.map(f => {
       const geometry = f.geometry;
@@ -264,7 +267,7 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     const coordSystemRef = this.detectSpatialSubmissionCoordRef(jsonSpatialSubmission);
     this.logger.debug(`Coordinate system: EPSG${coordSystemRef} detected for the spatial submission:`, JSON.stringify(jsonSpatialSubmission));
 
-    for (const f of jsonSpatialSubmission.features) {
+    for (const [featureIndex, f] of jsonSpatialSubmission.features.entries()) {
       let geometry = f.geometry;
       if (coordSystemRef !== SpatialCoordSystemEnum.BC_ALBERS) {
         const convertedGeometryJson = await this.convertGeometry(JSON.stringify(geometry), SpatialCoordSystemEnum.BC_ALBERS);
@@ -273,7 +276,7 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
 
       this.validateCoordWithinBounding(geometry, (coordSystemRef !== SpatialCoordSystemEnum.BC_ALBERS));
 
-      this.validateRequiredProperties(spatialObjectCode, f.properties);
+      this.validateRequiredProperties(spatialObjectCode, f.properties, featureIndex);
     }
   }
 
@@ -308,28 +311,41 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
    * WTRA:        required - N/A
    *              optional - NAME
   */
-  private validateRequiredProperties(spatialObjectCode: SpatialObjectCodeEnum, properties: GeoJsonProperties) {
-    if (spatialObjectCode === SpatialObjectCodeEnum.CUT_BLOCK || 
+  private validateRequiredProperties(spatialObjectCode: SpatialObjectCodeEnum, properties: GeoJsonProperties, featureIndex: number) {
+    if (spatialObjectCode === SpatialObjectCodeEnum.CUT_BLOCK ||
         spatialObjectCode === SpatialObjectCodeEnum.ROAD_SECTION) {
+      const featureRef = this.describeFeature(properties, featureIndex);
       if (!properties || _.isEmpty(properties)) {
-        throw new BadRequestException(`Required Feature object 'properties' missing for ${spatialObjectCode}.`);
+        throw new BadRequestException(`Required Feature object 'properties' missing for ${spatialObjectCode} ${featureRef}.`);
       }
 
       // validation - development_date
       const DATE_FORMAT = DateTimeUtil.DATE_FORMAT;
       if (!properties.hasOwnProperty('DEV_DATE') && !properties.hasOwnProperty('DEVELOPMENT_DATE')) {
-        const errMsg = `Required property DEV_DATE missing for ${spatialObjectCode}.`;
+        const errMsg = `Required property DEV_DATE missing for ${spatialObjectCode} ${featureRef}.`;
         throw new BadRequestException(errMsg);
       }
-      else {
-        // validate date format: YYYY-MM-DD
-        const developmentDate = this.getDevelopmentDate(properties);
-        if (!dayjs(developmentDate, DATE_FORMAT).isValid()) {
-          const errMsg = `Required property DEV_DATE has wrong date format. Valid format: '${DATE_FORMAT}'.`;
-          throw new BadRequestException(errMsg);
-        }
+
+      // Validate the date is exactly DATE_FORMAT and is a real calendar date. Strict parsing matters:
+      // a lenient parse silently rolls values like '2026-13-45' forward into a different date.
+      if (!DateTimeUtil.isValidDateOnlyString(this.getDevelopmentDate(properties))) {
+        const suppliedValue = properties.hasOwnProperty('DEV_DATE') ? properties['DEV_DATE'] : properties['DEVELOPMENT_DATE'];
+        const errMsg = `Property DEV_DATE has an invalid value '${suppliedValue}' for ${spatialObjectCode} ${featureRef}. ` +
+          `Required format: '${DATE_FORMAT}' (must be a real calendar date).`;
+        throw new BadRequestException(errMsg);
       }
     }
+  }
+
+  /**
+   * Human readable reference to a feature, so validation errors let the submitter find the
+   * offending record in a large spatial file. Uses the optional NAME property when present.
+   * @param featureIndex zero based position of the feature within the submission.
+   */
+  private describeFeature(properties: GeoJsonProperties, featureIndex: number): string {
+    const name = properties?.[OPTIONAL_PROP_NAME];
+    const position = `feature #${featureIndex + 1}`;
+    return name ? `'${name}' (${position})` : position;
   }
 
   // validation - Validate each point(Position) is within BC bounding box.
