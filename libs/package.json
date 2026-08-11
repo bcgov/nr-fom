@@ -29,7 +29,7 @@
     "jest-sonar-reporter": "^2.0.0",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.0"
   },
   "jest": {
     "moduleFileExtensions": [
