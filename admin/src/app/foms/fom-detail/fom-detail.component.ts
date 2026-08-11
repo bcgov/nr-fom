@@ -144,7 +144,10 @@ export class FomDetailComponent implements OnInit {
   }
 
   finalizeFOM() {
-    const dialogRef = this.modalSvc.openConfirmationDialog(`Finalizing your FOM will send a notification to district staff, and lock the FOM, so you will not be able to make any changes. Do you want to proceed?`, 'Finalize FOM');
+    const dialogRef = this.modalSvc.openConfirmationDialog(
+      `<p>Finalizing your FOM will send a notification to district staff, and lock the FOM, so you will not be able to make any changes.</p><p><strong>Do you want to proceed?</strong></p>`,
+      'Finalize FOM',
+      { confirmText: 'Yes' });
     dialogRef.afterClosed().subscribe((confirm) => {
       if (confirm) {
         this.isFinalizing.set(true);
@@ -170,7 +173,10 @@ export class FomDetailComponent implements OnInit {
   }
 
   public async publishFOM(){
-    const dialogRef = this.modalSvc.openConfirmationDialog(`Publishing your FOM will make it viewable to the public once commenting opens, and you will not be able to make any edits. Do you want to proceed?`, 'Publish FOM');
+    const dialogRef = this.modalSvc.openConfirmationDialog(
+      `<p>Publishing your FOM will make it viewable to the public once commenting opens, and you will not be able to make any edits.</p><p><strong>Do you want to proceed?</strong></p>`,
+      'Publish FOM',
+      { confirmText: 'Yes' });
     dialogRef.afterClosed().subscribe(async (confirm) => {
       if (confirm) {
         const ready = this.validatePublishReady();
