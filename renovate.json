@@ -3,17 +3,5 @@
   "description": "Presets from https://github.com/bcgov/renovate-config",
   "extends": [
     "github>bcgov/renovate-config#2026.7.17"
-  ],
-  "prConcurrentLimit": 2,
-  "packageRules": [
-    {
-      "automerge": false,
-      "matchPackageNames": [
-        "*"
-      ]
-    }
-  ],
-  "ignoreDeps": [
-    "minio"
   ]
 }
