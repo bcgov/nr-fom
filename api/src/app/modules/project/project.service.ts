@@ -396,9 +396,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
 
     this.logger.debug(`${this.constructor.name}.workflowStateChange projectId %o request %o`, projectId, request);
 
-    const options = {relations: []};
-    options.relations.push('submissions'); // add this extra relation for later use.
-		options.relations.push('publicNotices');
+    const options = { relations: { submissions: true, publicNotices: true } };
     const entity:Project = await this.findEntityWithCommonRelations(projectId, options);
     if (! entity) {
       throw new BadRequestException("Entity not found.");
