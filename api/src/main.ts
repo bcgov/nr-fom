@@ -139,6 +139,9 @@ async function postStartup(app: INestApplication) {
 async function startApi() {
   try {
     const app = await bootstrap();
+    if (!app) {
+      process.exit(1);
+    }
     app.get(Logger).log("Done regular startup.");
     // Don't await so non-blocking - allows OpenShift container (pod) to be marked ready for traffic.
     postStartup(app).catch((postError) => {
