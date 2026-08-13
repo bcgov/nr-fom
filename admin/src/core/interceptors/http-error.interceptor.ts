@@ -16,7 +16,7 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
       const error = err?.error?.message || err.statusText;
       const statusCode = err?.status;
       if (statusCode == 400) { // Bad Request
-        modalSvc.openErrorDialog(`The request was not valid: ${error} <br/>Please fix the issue and try again.`, 'Bad Request');
+        modalSvc.openErrorDialog(`The request was not valid: ${error}. <br/><br/>Please fix the issue and try again.`, 'Bad Request');
       } else if (statusCode == 403) { // Forbidden
         modalSvc.openErrorDialog(`You were not authorized to perform the request. Please try again. <br/>If this issue persists, try logging out and back in. If this still persists, please contact the service desk.`, 'Forbidden');
       } else if (statusCode == 422) {
