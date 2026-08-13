@@ -131,7 +131,7 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
   private async findEntityForSubmissionType(projectId: number, submissionTypeCode: SubmissionTypeCodeEnum): Promise<Submission> {
     const existingSubmissions: Submission[] = await this.repository.find({
       where: { projectId: projectId, submissionTypeCode: submissionTypeCode },
-      relations: this.getCommonRelations(),
+      relations: { project: true },
     });
 
     if (existingSubmissions.length == 0) {

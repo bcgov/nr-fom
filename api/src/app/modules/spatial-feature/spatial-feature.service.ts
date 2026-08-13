@@ -25,7 +25,7 @@ async findByProjectId(projectId: number): Promise<SpatialFeaturePublicResponse[]
 
     const result = await this.spatialFeatureRepository.find({
       where: { projectId: projectId },
-      relations: ['submissionType'],
+      relations: { submissionType: true },
     });
 
     return result.map((entity) => {

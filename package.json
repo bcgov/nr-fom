@@ -26,6 +26,10 @@
       "@angular/common": "^22.0.1",
       "@angular/forms": "^22.0.1"
     },
-    "nodemailer": "^9.0.5"
+    "nodemailer": "^9.0.5",
+    "typeorm": "^1.0.0",
+    "@nestjs/typeorm": {
+      "typeorm": "^1.0.0"
+    }
   }
 }
