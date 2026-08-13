@@ -1,6 +1,7 @@
 export * from './attachmentResponse';
 export * from './attachmentTypeCode';
 export * from './awsCognitoConfig';
+export * from './awsCognitoLogoutConfig';
 export * from './awsCognitoOauthConfig';
 export * from './commentScopeCode';
 export * from './districtResponse';

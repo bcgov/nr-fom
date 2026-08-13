@@ -30,6 +30,13 @@ export class AwsCognitoConfig {
   @ApiProperty({ type: () => AwsCognitoOauthConfig })
   oauth: AuthAwsCognitoConfig = new AwsCognitoOauthConfig();
 
+  /**
+   * Endpoints and client ids for the federated logout chain the admin SPA drives
+   * (Siteminder -> Keycloak -> Cognito -> app).
+   */
+  @ApiProperty({ type: () => AwsCognitoLogoutConfig })
+  logout: AuthAwsCognitoLogoutConfig = new AwsCognitoLogoutConfig();
+
   @ApiProperty()
   federationTarget: string = 'COGNITO_USER_POOLS';
 }
@@ -40,6 +47,13 @@ export interface AuthAwsCognitoConfig {
   redirectSignIn: string;
   redirectSignOut: string;
   responseType: string;
+}
+
+export interface AuthAwsCognitoLogoutConfig {
+  siteminderUrl: string;
+  keycloakUrl: string;
+  keycloakClientIdIdir: string;
+  keycloakClientIdBceidBusiness: string;
 }
 
 /**
@@ -65,6 +79,29 @@ export class AwsCognitoOauthConfig implements AuthAwsCognitoConfig {
 
   @ApiProperty()
   responseType: string;
+}
+
+export class AwsCognitoLogoutConfig implements AuthAwsCognitoLogoutConfig {
+  /** Siteminder logoff.cgi base, without query string. */
+  @ApiProperty()
+  siteminderUrl: string;
+
+  /** Keycloak end-session endpoint for the 'standard' realm, without query string. */
+  @ApiProperty()
+  keycloakUrl: string;
+
+  /**
+   * Cognito's client id in Keycloak, per IdP. FAM registers one Keycloak client
+   * for IDIR and one for BCeID Business, and the end-session call must use the
+   * one matching the IdP the user signed in with. Both ids carry a '-dev-'
+   * segment in every realm - it is part of the client name, not an environment
+   * marker, so the same two values are correct in dev, test and prod.
+   */
+  @ApiProperty()
+  keycloakClientIdIdir: string;
+
+  @ApiProperty()
+  keycloakClientIdBceidBusiness: string;
 }
 
 @Injectable()

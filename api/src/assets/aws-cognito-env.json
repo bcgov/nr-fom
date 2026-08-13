@@ -9,8 +9,14 @@
         "domain": "lza-prod-fam-user-pool-domain.auth.ca-central-1.amazoncognito.com",
         "scope": ["openid"],
         "redirectSignIn": "http://localhost:4200/admin/search",
-        "redirectSignOut": "http://localhost:4200/admin/not-authorized?loggedout=true",
+        "redirectSignOut": "http://localhost:4200/admin/logout",
         "responseType": "code"
+    },
+    "logout": {
+        "siteminderUrl": "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi",
+        "keycloakUrl": "https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout",
+        "keycloakClientIdIdir": "fsa-cognito-idir-dev-4088",
+        "keycloakClientIdBceidBusiness": "fsa-cognito-b-ce-id-business-dev-4090"
     },
     "federationTarget": "COGNITO_USER_POOLS"
 }
