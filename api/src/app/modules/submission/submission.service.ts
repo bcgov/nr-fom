@@ -28,6 +28,10 @@ type SpatialObject = CutBlock | RoadSection | RetentionArea;
 // identify a feature in validation error messages.
 const OPTIONAL_PROP_NAME = "NAME";
 
+// Planned development may be up to 7 years out: 3 years of FOM validity plus 4 years of CP validity.
+// Applied as a flat number of years rather than computed from the two terms.
+const DEV_DATE_MAX_YEARS_AHEAD = 7;
+
 @Injectable()
 export class SubmissionService extends DataService<Submission, Repository<Submission>, SubmissionDetailResponse> {
 
@@ -70,6 +74,10 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
     const submission = await this.obtainExistingOrNewSubmission(dto.projectId, submissionTypeCode, user);
 
     const spatialObjects: SpatialObject[] = await this.prepareFomSpatialObjects(submission.id, dto.spatialObjectCode, dto.jsonSpatialSubmission, user);
+
+    // Basic validations are done at the prepareFomSpatialObjects above: geometry, coordinate system, and the presence and format of every required property. 
+    // Business validation below.
+    await this.validateDevelopmentDateRanges(spatialObjects, dto.projectId, submissionTypeCode, dto.spatialObjectCode);
 
     // And save the geospatial objects (will update/replace previous ones)
     if (SpatialObjectCodeEnum.CUT_BLOCK === dto.spatialObjectCode) {
@@ -314,7 +322,7 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
   private validateRequiredProperties(spatialObjectCode: SpatialObjectCodeEnum, properties: GeoJsonProperties, featureIndex: number) {
     if (spatialObjectCode === SpatialObjectCodeEnum.CUT_BLOCK ||
         spatialObjectCode === SpatialObjectCodeEnum.ROAD_SECTION) {
-      const featureRef = this.describeFeature(properties, featureIndex);
+      const featureRef = this.describeFeature(properties?.[OPTIONAL_PROP_NAME], featureIndex);
       if (!properties || _.isEmpty(properties)) {
         throw new BadRequestException(`Required Feature object 'properties' missing for ${spatialObjectCode} ${featureRef}.`);
       }
@@ -328,7 +336,8 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
 
       // Validate the date is exactly DATE_FORMAT and is a real calendar date. Strict parsing matters:
       // a lenient parse silently rolls values like '2026-13-45' forward into a different date.
-      if (!DateTimeUtil.isValidDateOnlyString(this.getDevelopmentDate(properties))) {
+      const developmentDate = this.getDevelopmentDate(properties);
+      if (!DateTimeUtil.isValidDateOnlyString(developmentDate)) {
         const suppliedValue = properties.hasOwnProperty('DEV_DATE') ? properties['DEV_DATE'] : properties['DEVELOPMENT_DATE'];
         const errMsg = `Property DEV_DATE has an invalid value '${suppliedValue}' for ${spatialObjectCode} ${featureRef}. ` +
           `Required format: '${DATE_FORMAT}' (must be a real calendar date).`;
@@ -338,12 +347,119 @@ export class SubmissionService extends DataService<Submission, Repository<Submis
   }
 
   /**
+   * Earliest DEV_DATE this submission may carry.
+   *
+   * DEV_DATE is in any case the submitter's *planned* date — an approximation of when work is 
+   * expected to start, not a commitment. However, when this field is set in spatial file, it 
+   * should have some range os the BCGW extract can have failure, see tickets:
+   * - https://github.com/bcgov/nr-fom/issues/629 (valid date but way over in the future: 20240-09-30, typo from submitter)
+   * - https://github.com/bcgov/nr-fom/issues/631
+   * 
+   * Normally today: planned development cannot be in the past. A FINAL submission gets an earlier
+   * bound, the day the PROPOSED submission was created, when PROPOSED already contained this same
+   * spatial object type.
+   * 
+   * Why: commenting runs for weeks, so by the time the FINAL file is submitted, dates that were
+   * perfectly valid when proposed may have slipped into the past. Without this the submitter would
+   * have to edit dates purely because time passed, even when re-submitting the very same values that
+   * were already published and commented on.
+   *
+   * Falls back to today when there is no PROPOSED submission, or when PROPOSED did not include this
+   * spatial object type: those features were never proposed, so there is nothing to preserve.
+   * 
+   * This is a loose check on 'not in the past' - change it if business rules change. However, as mentioned above
+   * , the planned development date is not a commitment, just submitter's approximation of when work is expected to start.
+   *
+   * @returns a DATE_FORMAT date string in BC time.
+   */
+  private async getEarliestAllowedDevelopmentDate(projectId: number, submissionTypeCode: SubmissionTypeCodeEnum,
+    spatialObjectCode: SpatialObjectCodeEnum): Promise<string> {
+    const today = DateTimeUtil.nowBC().startOf('day').format(DateTimeUtil.DATE_FORMAT);
+    if (SubmissionTypeCodeEnum.FINAL !== submissionTypeCode) {
+      return today;
+    }
+
+    const proposedSubmission = await this.findEntityForSubmissionType(projectId, SubmissionTypeCodeEnum.PROPOSED);
+    if (!proposedSubmission) {
+      return today;
+    }
+
+    const proposedObjectsDetail = await this.getSpatialObjectsDetail(proposedSubmission.id);
+    if (!this.hasSpatialObjectsOfType(proposedObjectsDetail, spatialObjectCode)) {
+      return today;
+    }
+
+    return DateTimeUtil.toBcDate(proposedSubmission.createTimestamp).format(DateTimeUtil.DATE_FORMAT);
+  }
+
+  /**
+   * @param spatialObjectsDetail result of @see {getSpatialObjectsDetail}. Counts come back from a raw
+   *        query, where Postgres returns count(*) as a string, so compare them as numbers.
+   */
+  private hasSpatialObjectsOfType(spatialObjectsDetail: any, spatialObjectCode: SpatialObjectCodeEnum): boolean {
+    switch (spatialObjectCode) {
+      case SpatialObjectCodeEnum.CUT_BLOCK:
+        return Number(spatialObjectsDetail.cbcount) > 0;
+      case SpatialObjectCodeEnum.ROAD_SECTION:
+        return Number(spatialObjectsDetail.rscount) > 0;
+      case SpatialObjectCodeEnum.WTRA:
+        return Number(spatialObjectsDetail.racount) > 0;
+      default:
+        throw new BadRequestException("Unrecognized spatial object code.");
+    }
+  }
+
+  /**
+   * Business rule for the planned development date on an already parsed submission: it cannot be in
+   * the past (loose definition), and cannot be more than DEV_DATE_MAX_YEARS_AHEAD years out.
+   *
+   * The two bounds intentionally differ in granularity. The lower bound is a full date ("not in the
+   * past"), the upper bound is only a year, so the effective ceiling is December 31 of that year.
+   *
+   * Runs after parsing rather than as part of it: unlike the file checks, this rule depends on the
+   * submission it belongs to @see {getEarliestAllowedDevelopmentDate}. Doing it here also keeps the
+   * lookup to one per submission instead of one per feature.
+   *
+   * @param spatialObjects parsed objects, in submission file order, each carrying a
+   *        plannedDevelopmentDate already validated for format @see {validateRequiredProperties}.
+   */
+  private async validateDevelopmentDateRanges(spatialObjects: SpatialObject[], projectId: number,
+    submissionTypeCode: SubmissionTypeCodeEnum, spatialObjectCode: SpatialObjectCodeEnum): Promise<void> {
+    // Retention areas carry no development date.
+    if (SpatialObjectCodeEnum.WTRA === spatialObjectCode) {
+      return;
+    }
+
+    const earliestAllowedDate = await this.getEarliestAllowedDevelopmentDate(projectId, submissionTypeCode, spatialObjectCode);
+    const earliestAllowed = DateTimeUtil.getBcDate(earliestAllowedDate);
+    const maxYear = DateTimeUtil.nowBC().year() + DEV_DATE_MAX_YEARS_AHEAD;
+
+    (<(CutBlock | RoadSection)[]>spatialObjects).forEach((spatialObject, featureIndex) => {
+      const developmentDate = spatialObject.plannedDevelopmentDate;
+      const featureRef = this.describeFeature(spatialObject.name, featureIndex);
+      const developmentDateBc = DateTimeUtil.getBcDate(developmentDate);
+
+      if (developmentDateBc.isBefore(earliestAllowed)) {
+        const errMsg = `Property DEV_DATE '${developmentDate}' for ${spatialObjectCode} ${featureRef} is in the past. ` +
+          `It must be on or after ${earliestAllowedDate}.`;
+        throw new BadRequestException(errMsg);
+      }
+
+      if (developmentDateBc.year() > maxYear) {
+        const errMsg = `Property DEV_DATE '${developmentDate}' for ${spatialObjectCode} ${featureRef} is too far in the future. ` +
+          `It must be no later than the end of ${maxYear}.`;
+        throw new BadRequestException(errMsg);
+      }
+    });
+  }
+
+  /**
    * Human readable reference to a feature, so validation errors let the submitter find the
    * offending record in a large spatial file. Uses the optional NAME property when present.
+   * @param name the feature's optional NAME, from the raw properties or the parsed spatial object.
    * @param featureIndex zero based position of the feature within the submission.
    */
-  private describeFeature(properties: GeoJsonProperties, featureIndex: number): string {
-    const name = properties?.[OPTIONAL_PROP_NAME];
+  private describeFeature(name: string, featureIndex: number): string {
     const position = `feature #${featureIndex + 1}`;
     return name ? `'${name}' (${position})` : position;
   }

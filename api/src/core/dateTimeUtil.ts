@@ -56,6 +56,19 @@ export class DateTimeUtil {
     }
 
     /**
+     * Convert a point in time (e.g. a 'timestamptz' column value) to the calendar day it fell on in BC.
+     * Going through the timezone matters: the servers run UTC, which is ahead of Vancouver, so a
+     * late-evening BC timestamp would otherwise be reported as the following day.
+     *
+     * @param instant a Date, typically from a create/update timestamp column.
+     * @returns dayjs object at the start of that BC calendar day.
+     */
+    public static toBcDate(instant: Date) {
+        DateTimeUtil.init();
+        return dayjs(instant).tz(DateTimeUtil.TIMEZONE_VANCOUVER).startOf('day');
+    }
+
+    /**
      * 
      * @param startDateSt beginning date as string (as "YYYY-MM-DD").
      * @param endDateSt end date as string (as "YYYY-MM-DD").
