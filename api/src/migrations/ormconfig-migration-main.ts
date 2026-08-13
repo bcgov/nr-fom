@@ -3,7 +3,7 @@ import * as config from "../ormconfig";
 
 var ormConfig = { 
   ...config, 
-  schema: '', // Use default (public) schema for migration table to avoid bootstrapping error where the app_fom schema doesn't exist yet to check the migration table.
+  schema: 'public', // Migration tracking table lives in public; app data uses app_fom.
   migrations: [
     // Dockerfile image (e.g. in OpenShift)
     '/app/dist/api/src/migrations/main/*.js',
