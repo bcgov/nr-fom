@@ -2102,6 +2102,29 @@
           "responseType"
         ]
       },
+      "AwsCognitoLogoutConfig": {
+        "type": "object",
+        "properties": {
+          "siteminderUrl": {
+            "type": "string"
+          },
+          "keycloakUrl": {
+            "type": "string"
+          },
+          "keycloakClientIdIdir": {
+            "type": "string"
+          },
+          "keycloakClientIdBceidBusiness": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "siteminderUrl",
+          "keycloakUrl",
+          "keycloakClientIdIdir",
+          "keycloakClientIdBceidBusiness"
+        ]
+      },
       "AwsCognitoConfig": {
         "type": "object",
         "properties": {
@@ -2126,6 +2149,9 @@
           "oauth": {
             "$ref": "#/components/schemas/AwsCognitoOauthConfig"
           },
+          "logout": {
+            "$ref": "#/components/schemas/AwsCognitoLogoutConfig"
+          },
           "federationTarget": {
             "type": "string"
           }
@@ -2138,6 +2164,7 @@
           "aws_user_pools_web_client_id",
           "aws_mandatory_sign_in",
           "oauth",
+          "logout",
           "federationTarget"
         ]
       },

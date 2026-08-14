@@ -1,19 +1,11 @@
 <div class="container">
-  @if (!loggedout()) {
-    <div>
-      <em class="material-icons md-38">
-        warning
-      </em>
-      <h1>Not Authorized for Access</h1>
-      <p>You must request access to this Forest Operations Map administrative site by <strong>email</strong> to the
-      <a href="https://nrsservicedesk.gov.bc.ca/IM/scripts/LoginPage.asp">NRS Helpdesk</a></p>
-      <p>Requesting access is a one-time process, after which your id will be enabled for future logins. </p>
-    </div>
-  } @else {
-    <h1>Logged Out</h1>
-    <p><strong>You have been logged out.</strong></p>
-    <button class="btn btn-primary" (click)="login()">Log in</button>
-  }
-
-
+  <div>
+    <em class="material-icons md-38">
+      warning
+    </em>
+    <h1>Not Authorized for Access</h1>
+    <p>You must request access to this Forest Operations Map administrative site by <strong>email</strong> to the
+    <a href="https://nrsservicedesk.gov.bc.ca/IM/scripts/LoginPage.asp">NRS Helpdesk</a></p>
+    <p>Requesting access is a one-time process, after which your id will be enabled for future logins. </p>
+  </div>
 </div>

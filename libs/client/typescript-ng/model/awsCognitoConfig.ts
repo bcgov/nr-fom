@@ -9,6 +9,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { AwsCognitoLogoutConfig } from './awsCognitoLogoutConfig';
 import { AwsCognitoOauthConfig } from './awsCognitoOauthConfig';
 
 
@@ -20,6 +21,7 @@ export interface AwsCognitoConfig {
     aws_user_pools_web_client_id: string;
     aws_mandatory_sign_in: string;
     oauth: AwsCognitoOauthConfig;
+    logout: AwsCognitoLogoutConfig;
     federationTarget: string;
 }
 
