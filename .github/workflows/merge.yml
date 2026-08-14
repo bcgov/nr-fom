@@ -28,7 +28,8 @@ jobs:
       db_testdata: true
       environment: test
       email_notify: Heartwood@gov.bc.ca  # TEST environment, set to team inbox.
-      logout_chain_url: https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri=
+      logout_siteminder_url: https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi
+      logout_keycloak_url: https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout
       target: test
 
   images-promote:

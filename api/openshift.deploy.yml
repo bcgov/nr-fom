@@ -74,9 +74,26 @@ parameters:
     description: FAM Authentication Cognito user pools client ID
     value: "1iai0av52nvnjn7olurbi8unl0"
     required: true
-  - name: LOGOUT_CHAIN_URL
-    description: FAM Authentication Cognito logout chain url for Siteminder and Keycloak
-    value: "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri="
+  # Federated logout chain, Cognito firing LAST:
+  #   app -> Siteminder logoff.cgi -> Keycloak end-session -> Cognito /logout -> app
+  - name: LOGOUT_SITEMINDER_URL
+    description: Siteminder logoff.cgi base, without query string
+    value: "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi"
+    required: true
+  - name: LOGOUT_KEYCLOAK_URL
+    description: Keycloak 'standard' realm end-session endpoint, without query string
+    value: "https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout"
+    required: true
+  # FAM has exactly two Keycloak clients, one per IdP, shared by the dev, test and prod
+  # realms alike - so these are NOT overridden per environment and are not threaded
+  # through the workflows. Both values are correct in PROD as written.
+  - name: LOGOUT_KEYCLOAK_CLIENT_ID_IDIR
+    description: Cognito's client id in Keycloak for the IDIR identity provider
+    value: "fsa-cognito-idir-dev-4088"
+    required: true
+  - name: LOGOUT_KEYCLOAK_CLIENT_ID_BCEIDBUSINESS
+    description: Cognito's client id in Keycloak for the BCeID Business identity provider
+    value: "fsa-cognito-b-ce-id-business-dev-4090"
     required: true
   - name: BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME
     description: OP secret name for CLIENT API Token
@@ -101,8 +118,14 @@ objects:
             "domain": "${AWS_COGNITO_DOMAIN}.auth.ca-central-1.amazoncognito.com",
             "scope": ["openid"],
             "redirectSignIn": "https://${URL}/admin/search",
-            "redirectSignOut": "${LOGOUT_CHAIN_URL}https://${URL}/admin/not-authorized?loggedout=true",
+            "redirectSignOut": "https://${URL}/admin/logout",
             "responseType": "code"
+          },
+          "logout": {
+            "siteminderUrl": "${LOGOUT_SITEMINDER_URL}",
+            "keycloakUrl": "${LOGOUT_KEYCLOAK_URL}",
+            "keycloakClientIdIdir": "${LOGOUT_KEYCLOAK_CLIENT_ID_IDIR}",
+            "keycloakClientIdBceidBusiness": "${LOGOUT_KEYCLOAK_CLIENT_ID_BCEIDBUSINESS}"
           },
           "federationTarget": "COGNITO_USER_POOLS"
         }
