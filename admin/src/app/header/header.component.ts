@@ -35,7 +35,8 @@ export class HeaderComponent implements OnInit {
     // user is not authorized.
     if (!this.user || !this.user.isAuthorizedForAdminSite()) {
       // If on not-authorized page, or if just logged out, don't redirect to not-authorized page as would cause an infinite loop.
-      if (window.location.href.indexOf('/not-authorized') == -1 && window.location.href.indexOf("loggedout=true") == -1) {
+      // Matched on pathname so a stray query string cannot defeat the check.
+      if (window.location.pathname.indexOf('/not-authorized') == -1 && !this.cognitoService.loggedOut) {
         this.router.navigate(['/not-authorized']);
       }
     }
@@ -49,8 +50,12 @@ export class HeaderComponent implements OnInit {
   }
 
   async navigateToLogout() {
-    if (!this.cognitoService.awsCognitoConfig.enabled) {
-        window.location.href = window.location.origin + '/admin/not-authorized?loggedout=true';
+    // Optional chaining matters: on the logout landing, init() early-returns and
+    // awsCognitoConfig is left undefined.
+    if (!this.cognitoService.awsCognitoConfig?.enabled) {
+        // Security disabled (local dev). Kept a full-page navigation so
+        // CognitoService.init() re-runs and picks up the logged-out landing.
+        window.location.href = window.location.origin + '/admin/logout';
         return;
     }
     await this.cognitoService.logout();

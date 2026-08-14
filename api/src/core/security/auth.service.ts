@@ -5,7 +5,7 @@ import { JwksClient } from 'jwks-rsa';
 import { PinoLogger } from 'nestjs-pino';
 
 import { User } from '@utility/security/user';
-import * as aswCognitoEnvJson from '../../assets/aws-cognito-env.json';
+import aswCognitoEnvJson from '../../assets/aws-cognito-env.json';
 
 export class AwsCognitoConfig {
 

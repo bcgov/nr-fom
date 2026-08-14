@@ -7,6 +7,7 @@ import { Amplify, ResourcesConfig } from "aws-amplify";
 import { fetchAuthSession, getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
 import { jwtDecode } from "jwt-decode";
 import { lastValueFrom, Observable } from "rxjs";
+import { buildFederatedLogoutUrl, FederatedLogoutConfig } from "../utils/logout-chain";
 import { getFakeUser } from "./mock-user";
 
 export interface CognitoAuthToken { 
@@ -25,9 +26,13 @@ export class CognitoService {
   public awsCognitoConfig: AwsCognitoConfig;
   private loadRemoteConfigPromise: Promise<void> | null = null;
   private cognitoAuthToken: CognitoAuthToken;
-  private loggedOut: string | null;
+  public loggedOut = false;
   private fakeUser: User | null;
   public initialized: boolean = false;
+
+  public isLogoutLanding(): boolean {
+    return window.location.pathname.replace(/\/+$/, '').endsWith('/logout');
+  }
 
   /*
       See Aws-Amplify documenation for intgration: 
@@ -35,8 +40,9 @@ export class CognitoService {
       https://docs.amplify.aws/lib/auth/advanced/q/platform/js/#identity-pool-federation
   */
   public async init(): Promise<any> {
-    this.loggedOut = this.getParameterByName("loggedout");
-    if (this.loggedOut === "true") {
+    // Loop-breaker: the logout landing must not bootstrap auth.
+    this.loggedOut = this.isLogoutLanding();
+    if (this.loggedOut) {
       this.initialized = false;
       return null;
     }
@@ -104,11 +110,78 @@ export class CognitoService {
 
   public async logout() {
     console.log("User logged out.");
-    if (!this.awsCognitoConfig.enabled) {
+    if (!this.awsCognitoConfig?.enabled) {
       this.fakeUser = null;
       return;
     }
+
+    const chainUrl = buildFederatedLogoutUrl(
+      this.toFederatedLogoutConfig(),
+      this.getIdpProvider()
+    );
+    if (chainUrl) {
+      this.clearStoredTokens();
+      this.navigateTo(chainUrl);
+      return;
+    }
+
+    // Fallback. Plain Cognito-only sign-out. Amplify redirects to
+    // oauth.redirectSignOut, which is the same /admin/logout landing.
     await signOut();
+  }
+
+  /**
+   * Flattens the served config into the chain builder's input.
+   *
+   * appReturnUrl is oauth.redirectSignOut rather than a locally built
+   * `origin + '/admin/logout'` so the chain's final hop and the Amplify fallback
+   * cannot land on different URLs, and so it is exactly the string FAM allow-lists
+   * as a Cognito sign-out URL.
+   */
+  private toFederatedLogoutConfig(): FederatedLogoutConfig {
+    const logout = this.awsCognitoConfig?.logout;
+    return {
+      siteminderLogoutUrl: logout?.siteminderUrl ?? '',
+      keycloakLogoutUrl: logout?.keycloakUrl ?? '',
+      keycloakClientIdIdir: logout?.keycloakClientIdIdir ?? '',
+      keycloakClientIdBceidBusiness: logout?.keycloakClientIdBceidBusiness ?? '',
+      cognitoDomain: this.awsCognitoConfig?.oauth?.domain ?? '',
+      cognitoClientId: this.awsCognitoConfig?.aws_user_pools_web_client_id ?? '',
+      appReturnUrl: this.awsCognitoConfig?.oauth?.redirectSignOut ?? ''
+    };
+  }
+
+  private navigateTo(url: string) {
+    window.location.assign(url);
+  }
+
+  /**
+   * The IdP the user signed in with, which selects the Keycloak client for the
+   * end-session hop. Read from the already-decoded ID token rather than getUser(),
+   * since User does not carry the IdP. Undefined when the session is gone.
+   */
+  private getIdpProvider(): string | undefined {
+    return this.cognitoAuthToken?.decodedIdToken?.['custom:idp_name'];
+  }
+
+  /**
+   * Drops Amplify's tokens for this app client so the post-chain landing bootstraps
+   * logged out.
+   */
+  private clearStoredTokens() {
+    try {
+      const prefix = `CognitoIdentityServiceProvider.${this.awsCognitoConfig?.aws_user_pools_web_client_id}`;
+      const keys: string[] = [];
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        if (key?.startsWith(prefix)) {
+          keys.push(key);
+        }
+      }
+      keys.forEach((key) => window.localStorage.removeItem(key));
+    } catch (error) {
+      console.warn("Unable to clear stored Cognito tokens:", error);
+    }
   }
 
   public getUser() {
@@ -179,19 +252,6 @@ export class CognitoService {
         }
       }
     }
-  }
-
-  private getParameterByName(name: string) {
-    const url = window.location.href;
-    const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
-    const results = regex.exec(url);
-    if (!results) {
-      return null;
-    }
-    if (!results[2]) {
-      return "";
-    }
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
   }
 
   /**

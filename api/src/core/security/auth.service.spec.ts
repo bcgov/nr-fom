@@ -1,6 +1,6 @@
 import { AuthService } from "@api-core/security/auth.service";
 import { mockLoggerFactory } from "../../app/factories/mock-logger.factory";
-import * as aswCognitoEnvJson from '../../assets/aws-cognito-env.json';
+import aswCognitoEnvJson from '../../assets/aws-cognito-env.json';
 
 describe('AuthService', () => {
     let service: AuthService;
@@ -38,6 +38,13 @@ describe('AuthService', () => {
         // The two Keycloak clients are distinct - sending one IdP's client id for the
         // other leaves that IdP's session alive.
         expect(logout.keycloakClientIdIdir).not.toBe(logout.keycloakClientIdBceidBusiness);
+    });
+
+    it('Serves the config once, with no "default" copy of itself', () => {
+        // A namespace import of the JSON asset compiles to __importStar, which adds a
+        // `default` back-reference that Object.assign happily copies - publishing the
+        // whole config a second time on this unauthenticated endpoint.
+        expect(Object.keys(service.getAwsCognitoConfig())).not.toContain('default');
     });
 
     it('Sign-out redirect targets the logout landing route, not the old query-param form', () => {
