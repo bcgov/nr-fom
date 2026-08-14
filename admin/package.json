@@ -40,7 +40,7 @@
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "luxon": "^3.5.0",
-    "ng-apexcharts": "^2.0.0",
+    "ng-apexcharts": "^3.0.0",
     "ngx-bootstrap": "^21.0.0",
     "remeda": "^2.25.0",
     "rxjs": "^7.8.2",
