@@ -30,6 +30,9 @@
     "typeorm": "^1.0.0",
     "@nestjs/typeorm": {
       "typeorm": "^1.0.0"
+    },
+    "@nestjs/swagger": {
+      "js-yaml": "^5.2.2"
     }
   }
 }
