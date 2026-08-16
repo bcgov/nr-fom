@@ -26,9 +26,16 @@ on:
       environment:
         description: GitHub/OpenShift environment; usually PR number, test or prod
         type: string
-      logout_chain_url:
-        description: URL for logout chain
-        default: https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri=
+      # Federated logout chain. Only these two vary by environment; the two Keycloak
+      # client ids are the same in every realm and stay as openshift.deploy.yml
+      # defaults. Defaults here are the DEV values, inherited by PR environments.
+      logout_siteminder_url:
+        description: Siteminder logoff.cgi base, without query string
+        default: https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi
+        type: string
+      logout_keycloak_url:
+        description: Keycloak 'standard' realm end-session endpoint, without query string
+        default: https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout
         type: string
       tag:
         description: Container tag; usually PR number
@@ -135,7 +142,8 @@ jobs:
               -p BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME="${{ inputs.batch_client_rfsh_api_tkn_op_secret_name }}"
               -p DB_TESTDATA=${{ inputs.db_testdata }}
               -p FOM_EMAIL_NOTIFY=${{ inputs.email_notify }}
-              -p LOGOUT_CHAIN_URL="${{ inputs.logout_chain_url }}"
+              -p LOGOUT_SITEMINDER_URL="${{ inputs.logout_siteminder_url }}"
+              -p LOGOUT_KEYCLOAK_URL="${{ inputs.logout_keycloak_url }}"
           - name: admin
             overwrite: true
           - name: db

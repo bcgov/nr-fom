@@ -4,6 +4,7 @@ import { analyticsResolver } from './analytics-dashboard/analytics.resolver';
 import { adminGuard } from '@admin-core/guards/admin.guard';
 
 import { projectDetailResolver, projectMetricsDetailResolver, projectSpatialDetailResolver } from 'app/foms/fom.resolvers';
+import { LogoutComponent } from './logout/logout.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
 import { SearchComponent } from './search/search.component';
 
@@ -11,6 +12,12 @@ export const AppRoutes: Routes = [
   {
     path: 'not-authorized',
     component: NotAuthorizedComponent
+  },
+  {
+    // Landing at the end of the federated logout chain, and the URL registered as
+    // this app's Cognito sign-out URL. Eager on purpose.
+    path: 'logout',
+    component: LogoutComponent
   },
   {
     // default route

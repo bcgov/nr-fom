@@ -21,6 +21,7 @@ index.ts
 model/attachmentResponse.ts
 model/attachmentTypeCode.ts
 model/awsCognitoConfig.ts
+model/awsCognitoLogoutConfig.ts
 model/awsCognitoOauthConfig.ts
 model/commentScopeCode.ts
 model/districtResponse.ts

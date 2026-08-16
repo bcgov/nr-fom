@@ -27,7 +27,8 @@ jobs:
       aws_user_pools_web_client_id: 5305qi7vpiddhb6ava1e3042be
       batch_client_rfsh_api_tkn_op_secret_name: fom-client-app-api
       environment: prod
-      logout_chain_url: https://logon7.gov.bc.ca/clp-cgi/logoff.cgi?retnow=1&returl=https://loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout?redirect_uri=
+      logout_siteminder_url: https://logon7.gov.bc.ca/clp-cgi/logoff.cgi
+      logout_keycloak_url: https://loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout
       tag: ${{ inputs.tag }}
       target: prod
       url: fom.nrs.gov.bc.ca
