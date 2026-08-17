@@ -206,15 +206,17 @@
                           (keydown)="$event.preventDefault()"
                           [bsConfig]="bsConfig"
                           [appFormControl]="fg.get('opEndDate')"
+                          appFormControlErrorOnDirty
+                          [appFormControlSubmitted]="isSubmitSaveClicked"
                           />
-                          @if ((isSubmitSaveClicked || fieldTouchedOrDirty('opEndDate'))
+                          @if ((isSubmitSaveClicked || fieldDirty('opEndDate'))
                             && getErrorMessage('opEndDate', 'required')) {
                             <div class="invalid-feedback"
                               >
                               {{getErrorMessage('opEndDate', 'required')}}
                             </div>
                           }
-                          @if ((isSubmitSaveClicked || fieldTouchedOrDirty('opEndDate'))
+                          @if ((isSubmitSaveClicked || fieldDirty('opEndDate'))
                             && getErrorMessage('opEndDate', 'minDate')) {
                             <div class="invalid-feedback"
                               >
