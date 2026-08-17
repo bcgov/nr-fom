@@ -1,11 +1,13 @@
-# RedHat UBI 8 with nodejs 24
-FROM registry.access.redhat.com/ubi8/nodejs-24:1-1782882986 AS builder
+# Global args
+ARG port=3333
 
-# Install packages, build and keep only prod packages
+
+# Build container
+FROM node:24.19.0-bookworm-slim AS build
+
+# Install dependencies and build API
 WORKDIR /app
-USER root
-RUN dnf install -y ca-certificates && dnf clean all && rm -rf /var/cache/dnf
-RUN npm install -g npm@10.9.4 --ignore-scripts
+RUN npm install -g npm@10.9.4
 
 # Root lockfile + only the manifests this image builds (api + libs). `npm ci`
 # reads the full root lockfile but skips workspaces whose directory is absent,
@@ -14,6 +16,7 @@ RUN npm install -g npm@10.9.4 --ignore-scripts
 COPY package.json package-lock.json ./
 COPY libs/package.json ./libs/
 COPY api/package.json ./api/
+
 # Hoisted install incl. devDeps (@nestjs/cli + typescript) needed to build.
 RUN npm ci --ignore-scripts
 
@@ -29,35 +32,28 @@ WORKDIR /app
 RUN npm ci --ignore-scripts --workspace=api --omit=dev
 
 
-# Deployment container
-FROM registry.access.redhat.com/ubi8/ubi:8.10-1781720109
-
-# Node packages and dependencies
-COPY --from=builder /usr/bin/node /usr/bin/
-COPY --from=builder /usr/lib64/libnode.so* /usr/lib64/
-COPY --from=builder /usr/lib64/libz.so.1 /usr/lib64/
-COPY --from=builder /usr/lib64/libbrotlidec.so.1 /usr/lib64/
-COPY --from=builder /usr/lib64/libbrotlienc.so.1 /usr/lib64/
-COPY --from=builder /usr/lib64/libcrypto.so.1.1 /usr/lib64/
-COPY --from=builder /usr/lib64/libssl.so* /usr/lib64/
-COPY --from=builder /usr/lib64/libstdc++.so.6 /usr/lib64/
-COPY --from=builder /usr/lib64/libgcc_s.so.1 /usr/lib64/
-COPY --from=builder /usr/lib64/libbrotlicommon.so.1 /usr/lib64/
-COPY --from=builder /etc/pki /etc/pki
+# Deploy container
+FROM node:24.19.0-bookworm-slim
 
 # Copy over app (node_modules is hoisted to the workspace root under npm workspaces)
 WORKDIR /app
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/api/dist ./dist
-COPY --from=builder /app/api/src/migrations/main ./dist/api/src/migrations/main
-COPY --from=builder /app/api/src/migrations/test ./dist/api/src/migrations/test
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/api/dist ./dist
+COPY --from=build /app/api/src/migrations/main ./dist/api/src/migrations/main
+COPY --from=build /app/api/src/migrations/test ./dist/api/src/migrations/test
+
+# Add curl to debian-slim for the health check
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
 
 # Expose port - mostly a convention, for readability
-ARG port=3333
+ARG port
 EXPOSE ${port}
 
-HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:${port} || exit 1  
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:${port} || exit 1
 
-# Start up command
+# Non-root secure execution
 USER 1001
+
 ENTRYPOINT ["node", "--max-old-space-size=2048", "./dist/api/src/main.js"]
+
