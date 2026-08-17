@@ -7,12 +7,10 @@ FROM node:24.19.0-bookworm-slim AS build
 
 # Install dependencies and build API
 WORKDIR /app
-RUN npm install -g npm@10.9.4
 
 # Root lockfile + only the manifests this image builds (api + libs). `npm ci`
 # reads the full root lockfile but skips workspaces whose directory is absent,
-# so it installs just api's + libs' deps. (npm is pinned to 10.9.4 above, which
-# makes this skip-missing-workspaces behaviour deterministic.)
+# so it installs just api's + libs' deps.
 COPY package.json package-lock.json ./
 COPY libs/package.json ./libs/
 COPY api/package.json ./api/
