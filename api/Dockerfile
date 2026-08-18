@@ -1,7 +1,3 @@
-# Global args
-ARG port=3333
-
-
 # Build container
 FROM node:24.19.0-bookworm-slim AS build
 
@@ -21,12 +17,10 @@ RUN npm ci --ignore-scripts
 # Source for the shared lib and the api
 COPY libs ./libs
 COPY api ./api
-WORKDIR /app/api
 RUN npm run build:api
 
 # Reinstall prod-only, api-scoped deps so the runtime node_modules (hoisted to
 # /app/node_modules) is lean and matches the pre-workspace api-only footprint.
-WORKDIR /app
 RUN npm ci --ignore-scripts --workspace=api --omit=dev
 
 
@@ -44,14 +38,16 @@ COPY --from=build /app/api/src/migrations/test ./dist/api/src/migrations/test
 RUN apt-get update && apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Expose port - mostly a convention, for readability
-ARG port
-EXPOSE ${port}
+# Expose port and configure health check
+ARG port=3333
+ENV APP_PORT=${port}
+EXPOSE ${APP_PORT}
 
-HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:${port} || exit 1
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:${APP_PORT}/health-check || exit 1
 
 # Non-root secure execution
 USER 1001
 
 ENTRYPOINT ["node", "--max-old-space-size=2048", "./dist/api/src/main.js"]
+
 
