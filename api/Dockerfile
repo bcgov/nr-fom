@@ -43,7 +43,7 @@ ARG port=3333
 ENV APP_PORT=${port}
 EXPOSE ${APP_PORT}
 
-HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:${APP_PORT}/health-check || exit 1
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f "http://localhost:${APP_PORT}/health-check" || exit 1
 
 # Non-root secure execution
 USER 1001
