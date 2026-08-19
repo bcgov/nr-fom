@@ -515,4 +515,15 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     return control?.touched || control?.dirty;
   }
 
+  /**
+   * Error gate for the readonly datepicker fields, which can only be changed through the picker.
+   * Their popup renders in <body>, so it blurs the input (-> touched) on mousedown, one event
+   * before the picked date reaches the control - `fieldTouchedOrDirty` therefore flashed the
+   * "required" error on the first pick. A value change (dirty) is the honest signal here; a
+   * submit attempt (isSubmitSaveClicked) still reveals errors on a field left untouched.
+   */
+  fieldDirty(controlName: string): boolean {
+    return !!this.fg.controls[controlName]?.dirty;
+  }
+
 }

@@ -141,7 +141,10 @@ label {
   display: inline-block;
 }
 
-.form-control.ng-touched.ng-invalid {
+// `.error-on-dirty` is set by AppFormControlDirective on readonly picker-driven inputs, where blur
+// happens before the picked value arrives and so must not turn the border red on its own. Those
+// fields get their invalid border from the `.is-invalid` class the same directive controls.
+.form-control.ng-touched.ng-invalid:not(.error-on-dirty) {
   border-color: theme.$fc-invalid-color;
 }
 
