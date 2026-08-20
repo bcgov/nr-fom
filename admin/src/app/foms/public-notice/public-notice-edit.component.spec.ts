@@ -222,6 +222,19 @@ describe('PublicNoticeEditComponent', () => {
       expect(component.isAddNewNotice()).toBe(true);
       expect(component.canDelete()).toBe(false);
     });
+
+    it('is withheld in view mode when the project has no public notice yet (even with prefill from another project)', async () => {
+      await createComponent({ publicNoticeId: undefined, editMode: false });
+      expect(component.isNewForm).toBe(true);
+      expect(component.canDelete()).toBe(false);
+    });
+
+    it('is withheld in view mode when prefill is null', async () => {
+      findLatestMock.mockReturnValue(asyncOf(null));
+      await createComponent({ publicNoticeId: undefined, editMode: false });
+      expect(component.isNewForm).toBe(true);
+      expect(component.canDelete()).toBe(false);
+    });
   });
 
   describe('before the notice arrives', () => {

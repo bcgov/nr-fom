@@ -177,8 +177,8 @@ export class PublicNoticeEditComponent {
   }
 
   canDelete() {
-    if (this.isAddNewNotice()) {
-      // Case of new Public Notice
+    if (this.isNewForm || !this.publicNoticeResponse?.id) {
+      // Cannot delete if this FOM does not have its own existing Public Notice
       return false;
     }
     const workflowStateCode = this.project?.workflowState.code;
@@ -189,8 +189,9 @@ export class PublicNoticeEditComponent {
   }
 
   async deletePublicNotice() {
+    if (!this.publicNoticeResponse?.id) return;
     const dialogRef = this.modalSvc.openConfirmationDialog(
-      `You are about to delete Online Public Notice <strong>#${this.publicNoticeResponse!.id}</strong>. Are you sure?`,
+      `You are about to delete Online Public Notice <strong>#${this.publicNoticeResponse.id}</strong>. Are you sure?`,
       'Delete Online Public Notice');
 
     dialogRef.afterClosed().subscribe(async (confirm) => {
