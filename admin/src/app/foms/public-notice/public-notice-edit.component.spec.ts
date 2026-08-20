@@ -35,6 +35,8 @@ describe('PublicNoticeEditComponent', () => {
   let fixture: ComponentFixture<PublicNoticeEditComponent>;
   let findOneMock: jest.Mock;
   let findLatestMock: jest.Mock;
+  let createMock: jest.Mock;
+  let updateMock: jest.Mock;
   let router: Router;
 
   const existingNotice = {
@@ -82,6 +84,8 @@ describe('PublicNoticeEditComponent', () => {
   beforeEach(async () => {
     findOneMock = jest.fn().mockReturnValue(asyncOf(existingNotice));
     findLatestMock = jest.fn().mockReturnValue(asyncOf(clientLatestNotice));
+    createMock = jest.fn().mockReturnValue(asyncOf({ id: 101 }));
+    updateMock = jest.fn().mockReturnValue(asyncOf({ id: 55 }));
 
     await TestBed.configureTestingModule({
       imports: [PublicNoticeEditComponent, NoopAnimationsModule],
@@ -92,6 +96,8 @@ describe('PublicNoticeEditComponent', () => {
           useValue: {
             publicNoticeControllerFindOne: findOneMock,
             publicNoticeControllerFindLatestPublicNotice: findLatestMock,
+            publicNoticeControllerCreate: createMock,
+            publicNoticeControllerUpdate: updateMock,
           },
         },
         { provide: CognitoService, useValue: { getUser: () => ({ isForestClient: true, isAuthorizedForClientId: () => true }) } },
@@ -165,13 +171,24 @@ describe('PublicNoticeEditComponent', () => {
       expect(findOneMock).not.toHaveBeenCalled();
     });
 
-    it('is treated as a new notice and renders an empty form', () => {
+    it('is treated as a new notice and renders an empty form with actions', () => {
       expect(component.isNewForm).toBe(true);
       expect(component.isAddNewNotice()).toBe(true);
       expect(component.publicNoticeResponse).toBeNull();
       expect(component.formReady()).toBe(true);
       expect(component.publicNoticeFormGroup).toBeDefined();
       expect(fixture.nativeElement.querySelector('form#publicNoticeForm')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('h1').textContent).toContain('New Online Public Notice');
+      expect(fixture.nativeElement.querySelector('h1').textContent).toContain('FOM Number: 2');
+      expect(fixture.nativeElement.querySelector('button[type="submit"]')).not.toBeNull();
+    });
+
+    it('submits a new public notice on valid form submission and navigates back', async () => {
+      const navSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
+      await component.onSubmit();
+      expect(createMock).toHaveBeenCalledWith(expect.objectContaining({ projectId: 2 }));
+      expect(updateMock).not.toHaveBeenCalled();
+      expect(navSpy).toHaveBeenCalledWith(['/a', 2]);
     });
   });
 
