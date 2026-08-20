@@ -218,6 +218,57 @@ describe('PublicNoticeService', () => {
 
     });
 
+    describe('findLatestPublicNotice', () => {
+      beforeEach(async () => {
+        user = new User();
+      });
+
+      it('throws ForbiddenException when user is not authorized', async () => {
+        user.isForestClient = true;
+        user.clientIds = ['different-client-id'];
+        await expect(service.findLatestPublicNotice('00001012', user)).rejects.toThrow();
+      });
+
+      it('returns null when no public notice is found for forest client', async () => {
+        user.isForestClient = true;
+        user.clientIds = ['00001012'];
+        const createQueryBuilder: any = {
+          select: () => createQueryBuilder,
+          addSelect: () => createQueryBuilder,
+          innerJoin: () => createQueryBuilder,
+          where: () => createQueryBuilder,
+          addOrderBy: () => createQueryBuilder,
+          limit: () => createQueryBuilder,
+          getOne: () => null,
+        };
+        jest.spyOn(repository, 'createQueryBuilder').mockImplementation(() => createQueryBuilder);
+
+        const result = await service.findLatestPublicNotice('00001012', user);
+        expect(result).toBeNull();
+      });
+
+      it('returns converted public notice response when a notice is found', async () => {
+        user.isForestClient = true;
+        user.clientIds = ['00001012'];
+        const sampleNotice = getSamplePublicNoticeEntity();
+        const createQueryBuilder: any = {
+          select: () => createQueryBuilder,
+          addSelect: () => createQueryBuilder,
+          innerJoin: () => createQueryBuilder,
+          where: () => createQueryBuilder,
+          addOrderBy: () => createQueryBuilder,
+          limit: () => createQueryBuilder,
+          getOne: () => sampleNotice,
+        };
+        jest.spyOn(repository, 'createQueryBuilder').mockImplementation(() => createQueryBuilder);
+
+        const result = await service.findLatestPublicNotice('00001012', user);
+        expect(result).toBeDefined();
+        expect(result.id).toBe(sampleNotice.id);
+        expect(result.projectId).toBe(sampleNotice.projectId);
+      });
+    });
+
 });
 
 export class PublicNoticeRepositoryFake {

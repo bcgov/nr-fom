@@ -35,6 +35,8 @@ describe('PublicNoticeEditComponent', () => {
   let fixture: ComponentFixture<PublicNoticeEditComponent>;
   let findOneMock: jest.Mock;
   let findLatestMock: jest.Mock;
+  let createMock: jest.Mock;
+  let updateMock: jest.Mock;
   let router: Router;
 
   const existingNotice = {
@@ -82,6 +84,8 @@ describe('PublicNoticeEditComponent', () => {
   beforeEach(async () => {
     findOneMock = jest.fn().mockReturnValue(asyncOf(existingNotice));
     findLatestMock = jest.fn().mockReturnValue(asyncOf(clientLatestNotice));
+    createMock = jest.fn().mockReturnValue(asyncOf({ id: 101 }));
+    updateMock = jest.fn().mockReturnValue(asyncOf({ id: 55 }));
 
     await TestBed.configureTestingModule({
       imports: [PublicNoticeEditComponent, NoopAnimationsModule],
@@ -92,6 +96,8 @@ describe('PublicNoticeEditComponent', () => {
           useValue: {
             publicNoticeControllerFindOne: findOneMock,
             publicNoticeControllerFindLatestPublicNotice: findLatestMock,
+            publicNoticeControllerCreate: createMock,
+            publicNoticeControllerUpdate: updateMock,
           },
         },
         { provide: CognitoService, useValue: { getUser: () => ({ isForestClient: true, isAuthorizedForClientId: () => true }) } },
@@ -120,8 +126,8 @@ describe('PublicNoticeEditComponent', () => {
     });
 
     it('keeps the fetched notice for later update/delete calls', () => {
-      expect(component.publicNoticeResponse.id).toBe(55);
-      expect(component.publicNoticeResponse.revisionCount).toBe(3);
+      expect(component.publicNoticeResponse!.id).toBe(55);
+      expect(component.publicNoticeResponse!.revisionCount).toBe(3);
     });
 
     it('derives maxPostDate from the project commenting open date', () => {
@@ -150,7 +156,39 @@ describe('PublicNoticeEditComponent', () => {
     });
 
     it('drops the inherited post date so operation years are not carried over', () => {
-      expect(component.publicNoticeResponse.postDate).toBeUndefined();
+      expect(component.publicNoticeResponse!.postDate).toBeUndefined();
+    });
+  });
+
+  describe('when the project and forest client have no prior public notice at all', () => {
+    beforeEach(async () => {
+      findLatestMock.mockReturnValue(asyncOf(null));
+      await createComponent({ publicNoticeId: undefined, editMode: true });
+    });
+
+    it('queries the latest notice for the forest client', () => {
+      expect(findLatestMock).toHaveBeenCalledWith(99);
+      expect(findOneMock).not.toHaveBeenCalled();
+    });
+
+    it('is treated as a new notice and renders an empty form with actions', () => {
+      expect(component.isNewForm).toBe(true);
+      expect(component.isAddNewNotice()).toBe(true);
+      expect(component.publicNoticeResponse).toBeNull();
+      expect(component.formReady()).toBe(true);
+      expect(component.publicNoticeFormGroup).toBeDefined();
+      expect(fixture.nativeElement.querySelector('form#publicNoticeForm')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('h1').textContent).toContain('New Online Public Notice');
+      expect(fixture.nativeElement.querySelector('h1').textContent).toContain('FOM Number: 2');
+      expect(fixture.nativeElement.querySelector('button[type="submit"]')).not.toBeNull();
+    });
+
+    it('submits a new public notice on valid form submission and navigates back', async () => {
+      const navSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
+      await component.onSubmit();
+      expect(createMock).toHaveBeenCalledWith(expect.objectContaining({ projectId: 2 }));
+      expect(updateMock).not.toHaveBeenCalled();
+      expect(navSpy).toHaveBeenCalledWith(['/a', 2]);
     });
   });
 
@@ -182,6 +220,19 @@ describe('PublicNoticeEditComponent', () => {
     it('is withheld while adding a brand new notice', async () => {
       await createComponent({ publicNoticeId: undefined, editMode: true });
       expect(component.isAddNewNotice()).toBe(true);
+      expect(component.canDelete()).toBe(false);
+    });
+
+    it('is withheld in view mode when the project has no public notice yet (even with prefill from another project)', async () => {
+      await createComponent({ publicNoticeId: undefined, editMode: false });
+      expect(component.isNewForm).toBe(true);
+      expect(component.canDelete()).toBe(false);
+    });
+
+    it('is withheld in view mode when prefill is null', async () => {
+      findLatestMock.mockReturnValue(asyncOf(null));
+      await createComponent({ publicNoticeId: undefined, editMode: false });
+      expect(component.isNewForm).toBe(true);
       expect(component.canDelete()).toBe(false);
     });
   });
