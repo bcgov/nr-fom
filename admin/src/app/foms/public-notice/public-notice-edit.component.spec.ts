@@ -120,8 +120,8 @@ describe('PublicNoticeEditComponent', () => {
     });
 
     it('keeps the fetched notice for later update/delete calls', () => {
-      expect(component.publicNoticeResponse.id).toBe(55);
-      expect(component.publicNoticeResponse.revisionCount).toBe(3);
+      expect(component.publicNoticeResponse!.id).toBe(55);
+      expect(component.publicNoticeResponse!.revisionCount).toBe(3);
     });
 
     it('derives maxPostDate from the project commenting open date', () => {
@@ -150,7 +150,28 @@ describe('PublicNoticeEditComponent', () => {
     });
 
     it('drops the inherited post date so operation years are not carried over', () => {
-      expect(component.publicNoticeResponse.postDate).toBeUndefined();
+      expect(component.publicNoticeResponse!.postDate).toBeUndefined();
+    });
+  });
+
+  describe('when the project and forest client have no prior public notice at all', () => {
+    beforeEach(async () => {
+      findLatestMock.mockReturnValue(asyncOf(null));
+      await createComponent({ publicNoticeId: undefined, editMode: true });
+    });
+
+    it('queries the latest notice for the forest client', () => {
+      expect(findLatestMock).toHaveBeenCalledWith(99);
+      expect(findOneMock).not.toHaveBeenCalled();
+    });
+
+    it('is treated as a new notice and renders an empty form', () => {
+      expect(component.isNewForm).toBe(true);
+      expect(component.isAddNewNotice()).toBe(true);
+      expect(component.publicNoticeResponse).toBeNull();
+      expect(component.formReady()).toBe(true);
+      expect(component.publicNoticeFormGroup).toBeDefined();
+      expect(fixture.nativeElement.querySelector('form#publicNoticeForm')).not.toBeNull();
     });
   });
 

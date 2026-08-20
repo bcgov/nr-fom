@@ -48,7 +48,7 @@ export class PublicNoticeEditComponent {
   project: ProjectResponse;
   readonly projectId = computed(() => Number(this.appId()));
   isNewForm: boolean;
-  publicNoticeResponse: PublicNoticeResponse;
+  publicNoticeResponse: PublicNoticeResponse | null;
   publicNoticeFormGroup: IFormGroup<PublicNoticeForm>;
   addressLimit: number = 500;
   businessHoursLimit: number = 100;
@@ -80,10 +80,10 @@ export class PublicNoticeEditComponent {
     }
 
     effect(() => {
-      const publicNotice = this.publicNoticeResource.value();
-      if (!publicNotice) {
+      if (!this.publicNoticeResource.hasValue()) {
         return;
       }
+      const publicNotice = this.publicNoticeResource.value() ?? null;
       // Only the fetched notice re-triggers this; everything the initializer reads besides it is
       // route-constant for the lifetime of one activation.
       untracked(() => this.buildForm(publicNotice));
@@ -95,7 +95,7 @@ export class PublicNoticeEditComponent {
    * `isNewForm` and the post-date bounds must be settled before `processBeforeFormGroupInitialized()`
    * adjusts the response, which must in turn happen before the form group is created from it.
    */
-  private buildForm(publicNotice: PublicNoticeResponse) {
+  private buildForm(publicNotice: PublicNoticeResponse | null) {
     const projectDetail = this.projectDetail();
     this.project = projectDetail;
     this.isNewForm = !projectDetail.publicNoticeId;
@@ -103,7 +103,7 @@ export class PublicNoticeEditComponent {
     this.maxPostDate = DateTime.fromISO(this.project.commentingOpenDate).toJSDate();
     this.processBeforeFormGroupInitialized()
 
-    const publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse);
+    const publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse ?? undefined);
     this.publicNoticeFormGroup = this.formBuilder.formGroup(publicNoticeForm) as IFormGroup<PublicNoticeForm>;
     this.onSameAsReviewIndToggled();
     if (!this.editMode()) {
@@ -118,26 +118,30 @@ export class PublicNoticeEditComponent {
     if (this.isNewForm) {
       // Don't inherit operation years from previous public notice from the forest client.
       // Cast to Partial so the (non-optional in the generated type) postDate can be deleted.
-      delete (this.publicNoticeResponse as Partial<PublicNoticeResponse>)?.postDate;
+      if (this.publicNoticeResponse) {
+        delete (this.publicNoticeResponse as Partial<PublicNoticeResponse>).postDate;
+      }
     }
     else { // a case there was public notice saved for the project.
       // This is a tricky case. "bsDatepicker" when (minDate=maxDate) and when previous field date falls
       // outside of the date range, "bsDatepicker" has problem initializing it and even if you trying picking from UI.
       // So, specifically set it here for corner cases.
       const pnPostDate = this.publicNoticeResponse?.postDate;
-      const startOfPnPostDate = DateTime.fromISO(pnPostDate).startOf('day');
-      const startOfCommentingOpenDate = DateTime.fromISO(this.project.commentingOpenDate).startOf('day');
-      const startOfMinPostDate = DateTime.fromJSDate(this.minPostDate).startOf('day');
-      const startOfMaxPostDate = DateTime.fromJSDate(this.maxPostDate).startOf('day');
-      if (pnPostDate && startOfMinPostDate <= startOfCommentingOpenDate) {
-        if ((startOfPnPostDate < startOfMinPostDate) || (startOfPnPostDate > startOfMaxPostDate)){
-          // startOfMinPostDate is derived from a valid date, so toISODate() is non-null here.
-          this.publicNoticeResponse.postDate = startOfMinPostDate.toISODate()!;
+      if (pnPostDate && this.publicNoticeResponse) {
+        const startOfPnPostDate = DateTime.fromISO(pnPostDate).startOf('day');
+        const startOfCommentingOpenDate = DateTime.fromISO(this.project.commentingOpenDate).startOf('day');
+        const startOfMinPostDate = DateTime.fromJSDate(this.minPostDate).startOf('day');
+        const startOfMaxPostDate = DateTime.fromJSDate(this.maxPostDate).startOf('day');
+        if (startOfMinPostDate <= startOfCommentingOpenDate) {
+          if ((startOfPnPostDate < startOfMinPostDate) || (startOfPnPostDate > startOfMaxPostDate)){
+            // startOfMinPostDate is derived from a valid date, so toISODate() is non-null here.
+            this.publicNoticeResponse.postDate = startOfMinPostDate.toISODate()!;
+          }
         }
-      }
-      else if (pnPostDate && (startOfMinPostDate > startOfCommentingOpenDate)) {
-        // Clear the post date; postDate is non-optional in the generated type, so cast to Partial.
-        (this.publicNoticeResponse as Partial<PublicNoticeResponse>).postDate = undefined;
+        else if (startOfMinPostDate > startOfCommentingOpenDate) {
+          // Clear the post date; postDate is non-optional in the generated type, so cast to Partial.
+          (this.publicNoticeResponse as Partial<PublicNoticeResponse>).postDate = undefined;
+        }
       }
     }
   }
@@ -186,13 +190,13 @@ export class PublicNoticeEditComponent {
 
   async deletePublicNotice() {
     const dialogRef = this.modalSvc.openConfirmationDialog(
-      `You are about to delete Online Public Notice <strong>#${this.publicNoticeResponse.id}</strong>. Are you sure?`,
+      `You are about to delete Online Public Notice <strong>#${this.publicNoticeResponse!.id}</strong>. Are you sure?`,
       'Delete Online Public Notice');
 
     dialogRef.afterClosed().subscribe(async (confirm) => {
       if (confirm) {
         await lastValueFrom(
-          this.publicNoticeService.publicNoticeControllerRemove(this.publicNoticeResponse.id)
+          this.publicNoticeService.publicNoticeControllerRemove(this.publicNoticeResponse!.id)
         );
         this.router.navigate(['/a', this.projectId()]);
       }
@@ -231,7 +235,7 @@ export class PublicNoticeEditComponent {
     }
     else {
       body = this.publicNoticeFormGroup.value as Partial<PublicNoticeUpdateRequest>;
-      body.revisionCount = this.publicNoticeResponse.revisionCount;
+      body.revisionCount = this.publicNoticeResponse!.revisionCount;
     }
 
     body.projectId = this.project.id;
@@ -246,7 +250,7 @@ export class PublicNoticeEditComponent {
       return this.publicNoticeService.publicNoticeControllerCreate(body);
     }
     else {
-      return this.publicNoticeService.publicNoticeControllerUpdate(this.publicNoticeResponse.id, body);
+      return this.publicNoticeService.publicNoticeControllerUpdate(this.publicNoticeResponse!.id, body);
     }
   }
 
