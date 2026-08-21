@@ -27,13 +27,59 @@ describe('Project & Public Notice DTO Validations', () => {
       expect(errors.length).toBe(0);
     });
 
-    it('rejects names shorter than 5 characters or missing', async () => {
+    it('rejects names shorter than 5 characters', async () => {
       const dto = createValidProjectRequest();
       dto.name = 'ABC';
 
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);
       expect(errors.some(e => e.property === 'name')).toBe(true);
+    });
+
+    it('rejects missing or empty name', async () => {
+      const dto = createValidProjectRequest();
+      dto.name = undefined as any;
+
+      const errors = await validate(dto);
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors.some(e => e.property === 'name')).toBe(true);
+    });
+
+    it('requires fspId when projectPlanCode is FSP and ignores woodlotLicenseNumber', async () => {
+      const dto = createValidProjectRequest();
+      dto.projectPlanCode = ProjectPlanCodeEnum.FSP;
+      dto.fspId = undefined;
+      dto.woodlotLicenseNumber = undefined;
+
+      const errors = await validate(dto);
+      expect(errors.some(e => e.property === 'fspId')).toBe(true);
+      expect(errors.some(e => e.property === 'woodlotLicenseNumber')).toBe(false);
+
+      dto.fspId = 1234;
+      const validErrors = await validate(dto);
+      expect(validErrors.some(e => e.property === 'fspId')).toBe(false);
+    });
+
+    it('requires woodlotLicenseNumber matching W#### when projectPlanCode is WOODLOT and ignores fspId', async () => {
+      const dto = createValidProjectRequest();
+      dto.projectPlanCode = ProjectPlanCodeEnum.WOODLOT;
+      dto.fspId = undefined;
+      dto.woodlotLicenseNumber = undefined;
+
+      const errors = await validate(dto);
+      expect(errors.some(e => e.property === 'woodlotLicenseNumber')).toBe(true);
+      expect(errors.some(e => e.property === 'fspId')).toBe(false);
+
+      // Invalid format
+      dto.woodlotLicenseNumber = '1234';
+      const invalidErrors = await validate(dto);
+      expect(invalidErrors.some(e => e.property === 'woodlotLicenseNumber')).toBe(true);
+
+      // Valid format
+      dto.woodlotLicenseNumber = 'W1234';
+      const validErrors = await validate(dto);
+      expect(validErrors.some(e => e.property === 'woodlotLicenseNumber')).toBe(false);
+      expect(validErrors.some(e => e.property === 'fspId')).toBe(false);
     });
 
     it('rejects invalid projectPlanCode values', async () => {
