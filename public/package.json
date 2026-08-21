@@ -5,7 +5,7 @@
   "scripts": {
     "start:public": "ng serve --configuration development --host=0.0.0.0",
     "build:public": "ng build --configuration production",
-    "test-unit": "jest --coverage",
+    "test-unit": "jest --coverage --maxWorkers=2",
     "test-unit-watch": "jest --watch=true"
   },
   "private": true,

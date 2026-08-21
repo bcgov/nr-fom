@@ -18,7 +18,10 @@
     "build:api": "npm run build:api --workspace=api",
     "start:public": "npm run start:public --workspace=public",
     "start:admin": "npm run start:admin --workspace=admin",
-    "start:api": "npm run start:api --workspace=api"
+    "start:api": "npm run start:api --workspace=api",
+    "test:public": "npm run test-unit --workspace=public",
+    "test:admin": "npm run test-unit --workspace=admin",
+    "test:api": "npm run test-unit --workspace=api"
   },
   "overrides": {
     "ngx-bootstrap": {
