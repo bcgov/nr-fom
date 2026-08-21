@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional, OmitType, PartialType } from '@nestjs
 import { ProjectPlanCodeEnum } from '@src/app/modules/project/project-plan-code.entity';
 import {
     IsAlphanumeric,
-    IsBoolean, IsDateString, IsEnum, IsNumber, IsNumberString, IsOptional, Matches, MaxLength,
+    IsBoolean, IsDateString, IsDefined, IsEnum, IsNumber, IsNumberString, IsOptional, Matches, MaxLength,
     Min,
     MinLength,
     registerDecorator,
@@ -50,12 +50,14 @@ export class ProjectCreateRequest {
   projectPlanCode: ProjectPlanCodeEnum
 
   @ApiProperty()
-  @ValidateIf(o => o.projectPlan as ProjectPlanCodeEnum === ProjectPlanCodeEnum.FSP) // validate when projectPlan is FSP
+  @ValidateIf(o => o.projectPlanCode === ProjectPlanCodeEnum.FSP) // validate when projectPlanCode is FSP
+  @IsDefined({ message: 'fspId is required for FSP plan' })
   @IsNumber()
   fspId?: number;
 
   @ApiProperty()
-  @ValidateIf(o => o.projectPlan as ProjectPlanCodeEnum === ProjectPlanCodeEnum.WOODLOT) // validate when projectPlan is WOODLOT
+  @ValidateIf(o => o.projectPlanCode === ProjectPlanCodeEnum.WOODLOT) // validate when projectPlanCode is WOODLOT
+  @IsDefined({ message: 'woodlotLicenseNumber is required for WOODLOT plan' })
   @MinLength(5)
   @MaxLength(5)
   @IsAlphanumeric()

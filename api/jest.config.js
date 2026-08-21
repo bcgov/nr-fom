@@ -16,7 +16,12 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js'],
   collectCoverage: true,
   collectCoverageFrom: [
-    "**/*.(t|j)s"
+    "src/**/*.(t|j)s"
+  ],
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/",
+    ".*\\.spec\\.ts$"
   ],
   coverageDirectory: '../coverage/api',
   coverageReporters: [
