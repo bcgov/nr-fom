@@ -48,7 +48,9 @@ $card-shadow: 0.02rem 0 0.2rem rgba(#000, 0.15);
   }
 
   .cta-btn {
-    min-width: 12rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     border-width: 2px;
     font-weight: 700;
 
@@ -64,12 +66,23 @@ $card-shadow: 0.02rem 0 0.2rem rgba(#000, 0.15);
     border: none;
 
     li {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.5rem;
       border: none;
-      padding: 0.2rem 0;
+      padding: 0.35rem 0;
     }
 
     span.name {
-      flex: 0 0 10.5rem;
+      flex: 1 1 auto;
+      margin: 0;
+    }
+
+    span.value {
+      flex: 0 0 auto;
+      text-align: right;
+      white-space: nowrap;
     }
   }
 }
