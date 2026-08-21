@@ -271,6 +271,10 @@ describe('FomDetailComponent', () => {
       await createComponent(project({ workflowState: { code: 'INITIAL' } }));
       expect(component.canEditPublicNotice()).toBe(true);
 
+      component.user.isAuthorizedForClientId = () => false;
+      expect(component.canEditPublicNotice()).toBe(false);
+
+      component.user.isAuthorizedForClientId = () => true;
       await createComponent(project({ workflowState: { code: 'PUBLISHED' } }));
       expect(component.canEditPublicNotice()).toBe(false);
     });
@@ -281,6 +285,10 @@ describe('FomDetailComponent', () => {
 
       await createComponent(project({ workflowState: { code: 'PUBLISHED', publicNoticeId: 55 } }));
       expect(component.canViewPublicNotice()).toBe(true);
+
+      component.user.isAuthorizedForClientId = () => false;
+      component.user.isMinistry = false;
+      expect(component.canViewPublicNotice()).toBe(false);
     });
   });
 

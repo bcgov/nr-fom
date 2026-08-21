@@ -6,7 +6,7 @@
     "start:admin": "ng serve --configuration development --host=0.0.0.0",
     "build:admin": "ng build --configuration production",
     "test-unit": "jest --coverage --maxWorkers=2",
-    "test-unit-watch": "jest --watch=true"
+    "test-unit-watch": "jest --watch=true --maxWorkers=2"
   },
   "private": true,
   "engines": {

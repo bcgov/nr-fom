@@ -17,14 +17,14 @@
 * **Execution**: Always dispatch commands inside Podman containers:
   ```bash
   # Run unit tests inside containers
-  podman compose exec admin npm run test-unit
-  podman compose exec api npm run test-unit
-  podman compose exec public npm run test-unit
+  podman compose exec admin npm run test:admin
+  podman compose exec api npm run test:api
+  podman compose exec public npm run test:public
 
   # Database migrations
-  podman compose exec api npm run db:migrate-main
+  podman compose exec api npm run db:migrate-main --workspace=api
   ```
-* **Worker Concurrency**: Always bound test runner concurrency with `--maxWorkers=2` or `--runInBand` to prevent host CPU and memory starvation.
+* **Worker Concurrency**: Always bound test runner concurrency with `--maxWorkers=2` or `--runInBand` on all Jest scripts (`test-unit`, `test-unit-watch`, `test-e2e`, `test:cov`) to prevent host CPU and memory starvation.
 
 ---
 
