@@ -26,7 +26,6 @@ jobs:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
-            npm run build:admin
           dir: admin
           # Workspaces use a single root package-lock.json; the action's npm cache
           # keys on <dir>/package-lock.json (now absent), so disable it to avoid
@@ -45,7 +44,6 @@ jobs:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
-            npm run build:api
           dir: api
           # See note in tests-admin: single root lockfile -> disable per-dir npm cache.
           cache: ""
@@ -74,7 +72,6 @@ jobs:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
-            npm run build:public
           dir: public
           # See note in tests-admin: single root lockfile -> disable per-dir npm cache.
           cache: ""
