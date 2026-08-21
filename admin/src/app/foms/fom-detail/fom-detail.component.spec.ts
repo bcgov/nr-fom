@@ -266,5 +266,37 @@ describe('FomDetailComponent', () => {
       await createComponent(project({ workflowState: { code: 'INITIAL' } }));
       expect(component.canAccessComments()).toBe(false);
     });
+
+    it('allows editing public notice only when FOM is INITIAL and user is authorized', async () => {
+      await createComponent(project({ workflowState: { code: 'INITIAL' } }));
+      expect(component.canEditPublicNotice()).toBe(true);
+
+      component.user.isAuthorizedForClientId = () => false;
+      expect(component.canEditPublicNotice()).toBe(false);
+
+      component.user.isAuthorizedForClientId = () => true;
+      await createComponent(project({ workflowState: { code: 'PUBLISHED' } }));
+      expect(component.canEditPublicNotice()).toBe(false);
+    });
+
+    it('allows viewing public notice for authorized client or ministry user regardless of workflow state', async () => {
+      await createComponent(project({ workflowState: { code: 'INITIAL', publicNoticeId: undefined } }));
+      expect(component.canViewPublicNotice()).toBe(true);
+
+      await createComponent(project({ workflowState: { code: 'PUBLISHED', publicNoticeId: 55 } }));
+      expect(component.canViewPublicNotice()).toBe(true);
+
+      component.user.isAuthorizedForClientId = () => false;
+      component.user.isMinistry = false;
+      expect(component.canViewPublicNotice()).toBe(false);
+    });
+  });
+
+  describe('zero-state FOM without public notice', () => {
+    it('renders project detail safely when publicNoticeId is undefined', async () => {
+      await createComponent(project({ publicNoticeId: undefined, workflowState: { code: 'INITIAL' } }));
+      expect(component.project().publicNoticeId).toBeUndefined();
+      expect(fixture.nativeElement.textContent).toContain('Test FOM Holder');
+    });
   });
 });

@@ -108,6 +108,7 @@ tmp*.sh
 .kilo/
 .tmp/
 .github/**-instructions.md
+!.github/copilot-instructions.md
 **.instructions.md
 .github/agents/**
 .github/skills/**

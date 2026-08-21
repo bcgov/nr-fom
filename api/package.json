@@ -16,10 +16,10 @@
     "db:migrate-test:revert": "npm run typeorm migration:revert -- -f ./src/migrations/ormconfig-migration-test.ts",
     "db:migrate-test:show": "npm run typeorm migration:show -- -f ./src/migrations/ormconfig-migration-test.ts",
     "perf-test:gen-data": "node src/perftest/generate-data.js",
-    "test-unit": "set LOG_LEVEL=warn && jest --coverage --testPathIgnorePatterns='e2e'",
-    "test-unit-watch": "set LOG_LEVEL=warn && jest --testPathIgnorePatterns='e2e' --watch=true",
-    "test-e2e": "set LOG_LEVEL=warn && jest --testNamePattern='e2e'",
-    "test:cov": "jest --coverage"
+    "test-unit": "LOG_LEVEL=warn jest --coverage --maxWorkers=2 --testPathIgnorePatterns='e2e'",
+    "test-unit-watch": "LOG_LEVEL=warn jest --testPathIgnorePatterns='e2e' --watch=true --maxWorkers=2",
+    "test-e2e": "LOG_LEVEL=warn jest --testNamePattern='e2e' --maxWorkers=2",
+    "test:cov": "LOG_LEVEL=warn jest --coverage --maxWorkers=2"
   },
   "private": true,
   "engines": {

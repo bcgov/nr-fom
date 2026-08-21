@@ -206,6 +206,20 @@ describe('ProjectService', () => {
         expect(districtSpy).toHaveBeenCalledWith(entity.districtId);
         expect(postdateOnOrBeforeCommentingOpenDateSpy).not.toHaveBeenCalled();
       });
+
+      it('with empty array publicNotices pass', async () => {
+        entity.commentingOpenDate = dayjs.tz(DateTimeUtil.nowBC().add(1, 'day'), DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
+        entity.commentingClosedDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
+            .add(closeDateAfterOpeningDateDays, 'day')
+            .format(DateTimeUtil.DATE_FORMAT);
+        entity.publicNotices = []; // empty array public-notice.
+
+        await service.validateWorkflowTransitionRules(entity as Project, stateTransition, user);
+
+        expect(districtSpy).toHaveBeenCalled();
+        expect(districtSpy).toHaveBeenCalledWith(entity.districtId);
+        expect(postdateOnOrBeforeCommentingOpenDateSpy).not.toHaveBeenCalled();
+      });
       
       it('with public-notice and no post_date pass', async () => {
         entity.commentingOpenDate = dayjs.tz(DateTimeUtil.nowBC().add(1, 'day'), DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
