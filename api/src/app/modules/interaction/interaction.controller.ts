@@ -120,8 +120,12 @@ export class InteractionController {
         // Note, the generated api-client has little issue; it uses 'FormData' to append a file, but did not provide third
         // argument for 'filename'. To still use generated api-client, 'filename' could be found from extra formData property.
         file?.originalname?.includes(".")? file.originalname: request.body['filename'],
-        file? file.buffer: request.body['file']['buffer'],
+        file? file.buffer: request.body?.['file']?.['buffer'],
       );
+
+      if (Boolean(createRequest.fileName) !== Boolean(createRequest.file)) {
+        throw new BadRequestException('Attachment filename and contents must be provided together.');
+      }
 
       // Validate fields.
       const vErrors = await validate(createRequest, { forbidUnknownValues: true, validationError: { target: false } });
@@ -159,10 +163,14 @@ export class InteractionController {
         request.body['communicationDate'],
         request.body['communicationDetails'],
         file?.originalname?.includes(".")? file.originalname: request.body['filename'],
-        file? file.buffer: request.body['file']['buffer'],
+        file? file.buffer: request.body?.['file']?.['buffer'],
         id,
         await new ParseIntPipe().transform(request.body['revisionCount'], null)
       );
+
+      if (Boolean(updateRequest.fileName) !== Boolean(updateRequest.file)) {
+        throw new BadRequestException('Attachment filename and contents must be provided together.');
+      }
 
       // Validate fields.
       const vErrors = await validate(updateRequest, { forbidUnknownValues: true, validationError: { target: false } });
