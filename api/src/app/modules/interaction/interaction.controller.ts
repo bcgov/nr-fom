@@ -123,6 +123,10 @@ export class InteractionController {
         file? file.buffer: request.body?.['file']?.['buffer'],
       );
 
+      if (Boolean(createRequest.fileName) !== Boolean(createRequest.file)) {
+        throw new BadRequestException('Attachment filename and contents must be provided together.');
+      }
+
       // Validate fields.
       const vErrors = await validate(createRequest, { forbidUnknownValues: true, validationError: { target: false } });
       if (vErrors && vErrors.length >=1) {
@@ -163,6 +167,10 @@ export class InteractionController {
         id,
         await new ParseIntPipe().transform(request.body['revisionCount'], null)
       );
+
+      if (Boolean(updateRequest.fileName) !== Boolean(updateRequest.file)) {
+        throw new BadRequestException('Attachment filename and contents must be provided together.');
+      }
 
       // Validate fields.
       const vErrors = await validate(updateRequest, { forbidUnknownValues: true, validationError: { target: false } });

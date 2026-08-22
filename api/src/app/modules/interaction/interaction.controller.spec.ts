@@ -75,6 +75,23 @@ describe('InteractionController', () => {
         BadRequestException
       );
     });
+
+    it('throws BadRequestException when fileName is provided without file contents', async () => {
+      const user = new User();
+      const mockRequest = {
+        body: {
+          projectId: `${TEST_PROJECT_ID}`,
+          stakeholder: 'Stakeholder',
+          communicationDate: '2026-06-01',
+          communicationDetails: 'Details',
+          filename: 'orphan.pdf',
+        },
+      } as unknown as Request;
+
+      await expect(controller.create(user, undefined as any, mockRequest as any)).rejects.toThrow(
+        BadRequestException
+      );
+    });
   });
 
   describe('find', () => {
@@ -91,7 +108,7 @@ describe('InteractionController', () => {
   });
 
   describe('update', () => {
-    it('validates and delegates update to service', async () => {
+    it('validates and delegates update to service without file', async () => {
       const user = new User();
       const mockRequest = {
         body: {
@@ -119,6 +136,60 @@ describe('InteractionController', () => {
         }),
         user
       );
+    });
+
+    it('validates and delegates update to service with replacement file', async () => {
+      const user = new User();
+      const mockFile = {
+        originalname: 'replacement.pdf',
+        buffer: Buffer.from('new-pdf-bytes'),
+      } as Express.Multer.File;
+
+      const mockRequest = {
+        body: {
+          projectId: `${TEST_PROJECT_ID}`,
+          stakeholder: 'First Nation Rep',
+          communicationDate: '2026-06-01',
+          communicationDetails: 'Updated details',
+          revisionCount: '1',
+        },
+      } as unknown as Request;
+
+      const response = new InteractionResponse();
+      response.id = TEST_INTERACTION_ID;
+      (mockService.update as jest.Mock).mockResolvedValue(response);
+
+      const result = await controller.update(user, TEST_INTERACTION_ID, mockFile, mockRequest as any);
+
+      expect(result).toBe(response);
+      expect(mockService.update).toHaveBeenCalledWith(
+        TEST_INTERACTION_ID,
+        expect.objectContaining({
+          projectId: TEST_PROJECT_ID,
+          fileName: 'replacement.pdf',
+          file: mockFile.buffer,
+          revisionCount: 1,
+        }),
+        user
+      );
+    });
+
+    it('throws BadRequestException when fileName is provided without file contents on update', async () => {
+      const user = new User();
+      const mockRequest = {
+        body: {
+          projectId: `${TEST_PROJECT_ID}`,
+          stakeholder: 'Stakeholder',
+          communicationDate: '2026-06-01',
+          communicationDetails: 'Details',
+          filename: 'orphan_update.pdf',
+          revisionCount: '1',
+        },
+      } as unknown as Request;
+
+      await expect(
+        controller.update(user, TEST_INTERACTION_ID, undefined as any, mockRequest as any)
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('throws BadRequestException when update validation fails', async () => {

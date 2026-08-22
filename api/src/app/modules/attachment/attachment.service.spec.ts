@@ -1,6 +1,8 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { User } from '@utility/security/user';
+import { Readable } from 'node:stream';
 import { Repository } from 'typeorm';
+import { minioClient } from '../../../minio';
 import { mockLoggerFactory } from '../../factories/mock-logger.factory';
 import { ProjectAuthService } from '../project/project-auth.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
@@ -242,6 +244,115 @@ describe('AttachmentService', () => {
       expect(service.deleteObject).toHaveBeenCalled();
       expect(service.uploadFileObjectStorage).toHaveBeenCalledWith(request, 300);
       expect(result.id).toBe(300);
+    });
+  });
+
+  describe('getFileContent and stream conversion', () => {
+    it('throws BadRequestException when attachment entity does not exist', async () => {
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.getFileContent(TEST_ATTACHMENT_ID, new User())).rejects.toThrow(
+        BadRequestException
+      );
+    });
+
+    it('throws ForbiddenException when user is not authorized to view the file', async () => {
+      const entity = new Attachment();
+      entity.id = TEST_ATTACHMENT_ID;
+      entity.projectId = TEST_PROJECT_ID;
+      entity.attachmentType = { code: AttachmentTypeEnum.INTERACTION } as AttachmentTypeCode;
+
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(entity);
+      (mockProjectAuthService.isForestClientUserAccess as jest.Mock).mockResolvedValue(false);
+
+      const clientUser = new User();
+      clientUser.isMinistry = false;
+
+      await expect(service.getFileContent(TEST_ATTACHMENT_ID, clientUser)).rejects.toThrow(
+        ForbiddenException
+      );
+    });
+
+    it('reads object stream and returns AttachmentFileResponse with buffer', async () => {
+      const entity = new Attachment();
+      entity.id = TEST_ATTACHMENT_ID;
+      entity.projectId = TEST_PROJECT_ID;
+      entity.fileName = 'public_notice.pdf';
+      entity.attachmentType = { code: AttachmentTypeEnum.PUBLIC_NOTICE } as AttachmentTypeCode;
+
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(entity);
+
+      const stream = Readable.from([Buffer.from('chunk1-'), Buffer.from('chunk2')]);
+      jest.spyOn(service, 'getObjectStream').mockResolvedValue(stream as any);
+
+      const result = await service.getFileContent(TEST_ATTACHMENT_ID, undefined);
+
+      expect(result.id).toBe(TEST_ATTACHMENT_ID);
+      expect(result.fileName).toBe('public_notice.pdf');
+      expect(result.fileContents.toString()).toBe('chunk1-chunk2');
+    });
+
+    it('rejects with error when stream errors during conversion', async () => {
+      const { Readable: StreamReadable } = require('node:stream');
+      const errorStream = new StreamReadable({
+        read() {
+          this.emit('error', new Error('Stream read failure'));
+        },
+      });
+
+      await expect(service.stream2buffer(errorStream)).rejects.toContain('Stream read failure');
+    });
+  });
+
+  describe('delete and object removal', () => {
+    it('deletes entity from repository and deletes object storage file', async () => {
+      const user = new User();
+      const entity = new Attachment();
+      entity.id = TEST_ATTACHMENT_ID;
+      entity.projectId = TEST_PROJECT_ID;
+      entity.fileName = 'doc.pdf';
+      entity.attachmentType = { code: AttachmentTypeEnum.SUPPORTING_DOC } as AttachmentTypeCode;
+
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(entity);
+      (mockProjectAuthService.isForestClientUserAllowedStateAccess as jest.Mock).mockResolvedValue(true);
+      (mockRepository.delete as jest.Mock).mockResolvedValue({ affected: 1 });
+
+      const deleteObjectSpy = jest.spyOn(service, 'deleteObject').mockResolvedValue(true);
+
+      await service.delete(TEST_ATTACHMENT_ID, user);
+
+      expect(mockRepository.delete).toHaveBeenCalledWith(TEST_ATTACHMENT_ID);
+      expect(deleteObjectSpy).toHaveBeenCalled();
+    });
+
+    it('deleteObject resolves true on successful MinIO removal', async () => {
+      const removeObjectSpy = jest
+        .spyOn(minioClient, 'removeObject')
+        .mockImplementation((bucket: any, objectName: any, cb: any) => {
+          cb(null);
+        });
+
+      const result = await service.deleteObject('test-bucket', 'test-object');
+      expect(result).toBe(true);
+
+      removeObjectSpy.mockRestore();
+    });
+
+    it('deleteObject resolves false and logs error on MinIO failure', async () => {
+      const removeObjectSpy = jest
+        .spyOn(minioClient, 'removeObject')
+        .mockImplementation((bucket: any, objectName: any, cb: any) => {
+          cb(new Error('MinIO connection timeout'));
+        });
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      const result = await service.deleteObject('test-bucket', 'test-object');
+      expect(result).toBe(false);
+      expect(consoleErrorSpy).toHaveBeenCalled();
+
+      removeObjectSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
     });
   });
 });

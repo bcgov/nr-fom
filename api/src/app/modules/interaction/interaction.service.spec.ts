@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import { User } from '@utility/security/user';
 import { Repository } from 'typeorm';
 import { mockLoggerFactory } from '../../factories/mock-logger.factory';
@@ -22,6 +22,7 @@ describe('InteractionService', () => {
   const TEST_PROJECT_ID = 100;
   const TEST_INTERACTION_ID = 50;
   const TEST_ATTACHMENT_ID = 25;
+  const NEW_ATTACHMENT_ID = 26;
 
   beforeEach(() => {
     mockRepository = {
@@ -29,6 +30,7 @@ describe('InteractionService', () => {
       findOne: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
+      update: jest.fn(),
       createQueryBuilder: jest.fn(),
     };
 
@@ -179,6 +181,106 @@ describe('InteractionService', () => {
       expect(mockAttachmentService.create).toHaveBeenCalled();
       expect(result.id).toBe(TEST_INTERACTION_ID);
       expect(result.attachmentId).toBe(TEST_ATTACHMENT_ID);
+    });
+
+    it('updates interaction and replaces existing attachment', async () => {
+      const user = new User();
+      const project = new ProjectResponse();
+      project.commentingOpenDate = '2026-01-01';
+      (mockProjectService.findOne as jest.Mock).mockResolvedValue(project);
+      (mockProjectAuthService.isForestClientUserAllowedStateAccess as jest.Mock).mockResolvedValue(true);
+
+      const existingEntity = new Interaction();
+      existingEntity.id = TEST_INTERACTION_ID;
+      existingEntity.projectId = TEST_PROJECT_ID;
+      existingEntity.attachmentId = TEST_ATTACHMENT_ID;
+      existingEntity.revisionCount = 1;
+      existingEntity.createTimestamp = new Date();
+
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(existingEntity);
+      (mockRepository.update as jest.Mock).mockResolvedValue({ affected: 1 });
+      (mockAttachmentService.delete as jest.Mock).mockResolvedValue(undefined);
+
+      const newAttachmentResponse = new AttachmentResponse();
+      newAttachmentResponse.id = NEW_ATTACHMENT_ID;
+      (mockAttachmentService.create as jest.Mock).mockResolvedValue(newAttachmentResponse);
+
+      const updatedEntity = new Interaction();
+      updatedEntity.id = TEST_INTERACTION_ID;
+      updatedEntity.projectId = TEST_PROJECT_ID;
+      updatedEntity.stakeholder = 'First Nation Group';
+      updatedEntity.communicationDate = '2026-01-15';
+      updatedEntity.attachmentId = NEW_ATTACHMENT_ID;
+      updatedEntity.revisionCount = 2;
+      updatedEntity.createTimestamp = new Date();
+      (mockRepository.findOne as jest.Mock)
+        .mockResolvedValueOnce(existingEntity) // for findEntityForUpdate in update()
+        .mockResolvedValueOnce(existingEntity) // for findEntityForUpdate in super.update()
+        .mockResolvedValueOnce(updatedEntity); // for findEntityWithCommonRelations in super.update()
+
+      const updateRequest = new InteractionUpdateRequest();
+      updateRequest.projectId = TEST_PROJECT_ID;
+      updateRequest.stakeholder = 'First Nation Group';
+      updateRequest.communicationDate = '2026-01-15';
+      updateRequest.communicationDetails = 'Follow up meeting notes';
+      updateRequest.fileName = 'new_minutes.pdf';
+      updateRequest.file = Buffer.from('new-pdf');
+      updateRequest.revisionCount = 1;
+
+      const result = await service.update(TEST_INTERACTION_ID, updateRequest, user);
+
+      expect(mockAttachmentService.delete).toHaveBeenCalledWith(TEST_ATTACHMENT_ID, user);
+      expect(mockAttachmentService.create).toHaveBeenCalled();
+      expect(result.id).toBe(TEST_INTERACTION_ID);
+    });
+
+    it('throws BadRequestException on update with attachment if entity does not exist', async () => {
+      const user = new User();
+      const project = new ProjectResponse();
+      project.commentingOpenDate = '2026-01-01';
+      (mockProjectService.findOne as jest.Mock).mockResolvedValue(project);
+
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(null);
+
+      const updateRequest = new InteractionUpdateRequest();
+      updateRequest.projectId = TEST_PROJECT_ID;
+      updateRequest.stakeholder = 'First Nation Group';
+      updateRequest.communicationDate = '2026-01-15';
+      updateRequest.fileName = 'new_minutes.pdf';
+      updateRequest.file = Buffer.from('new-pdf');
+      updateRequest.revisionCount = 1;
+
+      await expect(service.update(TEST_INTERACTION_ID, updateRequest, user)).rejects.toThrow(
+        BadRequestException
+      );
+    });
+
+    it('throws InternalServerErrorException if unlinking old attachment fails', async () => {
+      const user = new User();
+      const project = new ProjectResponse();
+      project.commentingOpenDate = '2026-01-01';
+      (mockProjectService.findOne as jest.Mock).mockResolvedValue(project);
+
+      const existingEntity = new Interaction();
+      existingEntity.id = TEST_INTERACTION_ID;
+      existingEntity.projectId = TEST_PROJECT_ID;
+      existingEntity.attachmentId = TEST_ATTACHMENT_ID;
+      existingEntity.revisionCount = 1;
+
+      (mockRepository.findOne as jest.Mock).mockResolvedValue(existingEntity);
+      (mockRepository.update as jest.Mock).mockResolvedValue({ affected: 0 });
+
+      const updateRequest = new InteractionUpdateRequest();
+      updateRequest.projectId = TEST_PROJECT_ID;
+      updateRequest.stakeholder = 'First Nation Group';
+      updateRequest.communicationDate = '2026-01-15';
+      updateRequest.fileName = 'new_minutes.pdf';
+      updateRequest.file = Buffer.from('new-pdf');
+      updateRequest.revisionCount = 1;
+
+      await expect(service.update(TEST_INTERACTION_ID, updateRequest, user)).rejects.toThrow(
+        InternalServerErrorException
+      );
     });
   });
 
