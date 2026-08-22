@@ -104,15 +104,16 @@ export class DigitsOnlyDirective {
       event.clipboardData?.getData('text') ||
       event.clipboardData?.getData('text/plain') ||
       '';
-    const maxLen = this.getMaxLen();
-    const sanitized = pastedText.replace(/\D/g, '').replace(/^0+/, '').slice(0, maxLen);
-
     const inputEl = this.el.nativeElement;
+    const start = inputEl.selectionStart ?? 0;
+    const end = inputEl.selectionEnd ?? 0;
+    const currentVal = inputEl.value;
+
+    const merged = currentVal.slice(0, start) + pastedText + currentVal.slice(end);
+    const maxLen = this.getMaxLen();
+    const sanitized = merged.replace(/\D/g, '').replace(/^0+/, '').slice(0, maxLen);
+
     inputEl.value = sanitized;
-    if (this.ngControl?.control) {
-      this.ngControl.control.setValue(sanitized ? sanitized : null);
-    } else {
-      inputEl.dispatchEvent(new Event('input'));
-    }
+    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
   }
 }

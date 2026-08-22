@@ -89,4 +89,20 @@ describe('DigitsOnlyDirective', () => {
     expect(inputEl.value).toBe('987654321');
     expect(component.control.value).toBe('987654321');
   });
+
+  it('merges pasted text at selection position', () => {
+    inputEl.value = '1256';
+    inputEl.setSelectionRange(2, 2);
+
+    const pasteEvent = new Event('paste', {
+      cancelable: true,
+    }) as any;
+    pasteEvent.clipboardData = {
+      getData: (type: string) => (type === 'text' ? '34' : ''),
+    };
+    inputEl.dispatchEvent(pasteEvent);
+
+    expect(inputEl.value).toBe('123456');
+    expect(component.control.value).toBe('123456');
+  });
 });
