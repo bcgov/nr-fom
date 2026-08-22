@@ -1,4 +1,15 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+/**
+ * Dismiss the Vite dev-server error overlay if present.
+ * This overlay intercepts all pointer events and is a dev-only artifact
+ * that does not exist in production builds.
+ */
+async function dismissViteOverlay(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    document.querySelector('vite-error-overlay')?.remove();
+  });
+}
 
 test.describe('Public - Map & Navigation', () => {
   test('should load the public map page, render Leaflet map, and navigate to FOM details from marker popup', async ({ page }) => {
@@ -6,6 +17,7 @@ test.describe('Public - Map & Navigation', () => {
 
     // Wait for the header with brand title
     await expect(page.locator('.navbar-brand__title, .app-header').first()).toBeVisible({ timeout: 15000 });
+    await dismissViteOverlay(page);
 
     // Leaflet map container should be present and visible
     const mapElement = page.locator('#map, .leaflet-container, app-app-map, .map-container');
@@ -30,6 +42,10 @@ test.describe('Public - Map & Navigation', () => {
 
   test('should allow toggling between Find FOMs panel and Public Notices', async ({ page }) => {
     await page.goto('/public/projects');
+
+    // Wait for content to load, then dismiss dev-server overlay
+    await expect(page.locator('.navbar-brand__title, .app-header').first()).toBeVisible({ timeout: 15000 });
+    await dismissViteOverlay(page);
 
     // Check presence of navigation or action tabs
     const findTab = page.locator('.side-nav button:has-text("Find")');
