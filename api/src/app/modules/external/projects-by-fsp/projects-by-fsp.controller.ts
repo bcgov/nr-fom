@@ -16,7 +16,7 @@ export class PositiveIntPipe implements PipeTransform<number, number> {
             }
         }
 
-        throw new BadRequestException('Value must be positive integer not exceeding 2147483647.');
+        throw new BadRequestException('Value must be a positive integer not exceeding 2147483647.');
     }
 }
 

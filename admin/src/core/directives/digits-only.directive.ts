@@ -47,8 +47,10 @@ export class DigitsOnlyDirective {
     if (inputEl.value !== sanitized) {
       inputEl.value = sanitized;
     }
-    if (this.ngControl?.control && this.ngControl.control.value !== (sanitized || null)) {
-      this.ngControl.control.setValue(sanitized ? sanitized : null);
+    const normalizedValue = sanitized || null;
+    if (this.ngControl?.control && this.ngControl.control.value !== normalizedValue) {
+      this.ngControl.control.setValue(normalizedValue);
+      this.ngControl.viewToModelUpdate?.(normalizedValue);
     }
   }
 
@@ -114,6 +116,11 @@ export class DigitsOnlyDirective {
     const sanitized = merged.replace(/\D/g, '').replace(/^0+/, '').slice(0, maxLen);
 
     inputEl.value = sanitized;
+    const normalizedValue = sanitized || null;
+    if (this.ngControl?.control && this.ngControl.control.value !== normalizedValue) {
+      this.ngControl.control.setValue(normalizedValue);
+      this.ngControl.viewToModelUpdate?.(normalizedValue);
+    }
     inputEl.dispatchEvent(new Event('input', { bubbles: true }));
   }
 }
