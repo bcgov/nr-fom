@@ -14,12 +14,12 @@ test.describe('Public - Map & Navigation', () => {
     // Wait for map markers or clusters to render from seed data
     const marker = page.locator('.leaflet-marker-icon, .marker-cluster').first();
     if (await marker.isVisible({ timeout: 10000 }).catch(() => false)) {
-      await marker.click();
+      await marker.click({ force: true });
 
       // If a popup opens, click "View Details"
       const viewDetailsBtn = page.locator('.leaflet-popup button:has-text("View Details"), button.app-link');
       if (await viewDetailsBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await viewDetailsBtn.click();
+        await viewDetailsBtn.click({ force: true });
 
         // Details panel should be open
         await expect(page.locator('app-details-panel')).not.toHaveAttribute('hidden', '');

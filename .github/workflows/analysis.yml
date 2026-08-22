@@ -114,15 +114,7 @@ jobs:
         run: docker compose up -d --wait
 
       - name: Run Playwright E2E tests (Containerized)
-        run: |
-          docker run --rm \
-            --network=host \
-            -e PUBLIC_URL=http://localhost:4300 \
-            -e ADMIN_URL=http://localhost:4200 \
-            -v "$PWD":/app \
-            -w /app \
-            mcr.microsoft.com/playwright:v1.62.1-noble \
-            npx --yes @playwright/test@1.62.1 test
+        run: docker compose run --rm e2e
 
       - name: Stop services
         if: always()
