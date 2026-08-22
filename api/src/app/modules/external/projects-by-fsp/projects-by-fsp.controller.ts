@@ -10,13 +10,13 @@ export class PositiveIntPipe implements PipeTransform<number, number> {
     transform(value: any, metadata: ArgumentMetadata) {
 
         if(/^\d+$/.test(value)) {
-            const intValue = parseInt(value);
-            if ( intValue > 0) {
+            const intValue = parseInt(value, 10);
+            if ( intValue > 0 && intValue <= 2147483647) {
                 return value;
             }
         }
 
-        throw new BadRequestException('Value must be positive integer.');
+        throw new BadRequestException('Value must be positive integer not exceeding 2147483647.');
     }
 }
 

@@ -131,4 +131,29 @@ describe('SearchComponent', () => {
     expect(component.searched()).toBe(true);
     expect(component.searching()).toBe(false);
   });
+
+  it('ignores invalid or out-of-range fNumber and fFspId in URL query params', async () => {
+    setup({ fNumber: '9999999999', fFspId: '0' });
+    await flushSearch();
+
+    expect(component.fNumber).toBeNull();
+    expect(component.fFspId).toBeNull();
+    expect(find).not.toHaveBeenCalled();
+    expect(component.searched()).toBe(false);
+  });
+
+  it('clears query parameters and resets criteria on clearQueryParameters', async () => {
+    setup({ fFspId: '5' });
+    find.mockReturnValue(of([makeProject(1)]));
+    await flushSearch();
+
+    expect(component.fFspId).toBe(5);
+
+    component.clearQueryParameters();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(component.fFspId).toBeNull();
+    expect(component.fNumber).toBeNull();
+  });
 });
