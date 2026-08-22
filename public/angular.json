@@ -106,6 +106,12 @@
           "options": {
             "port": 4300,
             "host": "0.0.0.0",
+            "allowedHosts": [
+              "localhost",
+              "127.0.0.1",
+              "public",
+              "admin"
+            ],
             "buildTarget": "public:build"
           },
           "configurations": {

@@ -31,6 +31,8 @@ services:
       - sh
       - -c
       - npm run start:admin
+    environment:
+      - NODE_PATH=/app/node_modules
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4200/admin', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
@@ -122,6 +124,8 @@ services:
       - sh
       - -c
       - npm run start:public
+    environment:
+      - NODE_PATH=/app/node_modules
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4300/public', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
@@ -138,3 +142,23 @@ services:
       # Keep the Angular build cache in the container (avoids root-owned .angular on the host)
       - public-angular:/app/public/.angular
     working_dir: /app
+
+  e2e:
+    container_name: e2e
+    image: mcr.microsoft.com/playwright:v1.62.1-noble
+    depends_on:
+      admin:
+        condition: service_healthy
+      public:
+        condition: service_healthy
+    environment:
+      - PUBLIC_URL=http://localhost:4300
+      - ADMIN_URL=http://localhost:4200
+      - NODE_PATH=/app/node_modules
+    network_mode: host
+    volumes:
+      - .:/app:z
+      - root-node-modules:/app/node_modules:ro
+    working_dir: /app
+    entrypoint: ["npx", "playwright", "test"]
+

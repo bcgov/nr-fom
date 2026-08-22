@@ -21,7 +21,11 @@
     "start:api": "npm run start:api --workspace=api",
     "test:public": "npm run test-unit --workspace=public",
     "test:admin": "npm run test-unit --workspace=admin",
-    "test:api": "npm run test-unit --workspace=api"
+    "test:api": "npm run test-unit --workspace=api",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.0"
   },
   "overrides": {
     "ngx-bootstrap": {
