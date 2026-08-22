@@ -10,6 +10,7 @@ import { ActivatedRoute, ParamMap, Params, Router, RouterLink } from '@angular/r
 import { ProjectPlanCodeEnum, ProjectResponse, ProjectService, WorkflowStateEnum } from "@api-client";
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
+import { DigitsOnlyDirective } from "@admin-core/directives/digits-only.directive";
 import { User } from "@utility/security/user";
 import { isNullish } from 'remeda';
 
@@ -27,6 +28,7 @@ interface FindArgs {
     imports: [
     FormsModule,
     RxReactiveFormsModule,
+    DigitsOnlyDirective,
     NgbDropdown,
     NgbDropdownToggle,
     NgbDropdownMenu,
@@ -54,11 +56,11 @@ export class SearchComponent implements OnInit, OnDestroy {
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> | null = null;
   // Populated from the authenticated Cognito session in the constructor.
   public user!: User;
-  public fNumber: number | null; // filter: FOM Number
-  public fFspId: number | null; // filter: FSP ID
+  public fNumber: number | string | null = null; // filter: FOM Number
+  public fFspId: number | string | null = null; // filter: FSP ID
   public fStatus: string | undefined; // filter: workflowStateCode
-  public fDistrict: number | null; // filter: district id
-  public fHolder: string | null; // filter: part of FOM holder name
+  public fDistrict: number | null = null; // filter: district id
+  public fHolder: string | null = null; // filter: part of FOM holder name
   public statusCodes = this.stateSvc.getCodeTable('workflowResponseCode');
   public districts = this.stateSvc.getCodeTable('district');
 
@@ -122,10 +124,22 @@ export class SearchComponent implements OnInit, OnDestroy {
     });
   }
 
+  private parsePositiveInt(val: number | string | null | undefined): string | undefined {
+    if (isNullish(val)) {
+      return undefined;
+    }
+    const str = val.toString().trim();
+    if (!str || !/^\d+$/.test(str)) {
+      return undefined;
+    }
+    const num = parseInt(str, 10);
+    return (isNaN(num) || num <= 0 || num > 999999999) ? undefined : num.toString();
+  }
+
   private buildFindArgs(): FindArgs {
     return {
-      projectId: (isNullish(this.fNumber) || isNaN(this.fNumber)) ? undefined : this.fNumber.toString(),
-      fspId: (isNullish(this.fFspId) || isNaN(this.fFspId)) ? undefined : this.fFspId.toString(),
+      projectId: this.parsePositiveInt(this.fNumber),
+      fspId: this.parsePositiveInt(this.fFspId),
       districtId: (isNullish(this.fDistrict) || isNaN(this.fDistrict)) ? undefined : this.fDistrict.toString(),
       workflowStateCode: this.fStatus === 'undefined' ? undefined : this.fStatus,
       forestClientName: this.fHolder ?? undefined,
@@ -139,9 +153,11 @@ export class SearchComponent implements OnInit, OnDestroy {
     const fNumberParam = this.paramMap.get('fNumber');
     const fFspIdParam = this.paramMap.get('fFspId');
     const fDistrictParam = this.paramMap.get('fDistrict');
-    this.fNumber = fNumberParam ? parseInt(fNumberParam) : null;
-    this.fFspId = fFspIdParam ? parseInt(fFspIdParam) : null;
-    this.fDistrict = fDistrictParam ? parseInt(fDistrictParam) : null;
+    const cleanFNumber = this.parsePositiveInt(fNumberParam);
+    const cleanFFspId = this.parsePositiveInt(fFspIdParam);
+    this.fNumber = cleanFNumber ? parseInt(cleanFNumber, 10) : null;
+    this.fFspId = cleanFFspId ? parseInt(cleanFFspId, 10) : null;
+    this.fDistrict = fDistrictParam ? parseInt(fDistrictParam, 10) : null;
     this.fStatus = this.paramMap.get('fStatus') || undefined;
     this.fHolder = this.paramMap.get('fHolder') || null;
   }
@@ -149,8 +165,9 @@ export class SearchComponent implements OnInit, OnDestroy {
   public saveQueryParameters() {
     const params: Params = {};
 
-    if (this.fFspId != null && !isNaN(this.fFspId)) {
-      params['fFspId'] = this.fFspId;
+    const cleanFFspId = this.parsePositiveInt(this.fFspId);
+    if (cleanFFspId !== undefined) {
+      params['fFspId'] = parseInt(cleanFFspId, 10);
     }
     if (this.fDistrict != null && !isNaN(this.fDistrict)) {
       params['fDistrict'] = this.fDistrict;
@@ -161,8 +178,9 @@ export class SearchComponent implements OnInit, OnDestroy {
     if (this.fHolder != null) {
       params['fHolder'] = this.fHolder;
     }
-    if (this.fNumber != null) {
-        params['fNumber'] = this.fNumber;
+    const cleanFNumber = this.parsePositiveInt(this.fNumber);
+    if (cleanFNumber !== undefined) {
+      params['fNumber'] = parseInt(cleanFNumber, 10);
     }
 
     // change browser URL without reloading page (so any query params are saved in history)

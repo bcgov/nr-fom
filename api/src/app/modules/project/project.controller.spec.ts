@@ -141,6 +141,30 @@ describe('ProjectController', () => {
       const criteria: ProjectFindCriteria = (mockService.find as jest.Mock).mock.calls[0][0];
       expect(criteria.includeForestClientNumbers).toEqual(['1011', '1012']);
     });
+
+    it('throws BadRequestException when projectId exceeds maximum 32-bit integer', async () => {
+      const user = new User();
+      user.isMinistry = true;
+      jest.spyOn(user, 'isAuthorizedForAdminSite').mockReturnValue(true);
+
+      await expect(controller.find(user, '9999999999')).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException when fspId exceeds maximum 32-bit integer', async () => {
+      const user = new User();
+      user.isMinistry = true;
+      jest.spyOn(user, 'isAuthorizedForAdminSite').mockReturnValue(true);
+
+      await expect(controller.find(user, undefined, '2147483648')).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException when districtId is negative or zero', async () => {
+      const user = new User();
+      user.isMinistry = true;
+      jest.spyOn(user, 'isAuthorizedForAdminSite').mockReturnValue(true);
+
+      await expect(controller.find(user, undefined, undefined, '0')).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('create', () => {

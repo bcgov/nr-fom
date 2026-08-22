@@ -30,9 +30,9 @@
             FOM Number
           </label>
 
-          <input id="fNumberInput" name="fNumber" type="number"
-            min="0" step="1"
-            oninput="this.value = this.value.slice(0, 9)"
+          <input id="fNumberInput" name="fNumber" type="text"
+            appDigitsOnly
+            maxlength="9"
             class="form-control"
             style="font-size: 14px;"
             [(ngModel)]="fNumber"
@@ -43,9 +43,9 @@
             <label for="fspIdInput" style="white-space: nowrap;">
               FSP ID
             </label>
-            <input id="fspIdInput" name="fFspId" type="number"
-              min="0" step="1"
-              oninput="this.value = this.value.slice(0, 9)"
+            <input id="fspIdInput" name="fFspId" type="text"
+              appDigitsOnly
+              maxlength="9"
               class="form-control"
               style="font-size: 14px;"
               [(ngModel)]="fFspId"

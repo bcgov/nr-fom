@@ -10,6 +10,19 @@ import { ProjectFindCriteria, ProjectService } from './project.service';
 import { WorkflowStateEnum } from './workflow-state-code.entity';
 
 
+const MAX_INT = 2147483647;
+
+const parsePositiveIntParam = async (value: string | undefined, paramName: string): Promise<number | undefined> => {
+  if (!value) {
+    return undefined;
+  }
+  const intVal = await new ParseIntPipe().transform(value, null);
+  if (intVal < 1 || intVal > MAX_INT) {
+    throw new BadRequestException(`${paramName} must be a positive integer not exceeding ${MAX_INT}`);
+  }
+  return intVal;
+};
+
 @ApiTags('project')
 @UseGuards(AuthGuard)
 @Controller('project')
@@ -39,7 +52,7 @@ export class ProjectController {
       const findCriteria: ProjectFindCriteria = new ProjectFindCriteria();
 
       if (projectId) {
-        findCriteria.projectId = await new ParseIntPipe().transform(projectId, null);
+        findCriteria.projectId = await parsePositiveIntParam(projectId, 'projectId');
       }
 
       if (forestClientName) {
@@ -107,13 +120,13 @@ export class ProjectController {
       const findCriteria: ProjectFindCriteria = new ProjectFindCriteria();
 
       if (projectId) {
-        findCriteria.projectId = await new ParseIntPipe().transform(projectId, null);
+        findCriteria.projectId = await parsePositiveIntParam(projectId, 'projectId');
       }
       if (fspId) {
-        findCriteria.fspId = await new ParseIntPipe().transform(fspId, null);
+        findCriteria.fspId = await parsePositiveIntParam(fspId, 'fspId');
       }
       if (districtId) {
-        findCriteria.districtId = await new ParseIntPipe().transform(districtId, null);
+        findCriteria.districtId = await parsePositiveIntParam(districtId, 'districtId');
       }
       if (workflowStateCode) {
         findCriteria.includeWorkflowStateCodes.push(workflowStateCode);
