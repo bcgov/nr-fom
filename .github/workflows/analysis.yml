@@ -103,6 +103,37 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
+  tests-e2e:
+    name: E2E Tests (Playwright)
+    if: (! github.event.pull_request.draft)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Start services via Compose
+        run: docker compose up -d --wait
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install root dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        run: npm run test:e2e
+        env:
+          PUBLIC_URL: http://localhost:4300
+          ADMIN_URL: http://localhost:4200
+
+      - name: Stop services
+        if: always()
+        run: docker compose down
+
   # ==========================================================================
   # WARNING: This job acts as the required merge gate for this workflow.
   # If you add a new job to this workflow, you MUST add its ID to the 'needs'
@@ -110,7 +141,7 @@ jobs:
   # ==========================================================================
   results:
     name: Analysis Results
-    needs: [tests-admin, tests-api, tests-public, trivy]
+    needs: [tests-admin, tests-api, tests-public, trivy, tests-e2e]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 1

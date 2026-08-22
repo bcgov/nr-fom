@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Admin - Search & Dashboard', () => {
+test.describe('Admin - Search, Navigation & FOM Creation', () => {
   test('should load the admin application shell and navigation header', async ({ page }) => {
     await page.goto('/admin');
 
@@ -21,5 +21,20 @@ test.describe('Admin - Search & Dashboard', () => {
     // Search submit button
     const searchBtn = page.locator('button[type="submit"], .filter-btn-search, button:has-text("Search")');
     await expect(searchBtn.first()).toBeVisible({ timeout: 10000 });
+  });
+
+  test('should navigate to Create FOM form and render required inputs and action buttons', async ({ page }) => {
+    await page.goto('/admin/a/create');
+
+    // Wait for Add New FOM title
+    await expect(page.locator('h1:has-text("Add New"), h1:has-text("FOM")').first()).toBeVisible({ timeout: 15000 });
+
+    // Form inputs should be present
+    const nameInput = page.locator('#name, input[formControlName="name"], input[name="name"]');
+    await expect(nameInput.first()).toBeAttached();
+
+    // Action buttons (Cancel / Submit) should be present
+    const cancelBtn = page.locator('button:has-text("Cancel")');
+    await expect(cancelBtn.first()).toBeVisible({ timeout: 10000 });
   });
 });

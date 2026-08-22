@@ -9,12 +9,20 @@ test.describe('Public - Public Notices', () => {
     await expect(noticesTab).toBeVisible({ timeout: 10000 });
     await noticesTab.click();
 
-    // Verify Public Notices panel is active
-    const noticesPanel = page.locator('app-public-notices-panel, .side-panel');
-    await expect(noticesPanel.first()).toBeVisible({ timeout: 5000 });
+    // Verify Public Notices panel is active and side panel is open
+    const noticesPanel = page.locator('app-public-notices-panel');
+    await expect(page.locator('.applications-view')).toHaveClass(/side-panel__open/);
+    await expect(noticesPanel).not.toHaveAttribute('hidden', '');
 
-    // Results count / container should be visible
-    const resultsContainer = page.locator('.app-results, .side-panel');
-    await expect(resultsContainer.first()).toBeVisible({ timeout: 10000 });
+    // Expand filter panel if accordion header is present
+    const filterHeader = noticesPanel.getByText('Public Notice Filter', { exact: true });
+    if (await filterHeader.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await filterHeader.click();
+    }
+
+    // Verify filter inputs are present
+    await expect(noticesPanel.locator('#pnForestClientNameInput')).toBeAttached();
+    await expect(noticesPanel.locator('#postedAsOfInput')).toBeAttached();
+    await expect(noticesPanel.locator('#districtInput')).toBeAttached();
   });
 });
