@@ -1,20 +1,68 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AnalyticsDashboardComponent } from './analytics-dashboard.component';
-import { AnalyticsDashboardDataService, AnalyticsDashboardData, ApiError } from './analytics-dashboard-data.service';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ProjectPlanCodeFilterEnum } from '@api-client';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
+// Mock ng-apexcharts before the component is imported.
+// jest.mock is hoisted above all imports. The factory returns plain objects
+// that Angular treats as standalone components/modules. The stub needs no
+// decorators — Angular only needs the class at the module-resolution level;
+// the actual template matching is handled by overrideComponent below.
+jest.mock('ng-apexcharts', () => {
+  class StubChartComponent {
+    updateOptions = jest.fn();
+  }
+  return {
+    __esModule: true,
+    NgApexchartsModule: class {},
+    ChartComponent: StubChartComponent,
+  };
+});
+
+// Safe to import now — the decorator's NgApexchartsModule reference
+// resolves to our empty class, not the real 200KB library.
+import { AnalyticsDashboardComponent } from './analytics-dashboard.component';
+import { AnalyticsDashboardDataService, AnalyticsDashboardData, ApiError } from './analytics-dashboard-data.service';
+import { Component, Input } from '@angular/core';
+
 /**
- * Advance jest fake timers by `ms` and then flush the microtask queue so that
- * any `await`-ed Promises (like the one in ngAfterViewInit) settle before
- * assertions run.
+ * Real Angular stub component for template matching.
+ * This replaces NgApexchartsModule's ChartComponent in the component's
+ * imports via TestBed.overrideComponent so the <apx-chart> elements
+ * in the template resolve to this lightweight stub.
+ */
+@Component({
+  selector: 'apx-chart',
+  template: '<div></div>',
+  standalone: true,
+})
+class MockApxChartComponent {
+  @Input() series: unknown;
+  @Input() chart: unknown;
+  @Input() xaxis: unknown;
+  @Input() yaxis: unknown;
+  @Input() title: unknown;
+  @Input() subtitle: unknown;
+  @Input() colors: unknown;
+  @Input() dataLabels: unknown;
+  @Input() stroke: unknown;
+  @Input() fill: unknown;
+  @Input() tooltip: unknown;
+  @Input() plotOptions: unknown;
+  @Input() legend: unknown;
+  @Input() grid: unknown;
+  @Input() noData: unknown;
+  @Input() responsive: unknown;
+  updateOptions = jest.fn();
+}
+
+/**
+ * Advance jest fake timers by `ms` and flush the microtask queue so that
+ * the `await new Promise(…)` in ngAfterViewInit settles before assertions.
  */
 async function advanceAndFlush(ms: number): Promise<void> {
   jest.advanceTimersByTime(ms);
-  // Flushing the microtask queue lets the `await new Promise(…)` in
-  // ngAfterViewInit resolve before we continue.
   await Promise.resolve();
 }
 
@@ -60,17 +108,26 @@ describe('AnalyticsDashboardComponent', () => {
       getAnalyticsData: jest.fn().mockReturnValue(of(mockAnalyticsData))
     };
 
+    // Import the component (with the mocked ng-apexcharts), then swap
+    // the mocked NgApexchartsModule for our real Angular MockApxChartComponent
+    // so the template's <apx-chart> elements are matched.
+    const NgApexchartsModule = (await import('ng-apexcharts')).NgApexchartsModule;
+
     await TestBed.configureTestingModule({
       imports: [AnalyticsDashboardComponent, NoopAnimationsModule, BsDatepickerModule],
       providers: [
         { provide: AnalyticsDashboardDataService, useValue: mockDataService }
       ]
-    }).compileComponents();
+    })
+    .overrideComponent(AnalyticsDashboardComponent, {
+      remove: { imports: [NgApexchartsModule as any] },
+      add: { imports: [MockApxChartComponent] }
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(AnalyticsDashboardComponent);
     component = fixture.componentInstance;
 
-    // Set required signal inputs
     fixture.componentRef.setInput('analyticsData', mockAnalyticsData);
   });
 
@@ -79,7 +136,7 @@ describe('AnalyticsDashboardComponent', () => {
   });
 
   it('should create and initialize charts after view init delay', async () => {
-    fixture.detectChanges(); // triggers ngOnInit + ngAfterViewInit (which awaits setTimeout)
+    fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(component.isInitialized).toBe(false);
 
@@ -88,7 +145,7 @@ describe('AnalyticsDashboardComponent', () => {
 
     expect(component.isInitialized).toBe(true);
 
-    // All 5 chart viewChild references should be resolved
+    // All 5 chart viewChild references resolve to MockApxChartComponent
     expect(component.commentsByResponseCodeChart()).toBeTruthy();
     expect(component.topCommentedProjectsChart()).toBeTruthy();
     expect(component.fomsCountByDistrictChart()).toBeTruthy();
