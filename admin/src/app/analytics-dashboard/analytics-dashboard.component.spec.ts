@@ -20,7 +20,7 @@ describe('AnalyticsDashboardComponent', () => {
       'NOT_CATEGORIZED': 2
     },
     topCommentedProjects: [
-      { projectId: 1, districtName: 'District A', forestClientName: 'Client X', publicCommentCount: 50 }
+      { projectId: '1', districtName: 'District A', forestClientName: 'Client X', publicCommentCount: 50 }
     ],
     commentCountByDistrict: [
       {
@@ -37,7 +37,7 @@ describe('AnalyticsDashboardComponent', () => {
     ],
     uniqueForestClientCount: 3,
     nonInitialPublishedProjectCountByForestClient: [
-      { forestClientId: 'fc1', forestClientName: 'Client X', projectCount: 5 }
+      { forestClientNumber: 'fc1', forestClientName: 'Client X', projectCount: 5 }
     ]
   };
 
@@ -47,7 +47,7 @@ describe('AnalyticsDashboardComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [AnalyticsDashboardComponent, NoopAnimationsModule, BsDatepickerModule.forRoot()],
+      imports: [AnalyticsDashboardComponent, NoopAnimationsModule, BsDatepickerModule],
       providers: [
         { provide: AnalyticsDashboardDataService, useValue: mockDataService }
       ]
