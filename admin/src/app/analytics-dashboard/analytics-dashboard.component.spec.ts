@@ -20,7 +20,7 @@ describe('AnalyticsDashboardComponent', () => {
       'NOT_CATEGORIZED': 2
     },
     topCommentedProjects: [
-      { projectId: '1', districtName: 'District A', forestClientName: 'Client X', publicCommentCount: 50 }
+      { projectId: '1', projectName: 'Project A', districtName: 'District A', forestClientName: 'Client X', publicCommentCount: 50 }
     ],
     commentCountByDistrict: [
       {

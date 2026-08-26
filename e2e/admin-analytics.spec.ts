@@ -20,7 +20,7 @@ test.describe('Admin - Analytics Dashboard', () => {
     }).toPass({ timeout: 10000 });
 
     // Verify all 5 expected chart wrappers are visible and contain rendered SVGs
-    await expect(page.locator('#public-engagement-overview apx-chart .apexcharts-svg')).toBeVisible();
+    await expect(page.locator('#public-engagement-overview apx-chart .apexcharts-svg').first()).toBeVisible();
     await expect(page.locator('#most-commented-foms apx-chart .apexcharts-svg')).toBeVisible();
     await expect(page.locator('#foms-by-district apx-chart .apexcharts-svg')).toBeVisible();
     await expect(page.locator('#comments-by-district apx-chart .apexcharts-svg')).toBeVisible();
