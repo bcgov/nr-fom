@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { AnalyticsDashboardComponent } from './analytics-dashboard.component';
-import { AnalyticsDashboardDataService, AnalyticsDashboardData } from './analytics-dashboard-data.service';
+import { AnalyticsDashboardDataService, AnalyticsDashboardData, ApiError } from './analytics-dashboard-data.service';
 import { of } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ProjectPlanCodeFilterEnum } from '@api-client';
@@ -92,5 +92,52 @@ describe('AnalyticsDashboardComponent', () => {
     
     expect(mockDataService.getAnalyticsData).toHaveBeenCalled();
     expect(component.selectedPlan).toBe(ProjectPlanCodeFilterEnum.Woodlot);
+  }));
+  it('should handle empty arrays and zero counts without errors', fakeAsync(() => {
+    const emptyData: AnalyticsDashboardData = {
+      nonInitialPublishedProjectCount: 0,
+      commentCountByResponseCode: { 'CONSIDERED': 0 },
+      topCommentedProjects: [],
+      commentCountByDistrict: [],
+      nonInitialPublishedProjectCountByDistrict: [],
+      uniqueForestClientCount: 0,
+      nonInitialPublishedProjectCountByForestClient: []
+    };
+    
+    mockDataService.getAnalyticsData.mockReturnValue(of(emptyData));
+    fixture.componentRef.setInput('analyticsData', emptyData);
+    
+    fixture.detectChanges();
+    tick(500);
+    fixture.detectChanges();
+    
+    // Changing filter to force updateOptions with empty arrays
+    component.onFcLimitChange(10);
+    expect(component.isInitialized).toBe(true);
+    // Should not throw
+  }));
+
+  it('should handle ApiError responses gracefully', fakeAsync(() => {
+    const errorData: AnalyticsDashboardData = {
+      nonInitialPublishedProjectCount: new ApiError('500 Internal Server Error'),
+      commentCountByResponseCode: new ApiError('500 Internal Server Error'),
+      topCommentedProjects: new ApiError('500 Internal Server Error'),
+      commentCountByDistrict: new ApiError('403 Forbidden'),
+      nonInitialPublishedProjectCountByDistrict: new ApiError('404 Not Found'),
+      uniqueForestClientCount: new ApiError('500 Internal Server Error'),
+      nonInitialPublishedProjectCountByForestClient: new ApiError('500 Internal Server Error')
+    };
+    
+    mockDataService.getAnalyticsData.mockReturnValue(of(errorData));
+    fixture.componentRef.setInput('analyticsData', errorData);
+    
+    fixture.detectChanges();
+    tick(500);
+    fixture.detectChanges();
+    
+    // Changing filter to force updateOptions with ApiError
+    component.onDistrictFilterChange(null);
+    expect(component.isInitialized).toBe(true);
+    // Should not throw
   }));
 });
