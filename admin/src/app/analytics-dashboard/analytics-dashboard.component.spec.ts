@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AnalyticsDashboardComponent } from './analytics-dashboard.component';
 import { AnalyticsDashboardDataService, AnalyticsDashboardData, ApiError } from './analytics-dashboard-data.service';
 import { of } from 'rxjs';
@@ -41,6 +41,8 @@ describe('AnalyticsDashboardComponent', () => {
     ]
   };
 
+  afterEach(() => { jest.useRealTimers(); });
+
   beforeEach(async () => {
     mockDataService = {
       getAnalyticsData: jest.fn().mockReturnValue(of(mockAnalyticsData))
@@ -60,13 +62,13 @@ describe('AnalyticsDashboardComponent', () => {
     fixture.componentRef.setInput('analyticsData', mockAnalyticsData);
   });
 
-  it('should create and initialize charts after view init delay', fakeAsync(() => {
+  it('should create and initialize charts after view init delay', () => { jest.useFakeTimers();
     fixture.detectChanges(); // Trigger ngOnInit
     expect(component).toBeTruthy();
     expect(component.isInitialized).toBe(false);
 
     // fast forward 500ms delay in ngAfterViewInit
-    tick(500);
+    jest.advanceTimersByTime(500);
     fixture.detectChanges();
 
     expect(component.isInitialized).toBe(true);
@@ -77,11 +79,11 @@ describe('AnalyticsDashboardComponent', () => {
     expect(component.fomsCountByDistrictChart()).toBeTruthy();
     expect(component.commentsByDistrictChart()).toBeTruthy();
     expect(component.fomsCountByForestClientChart()).toBeTruthy();
-  }));
+  });
 
-  it('should call fetchAnalyticsData when filter changes', fakeAsync(() => {
+  it('should call fetchAnalyticsData when filter changes', () => { jest.useFakeTimers();
     fixture.detectChanges();
-    tick(500);
+    jest.advanceTimersByTime(500);
     fixture.detectChanges();
     
     // Clear mock calls from initial setup if any
@@ -92,8 +94,8 @@ describe('AnalyticsDashboardComponent', () => {
     
     expect(mockDataService.getAnalyticsData).toHaveBeenCalled();
     expect(component.selectedPlan).toBe(ProjectPlanCodeFilterEnum.Woodlot);
-  }));
-  it('should handle empty arrays and zero counts without errors', fakeAsync(() => {
+  });
+  it('should handle empty arrays and zero counts without errors', () => { jest.useFakeTimers();
     const emptyData: AnalyticsDashboardData = {
       nonInitialPublishedProjectCount: 0,
       commentCountByResponseCode: { 'CONSIDERED': 0 },
@@ -108,16 +110,16 @@ describe('AnalyticsDashboardComponent', () => {
     fixture.componentRef.setInput('analyticsData', emptyData);
     
     fixture.detectChanges();
-    tick(500);
+    jest.advanceTimersByTime(500);
     fixture.detectChanges();
     
     // Changing filter to force updateOptions with empty arrays
     component.onFcLimitChange(10);
     expect(component.isInitialized).toBe(true);
     // Should not throw
-  }));
+  });
 
-  it('should handle ApiError responses gracefully', fakeAsync(() => {
+  it('should handle ApiError responses gracefully', () => { jest.useFakeTimers();
     const errorData: AnalyticsDashboardData = {
       nonInitialPublishedProjectCount: new ApiError('500 Internal Server Error'),
       commentCountByResponseCode: new ApiError('500 Internal Server Error'),
@@ -132,12 +134,12 @@ describe('AnalyticsDashboardComponent', () => {
     fixture.componentRef.setInput('analyticsData', errorData);
     
     fixture.detectChanges();
-    tick(500);
+    jest.advanceTimersByTime(500);
     fixture.detectChanges();
     
     // Changing filter to force updateOptions with ApiError
     component.onDistrictFilterChange(null);
     expect(component.isInitialized).toBe(true);
     // Should not throw
-  }));
+  });
 });
