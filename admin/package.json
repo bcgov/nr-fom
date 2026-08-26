@@ -31,7 +31,7 @@
     "@rxweb/reactive-form-validators": "^13.0.1",
     "@types/file-saver-es": "^2.0.3",
     "@types/luxon": "^3.4.2",
-    "apexcharts": "^6.0.0",
+    "apexcharts": "^7.0.0",
     "aws-amplify": "^6.16.3",
     "bootstrap": "^5.3.3",
     "file-saver-es": "^2.0.5",
