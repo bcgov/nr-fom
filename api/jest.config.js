@@ -23,7 +23,7 @@ module.exports = {
     "/dist/",
     ".*\\.spec\\.ts$"
   ],
-  coverageDirectory: '../coverage/api',
+  coverageDirectory: 'coverage/api',
   coverageReporters: [
     "text",
     "lcov",
