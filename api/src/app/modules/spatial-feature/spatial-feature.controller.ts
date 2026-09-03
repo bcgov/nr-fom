@@ -1,12 +1,15 @@
-import { Controller, Get, Query, ParseIntPipe, BadRequestException } from '@nestjs/common';
-import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
+import { BadRequestException, Controller, Get, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PinoLogger } from 'nestjs-pino';
-
-import { SpatialFeatureBcgwResponse, SpatialFeaturePublicResponse } from './spatial-feature.dto';
-import { SpatialFeatureService } from './spatial-feature.service';
 import { performance } from 'perf_hooks';
 
+import { AuthGuard, AuthGuardMeta, GUARD_OPTIONS, UserHeader } from '@api-core/security/auth.guard';
+import { User } from '@utility/security/user';
+import { SpatialFeatureBcgwResponse, SpatialFeaturePublicResponse } from './spatial-feature.dto';
+import { SpatialFeatureService } from './spatial-feature.service';
+
 @ApiTags('spatial-feature')
+@UseGuards(AuthGuard)
 @Controller('spatial-feature')
 export class SpatialFeatureController {
   constructor(
@@ -16,13 +19,17 @@ export class SpatialFeatureController {
 
   // Anonymous access allowed
   @Get() 
+  @ApiOperation({ security: [{ bearer: [] }, {}] })
+  @AuthGuardMeta(GUARD_OPTIONS.ANONYMOUS_LIMITED)
   @ApiOkResponse({ type: [SpatialFeaturePublicResponse] })
   async getForProject(
+    @UserHeader() user: User,
     @Query('projectId', ParseIntPipe) projectId: number): Promise<SpatialFeaturePublicResponse[]> {
-    return this.spatialFeatureService.findByProjectId(projectId);
+    return this.spatialFeatureService.findByProjectId(projectId, user);
   }
 
   @Get('/bcgw-extract') 
+  @AuthGuardMeta(GUARD_OPTIONS.PUBLIC)
   @ApiOkResponse({ type: [SpatialFeatureBcgwResponse] })
   async getBcgwExtract(
     @Query('version') version: string): Promise<any> {

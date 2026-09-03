@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '@utility/security/user';
 import { PinoLogger } from 'nestjs-pino';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, In, Repository } from 'typeorm';
+import { ProjectService } from '../project/project.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
 import { FeatureTypeCode } from './feature-type-code';
 import { SpatialFeatureBcgwResponse, SpatialFeaturePublicResponse } from './spatial-feature.dto';
@@ -14,17 +16,33 @@ export class SpatialFeatureService {
   constructor(
     @InjectRepository(SpatialFeature)
     private spatialFeatureRepository: Repository<SpatialFeature>,
+    private projectService: ProjectService,
     private logger: PinoLogger) {
     
     logger.setContext(this.constructor.name);
   }
 
-// Because this is based on a view designed to provide an API response, no separate DTO object is used - the entity is returned directly.
-async findByProjectId(projectId: number): Promise<SpatialFeaturePublicResponse[]> {
+  // Because this is based on a view designed to provide an API response, no separate DTO object is used - the entity is returned directly.
+  async findByProjectId(projectId: number, user?: User): Promise<SpatialFeaturePublicResponse[]> {
     this.logger.debug(`${this.constructor.name}.findByProjectId id = ` + projectId);
 
+    const project = await this.projectService.findOne(projectId, user);
+
+    const isElevated =
+      user?.isMinistry ||
+      (user?.isForestClient && user.isAuthorizedForClientId(project.forestClient?.id));
+
+    const where: FindOptionsWhere<SpatialFeature> = { projectId };
+    if (!isElevated) {
+      where.workflowStateCode = In([
+        WorkflowStateEnum.COMMENT_OPEN,
+        WorkflowStateEnum.COMMENT_CLOSED,
+        WorkflowStateEnum.FINALIZED,
+      ]);
+    }
+
     const result = await this.spatialFeatureRepository.find({
-      where: { projectId: projectId },
+      where,
       relations: { submissionType: true },
     });
 

@@ -185,14 +185,24 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
   }
 
   async isViewAuthorized(entity: Project, user?: User): Promise<boolean> {
+    const isPublicState = [
+      WorkflowStateEnum.COMMENT_OPEN,
+      WorkflowStateEnum.COMMENT_CLOSED,
+      WorkflowStateEnum.FINALIZED,
+    ].includes(entity.workflowStateCode as WorkflowStateEnum);
+
     if (!user) {
-      return true;
+      return isPublicState;
     }
     if (user.isMinistry) {
       return true;
     }
 
-    return user.isForestClient && user.isAuthorizedForClientId(entity.forestClientId);
+    if (user.isForestClient && user.isAuthorizedForClientId(entity.forestClientId)) {
+      return true;
+    }
+
+    return isPublicState;
   }
 
   async create(request: any, user: User): Promise<ProjectResponse> {

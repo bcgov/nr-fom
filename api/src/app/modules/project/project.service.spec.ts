@@ -104,26 +104,94 @@ describe('ProjectService', () => {
 
 
   describe('isViewAuthorized', () => {
-    let entity:Project;
-    let user:User;
+    let entity: Project;
+    let user: User;
     const TEST_CLIENT_ID = '1011';
 
     beforeEach(async () => {
       entity = new Project();
       user = new User();
-    })
+    });
 
-    it ('public user can view', async () => {
+    it('public user cannot view INITIAL, PUBLISHED, or EXPIRED project', async () => {
+      entity.workflowStateCode = WorkflowStateEnum.INITIAL;
+      expect(await service.isViewAuthorized(entity, null)).toBe(false);
+
+      entity.workflowStateCode = WorkflowStateEnum.PUBLISHED;
+      expect(await service.isViewAuthorized(entity, null)).toBe(false);
+
+      entity.workflowStateCode = WorkflowStateEnum.EXPIRED;
+      expect(await service.isViewAuthorized(entity, null)).toBe(false);
+    });
+
+    it('public user can view COMMENT_OPEN, COMMENT_CLOSED, and FINALIZED project', async () => {
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_OPEN;
+      expect(await service.isViewAuthorized(entity, null)).toBe(true);
+
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_CLOSED;
+      expect(await service.isViewAuthorized(entity, null)).toBe(true);
+
+      entity.workflowStateCode = WorkflowStateEnum.FINALIZED;
       expect(await service.isViewAuthorized(entity, null)).toBe(true);
     });
-    it ('ministry user can view', async () => {
+
+    it('ministry user can view projects in any state', async () => {
       user.isMinistry = true;
+
+      entity.workflowStateCode = WorkflowStateEnum.INITIAL;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+
+      entity.workflowStateCode = WorkflowStateEnum.PUBLISHED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+
+      entity.workflowStateCode = WorkflowStateEnum.EXPIRED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_OPEN;
       expect(await service.isViewAuthorized(entity, user)).toBe(true);
     });
-    it ('forestry user for different client cannot view', async () => {
+
+    it('forestry user for same client can view their own projects in any state', async () => {
+      user.isForestClient = true;
+      user.clientIds.push(TEST_CLIENT_ID);
+      entity.forestClientId = TEST_CLIENT_ID;
+
+      entity.workflowStateCode = WorkflowStateEnum.INITIAL;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+
+      entity.workflowStateCode = WorkflowStateEnum.PUBLISHED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+
+      entity.workflowStateCode = WorkflowStateEnum.EXPIRED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+    });
+
+    it('forestry user for different client cannot view INITIAL, PUBLISHED, or EXPIRED project', async () => {
       user.isForestClient = true;
       entity.forestClientId = TEST_CLIENT_ID;
+
+      entity.workflowStateCode = WorkflowStateEnum.INITIAL;
       expect(await service.isViewAuthorized(entity, user)).toBe(false);
+
+      entity.workflowStateCode = WorkflowStateEnum.PUBLISHED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(false);
+
+      entity.workflowStateCode = WorkflowStateEnum.EXPIRED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(false);
+    });
+
+    it('forestry user for different client can view public projects', async () => {
+      user.isForestClient = true;
+      entity.forestClientId = TEST_CLIENT_ID;
+
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_OPEN;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_CLOSED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+
+      entity.workflowStateCode = WorkflowStateEnum.FINALIZED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
     });
   });
 
