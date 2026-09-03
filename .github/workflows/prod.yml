@@ -1,23 +1,59 @@
-name: PROD (dispatch)
+name: PROD
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       tag:
         description: Container tag; usually test, prod or PR number
         default: test
-        required: true
+        required: false
         type: string
 
 concurrency:
   group: ${{ github.workflow }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions: {}
 
 jobs:
+  promote-release:
+    name: Promote Release Tag
+    if: github.event_name == 'release'
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: read
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        package: [admin, api, db, public]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve image digest
+        id: resolve
+        uses: bcgov/actions/image-tracker@v0.5.0
+        with:
+          package: ${{ matrix.package }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          revision: ${{ github.sha }}
+          max_depth: 20
+
+      - name: Tag Image as Release
+        uses: shrink/actions-docker-registry-tag@v5
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          target: ${{ steps.resolve.outputs.digest }}
+          tags: ${{ github.event.release.tag_name }}
+
   deploy:
     name: Deploy (PROD)
+    needs: [promote-release]
+    if: always() && !failure() && !cancelled()
     permissions:
       contents: read
       issues: write
@@ -29,7 +65,7 @@ jobs:
       environment: prod
       logout_siteminder_url: https://logon7.gov.bc.ca/clp-cgi/logoff.cgi
       logout_keycloak_url: https://loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout
-      tag: ${{ inputs.tag }}
+      tag: ${{ github.event.release.tag_name || inputs.tag }}
       target: prod
       url: fom.nrs.gov.bc.ca
 
@@ -42,7 +78,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        component: [api, admin, db, public]
+        component: [admin, api, db, public]
     steps:
       - uses: shrink/actions-docker-registry-tag@v5
         with:
@@ -59,11 +95,11 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        component: [api, admin, db, public]
+        component: [admin, api, db, public]
     steps:
       - uses: shrink/actions-docker-registry-tag@v5
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.component }}
-          target: ${{ inputs.tag }}
+          target: ${{ github.event.release.tag_name || inputs.tag }}
           tags: prod
