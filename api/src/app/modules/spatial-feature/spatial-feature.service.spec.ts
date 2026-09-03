@@ -3,8 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '@utility/security/user';
 import { PinoLogger } from 'nestjs-pino';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ProjectService } from '../project/project.service';
+import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
 import { SpatialFeature } from './spatial-feature.entity';
 import { SpatialFeatureService } from './spatial-feature.service';
 
@@ -18,7 +19,7 @@ describe('SpatialFeatureService', () => {
       find: jest.fn().mockResolvedValue([]),
     };
     projectService = {
-      findOne: jest.fn().mockResolvedValue({ id: 1 } as any),
+      findOne: jest.fn().mockResolvedValue({ id: 1, forestClient: { id: '1011' } } as any),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -38,7 +39,7 @@ describe('SpatialFeatureService', () => {
   });
 
   describe('findByProjectId', () => {
-    it('should call projectService.findOne to authorize access and return features', async () => {
+    it('should filter by public workflow states for anonymous users', async () => {
       const mockFeature = new SpatialFeature();
       mockFeature.featureId = 10;
       mockFeature.featureType = 'cut_block';
@@ -46,16 +47,70 @@ describe('SpatialFeatureService', () => {
       mockFeature.geometry = '{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,1],[0,0]]]}';
       (spatialFeatureRepository.find as jest.Mock).mockResolvedValue([mockFeature]);
 
+      const result = await service.findByProjectId(1, null);
+
+      expect(projectService.findOne).toHaveBeenCalledWith(1, null);
+      expect(spatialFeatureRepository.find).toHaveBeenCalledWith({
+        where: {
+          projectId: 1,
+          workflowStateCode: In([
+            WorkflowStateEnum.COMMENT_OPEN,
+            WorkflowStateEnum.COMMENT_CLOSED,
+            WorkflowStateEnum.FINALIZED,
+          ]),
+        },
+        relations: { submissionType: true },
+      });
+      expect(result).toHaveLength(1);
+      expect(result[0].featureId).toBe(10);
+    });
+
+    it('should not restrict workflow states for ministry users', async () => {
       const user = new User();
-      const result = await service.findByProjectId(1, user);
+      user.isMinistry = true;
+
+      await service.findByProjectId(1, user);
 
       expect(projectService.findOne).toHaveBeenCalledWith(1, user);
       expect(spatialFeatureRepository.find).toHaveBeenCalledWith({
         where: { projectId: 1 },
         relations: { submissionType: true },
       });
-      expect(result).toHaveLength(1);
-      expect(result[0].featureId).toBe(10);
+    });
+
+    it('should not restrict workflow states for authorized forest client users', async () => {
+      const user = new User();
+      user.isForestClient = true;
+      user.clientIds.push('1011');
+
+      await service.findByProjectId(1, user);
+
+      expect(projectService.findOne).toHaveBeenCalledWith(1, user);
+      expect(spatialFeatureRepository.find).toHaveBeenCalledWith({
+        where: { projectId: 1 },
+        relations: { submissionType: true },
+      });
+    });
+
+    it('should restrict workflow states for unauthorized forest client users', async () => {
+      const user = new User();
+      user.isForestClient = true;
+      user.clientIds.push('9999');
+
+      await service.findByProjectId(1, user);
+
+      expect(projectService.findOne).toHaveBeenCalledWith(1, user);
+      expect(spatialFeatureRepository.find).toHaveBeenCalledWith({
+        where: {
+          projectId: 1,
+          workflowStateCode: In([
+            WorkflowStateEnum.COMMENT_OPEN,
+            WorkflowStateEnum.COMMENT_CLOSED,
+            WorkflowStateEnum.FINALIZED,
+          ]),
+        },
+        relations: { submissionType: true },
+      });
     });
 
     it('should throw ForbiddenException if projectService.findOne rejects with ForbiddenException', async () => {

@@ -1984,7 +1984,8 @@
         "security": [
           {
             "bearer": []
-          }
+          },
+          {}
         ],
         "tags": [
           "spatial-feature"

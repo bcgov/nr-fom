@@ -113,8 +113,11 @@ describe('ProjectService', () => {
       user = new User();
     });
 
-    it('public user cannot view INITIAL or EXPIRED project', async () => {
+    it('public user cannot view INITIAL, PUBLISHED, or EXPIRED project', async () => {
       entity.workflowStateCode = WorkflowStateEnum.INITIAL;
+      expect(await service.isViewAuthorized(entity, null)).toBe(false);
+
+      entity.workflowStateCode = WorkflowStateEnum.PUBLISHED;
       expect(await service.isViewAuthorized(entity, null)).toBe(false);
 
       entity.workflowStateCode = WorkflowStateEnum.EXPIRED;
@@ -138,6 +141,9 @@ describe('ProjectService', () => {
       entity.workflowStateCode = WorkflowStateEnum.INITIAL;
       expect(await service.isViewAuthorized(entity, user)).toBe(true);
 
+      entity.workflowStateCode = WorkflowStateEnum.PUBLISHED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+
       entity.workflowStateCode = WorkflowStateEnum.EXPIRED;
       expect(await service.isViewAuthorized(entity, user)).toBe(true);
 
@@ -153,15 +159,21 @@ describe('ProjectService', () => {
       entity.workflowStateCode = WorkflowStateEnum.INITIAL;
       expect(await service.isViewAuthorized(entity, user)).toBe(true);
 
+      entity.workflowStateCode = WorkflowStateEnum.PUBLISHED;
+      expect(await service.isViewAuthorized(entity, user)).toBe(true);
+
       entity.workflowStateCode = WorkflowStateEnum.EXPIRED;
       expect(await service.isViewAuthorized(entity, user)).toBe(true);
     });
 
-    it('forestry user for different client cannot view INITIAL or EXPIRED project', async () => {
+    it('forestry user for different client cannot view INITIAL, PUBLISHED, or EXPIRED project', async () => {
       user.isForestClient = true;
       entity.forestClientId = TEST_CLIENT_ID;
 
       entity.workflowStateCode = WorkflowStateEnum.INITIAL;
+      expect(await service.isViewAuthorized(entity, user)).toBe(false);
+
+      entity.workflowStateCode = WorkflowStateEnum.PUBLISHED;
       expect(await service.isViewAuthorized(entity, user)).toBe(false);
 
       entity.workflowStateCode = WorkflowStateEnum.EXPIRED;

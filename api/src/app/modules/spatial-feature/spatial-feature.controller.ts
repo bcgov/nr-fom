@@ -1,5 +1,5 @@
 import { BadRequestException, Controller, Get, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PinoLogger } from 'nestjs-pino';
 import { performance } from 'perf_hooks';
 
@@ -19,7 +19,7 @@ export class SpatialFeatureController {
 
   // Anonymous access allowed
   @Get() 
-  @ApiBearerAuth()
+  @ApiOperation({ security: [{ bearer: [] }, {}] })
   @AuthGuardMeta(GUARD_OPTIONS.ANONYMOUS_LIMITED)
   @ApiOkResponse({ type: [SpatialFeaturePublicResponse] })
   async getForProject(
