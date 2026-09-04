@@ -1,5 +1,5 @@
 # Build container
-FROM node:24.19.0-bookworm-slim AS build
+FROM node:24.20.0-bookworm-slim AS build
 
 # Install dependencies and build API
 WORKDIR /app
@@ -25,7 +25,7 @@ RUN npm ci --ignore-scripts --workspace=api --omit=dev
 
 
 # Deploy container
-FROM node:24.19.0-bookworm-slim
+FROM node:24.20.0-bookworm-slim
 
 # Copy over app (node_modules is hoisted to the workspace root under npm workspaces)
 WORKDIR /app
