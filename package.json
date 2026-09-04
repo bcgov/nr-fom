@@ -43,7 +43,6 @@
     },
     "linkify-it": "^5.0.2",
     "fast-uri": "^3.1.7",
-    "qs": "^6.16.0",
-    "decode-uri-component": "^0.5.0"
+    "qs": "^6.16.0"
   }
 }
