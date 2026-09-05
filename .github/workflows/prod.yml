@@ -1,13 +1,8 @@
-name: PROD (dispatch)
+name: PROD
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: Container tag; usually test, prod or PR number
-        default: test
-        required: true
-        type: string
+  release:
+    types: [published]
 
 concurrency:
   group: ${{ github.workflow }}
@@ -29,7 +24,7 @@ jobs:
       environment: prod
       logout_siteminder_url: https://logon7.gov.bc.ca/clp-cgi/logoff.cgi
       logout_keycloak_url: https://loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout
-      tag: ${{ inputs.tag }}
+      tag: test
       target: prod
       url: fom.nrs.gov.bc.ca
 
@@ -65,5 +60,5 @@ jobs:
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.component }}
-          target: ${{ inputs.tag }}
+          target: test
           tags: prod
