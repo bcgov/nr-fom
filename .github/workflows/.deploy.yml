@@ -122,7 +122,7 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           file: libs/openshift.init.yml
           overwrite: false
-          parameters: -p ZONE=${{ inputs.target }}
+          parameters: -p ZONE=${{ inputs.target }} ${{ (inputs.environment == 'test' || inputs.environment == 'prod') && secrets.DB_PASSWORD != '' && format('-p POSTGRES_PASSWORD={0}', secrets.DB_PASSWORD) || '' }}
           triggers: ${{ inputs.triggers }}
 
   deploy:

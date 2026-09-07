@@ -92,8 +92,10 @@ objects:
           containers:
             - image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
               securityContext:
+                runAsNonRoot: true
                 capabilities:
-                  add: ["NET_BIND_SERVICE"]
+                  drop:
+                    - ALL
               imagePullPolicy: Always
               name: ${NAME}
               env:
