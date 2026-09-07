@@ -113,12 +113,6 @@ jobs:
             echo "url=fom-${{ inputs.target }}.apps.silver.devops.gov.bc.ca" >> $GITHUB_OUTPUT
           fi
 
-          if [ "${{ inputs.environment }}" == "test" ] || [ "${{ inputs.environment }}" == "prod" ]; then
-            if [ -n "${{ secrets.DB_PASSWORD }}" ]; then
-              echo "db_param=-p POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_OUTPUT
-            fi
-          fi
-
       - name: OpenShift Init
         id: openshift-init
         uses: bcgov/action-deployer-openshift@v4.2.1
@@ -128,7 +122,7 @@ jobs:
           oc_token: ${{ secrets.OC_TOKEN }}
           file: libs/openshift.init.yml
           overwrite: false
-          parameters: -p ZONE=${{ inputs.target }} ${{ steps.vars.outputs.db_param }}
+          parameters: -p ZONE=${{ inputs.target }}
           triggers: ${{ inputs.triggers }}
 
   deploy:
