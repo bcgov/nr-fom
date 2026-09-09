@@ -32,7 +32,6 @@ jobs:
         uses: bcgov/actions/image-tracker@v0.6.0
         with:
           package: ${{ matrix.package }}
-          token: ${{ secrets.GITHUB_TOKEN }}
           revision: ${{ github.sha }}
           max_depth: 20
 
