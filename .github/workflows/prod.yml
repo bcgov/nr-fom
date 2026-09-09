@@ -35,10 +35,10 @@ jobs:
 
       - name: Resolve image digest
         id: resolve
-        uses: bcgov/actions/image-tracker@v0.5.0
+        uses: bcgov/actions/image-tracker@v0.6.0
         with:
           package: ${{ matrix.package }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           revision: ${{ github.sha }}
           max_depth: 20
 
