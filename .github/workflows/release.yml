@@ -33,7 +33,7 @@ jobs:
         with:
           package: ${{ matrix.package }}
           revision: ${{ github.sha }}
-          max_depth: 20
+          max_depth: 100
 
       - name: Tag Image as Release
         uses: shrink/actions-docker-registry-tag@v5
@@ -60,3 +60,21 @@ jobs:
       tag: ${{ github.event.release.tag_name }}
       target: prod
       url: fom.nrs.gov.bc.ca
+
+  promote-prod:
+    name: Promote Prod Tag
+    needs: [deploy]
+    permissions:
+      packages: write
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        package: [admin, api, db, public]
+    timeout-minutes: 5
+    steps:
+      - uses: shrink/actions-docker-registry-tag@v5
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          target: ${{ github.event.release.tag_name }}
+          tags: prod
