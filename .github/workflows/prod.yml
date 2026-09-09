@@ -8,7 +8,7 @@ on:
       tag:
         description: Container tag; usually test, prod or PR number
         default: test
-        required: false
+        required: true
         type: string
 
 concurrency:
@@ -32,6 +32,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Resolve image digest
         id: resolve
