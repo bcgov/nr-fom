@@ -41,6 +41,7 @@
     "@nestjs/swagger": {
       "js-yaml": "^5.2.2"
     },
-    "linkify-it": "^5.0.2"
+    "linkify-it": "^5.0.2",
+    "multer": "^2.3.0"
   }
 }
