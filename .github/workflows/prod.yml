@@ -3,13 +3,6 @@ name: PROD
 on:
   release:
     types: [published]
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: Container tag; usually test, prod or PR number
-        default: test
-        required: true
-        type: string
 
 concurrency:
   group: ${{ github.workflow }}
@@ -20,7 +13,6 @@ permissions: {}
 jobs:
   promote-release:
     name: Promote Release Tag
-    if: github.event_name == 'release'
     permissions:
       contents: read
       packages: write
@@ -55,7 +47,6 @@ jobs:
   deploy:
     name: Deploy (PROD)
     needs: [promote-release]
-    if: always() && !failure() && !cancelled()
     permissions:
       contents: read
       issues: write
@@ -67,7 +58,7 @@ jobs:
       environment: prod
       logout_siteminder_url: https://logon7.gov.bc.ca/clp-cgi/logoff.cgi
       logout_keycloak_url: https://loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout
-      tag: ${{ github.event.release.tag_name || inputs.tag }}
+      tag: ${{ github.event.release.tag_name }}
       target: prod
       url: fom.nrs.gov.bc.ca
 
@@ -103,5 +94,5 @@ jobs:
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.component }}
-          target: ${{ github.event.release.tag_name || inputs.tag }}
+          target: ${{ github.event.release.tag_name }}
           tags: prod
