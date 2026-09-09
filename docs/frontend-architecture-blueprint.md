@@ -990,7 +990,7 @@ Caddy serves the SPA with HTML5 `pushState` (`handle_path /admin/*  { try_files 
 
 ### CI/CD (`.github/workflows/`)
 
-`pr-open.yml` builds `admin`, `api`, `db`, `public` in a matrix via `bcgov/action-builder-ghcr`, with **path triggers** (`admin` builds on `admin/` or `libs/` changes), then deploys to a per-PR OpenShift namespace, smoke-tests, and gates the merge on a `results` job. `merge.yml`, `prod.yml`, `pr-close.yml`, `pr-validate.yml`, `analysis.yml` cover the remaining lifecycle.
+`pr-open.yml` builds `admin`, `api`, `db`, `public` in a matrix via `bcgov/action-builder-ghcr`, with **path triggers** (`admin` builds on `admin/` or `libs/` changes), then deploys to a per-PR OpenShift namespace, smoke-tests, and gates the merge on a `results` job. `merge.yml`, `release.yml`, `pr-close.yml`, `pr-validate.yml`, `analysis.yml` cover the remaining lifecycle.
 
 ---
 
