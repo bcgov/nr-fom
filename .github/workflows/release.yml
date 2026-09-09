@@ -1,4 +1,4 @@
-name: PROD
+name: Release
 
 on:
   release:
