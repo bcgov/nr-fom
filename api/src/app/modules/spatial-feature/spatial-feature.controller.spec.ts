@@ -61,11 +61,14 @@ describe('SpatialFeatureController', () => {
   });
 
   it('getBcgwExtract streams when version is 1.0-final', async () => {
-    const res = { headersSent: false, destroy: jest.fn() } as any;
+    const res = { headersSent: false, destroy: jest.fn(), setHeader: jest.fn() } as any;
     (service.streamBcgwExtract as jest.Mock).mockResolvedValue(3);
 
     await controller.getBcgwExtract('1.0-final', res);
 
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Content-Type',
+      'application/json; charset=utf-8');
     expect(service.streamBcgwExtract).toHaveBeenCalledWith(res);
     expect(logger.info).toHaveBeenCalledWith(expect.stringMatching(/features=3/));
   });

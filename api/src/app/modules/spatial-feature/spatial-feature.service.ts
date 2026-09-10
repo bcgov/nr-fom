@@ -2,7 +2,6 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@utility/security/user';
 import { PinoLogger } from 'nestjs-pino';
-import { once } from 'node:events';
 import { Writable } from 'node:stream';
 import { DataSource, FindOptionsWhere, In, Repository } from 'typeorm';
 import { ProjectService } from '../project/project.service';
@@ -105,10 +104,10 @@ export class SpatialFeatureService {
    */
   async streamBcgwExtract(out: Writable): Promise<number> {
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
     let featureCount = 0;
     try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
       await queryRunner.query(
         `DECLARE bcgw_extract NO SCROLL CURSOR FOR ${BCGW_EXTRACT_SQL}`,
         BCGW_EXTRACT_PARAMS);
@@ -205,7 +204,40 @@ export class SpatialFeatureService {
 }
 
 async function writeChunk(out: Writable, chunk: string): Promise<void> {
-  if (!out.write(chunk)) {
-    await once(out, 'drain');
+  if (out.destroyed || out.writableEnded) {
+    throw new Error('BCGW extract response closed');
   }
+  if (out.write(chunk)) {
+    return;
+  }
+  await waitForDrainOrClose(out);
+}
+
+function waitForDrainOrClose(out: Writable): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const cleanup = (): void => {
+      out.off('drain', onDrain);
+      out.off('close', onClose);
+      out.off('error', onError);
+    };
+    const onDrain = (): void => {
+      cleanup();
+      resolve();
+    };
+    const onClose = (): void => {
+      cleanup();
+      reject(new Error('BCGW extract response closed before drain'));
+    };
+    const onError = (err: Error): void => {
+      cleanup();
+      reject(err);
+    };
+    if (out.destroyed || out.writableEnded) {
+      onClose();
+      return;
+    }
+    out.once('drain', onDrain);
+    out.once('close', onClose);
+    out.once('error', onError);
+  });
 }

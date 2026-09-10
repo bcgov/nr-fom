@@ -43,6 +43,8 @@ export class SpatialFeatureController {
 
     this.logger.info('Start get /spatial-feature/bcgw-extract'); // For measuring performance.
 
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
     const start = performance.now();
     let featureCount = 0;
     try {

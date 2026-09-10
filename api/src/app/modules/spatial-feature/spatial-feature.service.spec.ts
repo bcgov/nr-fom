@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from '@utility/security/user';
 import { PinoLogger } from 'nestjs-pino';
-import { PassThrough } from 'node:stream';
+import { PassThrough, Writable } from 'node:stream';
 import { DataSource, In, Repository } from 'typeorm';
 import { ProjectService } from '../project/project.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
@@ -255,6 +255,47 @@ describe('SpatialFeatureService', () => {
       expect(queryRunner.release).toHaveBeenCalled();
       expect(queryRunner.query.mock.calls.some(
         (call: [string]) => call[0] === 'FETCH 100 FROM bcgw_extract')).toBe(true);
+    });
+
+    it('releases the query runner if startTransaction fails after connect', async () => {
+      queryRunner.startTransaction.mockRejectedValue(new Error('no txn'));
+      const out = new PassThrough();
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow('no txn');
+      expect(queryRunner.release).toHaveBeenCalled();
+      expect(queryRunner.query).not.toHaveBeenCalled();
+    });
+
+    it('releases the query runner if the client disconnects during backpressure', async () => {
+      mockFetchBatches([[
+        {
+          featureId: 10,
+          featureType: 'cut_block',
+          fomId: 42,
+          name: 'CB-1',
+          createTimestamp: '2026-01-02',
+          geometry: '{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,1],[0,0]]]}',
+          plannedDevelopmentDate: '2026-03-01',
+          plannedAreaHa: 1.5,
+          plannedLengthKm: 0,
+          fspHolderName: 'Acme',
+          lifecycleStatus: 'Proposed',
+        },
+      ], []]);
+
+      const out = new Writable({
+        highWaterMark: 1,
+        write(_chunk, _enc, cb) {
+          cb();
+        },
+      });
+      out.cork();
+      setImmediate(() => {
+        out.destroy();
+      });
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow(/closed/);
+      expect(queryRunner.release).toHaveBeenCalled();
     });
 
     it('releases the query runner when mapping a row fails', async () => {
