@@ -2,8 +2,8 @@ import { check } from "k6";
 import http from "k6/http";
 import { Rate } from "k6/metrics";
 
-// One VU, one pull: this is the DataBC/FME pattern, not a stampede.
-// 100 VUs would recreate the outage (overlapping extracts) instead of detecting it.
+// One VU, one pull: DataBC/FME pattern. Not part of the weekly 100-VU Load Test
+// (that job runs public.js). Overlapping extracts recreate the outage.
 export const options = {
   vus: 1,
   iterations: 1,
