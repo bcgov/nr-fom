@@ -44,8 +44,9 @@ export class SpatialFeatureController {
     this.logger.info('Start get /spatial-feature/bcgw-extract'); // For measuring performance.
 
     const start = performance.now();
+    let featureCount = 0;
     try {
-      await this.spatialFeatureService.streamBcgwExtract(res);
+      featureCount = await this.spatialFeatureService.streamBcgwExtract(res);
     } catch (err) {
       if (res.headersSent) {
         res.destroy();
@@ -54,7 +55,8 @@ export class SpatialFeatureController {
       throw err;
     }
 
-    this.logger.info(`End get /spatial-feature/bcgw-extract for ${performance.now() - start}ms.`);
+    this.logger.info(
+      `End get /spatial-feature/bcgw-extract for ${performance.now() - start}ms, features=${featureCount}`);
   }
 
 }

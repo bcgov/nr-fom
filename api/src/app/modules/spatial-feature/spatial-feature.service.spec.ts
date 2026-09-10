@@ -161,7 +161,7 @@ describe('SpatialFeatureService', () => {
       });
     }
 
-    async function collectJson(rows: BcgwExtractRow[]): Promise<unknown> {
+    async function collectJson(rows: BcgwExtractRow[]): Promise<{ body: unknown; featureCount: number }> {
       mockFetchBatches(rows.length ? [rows, []] : [[]]);
       const out = new PassThrough();
       const chunks: Buffer[] = [];
@@ -169,13 +169,13 @@ describe('SpatialFeatureService', () => {
         chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
       });
       const ended = new Promise<void>((resolve) => out.on('finish', resolve));
-      await service.streamBcgwExtract(out);
+      const featureCount = await service.streamBcgwExtract(out);
       await ended;
-      return JSON.parse(Buffer.concat(chunks).toString());
+      return { body: JSON.parse(Buffer.concat(chunks).toString()), featureCount };
     }
 
     it('writes an empty JSON array when there are no rows', async () => {
-      expect(await collectJson([])).toEqual([]);
+      expect(await collectJson([])).toEqual({ body: [], featureCount: 0 });
     });
 
     it('streams one feature at a time as a JSON array and omits unused measures', async () => {
@@ -208,7 +208,8 @@ describe('SpatialFeatureService', () => {
         },
       ]);
 
-      expect(body).toEqual([
+      expect(body.featureCount).toBe(2);
+      expect(body.body).toEqual([
         {
           createDate: '2026-01-02',
           featureId: 10,
@@ -252,6 +253,8 @@ describe('SpatialFeatureService', () => {
       ]);
       expect(queryRunner.commitTransaction).toHaveBeenCalled();
       expect(queryRunner.release).toHaveBeenCalled();
+      expect(queryRunner.query.mock.calls.some(
+        (call: [string]) => call[0] === 'FETCH 100 FROM bcgw_extract')).toBe(true);
     });
 
     it('releases the query runner when mapping a row fails', async () => {

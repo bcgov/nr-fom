@@ -39,6 +39,9 @@ const BCGW_EXTRACT_PARAMS: string[] = [
   WorkflowStateEnum.FINALIZED,
 ];
 
+// ponytail: FETCH size bounds heap to one batch; drop to 1 if a single geometry is huge.
+const BCGW_EXTRACT_FETCH_SIZE = 100;
+
 export type BcgwExtractRow = {
   featureId: number | string;
   featureType: string;
@@ -98,11 +101,13 @@ export class SpatialFeatureService {
   /**
    * Streams a JSON array of SpatialFeatureBcgwResponse objects.
    * Rows are fetched from a server-side cursor so BCGW/FME pulls do not hold the full extract in heap.
+   * @returns number of features written
    */
-  async streamBcgwExtract(out: Writable): Promise<void> {
+  async streamBcgwExtract(out: Writable): Promise<number> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    let featureCount = 0;
     try {
       await queryRunner.query(
         `DECLARE bcgw_extract NO SCROLL CURSOR FOR ${BCGW_EXTRACT_SQL}`,
@@ -110,8 +115,8 @@ export class SpatialFeatureService {
       let first = true;
       await writeChunk(out, '[');
       for (;;) {
-        // ponytail: FETCH 100 bounds heap to one batch; drop to FETCH 1 if a single geometry is huge.
-        const rows = await queryRunner.query('FETCH 100 FROM bcgw_extract') as BcgwExtractRow[];
+        const rows = await queryRunner.query(
+          `FETCH ${BCGW_EXTRACT_FETCH_SIZE} FROM bcgw_extract`) as BcgwExtractRow[];
         if (!Array.isArray(rows)) {
           throw new InternalServerErrorException('BCGW extract FETCH returned a non-array');
         }
@@ -125,12 +130,14 @@ export class SpatialFeatureService {
           }
           first = false;
           await writeChunk(out, featureJson);
+          featureCount += 1;
         }
       }
       await writeChunk(out, ']');
       await queryRunner.query('CLOSE bcgw_extract');
       await queryRunner.commitTransaction();
       out.end();
+      return featureCount;
     } catch (err) {
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction();
