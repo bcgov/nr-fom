@@ -23,6 +23,7 @@ describe('SpatialFeatureService', () => {
     query: jest.Mock;
     isTransactionActive: boolean;
   };
+  let logger: { debug: jest.Mock; setContext: jest.Mock; info: jest.Mock; error: jest.Mock };
 
   beforeEach(async () => {
     spatialFeatureRepository = {
@@ -40,6 +41,7 @@ describe('SpatialFeatureService', () => {
       query: jest.fn().mockResolvedValue([]),
       isTransactionActive: true,
     };
+    logger = { debug: jest.fn(), setContext: jest.fn(), info: jest.fn(), error: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -47,7 +49,7 @@ describe('SpatialFeatureService', () => {
         { provide: getRepositoryToken(SpatialFeature), useValue: spatialFeatureRepository },
         { provide: ProjectService, useValue: projectService },
         { provide: DataSource, useValue: { createQueryRunner: () => queryRunner } },
-        { provide: PinoLogger, useValue: { debug: jest.fn(), setContext: jest.fn(), info: jest.fn() } },
+        { provide: PinoLogger, useValue: logger },
       ],
     }).compile();
 
@@ -344,7 +346,10 @@ describe('SpatialFeatureService', () => {
       ]]);
 
       const out = new PassThrough();
+      const writeSpy = jest.spyOn(out, 'write');
       await expect(service.streamBcgwExtract(out)).rejects.toThrow(InternalServerErrorException);
+      // Failed on the first row, so nothing was sent and the controller can still return an error status.
+      expect(writeSpy).not.toHaveBeenCalled();
       expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(queryRunner.release).toHaveBeenCalled();
     });
@@ -506,6 +511,51 @@ describe('SpatialFeatureService', () => {
       await expect(service.streamBcgwExtract(out)).rejects.toThrow(
         'BCGW extract response closed before drain');
       expect(queryRunner.release).toHaveBeenCalled();
+    });
+
+    it('runs the cursor in a read-only transaction', async () => {
+      await collectJson([]);
+
+      const statements = queryRunner.query.mock.calls.map((call: [string]) => call[0]);
+      expect(statements[0]).toBe('SET TRANSACTION READ ONLY');
+      expect(statements[1]).toContain('DECLARE bcgw_extract');
+    });
+
+    it('writes nothing when the first FETCH fails', async () => {
+      queryRunner.query.mockImplementation(async (sql: string) => {
+        if (sql.startsWith('FETCH')) {
+          throw new Error('statement timeout');
+        }
+        return undefined;
+      });
+      const out = new PassThrough();
+      const writeSpy = jest.spyOn(out, 'write');
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow('statement timeout');
+      expect(writeSpy).not.toHaveBeenCalled();
+      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
+    });
+
+    it('logs the error and how many features were sent when the extract fails', async () => {
+      const validRow: BcgwExtractRow = {
+        featureId: 10,
+        featureType: 'cut_block',
+        fomId: 42,
+        name: 'CB-1',
+        createTimestamp: '2026-01-02',
+        geometry: '{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,1],[0,0]]]}',
+        plannedDevelopmentDate: '2026-03-01',
+        plannedAreaHa: 1.5,
+        plannedLengthKm: 0,
+        fspHolderName: 'Acme',
+        lifecycleStatus: 'Proposed',
+      };
+      mockFetchBatches([[validRow, { ...validRow, featureId: 11, geometry: null }]]);
+      const out = new PassThrough();
+      out.resume();
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow(InternalServerErrorException);
+      expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('after 1 features'));
     });
   });
 });

@@ -108,11 +108,11 @@ export class SpatialFeatureService {
     try {
       await queryRunner.connect();
       await queryRunner.startTransaction();
+      // The cursor holds this transaction open for the whole transfer; it only ever reads.
+      await queryRunner.query('SET TRANSACTION READ ONLY');
       await queryRunner.query(
         `DECLARE bcgw_extract NO SCROLL CURSOR FOR ${BCGW_EXTRACT_SQL}`,
         BCGW_EXTRACT_PARAMS);
-      let first = true;
-      await writeChunk(out, '[');
       for (;;) {
         const rows = await queryRunner.query(
           `FETCH ${BCGW_EXTRACT_FETCH_SIZE} FROM bcgw_extract`) as BcgwExtractRow[];
@@ -124,20 +124,20 @@ export class SpatialFeatureService {
         }
         for (const row of rows) {
           const featureJson = JSON.stringify(this.convertRowToBcgwResponse(row));
-          if (!first) {
-            await writeChunk(out, ',');
-          }
-          first = false;
-          await writeChunk(out, featureJson);
+          // '[' goes out with the first feature, so a failure in the first FETCH (where the query actually runs) or
+          // first row happens before any bytes are sent and the client still gets an error status instead of a 200.
+          await writeChunk(out, (featureCount === 0 ? '[' : ',') + featureJson);
           featureCount += 1;
         }
       }
-      await writeChunk(out, ']');
+      await writeChunk(out, featureCount === 0 ? '[]' : ']');
       await queryRunner.query('CLOSE bcgw_extract');
       await queryRunner.commitTransaction();
       out.end();
       return featureCount;
     } catch (err) {
+      // Once bytes are sent the controller can only drop the connection, so this is the only record of why.
+      this.logger.error(`BCGW extract failed after ${featureCount} features: ${err}`);
       if (queryRunner.isTransactionActive) {
         await queryRunner.rollbackTransaction();
       }

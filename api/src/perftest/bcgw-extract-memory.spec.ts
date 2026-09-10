@@ -81,7 +81,7 @@ const enabled = process.env.BCGW_EXTRACT_STRESS === '1';
         { provide: getRepositoryToken(SpatialFeature), useValue: { find: jest.fn() } },
         { provide: ProjectService, useValue: { findOne: jest.fn() } },
         { provide: DataSource, useValue: { createQueryRunner: () => queryRunner } },
-        { provide: PinoLogger, useValue: { debug: jest.fn(), setContext: jest.fn(), info: jest.fn() } },
+        { provide: PinoLogger, useValue: { debug: jest.fn(), setContext: jest.fn(), info: jest.fn(), error: jest.fn() } },
       ],
     }).compile();
 
