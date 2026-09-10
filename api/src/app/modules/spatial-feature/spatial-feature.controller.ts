@@ -1,5 +1,6 @@
-import { BadRequestException, Controller, Get, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, ParseIntPipe, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { PinoLogger } from 'nestjs-pino';
 import { performance } from 'perf_hooks';
 
@@ -32,7 +33,8 @@ export class SpatialFeatureController {
   @AuthGuardMeta(GUARD_OPTIONS.PUBLIC)
   @ApiOkResponse({ type: [SpatialFeatureBcgwResponse] })
   async getBcgwExtract(
-    @Query('version') version: string): Promise<any> {
+    @Query('version') version: string,
+    @Res() res: Response): Promise<void> {
 
     // Version acts as an informal API key (to prevent casual exploration of an expensive operation) plus provides a versioning capability.
     if (version != '1.0-final') {
@@ -42,12 +44,17 @@ export class SpatialFeatureController {
     this.logger.info('Start get /spatial-feature/bcgw-extract'); // For measuring performance.
 
     const start = performance.now();
-    const result = await this.spatialFeatureService.getBcgwExtract();
-    const end = performance.now();
+    try {
+      await this.spatialFeatureService.streamBcgwExtract(res);
+    } catch (err) {
+      if (res.headersSent) {
+        res.destroy();
+        return;
+      }
+      throw err;
+    }
 
-    this.logger.info(`End get /spatial-feature/bcgw-extract for ${end - start}ms.`);
-
-    return result;
+    this.logger.info(`End get /spatial-feature/bcgw-extract for ${performance.now() - start}ms.`);
   }
 
 }

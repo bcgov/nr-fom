@@ -13,7 +13,7 @@ describe('SpatialFeatureController', () => {
   beforeEach(async () => {
     service = {
       findByProjectId: jest.fn().mockResolvedValue([]),
-      getBcgwExtract: jest.fn().mockResolvedValue([]),
+      streamBcgwExtract: jest.fn().mockResolvedValue(undefined),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -49,5 +49,20 @@ describe('SpatialFeatureController', () => {
     await controller.getForProject(user, 42);
 
     expect(service.findByProjectId).toHaveBeenCalledWith(42, user);
+  });
+
+  it('getBcgwExtract rejects an invalid version without streaming', async () => {
+    const res = { headersSent: false, destroy: jest.fn() } as any;
+
+    await expect(controller.getBcgwExtract('nope', res)).rejects.toThrow('Invalid version');
+    expect(service.streamBcgwExtract).not.toHaveBeenCalled();
+  });
+
+  it('getBcgwExtract streams when version is 1.0-final', async () => {
+    const res = { headersSent: false, destroy: jest.fn() } as any;
+
+    await controller.getBcgwExtract('1.0-final', res);
+
+    expect(service.streamBcgwExtract).toHaveBeenCalledWith(res);
   });
 });
