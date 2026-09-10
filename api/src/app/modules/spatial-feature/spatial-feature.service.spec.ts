@@ -174,6 +174,34 @@ describe('SpatialFeatureService', () => {
       return { body: JSON.parse(Buffer.concat(chunks).toString()), featureCount };
     }
 
+    it('does not buffer the full extract across FETCH batches', async () => {
+      const row = (id: number): BcgwExtractRow => ({
+        featureId: id,
+        featureType: 'cut_block',
+        fomId: 42,
+        name: `CB-${id}`,
+        createTimestamp: '2026-01-02',
+        geometry: '{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,1],[0,0]]]}',
+        plannedDevelopmentDate: '2026-03-01',
+        plannedAreaHa: 1.5,
+        plannedLengthKm: 0,
+        fspHolderName: 'Acme',
+        lifecycleStatus: 'Proposed',
+      });
+      mockFetchBatches([
+        Array.from({ length: 100 }, (_, i) => row(i)),
+        Array.from({ length: 100 }, (_, i) => row(100 + i)),
+        Array.from({ length: 50 }, (_, i) => row(200 + i)),
+        [],
+      ]);
+      const out = new PassThrough();
+      out.resume();
+      const featureCount = await service.streamBcgwExtract(out);
+      expect(featureCount).toBe(250);
+      expect(queryRunner.query.mock.calls.filter(
+        (call: [string]) => call[0].startsWith('FETCH'))).toHaveLength(4);
+    });
+
     it('writes an empty JSON array when there are no rows', async () => {
       expect(await collectJson([])).toEqual({ body: [], featureCount: 0 });
     });

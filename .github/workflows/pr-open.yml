@@ -92,7 +92,8 @@ jobs:
   load:
     name: Load (bcgw-extract)
     needs: [deploy, smoke]
-    if: needs.deploy.outputs.triggered == 'true'
+    # Opt-in: add the `load-test` label. Default PRs skip this job.
+    if: needs.deploy.outputs.triggered == 'true' && contains(github.event.pull_request.labels.*.name, 'load-test')
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
