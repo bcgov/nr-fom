@@ -1,8 +1,8 @@
 name: Load Test
 
-# Weekly: 100 VUs / 300s against PROD public map (quickstart-openshift shape).
-# BCGW extract is not in this job — overlapping extracts recreate the OOM.
-# Dispatch: target prod | test | pr. PRs only when you pass target=pr and pr=<n>.
+# Weekly: 100 VUs / 300s against TEST public map (quickstart-openshift shape).
+# Never hits PROD. BCGW extract is not in this job.
+# Dispatch: target test | pr. PRs only when you pass target=pr and pr=<n>.
 on:
   schedule:
     - cron: "0 15 * * 1" # 15:00 UTC Monday
@@ -12,10 +12,9 @@ on:
         description: Where to run
         type: choice
         options:
-          - prod
           - test
           - pr
-        default: prod
+        default: test
       pr:
         description: PR number (required when target is pr)
         required: false
@@ -43,13 +42,10 @@ jobs:
           PR: ${{ github.event.inputs.pr }}
         run: |
           if [ "${EVENT_NAME}" = "schedule" ]; then
-            TARGET=prod
+            TARGET=test
           fi
-          TARGET="${TARGET:-prod}"
+          TARGET="${TARGET:-test}"
           case "${TARGET}" in
-            prod)
-              echo "base=https://fom.nrs.gov.bc.ca/api" >> "$GITHUB_OUTPUT"
-              ;;
             test)
               echo "base=https://fom-test.apps.silver.devops.gov.bc.ca/api" >> "$GITHUB_OUTPUT"
               ;;

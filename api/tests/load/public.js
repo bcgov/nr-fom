@@ -2,9 +2,8 @@ import { check, sleep } from "k6";
 import http from "k6/http";
 import { Rate } from "k6/metrics";
 
-// Same shape as bcgov/quickstart-openshift (100 VUs / 300s), against public map
-// reads — not BCGW extract. Overlapping extracts recreate the OOM; this is the
-// traffic the public site actually generates.
+// Same shape as bcgov/quickstart-openshift (100 VUs / 300s), against TEST (or
+// a PR slot) public map — not BCGW extract, never PROD.
 export const options = {
   vus: 100,
   duration: "300s",
