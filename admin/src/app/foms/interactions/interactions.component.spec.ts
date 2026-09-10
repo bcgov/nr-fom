@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { from, of } from 'rxjs';
 
 import { InteractionsComponent } from './interactions.component';
@@ -42,8 +42,9 @@ describe('InteractionsComponent', () => {
     removeMock = jest.fn().mockReturnValue(asyncOf({}));
 
     await TestBed.configureTestingModule({
-      imports: [InteractionsComponent, NoopAnimationsModule],
+      imports: [InteractionsComponent],
       providers: [
+        provideAnimationsAsync('noop'),
         provideRouter([]),
         {
           provide: InteractionService,

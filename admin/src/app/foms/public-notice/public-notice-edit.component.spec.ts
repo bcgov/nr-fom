@@ -4,7 +4,7 @@ import { ModalService } from '@admin-core/services/modal.service';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { Router, provideRouter } from '@angular/router';
 import { PublicNoticeService } from '@api-client';
 import { RxFormBuilder } from '@rxweb/reactive-form-validators';
@@ -88,8 +88,9 @@ describe('PublicNoticeEditComponent', () => {
     updateMock = jest.fn().mockReturnValue(asyncOf({ id: 55 }));
 
     await TestBed.configureTestingModule({
-      imports: [PublicNoticeEditComponent, NoopAnimationsModule],
+      imports: [PublicNoticeEditComponent],
       providers: [
+        provideAnimationsAsync('noop'),
         provideRouter([]),
         {
           provide: PublicNoticeService,
