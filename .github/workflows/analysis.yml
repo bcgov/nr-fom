@@ -54,7 +54,8 @@ jobs:
           # per-workspace lockfiles were removed by design.
           # The root package.json still has its sibling lock.
           sonar_args: >
-            -Dsonar.exclusions=**/*.spec.ts
+            -Dsonar.exclusions=**/*.spec.ts,**/tests/load/**
+            -Dsonar.coverage.exclusions=**/tests/load/**
             -Dsonar.javascript.lcov.reportPaths=coverage/api/lcov.info
             -Dsonar.organization=bcgov-sonarcloud
             -Dsonar.projectKey=nr-fom
