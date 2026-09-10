@@ -69,7 +69,7 @@ describe('MailService', () => {
       const callArg = mockMailerService.sendMail.mock.calls[0][0];
 
       expect(callArg.to).toBe('FLNR.CascadesDistrict@gov.bc.ca');
-      expect(callArg.from).toBe('"FOMDoNotReply" <Do-Not-Reply@gov.bc.ca');
+      expect(callArg.from).toBe('"FOMDoNotReply" <Do-Not-Reply@gov.bc.ca>');
       expect(callArg.subject).toContain('New Final FOM submission received for http://localhost:4200/admin/');
       expect(callArg.html).toContain('FOM 1001 Test Project Test Forest Client Ltd has been finalized');
       expect(callArg.html).toContain('http://localhost:4200/admin/a/1001');
@@ -128,7 +128,7 @@ describe('MailService', () => {
       const realMailService = integrationModule.get<MailService>(MailService);
       const project = createMockProject();
 
-      await expect(realMailService.sendDistrictNotification(project)).resolves.not.toThrow();
+      await expect(realMailService.sendDistrictNotification(project)).resolves.toBeUndefined();
     });
   });
 });
