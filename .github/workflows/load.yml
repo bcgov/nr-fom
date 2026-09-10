@@ -1,7 +1,7 @@
-name: Scheduled
+name: Load Test
 
-# Weekly k6 against TEST. To hit a PR deploy instead:
-# Actions → Scheduled → Run workflow → this branch → pr = <number>.
+# Weekly k6 against TEST. Drop more scripts in api/tests/load/; each file owns vus/iterations.
+# To hit a PR deploy: Actions → Load Test → Run workflow → pr = <number>.
 on:
   schedule:
     - cron: "0 15 * * 1" # 15:00 UTC Monday
@@ -20,7 +20,7 @@ permissions: {}
 
 jobs:
   load:
-    name: Load (bcgw-extract)
+    name: k6
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -43,5 +43,4 @@ jobs:
         env:
           BACKEND_URL: ${{ steps.url.outputs.base }}
         with:
-          path: ./api/tests/load/bcgw-extract.js
-          flags: --vus 1 --iterations 1
+          path: ./api/tests/load/*.js
