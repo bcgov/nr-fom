@@ -34,6 +34,7 @@
       "@angular/forms": "^22.0.1"
     },
     "nodemailer": "^10.0.0",
+    "ioredis": "^5.0.4",
     "typeorm": "^1.0.0",
     "@nestjs/typeorm": {
       "typeorm": "^1.0.0"
