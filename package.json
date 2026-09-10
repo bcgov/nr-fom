@@ -25,7 +25,7 @@
     "test:e2e": "playwright test"
   },
   "devDependencies": {
-    "@playwright/test": "^1.51.0"
+    "@playwright/test": "^1.63.0"
   },
   "overrides": {
     "ngx-bootstrap": {
