@@ -1,0 +1,26 @@
+name: Scheduled
+
+on:
+  schedule:
+    - cron: "0 15 * * 1" # 15:00 UTC Monday
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  load:
+    name: Load (bcgw-extract)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
+      - uses: grafana/run-k6-action@de51a7390bdf0ac85a3bef493691bd71d4c7c158 # v1.4.0
+        env:
+          BACKEND_URL: https://fom-test.apps.silver.devops.gov.bc.ca/api
+        with:
+          path: ./api/tests/load/bcgw-extract.js
+          flags: --vus 1 --iterations 1
