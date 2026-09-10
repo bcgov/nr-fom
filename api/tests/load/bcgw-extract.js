@@ -20,8 +20,16 @@ function isStatus200(res) {
   return res.status === 200;
 }
 
-function isJsonArray(res) {
-  return typeof res.body === "string" && res.body.startsWith("[");
+function isCompleteJsonArray(res) {
+  if (typeof res.body !== "string") {
+    return false;
+  }
+  try {
+    const parsed = JSON.parse(res.body);
+    return Array.isArray(parsed);
+  } catch {
+    return false;
+  }
 }
 
 export default function bcgwExtract() {
@@ -34,7 +42,7 @@ export default function bcgwExtract() {
   const res = http.get(url, { timeout: "180s" });
   const ok = check(res, {
     "bcgw-extract status 200": isStatus200,
-    "bcgw-extract json array": isJsonArray,
+    "bcgw-extract json array": isCompleteJsonArray,
   });
   errorRate.add(!ok, { tag1: "bcgw-extract" });
 }
