@@ -3,19 +3,5 @@
   "description": "Presets from https://github.com/bcgov/renovate-config",
   "extends": [
     "github>bcgov/renovate-config#2026.8.18"
-  ],
-  "packageRules": [
-    {
-      "description": "Group Playwright packages, docker images, and GitHub Actions into a single PR with range bump",
-      "matchPackageNames": [
-        "/^playwright/",
-        "/^@playwright\\//",
-        "/^pytest-playwright$/",
-        "/^mcr\\.microsoft\\.com\\/playwright/",
-        "/^microsoft\\/playwright-github-action/"
-      ],
-      "groupName": "playwright",
-      "rangeStrategy": "bump"
-    }
   ]
 }
