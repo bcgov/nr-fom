@@ -145,7 +145,7 @@ services:
 
   e2e:
     container_name: e2e
-    image: mcr.microsoft.com/playwright:v1.62.1-noble
+    image: mcr.microsoft.com/playwright:v1.63.0-noble
     depends_on:
       admin:
         condition: service_healthy
