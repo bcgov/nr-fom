@@ -2,7 +2,7 @@ import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSv
 import { CommentScopeOpt } from '@admin-core/utils/constants';
 import { Component, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import {
     AttachmentService, InteractionService, ProjectService,
@@ -108,8 +108,9 @@ describe('SummaryComponent', () => {
     ]));
 
     await TestBed.configureTestingModule({
-      imports: [SummaryComponent, NoopAnimationsModule],
+      imports: [SummaryComponent],
       providers: [
+        provideAnimationsAsync('noop'),
         provideRouter([]),
         { provide: ProjectService, useValue: { projectControllerFindOne: projectMock } },
         { provide: PublicCommentService, useValue: { publicCommentControllerFind: commentsMock } },

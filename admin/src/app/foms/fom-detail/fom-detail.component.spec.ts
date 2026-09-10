@@ -3,7 +3,7 @@ import { CognitoService } from '@admin-core/services/cognito.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { Component, input, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import { ProjectService } from '@api-client';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -95,8 +95,9 @@ describe('FomDetailComponent', () => {
     getAttachmentsMock = jest.fn().mockReturnValue(new Promise(() => { /* never settles */ }));
 
     await TestBed.configureTestingModule({
-      imports: [FomDetailComponent, NoopAnimationsModule],
+      imports: [FomDetailComponent],
       providers: [
+        provideAnimationsAsync('noop'),
         provideRouter([]),
         {
           provide: ProjectService,

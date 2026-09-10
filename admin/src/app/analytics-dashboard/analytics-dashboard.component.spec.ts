@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { ProjectPlanCodeFilterEnum } from '@api-client';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
@@ -114,8 +114,9 @@ describe('AnalyticsDashboardComponent', () => {
     const NgApexchartsModule = (await import('ng-apexcharts')).NgApexchartsModule;
 
     await TestBed.configureTestingModule({
-      imports: [AnalyticsDashboardComponent, NoopAnimationsModule, BsDatepickerModule],
+      imports: [AnalyticsDashboardComponent, BsDatepickerModule],
       providers: [
+        provideAnimationsAsync('noop'),
         { provide: AnalyticsDashboardDataService, useValue: mockDataService }
       ]
     })

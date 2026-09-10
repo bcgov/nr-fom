@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { FomSubmissionComponent } from './fom-submission.component';
 import { CognitoService } from '@admin-core/services/cognito.service';
 import { ModalService } from '@admin-core/services/modal.service';
@@ -18,9 +18,9 @@ describe('FomSubmissionComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         FomSubmissionComponent,
-        NoopAnimationsModule,
       ],
       providers: [
+        provideAnimationsAsync('noop'),
         provideRouter([]),
         {
           provide: ActivatedRoute,

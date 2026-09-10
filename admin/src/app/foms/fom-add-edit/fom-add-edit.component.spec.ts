@@ -9,7 +9,7 @@ import { Component, input, output, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import { ForestClientService, ProjectService } from '@api-client';
 import { RxFormBuilder } from '@rxweb/reactive-form-validators';
@@ -102,8 +102,9 @@ describe('FomAddEditComponent', () => {
     forestClientFindMock = jest.fn().mockReturnValue(of(forestClients));
 
     await TestBed.configureTestingModule({
-      imports: [FomAddEditComponent, NoopAnimationsModule],
+      imports: [FomAddEditComponent],
       providers: [
+        provideAnimationsAsync('noop'),
         provideRouter([]),
         {
           provide: ProjectService,

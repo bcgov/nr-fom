@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { AppComponent } from './app.component';
 import { StateService } from '@public-core/services/state.service';
@@ -34,7 +34,7 @@ describe('AppComponent', () => {
         provideRouter([]),
         { provide: StateService, useValue: mockStateService },
         { provide: ModalService, useValue: mockModalService },
-        provideNoopAnimations(),
+        provideAnimationsAsync('noop'),
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(AppComponent);

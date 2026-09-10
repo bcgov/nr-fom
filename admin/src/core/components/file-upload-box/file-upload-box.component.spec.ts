@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { UploadBoxComponent } from './file-upload-box.component';
 
 const BYTES_PER_MB = 1048576;
@@ -15,7 +15,8 @@ describe('UploadBoxComponent', () => {
 
   function setup(inputs: { maxFileSizeMB?: number; fileTypes?: string[] } = {}) {
     TestBed.configureTestingModule({
-      imports: [UploadBoxComponent, NoopAnimationsModule],
+      imports: [UploadBoxComponent],
+      providers: [provideAnimationsAsync('noop')],
     });
     fixture = TestBed.createComponent(UploadBoxComponent);
     component = fixture.componentInstance;

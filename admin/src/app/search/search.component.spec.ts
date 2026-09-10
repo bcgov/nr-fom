@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
@@ -38,8 +38,9 @@ describe('SearchComponent', () => {
     snackBarOpen = jest.fn().mockReturnValue({ dismiss: jest.fn() });
 
     TestBed.configureTestingModule({
-      imports: [SearchComponent, NoopAnimationsModule],
+      imports: [SearchComponent],
       providers: [
+        provideAnimationsAsync('noop'),
         { provide: ActivatedRoute, useValue: { queryParamMap: queryParams$.asObservable() } },
         { provide: Router, useValue: { createUrlTree: jest.fn().mockReturnValue({ toString: () => '' }) } },
         { provide: Location, useValue: { go: jest.fn() } },
