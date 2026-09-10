@@ -1,9 +1,16 @@
 name: Scheduled
 
+# Weekly k6 against TEST. To hit a PR deploy instead:
+# Actions → Scheduled → Run workflow → this branch → pr = <number>.
 on:
   schedule:
     - cron: "0 15 * * 1" # 15:00 UTC Monday
   workflow_dispatch:
+    inputs:
+      pr:
+        description: PR number whose deploy to hit (blank = TEST)
+        required: false
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}
@@ -18,9 +25,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
+      - name: Resolve API base URL
+        id: url
+        env:
+          PR: ${{ github.event.inputs.pr }}
+        run: |
+          if [ -z "${PR}" ]; then
+            echo "base=https://fom-test.apps.silver.devops.gov.bc.ca/api" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! [[ "${PR}" =~ ^[0-9]+$ ]]; then
+            echo "pr must be a number" >&2
+            exit 1
+          fi
+          echo "base=https://fom-$((PR % 50)).apps.silver.devops.gov.bc.ca/api" >> "$GITHUB_OUTPUT"
       - uses: grafana/run-k6-action@de51a7390bdf0ac85a3bef493691bd71d4c7c158 # v1.4.0
         env:
-          BACKEND_URL: https://fom-test.apps.silver.devops.gov.bc.ca/api
+          BACKEND_URL: ${{ steps.url.outputs.base }}
         with:
           path: ./api/tests/load/bcgw-extract.js
           flags: --vus 1 --iterations 1
