@@ -157,6 +157,11 @@ objects:
             - name: ${NAME}
               # Override manually like this - 'image: postgis/postgis:17-master'
               image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
+              securityContext:
+                runAsNonRoot: true
+                capabilities:
+                  drop:
+                    - ALL
               ports:
                 - containerPort: 5432
                   protocol: TCP
@@ -268,6 +273,11 @@ objects:
               containers:
                 - name: ${NAME}-${ZONE}
                   image: "bcgovimages/backup-container:latest"
+                  securityContext:
+                    runAsNonRoot: true
+                    capabilities:
+                      drop:
+                        - ALL
                   command:
                     - "/bin/bash"
                     - "-c"
@@ -351,6 +361,11 @@ objects:
                 - name: ${NAME}-${ZONE}-${COMPONENT}-restore
                   # use the same image as our database, so we can run the psql command
                   image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${CRONJOB_RESTORE_TAG}
+                  securityContext:
+                    runAsNonRoot: true
+                    capabilities:
+                      drop:
+                        - ALL
                   command: ["/bin/sh", "-c"]
                   args:
                   - |

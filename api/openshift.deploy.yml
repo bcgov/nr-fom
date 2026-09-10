@@ -161,6 +161,11 @@ objects:
         spec:
           containers:
             - image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
+              securityContext:
+                runAsNonRoot: true
+                capabilities:
+                  drop:
+                    - ALL
               imagePullPolicy: Always
               name: ${NAME}
               env:
@@ -331,6 +336,11 @@ objects:
                   # Full image name required due to bug https://bugzilla.redhat.com/show_bug.cgi?id=2000216
                   image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
                   imagePullPolicy: Always
+                  securityContext:
+                    runAsNonRoot: true
+                    capabilities:
+                      drop:
+                        - ALL
                   args: ["-batchWorkflowStateChange"]
                   env:
                     - name: DB_HOST
@@ -394,6 +404,11 @@ objects:
                   # Full image name required due to bug https://bugzilla.redhat.com/show_bug.cgi?id=2000216
                   image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
                   imagePullPolicy: Always
+                  securityContext:
+                    runAsNonRoot: true
+                    capabilities:
+                      drop:
+                        - ALL
                   args: ["-batchForestClientDataRefresh"]
                   env:
                     - name: DB_HOST
