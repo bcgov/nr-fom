@@ -348,6 +348,165 @@ describe('SpatialFeatureService', () => {
       expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(queryRunner.release).toHaveBeenCalled();
     });
+
+    it('throws when FETCH returns a non-array', async () => {
+      queryRunner.query.mockImplementation(async (sql: string) => {
+        if (sql.includes('DECLARE')) {
+          return undefined;
+        }
+        if (sql.startsWith('FETCH')) {
+          return { unexpected: true };
+        }
+        return undefined;
+      });
+      const out = new PassThrough();
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow('BCGW extract FETCH returned a non-array');
+      expect(queryRunner.rollbackTransaction).toHaveBeenCalled();
+      expect(queryRunner.release).toHaveBeenCalled();
+    });
+
+    it('skips rollback when DECLARE fails before a transaction is active', async () => {
+      queryRunner.isTransactionActive = false;
+      queryRunner.query.mockRejectedValue(new Error('declare fail'));
+      const out = new PassThrough();
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow('declare fail');
+      expect(queryRunner.rollbackTransaction).not.toHaveBeenCalled();
+      expect(queryRunner.release).toHaveBeenCalled();
+    });
+
+    it('throws when the response is already closed before the first write', async () => {
+      const out = new PassThrough();
+      out.destroy();
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow('BCGW extract response closed');
+      expect(queryRunner.release).toHaveBeenCalled();
+    });
+
+    it('throws when the response has already ended before the first write', async () => {
+      const out = new PassThrough();
+      out.end();
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow('BCGW extract response closed');
+      expect(queryRunner.release).toHaveBeenCalled();
+    });
+
+    it('resumes after backpressure when the stream drains', async () => {
+      mockFetchBatches([[
+        {
+          featureId: 10,
+          featureType: 'cut_block',
+          fomId: 42,
+          name: 'CB-1',
+          createTimestamp: '2026-01-02',
+          geometry: '{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,1],[0,0]]]}',
+          plannedDevelopmentDate: '2026-03-01',
+          plannedAreaHa: 1.5,
+          plannedLengthKm: 0,
+          fspHolderName: 'Acme',
+          lifecycleStatus: 'Proposed',
+        },
+      ], []]);
+
+      const out = new Writable({
+        highWaterMark: 1,
+        write(_chunk, _enc, cb) {
+          cb();
+        },
+      });
+      const originalWrite = out.write.bind(out);
+      let writes = 0;
+      out.write = ((chunk: unknown, encoding?: unknown, callback?: unknown) => {
+        writes += 1;
+        const ok = originalWrite(chunk as never, encoding as never, callback as never);
+        if (writes === 1) {
+          setImmediate(() => {
+            out.emit('drain');
+          });
+          return false;
+        }
+        return ok;
+      }) as typeof out.write;
+
+      const done = service.streamBcgwExtract(out);
+      await expect(done).resolves.toBe(1);
+    });
+
+    it('rejects when the stream errors during backpressure', async () => {
+      mockFetchBatches([[
+        {
+          featureId: 10,
+          featureType: 'cut_block',
+          fomId: 42,
+          name: 'CB-1',
+          createTimestamp: '2026-01-02',
+          geometry: '{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,1],[0,0]]]}',
+          plannedDevelopmentDate: '2026-03-01',
+          plannedAreaHa: 1.5,
+          plannedLengthKm: 0,
+          fspHolderName: 'Acme',
+          lifecycleStatus: 'Proposed',
+        },
+      ], []]);
+
+      const out = new Writable({
+        highWaterMark: 1,
+        write(_chunk, _enc, cb) {
+          cb();
+        },
+      });
+      const originalWrite = out.write.bind(out);
+      let writes = 0;
+      out.write = ((chunk: unknown, encoding?: unknown, callback?: unknown) => {
+        writes += 1;
+        originalWrite(chunk as never, encoding as never, callback as never);
+        if (writes === 1) {
+          setImmediate(() => {
+            out.emit('error', new Error('socket reset'));
+          });
+          return false;
+        }
+        return true;
+      }) as typeof out.write;
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow('socket reset');
+      expect(queryRunner.release).toHaveBeenCalled();
+    });
+
+    it('rejects when the stream is destroyed after write reports backpressure', async () => {
+      mockFetchBatches([[
+        {
+          featureId: 10,
+          featureType: 'cut_block',
+          fomId: 42,
+          name: 'CB-1',
+          createTimestamp: '2026-01-02',
+          geometry: '{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,1],[0,0]]]}',
+          plannedDevelopmentDate: '2026-03-01',
+          plannedAreaHa: 1.5,
+          plannedLengthKm: 0,
+          fspHolderName: 'Acme',
+          lifecycleStatus: 'Proposed',
+        },
+      ], []]);
+
+      const out = new Writable({
+        write(_chunk, _enc, cb) {
+          cb();
+        },
+      });
+      const originalWrite = out.write.bind(out);
+      out.write = ((chunk: unknown, encoding?: unknown, callback?: unknown) => {
+        originalWrite(chunk as never, encoding as never, callback as never);
+        out.destroy();
+        return false;
+      }) as typeof out.write;
+
+      await expect(service.streamBcgwExtract(out)).rejects.toThrow(
+        'BCGW extract response closed before drain');
+      expect(queryRunner.release).toHaveBeenCalled();
+    });
   });
 });
 

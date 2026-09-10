@@ -72,4 +72,22 @@ describe('SpatialFeatureController', () => {
     expect(service.streamBcgwExtract).toHaveBeenCalledWith(res);
     expect(logger.info).toHaveBeenCalledWith(expect.stringMatching(/features=3/));
   });
+
+  it('getBcgwExtract destroys the response if streaming fails after headers are sent', async () => {
+    const res = { headersSent: true, destroy: jest.fn(), setHeader: jest.fn() } as any;
+    (service.streamBcgwExtract as jest.Mock).mockRejectedValue(new Error('boom'));
+
+    await controller.getBcgwExtract('1.0-final', res);
+
+    expect(res.destroy).toHaveBeenCalled();
+    expect(logger.info).not.toHaveBeenCalledWith(expect.stringMatching(/features=/));
+  });
+
+  it('getBcgwExtract rethrows if streaming fails before headers are sent', async () => {
+    const res = { headersSent: false, destroy: jest.fn(), setHeader: jest.fn() } as any;
+    (service.streamBcgwExtract as jest.Mock).mockRejectedValue(new Error('boom'));
+
+    await expect(controller.getBcgwExtract('1.0-final', res)).rejects.toThrow('boom');
+    expect(res.destroy).not.toHaveBeenCalled();
+  });
 });

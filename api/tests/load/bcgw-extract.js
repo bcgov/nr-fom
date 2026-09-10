@@ -16,7 +16,15 @@ export const options = {
 
 const errorRate = new Rate("errors");
 
-export default function () {
+function isStatus200(res) {
+  return res.status === 200;
+}
+
+function isJsonArray(res) {
+  return typeof res.body === "string" && res.body.startsWith("[");
+}
+
+export default function bcgwExtract() {
   const base = __ENV.BACKEND_URL;
   if (!base) {
     throw new Error("BACKEND_URL is required");
@@ -25,9 +33,8 @@ export default function () {
   const url = `${base}/spatial-feature/bcgw-extract?version=1.0-final`;
   const res = http.get(url, { timeout: "180s" });
   const ok = check(res, {
-    "bcgw-extract status 200": (r) => r.status === 200,
-    "bcgw-extract json array": (r) =>
-      typeof r.body === "string" && r.body.startsWith("["),
+    "bcgw-extract status 200": isStatus200,
+    "bcgw-extract json array": isJsonArray,
   });
   errorRate.add(!ok, { tag1: "bcgw-extract" });
 }
