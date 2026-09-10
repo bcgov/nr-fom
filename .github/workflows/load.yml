@@ -1,14 +1,22 @@
 name: Load Test
 
-# Weekly k6 against TEST. Drop more scripts in api/tests/load/; each file owns vus/iterations.
-# To hit a PR deploy: Actions → Load Test → Run workflow → pr = <number>.
+# Weekly: 100 VUs / 300s against TEST public map (quickstart-openshift shape).
+# Never hits PROD. BCGW extract is not in this job.
+# Dispatch: target test | pr. PRs only when you pass target=pr and pr=<n>.
 on:
   schedule:
     - cron: "0 15 * * 1" # 15:00 UTC Monday
   workflow_dispatch:
     inputs:
+      target:
+        description: Where to run
+        type: choice
+        options:
+          - test
+          - pr
+        default: test
       pr:
-        description: PR number whose deploy to hit (blank = TEST)
+        description: PR number (required when target is pr)
         required: false
         type: string
 
@@ -22,25 +30,39 @@ jobs:
   load:
     name: API load tests
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # v1.2.1
       - name: Resolve API base URL
         id: url
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          TARGET: ${{ github.event.inputs.target }}
           PR: ${{ github.event.inputs.pr }}
         run: |
-          if [ -z "${PR}" ]; then
-            echo "base=https://fom-test.apps.silver.devops.gov.bc.ca/api" >> "$GITHUB_OUTPUT"
-            exit 0
+          if [ "${EVENT_NAME}" = "schedule" ]; then
+            TARGET=test
           fi
-          if ! [[ "${PR}" =~ ^[0-9]+$ ]]; then
-            echo "pr must be a number" >&2
-            exit 1
-          fi
-          echo "base=https://fom-$((PR % 50)).apps.silver.devops.gov.bc.ca/api" >> "$GITHUB_OUTPUT"
+          TARGET="${TARGET:-test}"
+          case "${TARGET}" in
+            test)
+              echo "base=https://fom-test.apps.silver.devops.gov.bc.ca/api" >> "$GITHUB_OUTPUT"
+              ;;
+            pr)
+              if ! [[ "${PR}" =~ ^[0-9]+$ ]]; then
+                echo "target=pr requires a numeric pr input" >&2
+                exit 1
+              fi
+              echo "base=https://fom-$((PR % 50)).apps.silver.devops.gov.bc.ca/api" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "unknown target: ${TARGET}" >&2
+              exit 1
+              ;;
+          esac
       - uses: grafana/run-k6-action@de51a7390bdf0ac85a3bef493691bd71d4c7c158 # v1.4.0
         env:
           BACKEND_URL: ${{ steps.url.outputs.base }}
         with:
-          path: ./api/tests/load/*.js
+          path: ./api/tests/load/public.js
