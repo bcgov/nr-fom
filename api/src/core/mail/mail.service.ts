@@ -20,7 +20,7 @@ export class MailService {
     const fomViewLink = `${host}/admin/a/${project.id}`;
 
     // From email address
-    const from = '"FOMDoNotReply" <Do-Not-Reply@gov.bc.ca'; // override default from;
+    const from = '"FOMDoNotReply" <Do-Not-Reply@gov.bc.ca>'; // override default from;
 
     // Log and send email
     this.logger.info(`Sending FOM ${project.id} finalized notification email to ${to}`);
