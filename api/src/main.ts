@@ -27,7 +27,7 @@ async function dbmigrate(config: DataSourceOptions) {
 }
 
 async function createApp():Promise<INestApplication>  {
-  const app = await NestFactory.create(AppModule, { logger: false });
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   return app;
 }

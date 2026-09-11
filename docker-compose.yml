@@ -18,7 +18,12 @@ services:
       - npm-cache:/root/.npm:z
       - root-node-modules:/app/node_modules
     working_dir: /app
-    entrypoint: ["npm", "ci", "--ignore-scripts"]
+    # Nest 12 cannot hoist over OpenAPI CLI's Nest 11. Merge nested trees so
+    # @nestjs/typeorm (root) loads the same @nestjs/core as NestFactory (api).
+    entrypoint:
+      - sh
+      - -c
+      - npm ci --ignore-scripts && for d in api/node_modules libs/node_modules; do if [ -d "$d" ]; then cp -a "$d"/. node_modules/; fi; done
 
   admin:
     container_name: admin
