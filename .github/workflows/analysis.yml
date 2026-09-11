@@ -116,7 +116,7 @@ jobs:
 
       - name: Dump API logs
         if: failure()
-        run: docker compose logs --tail=200 api
+        run: docker compose logs --tail=200 api init-deps
 
       - name: Run Playwright E2E tests (Containerized)
         run: docker compose run --rm --no-deps e2e

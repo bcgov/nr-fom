@@ -22,7 +22,8 @@
     "test:public": "npm run test-unit --workspace=public",
     "test:admin": "npm run test-unit --workspace=admin",
     "test:api": "npm run test-unit --workspace=api",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "merge-nested-modules": "node scripts/merge-nested-node-modules.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0"

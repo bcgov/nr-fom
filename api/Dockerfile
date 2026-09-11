@@ -17,15 +17,13 @@ RUN npm ci --ignore-scripts
 # Source for the shared lib and the api
 COPY libs ./libs
 COPY api ./api
+COPY scripts ./scripts
 RUN npm run build:api
 
 # Reinstall prod-only, api-scoped deps. Nest 12 cannot hoist over the OpenAPI
 # generator's Nest 11, so merge workspace-nested packages into the root tree
 # that the runtime stage copies.
-RUN npm ci --ignore-scripts --workspace=api --omit=dev \
- && for d in api/node_modules libs/node_modules; do \
-      if [ -d "$d" ]; then cp -a "$d"/. node_modules/; fi; \
-    done
+RUN npm ci --ignore-scripts --workspace=api --omit=dev && npm run merge-nested-modules
 
 
 # Deploy container

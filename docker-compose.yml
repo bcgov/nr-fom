@@ -19,11 +19,8 @@ services:
       - root-node-modules:/app/node_modules
     working_dir: /app
     # Nest 12 cannot hoist over OpenAPI CLI's Nest 11. Merge nested trees so
-    # @nestjs/typeorm (root) loads the same @nestjs/core as NestFactory (api).
-    entrypoint:
-      - sh
-      - -c
-      - npm ci --ignore-scripts && for d in api/node_modules libs/node_modules; do if [ -d "$d" ]; then cp -a "$d"/. node_modules/; fi; done
+    # @nestjs/typeorm / nestjs-pino (root) load the same @nestjs/core as NestFactory.
+    entrypoint: ["sh", "-c", "npm ci --ignore-scripts && npm run merge-nested-modules"]
 
   admin:
     container_name: admin
