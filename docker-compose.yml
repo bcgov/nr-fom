@@ -74,10 +74,10 @@ services:
       - OBJECT_STORAGE_URL=nrs.objectstore.gov.bc.ca
       - OBJECT_STORAGE_ACCESS_ID=nr-fom-dev
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3333/api', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3333/health-check', r => process.exit(r.statusCode < 400 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 10s
       retries: 3
-      start_period: 60s
+      start_period: 120s
       timeout: 5s
     image: node:24.21.0-bookworm-slim
     ports:

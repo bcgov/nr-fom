@@ -100,7 +100,7 @@ async function bootstrap():Promise<INestApplication> {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(appConfig.getGlobalPrefix(), app, document);
 
-  await app.listen(port, () => {
+  await app.listen(port, '0.0.0.0', () => {
     app.get(Logger).log('Listening at http://localhost:' + port + '/' + appConfig.getGlobalPrefix());
   });
 

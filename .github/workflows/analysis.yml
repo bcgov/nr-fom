@@ -114,6 +114,10 @@ jobs:
       - name: Start services via Compose
         run: docker compose up -d --wait admin public
 
+      - name: Dump API logs
+        if: failure()
+        run: docker compose logs --tail=200 api
+
       - name: Run Playwright E2E tests (Containerized)
         run: docker compose run --rm --no-deps e2e
 
