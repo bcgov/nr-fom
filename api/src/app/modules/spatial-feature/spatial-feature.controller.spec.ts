@@ -9,18 +9,20 @@ import { SpatialFeatureService } from './spatial-feature.service';
 describe('SpatialFeatureController', () => {
   let controller: SpatialFeatureController;
   let service: Partial<SpatialFeatureService>;
+  let logger: { info: jest.Mock; debug: jest.Mock; setContext: jest.Mock };
 
   beforeEach(async () => {
     service = {
       findByProjectId: jest.fn().mockResolvedValue([]),
-      getBcgwExtract: jest.fn().mockResolvedValue([]),
+      streamBcgwExtract: jest.fn().mockResolvedValue(0),
     };
+    logger = { info: jest.fn(), debug: jest.fn(), setContext: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SpatialFeatureController],
       providers: [
         { provide: SpatialFeatureService, useValue: service },
-        { provide: PinoLogger, useValue: { info: jest.fn(), debug: jest.fn(), setContext: jest.fn() } },
+        { provide: PinoLogger, useValue: logger },
         Reflector,
       ],
     })
@@ -49,5 +51,43 @@ describe('SpatialFeatureController', () => {
     await controller.getForProject(user, 42);
 
     expect(service.findByProjectId).toHaveBeenCalledWith(42, user);
+  });
+
+  it('getBcgwExtract rejects an invalid version without streaming', async () => {
+    const res = { headersSent: false, destroy: jest.fn() } as any;
+
+    await expect(controller.getBcgwExtract('nope', res)).rejects.toThrow('Invalid version');
+    expect(service.streamBcgwExtract).not.toHaveBeenCalled();
+  });
+
+  it('getBcgwExtract streams when version is 1.0-final', async () => {
+    const res = { headersSent: false, destroy: jest.fn(), setHeader: jest.fn() } as any;
+    (service.streamBcgwExtract as jest.Mock).mockResolvedValue(3);
+
+    await controller.getBcgwExtract('1.0-final', res);
+
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Content-Type',
+      'application/json; charset=utf-8');
+    expect(service.streamBcgwExtract).toHaveBeenCalledWith(res);
+    expect(logger.info).toHaveBeenCalledWith(expect.stringMatching(/features=3/));
+  });
+
+  it('getBcgwExtract destroys the response if streaming fails after headers are sent', async () => {
+    const res = { headersSent: true, destroy: jest.fn(), setHeader: jest.fn() } as any;
+    (service.streamBcgwExtract as jest.Mock).mockRejectedValue(new Error('boom'));
+
+    await controller.getBcgwExtract('1.0-final', res);
+
+    expect(res.destroy).toHaveBeenCalled();
+    expect(logger.info).not.toHaveBeenCalledWith(expect.stringMatching(/features=/));
+  });
+
+  it('getBcgwExtract rethrows if streaming fails before headers are sent', async () => {
+    const res = { headersSent: false, destroy: jest.fn(), setHeader: jest.fn() } as any;
+    (service.streamBcgwExtract as jest.Mock).mockRejectedValue(new Error('boom'));
+
+    await expect(controller.getBcgwExtract('1.0-final', res)).rejects.toThrow('boom');
+    expect(res.destroy).not.toHaveBeenCalled();
   });
 });

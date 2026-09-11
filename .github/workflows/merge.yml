@@ -1,4 +1,4 @@
-name: TEST (merge)
+name: Merge (TEST)
 
 on:
   push:
