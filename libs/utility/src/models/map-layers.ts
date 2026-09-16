@@ -8,17 +8,14 @@ const FDU_WMS_LAYER = 'WHSE_FOREST_TENURE.FSP_FDU_POLY_SPG';
 const FDU_ATTRIBUTION = '&copy; Province of British Columbia (DataBC)';
 
 /**
- * Border colour for each FDU life-cycle status.
- * APPROVED uses #E65100 (deep orange / tangerine) for high contrast against satellite imagery
- * (forest canopy) and pale basemaps without conflicting with cutblocks (#3388ff), roads (yellow),
- * or retention areas (#00DD06). Historical/other statuses retain DataBC's palette:
- *   APPROVED   #E65100 (deep orange / tangerine)
+ * Border colour for each FDU life-cycle status, matching DataBC's published palette:
+ *   APPROVED   #728944 (olive green)
  *   PREVIOUS   #446589 (steel blue)
  *   DRAFT      #a87000 (amber)
  *   SUBMITTED  #704489 (purple)
  */
 const FDU_STATUS_COLORS = {
-  APPROVED: '#E65100',
+  APPROVED: '#728944',
   PREVIOUS: '#446589',
   DRAFT: '#a87000',
   SUBMITTED: '#704489'
@@ -48,11 +45,12 @@ const FDU_OVERLAY_NAME = 'Forest Development Units ('
   + FDU_SHOWN_STATUSES.map(status => status.charAt(0) + status.slice(1).toLowerCase()).join(', ') + ')';
 
 /**
- * Border stroke widths: 3px for the main overview map, beefed up to 5px for mini-maps / details popups
- * where features are viewed at closer zoom against satellite imagery.
+ * Border stroke widths: 3px for the main overview map.
+ * Mini-maps use a 3px stroke with an underlying 5px white casing (halo) to separate the olive green
+ * line from dark satellite forest canopy without overwhelming the visual hierarchy.
  */
 export const FDU_STROKE_WIDTH_DEFAULT = 3;
-export const FDU_STROKE_WIDTH_MINI_MAP = 5;
+export const FDU_CASING_WIDTH_MINI_MAP = 5;
 
 export interface MapLayersOptions {
   isMiniMap?: boolean;
@@ -61,18 +59,35 @@ export interface MapLayersOptions {
 /**
  * Border style sent inline as `sld_body`. DataBC's published styles (1417-1420) draw a 1.5px
  * hairline with 0.01 opacity fill, which gets lost against satellite and topographic base maps.
- * Using an inline SLD allows a heavier 3px stroke on the main map, beefed up to 5px in mini-maps.
+ * Using an inline SLD allows a heavier 3px olive green stroke on the main map.
+ * For mini-maps, a subtle 1px white casing (halo) is placed underneath the 3px stroke so the
+ * olive green line cleanly separates from dark satellite forest canopy without looking harsh.
  */
-function fduBorderSld(strokeWidth: number = FDU_STROKE_WIDTH_DEFAULT): string {
-  const rules = FDU_SHOWN_STATUSES.map(status =>
-    '<Rule>' +
-    '<ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>LIFE_CYCLE_STATUS_CODE</ogc:PropertyName>' +
-    '<ogc:Literal>' + status + '</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>' +
-    '<PolygonSymbolizer><Stroke>' +
-    '<CssParameter name="stroke">' + FDU_STATUS_COLORS[status] + '</CssParameter>' +
-    '<CssParameter name="stroke-width">' + strokeWidth + '</CssParameter>' +
-    '</Stroke></PolygonSymbolizer>' +
-    '</Rule>').join('');
+function fduBorderSld(options?: MapLayersOptions): string {
+  const isMiniMap = options?.isMiniMap ?? false;
+
+  const rules = FDU_SHOWN_STATUSES.map(status => {
+    let symbolizers = '';
+    if (isMiniMap) {
+      symbolizers +=
+        '<PolygonSymbolizer><Stroke>' +
+        '<CssParameter name="stroke">#FFFFFF</CssParameter>' +
+        '<CssParameter name="stroke-width">' + FDU_CASING_WIDTH_MINI_MAP + '</CssParameter>' +
+        '<CssParameter name="stroke-opacity">0.85</CssParameter>' +
+        '</Stroke></PolygonSymbolizer>';
+    }
+    symbolizers +=
+      '<PolygonSymbolizer><Stroke>' +
+      '<CssParameter name="stroke">' + FDU_STATUS_COLORS[status] + '</CssParameter>' +
+      '<CssParameter name="stroke-width">' + FDU_STROKE_WIDTH_DEFAULT + '</CssParameter>' +
+      '</Stroke></PolygonSymbolizer>';
+
+    return '<Rule>' +
+      '<ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>LIFE_CYCLE_STATUS_CODE</ogc:PropertyName>' +
+      '<ogc:Literal>' + status + '</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>' +
+      symbolizers +
+      '</Rule>';
+  }).join('');
 
   return '<?xml version="1.0" encoding="UTF-8"?>' +
     '<StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc">' +
@@ -158,10 +173,9 @@ export class MapLayers {
     // NOT pushed to defaultOverlays, so it starts unchecked and costs nothing unless enabled.
     // Border stroke and labels are separate WMS requests (each using custom SLDs), grouped
     // so the layer control shows and toggles them as a single "Forest Development Units" entry.
-    const fduStrokeWidth = options?.isMiniMap ? FDU_STROKE_WIDTH_MINI_MAP : FDU_STROKE_WIDTH_DEFAULT;
     this.overlayLayers[FDU_OVERLAY_NAME] = L.layerGroup([
       this.createWmsLayer(FDU_WMS_LAYER, '',
-        { attribution: FDU_ATTRIBUTION, minZoom: MapLayers.FDU_MIN_ZOOM_LEVEL, sld_body: fduBorderSld(fduStrokeWidth) }),
+        { attribution: FDU_ATTRIBUTION, minZoom: MapLayers.FDU_MIN_ZOOM_LEVEL, sld_body: fduBorderSld(options) }),
       // `styles` is intentionally empty: sld_body supplies the style. It must still carry a
       // non-empty `layers` - GeoServer accepts sld_body alongside it, but errors on `layers=`.
       this.createWmsLayer(FDU_WMS_LAYER, '',

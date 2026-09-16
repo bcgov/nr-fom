@@ -59,15 +59,19 @@ describe('MapLayers', () => {
                 expect(border.wmsParams.layers).toBe(FDU_WMS_LAYER);
                 expect(border.wmsParams.styles).toBe('');
                 expect(border.wmsParams.sld_body).toContain('<CssParameter name="stroke-width">3</CssParameter>');
-                expect(border.wmsParams.sld_body).toContain('#E65100');
+                expect(border.wmsParams.sld_body).toContain('#728944');
+                expect(border.wmsParams.sld_body).not.toContain('<CssParameter name="stroke">#FFFFFF</CssParameter>');
                 expect(border.wmsParams.sld_body).toContain('<ogc:Literal>APPROVED</ogc:Literal>');
             });
 
-            it('uses a beefed-up 5px stroke when isMiniMap option is true', () => {
+            it('uses a subtle white casing around the olive green stroke when isMiniMap option is true', () => {
                 const miniMapLayers = new MapLayers({ isMiniMap: true });
                 const miniFduGroup = miniMapLayers.getOverlayByName(FDU_OVERLAY_NAME) as L.LayerGroup;
                 const miniBorder = (miniFduGroup.getLayers()[0] as any);
+                expect(miniBorder.wmsParams.sld_body).toContain('<CssParameter name="stroke">#FFFFFF</CssParameter>');
                 expect(miniBorder.wmsParams.sld_body).toContain('<CssParameter name="stroke-width">5</CssParameter>');
+                expect(miniBorder.wmsParams.sld_body).toContain('<CssParameter name="stroke">#728944</CssParameter>');
+                expect(miniBorder.wmsParams.sld_body).toContain('<CssParameter name="stroke-width">3</CssParameter>');
             });
 
             it('matches the status the labels are filtered to', () => {
