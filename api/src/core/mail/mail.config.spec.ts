@@ -27,9 +27,9 @@ describe('MailConfig and MailModule', () => {
 
   describe('getMailConfig', () => {
     it('returns SMTP_SERVER when set', async () => {
-      process.env.SMTP_SERVER = 'smtp.test.gov.bc.ca';
+      process.env.SMTP_SERVER = 'smtp://smtp.test.gov.bc.ca';
       const config = await getMailConfig();
-      expect(config).toBe('smtp.test.gov.bc.ca');
+      expect(config).toBe('smtp://smtp.test.gov.bc.ca');
     });
 
     it('returns localService when SMTP_SERVER is not set', async () => {
@@ -49,10 +49,22 @@ describe('MailConfig and MailModule', () => {
 
   describe('createMailTransporter', () => {
     it('creates transporter when SMTP_SERVER is set as string', async () => {
-      process.env.SMTP_SERVER = 'smtp.test.gov.bc.ca';
+      process.env.SMTP_SERVER = 'smtp://smtp.test.gov.bc.ca';
       const transporter = await createMailTransporter();
       expect(transporter).toBeDefined();
       expect(typeof transporter.sendMail).toBe('function');
+    });
+
+    it('creates transporter when SMTP_SERVER is a full connection URL', async () => {
+      process.env.SMTP_SERVER = 'smtp://apps.smtp.gov.bc.ca/?port=25&ignoreTLS=true&secure=false';
+      const transporter = await createMailTransporter();
+      expect(transporter).toBeDefined();
+      expect(typeof transporter.sendMail).toBe('function');
+      const options = (transporter as any).options;
+      expect(options.host).toBe('apps.smtp.gov.bc.ca');
+      expect(options.port).toBe(25);
+      expect(options.secure).toBe(false);
+      expect(options.ignoreTLS).toBe(true);
     });
 
     it('creates transporter when SMTP_SERVER is unset (using localService object)', async () => {

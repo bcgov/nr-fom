@@ -25,10 +25,7 @@ export async function getMailConfig(): Promise<any> {
 
 export async function createMailTransporter(): Promise<Transporter> {
     const config = await getMailConfig();
-    return nodemailer.createTransport({
-        secure: true,
-        ...(typeof config === 'string' ? { host: config } : config),
-    }, {
+    return nodemailer.createTransport(config, {
         from: '"No Reply" <noreply@example.com>',
     });
 }
