@@ -8,14 +8,17 @@ const FDU_WMS_LAYER = 'WHSE_FOREST_TENURE.FSP_FDU_POLY_SPG';
 const FDU_ATTRIBUTION = '&copy; Province of British Columbia (DataBC)';
 
 /**
- * Border colour for each FDU life-cycle status, matching DataBC's published palette:
- *   APPROVED   #728944 (olive green)
+ * Border colour for each FDU life-cycle status.
+ * APPROVED uses #E65100 (deep orange / tangerine) for high contrast against satellite imagery
+ * (forest canopy) and pale basemaps without conflicting with cutblocks (#3388ff), roads (yellow),
+ * or retention areas (#00DD06). Historical/other statuses retain DataBC's palette:
+ *   APPROVED   #E65100 (deep orange / tangerine)
  *   PREVIOUS   #446589 (steel blue)
  *   DRAFT      #a87000 (amber)
  *   SUBMITTED  #704489 (purple)
  */
 const FDU_STATUS_COLORS = {
-  APPROVED: '#728944',
+  APPROVED: '#E65100',
   PREVIOUS: '#446589',
   DRAFT: '#a87000',
   SUBMITTED: '#704489'

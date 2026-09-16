@@ -59,7 +59,7 @@ describe('MapLayers', () => {
                 expect(border.wmsParams.layers).toBe(FDU_WMS_LAYER);
                 expect(border.wmsParams.styles).toBe('');
                 expect(border.wmsParams.sld_body).toContain('<CssParameter name="stroke-width">3</CssParameter>');
-                expect(border.wmsParams.sld_body).toContain('#728944');
+                expect(border.wmsParams.sld_body).toContain('#E65100');
                 expect(border.wmsParams.sld_body).toContain('<ogc:Literal>APPROVED</ogc:Literal>');
             });
 
