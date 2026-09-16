@@ -1,3 +1,6 @@
+import nodemailer, { Transporter } from 'nodemailer';
+
+export const MAIL_TRANSPORTER = 'MAIL_TRANSPORTER';
 
 export async function getMailConfig(): Promise<any> {
     if (process.env.SMTP_SERVER) {
@@ -17,6 +20,13 @@ export async function getMailConfig(): Promise<any> {
         }
         return localService;
     }
+}
+
+export async function createMailTransporter(): Promise<Transporter> {
+    const config = await getMailConfig();
+    return nodemailer.createTransport(config, {
+        from: '"No Reply" <noreply@example.com>',
+    });
 }
 
 

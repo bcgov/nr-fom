@@ -12,7 +12,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from "@utility/security/user";
 import dayjs from 'dayjs';
 import { PinoLogger } from 'nestjs-pino';
-import * as R from 'remeda';
 import { Brackets, Repository } from 'typeorm';
 import { PublicNotice } from '@api-modules/project/public-notice.entity';
 import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.entity';
@@ -126,7 +125,7 @@ export class PublicNoticeService extends DataService<PublicNotice, Repository<Pu
     const results = entityResult.map(entity => {
       const response = new PublicNoticePublicFrontEndResponse();
       const pnr = this.convertEntity(entity);
-      Object.assign(response, R.pick(pnr, 
+      Object.assign(response, _.pick(pnr, 
         [
           'projectId',
           'reviewAddress',
