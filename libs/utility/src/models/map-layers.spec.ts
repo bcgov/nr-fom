@@ -63,6 +63,13 @@ describe('MapLayers', () => {
                 expect(border.wmsParams.sld_body).toContain('<ogc:Literal>APPROVED</ogc:Literal>');
             });
 
+            it('uses a beefed-up 5px stroke when isMiniMap option is true', () => {
+                const miniMapLayers = new MapLayers({ isMiniMap: true });
+                const miniFduGroup = miniMapLayers.getOverlayByName(FDU_OVERLAY_NAME) as L.LayerGroup;
+                const miniBorder = (miniFduGroup.getLayers()[0] as any);
+                expect(miniBorder.wmsParams.sld_body).toContain('<CssParameter name="stroke-width">5</CssParameter>');
+            });
+
             it('matches the status the labels are filtered to', () => {
                 // Border and labels must agree, or units would be drawn with no label and vice versa.
                 expect(fduColour().wmsParams.sld_body).toContain('<ogc:Literal>APPROVED</ogc:Literal>');

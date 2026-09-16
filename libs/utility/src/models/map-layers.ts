@@ -45,18 +45,29 @@ const FDU_OVERLAY_NAME = 'Forest Development Units ('
   + FDU_SHOWN_STATUSES.map(status => status.charAt(0) + status.slice(1).toLowerCase()).join(', ') + ')';
 
 /**
+ * Border stroke widths: 3px for the main overview map, beefed up to 5px for mini-maps / details popups
+ * where features are viewed at closer zoom against satellite imagery.
+ */
+export const FDU_STROKE_WIDTH_DEFAULT = 3;
+export const FDU_STROKE_WIDTH_MINI_MAP = 5;
+
+export interface MapLayersOptions {
+  isMiniMap?: boolean;
+}
+
+/**
  * Border style sent inline as `sld_body`. DataBC's published styles (1417-1420) draw a 1.5px
  * hairline with 0.01 opacity fill, which gets lost against satellite and topographic base maps.
- * Using an inline SLD allows a heavier 3px stroke matching other map features in the app.
+ * Using an inline SLD allows a heavier 3px stroke on the main map, beefed up to 5px in mini-maps.
  */
-function fduBorderSld(): string {
+function fduBorderSld(strokeWidth: number = FDU_STROKE_WIDTH_DEFAULT): string {
   const rules = FDU_SHOWN_STATUSES.map(status =>
     '<Rule>' +
     '<ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>LIFE_CYCLE_STATUS_CODE</ogc:PropertyName>' +
     '<ogc:Literal>' + status + '</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>' +
     '<PolygonSymbolizer><Stroke>' +
     '<CssParameter name="stroke">' + FDU_STATUS_COLORS[status] + '</CssParameter>' +
-    '<CssParameter name="stroke-width">3</CssParameter>' +
+    '<CssParameter name="stroke-width">' + strokeWidth + '</CssParameter>' +
     '</Stroke></PolygonSymbolizer>' +
     '</Rule>').join('');
 
@@ -121,7 +132,7 @@ export class MapLayers {
 
   private activeBaseLayerName: string;
 
-  constructor() {
+  constructor(options?: MapLayersOptions) {
     const worldImageryLayerName = 'Satellite';
     this.activeBaseLayerName = worldImageryLayerName;
     this.createBaseLayer(worldImageryLayerName, 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', 
@@ -144,9 +155,10 @@ export class MapLayers {
     // NOT pushed to defaultOverlays, so it starts unchecked and costs nothing unless enabled.
     // Border stroke and labels are separate WMS requests (each using custom SLDs), grouped
     // so the layer control shows and toggles them as a single "Forest Development Units" entry.
+    const fduStrokeWidth = options?.isMiniMap ? FDU_STROKE_WIDTH_MINI_MAP : FDU_STROKE_WIDTH_DEFAULT;
     this.overlayLayers[FDU_OVERLAY_NAME] = L.layerGroup([
       this.createWmsLayer(FDU_WMS_LAYER, '',
-        { attribution: FDU_ATTRIBUTION, minZoom: MapLayers.FDU_MIN_ZOOM_LEVEL, sld_body: fduBorderSld() }),
+        { attribution: FDU_ATTRIBUTION, minZoom: MapLayers.FDU_MIN_ZOOM_LEVEL, sld_body: fduBorderSld(fduStrokeWidth) }),
       // `styles` is intentionally empty: sld_body supplies the style. It must still carry a
       // non-empty `layers` - GeoServer accepts sld_body alongside it, but errors on `layers=`.
       this.createWmsLayer(FDU_WMS_LAYER, '',
