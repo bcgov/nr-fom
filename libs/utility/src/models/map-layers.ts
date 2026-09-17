@@ -8,22 +8,20 @@ const FDU_WMS_LAYER = 'WHSE_FOREST_TENURE.FSP_FDU_POLY_SPG';
 const FDU_ATTRIBUTION = '&copy; Province of British Columbia (DataBC)';
 
 /**
- * The four FDU life-cycle statuses, each with the published BCGW style that draws it.
- * Feature counts as at 2026-08 (whole province):
- *
- *   APPROVED   1417    2,591  - currently in force
- *   PREVIOUS   1418   19,571  - superseded amendments, retained for history
- *   DRAFT      1419      432  - not yet submitted
- *   SUBMITTED  1420      155  - awaiting decision
+ * Border colour for each FDU life-cycle status, matching DataBC's published palette:
+ *   APPROVED   #728944 (olive green)
+ *   PREVIOUS   #446589 (steel blue)
+ *   DRAFT      #a87000 (amber)
+ *   SUBMITTED  #704489 (purple)
  */
-const FDU_STATUS_STYLES = {
-  APPROVED: '1417',
-  PREVIOUS: '1418',
-  DRAFT: '1419',
-  SUBMITTED: '1420'
+const FDU_STATUS_COLORS = {
+  APPROVED: '#728944',
+  PREVIOUS: '#446589',
+  DRAFT: '#a87000',
+  SUBMITTED: '#704489'
 } as const;
 
-type FduStatus = keyof typeof FDU_STATUS_STYLES;
+type FduStatus = keyof typeof FDU_STATUS_COLORS;
 
 /**
  * Which statuses the overlay draws and labels. Must list at least one.
@@ -34,8 +32,8 @@ type FduStatus = keyof typeof FDU_STATUS_STYLES;
  * amendments 43 through 61. Drawing them produces a mat of overlapping outlines, and labelling
  * them is unreadable. Restricting to APPROVED leaves 5 at that point, which renders cleanly.
  *
- * To show more, add them to this array and nothing else - the overlay name, the colour layer's
- * layers/styles pairing, and the label filter are all derived from it. For example
+ * To show more, add them to this array and nothing else - the overlay name, the border layer's
+ * status rules, and the label filter are all derived from it. For example
  * `['APPROVED', 'SUBMITTED']` yields an overlay named "Forest Development Units (Approved,
  * Submitted)" drawing both. Adding DRAFT (432) or SUBMITTED (155) stays legible; adding PREVIOUS
  * is what causes the mat described above, so expect to need labels off if you do.
@@ -45,6 +43,58 @@ const FDU_SHOWN_STATUSES: FduStatus[] = ['APPROVED'];
 /** Named for the statuses actually drawn, so the control does not imply it shows every FDU. */
 const FDU_OVERLAY_NAME = 'Forest Development Units ('
   + FDU_SHOWN_STATUSES.map(status => status.charAt(0) + status.slice(1).toLowerCase()).join(', ') + ')';
+
+/**
+ * Border stroke widths: 3px for the main overview map.
+ * Mini-maps use a 3px stroke with an underlying 5px white casing (halo) to separate the olive green
+ * line from dark satellite forest canopy without overwhelming the visual hierarchy.
+ */
+export const FDU_STROKE_WIDTH_DEFAULT = 3;
+export const FDU_CASING_WIDTH_MINI_MAP = 5;
+
+export interface MapLayersOptions {
+  isMiniMap?: boolean;
+}
+
+/**
+ * Border style sent inline as `sld_body`. DataBC's published styles (1417-1420) draw a 1.5px
+ * hairline with 0.01 opacity fill, which gets lost against satellite and topographic base maps.
+ * Using an inline SLD allows a heavier 3px olive green stroke on the main map.
+ * For mini-maps, a subtle 1px white casing (halo) is placed underneath the 3px stroke so the
+ * olive green line cleanly separates from dark satellite forest canopy without looking harsh.
+ */
+function fduBorderSld(options?: MapLayersOptions): string {
+  const isMiniMap = options?.isMiniMap ?? false;
+
+  const rules = FDU_SHOWN_STATUSES.map(status => {
+    let symbolizers = '';
+    if (isMiniMap) {
+      symbolizers +=
+        '<PolygonSymbolizer><Stroke>' +
+        '<CssParameter name="stroke">#FFFFFF</CssParameter>' +
+        '<CssParameter name="stroke-width">' + FDU_CASING_WIDTH_MINI_MAP + '</CssParameter>' +
+        '<CssParameter name="stroke-opacity">0.85</CssParameter>' +
+        '</Stroke></PolygonSymbolizer>';
+    }
+    symbolizers +=
+      '<PolygonSymbolizer><Stroke>' +
+      '<CssParameter name="stroke">' + FDU_STATUS_COLORS[status] + '</CssParameter>' +
+      '<CssParameter name="stroke-width">' + FDU_STROKE_WIDTH_DEFAULT + '</CssParameter>' +
+      '</Stroke></PolygonSymbolizer>';
+
+    return '<Rule>' +
+      '<ogc:Filter><ogc:PropertyIsEqualTo><ogc:PropertyName>LIFE_CYCLE_STATUS_CODE</ogc:PropertyName>' +
+      '<ogc:Literal>' + status + '</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Filter>' +
+      symbolizers +
+      '</Rule>';
+  }).join('');
+
+  return '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:ogc="http://www.opengis.net/ogc">' +
+    '<NamedLayer><Name>pub:' + FDU_WMS_LAYER + '</Name><UserStyle><FeatureTypeStyle>' +
+    rules +
+    '</FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>';
+}
 
 /** An OGC filter restricting a request to FDU_SHOWN_STATUSES. */
 function fduStatusFilter(): string {
@@ -56,9 +106,8 @@ function fduStatusFilter(): string {
 
 /**
  * Label-only style, sent inline as `sld_body` because no published FDU style draws text -
- * 1417-1420 are colour-only. The published styles carry no filter of their own, so the colour
- * layer is restricted by style choice while the labels are restricted by this filter; both
- * derive from FDU_SHOWN_STATUSES so they cannot drift apart.
+ * 1417-1420 are colour-only. Both border and labels derive from FDU_SHOWN_STATUSES so they
+ * cannot drift apart.
  *
  * Labelled with MAP_LABEL ("479 (0) -FDU1" = FSP id, amendment number, FDU name), which the
  * dataset supplies pre-formatted and which reads better than the raw numeric FDU_ID.
@@ -101,7 +150,7 @@ export class MapLayers {
 
   private activeBaseLayerName: string;
 
-  constructor() {
+  constructor(options?: MapLayersOptions) {
     const worldImageryLayerName = 'Satellite';
     this.activeBaseLayerName = worldImageryLayerName;
     this.createBaseLayer(worldImageryLayerName, 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', 
@@ -122,16 +171,11 @@ export class MapLayers {
     // Forest Development Units (BC Data Catalogue / DataBC).
     // Opt-in only: registered as an overlay so it appears in the layer control, but deliberately
     // NOT pushed to defaultOverlays, so it starts unchecked and costs nothing unless enabled.
-    // Colour fill and labels are separate WMS requests (the labels need their own SLD), grouped
+    // Border stroke and labels are separate WMS requests (each using custom SLDs), grouped
     // so the layer control shows and toggles them as a single "Forest Development Units" entry.
     this.overlayLayers[FDU_OVERLAY_NAME] = L.layerGroup([
-      // WMS pairs the Nth entry of `layers` with the Nth entry of `styles`, so drawing several
-      // statuses at once means repeating the layer name once per style. With the default single
-      // status this is simply the layer name and style 1417. See FDU_SHOWN_STATUSES to change it.
-      this.createWmsLayer(
-        new Array(FDU_SHOWN_STATUSES.length).fill(FDU_WMS_LAYER).join(','),
-        FDU_SHOWN_STATUSES.map(status => FDU_STATUS_STYLES[status]).join(','),
-        { attribution: FDU_ATTRIBUTION, minZoom: MapLayers.FDU_MIN_ZOOM_LEVEL }),
+      this.createWmsLayer(FDU_WMS_LAYER, '',
+        { attribution: FDU_ATTRIBUTION, minZoom: MapLayers.FDU_MIN_ZOOM_LEVEL, sld_body: fduBorderSld(options) }),
       // `styles` is intentionally empty: sld_body supplies the style. It must still carry a
       // non-empty `layers` - GeoServer accepts sld_body alongside it, but errors on `layers=`.
       this.createWmsLayer(FDU_WMS_LAYER, '',

@@ -80,7 +80,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   public createBasicMap() {
     this.projectFeatures = L.featureGroup();
 
-    const mapLayers = new MapLayers();    
+    const mapLayers = new MapLayers({ isMiniMap: true });    
 
     this.map = L.map('map', {
       layers: mapLayers.getAllLayers(),

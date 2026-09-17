@@ -37,7 +37,7 @@ export class DetailsMapComponent implements OnInit, OnChanges, OnDestroy {
   public map: L.Map | null = null;
   public projectFeatures: L.FeatureGroup; // group of layers for the features of a FOM project.
   private lastLabelMarker: L.Marker; // global variable to keep track latest layer added (as labeling popup for onClick)
-  private mapLayers: MapLayers = new MapLayers();
+  private mapLayers: MapLayers = new MapLayers({ isMiniMap: true });
 
   // Key for the map is: (spatialDetail.featureId + '-' + spatialDetail.featureType.code) so it is unique.
   private featureToLayerMap = new Map();
