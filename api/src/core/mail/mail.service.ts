@@ -1,11 +1,15 @@
-import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import type { Transporter } from 'nodemailer';
 import { PinoLogger } from 'nestjs-pino';
 import { Project } from '../../app/modules/project/project.entity';
+import { MAIL_TRANSPORTER } from './mail.config';
 
 @Injectable()
 export class MailService {
-  constructor(private mailerService: MailerService, private logger: PinoLogger) {}
+  constructor(
+    @Inject(MAIL_TRANSPORTER) private transporter: Transporter,
+    private logger: PinoLogger
+  ) {}
 
   async sendDistrictNotification(project: Project) {
 
@@ -24,7 +28,7 @@ export class MailService {
 
     // Log and send email
     this.logger.info(`Sending FOM ${project.id} finalized notification email to ${to}`);
-    await this.mailerService.sendMail({
+    await this.transporter.sendMail({
       to: to,
       from: from,
       subject: `New Final FOM submission received for ${host}/admin/`,
