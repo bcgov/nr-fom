@@ -37,14 +37,13 @@ jobs:
             triggers: ('public/' 'libs/')
     steps:
       - uses: actions/checkout@v7
-      - uses: bcgov/action-builder-ghcr@v4.4.1
+      - uses: bcgov/actions/builder@ac9d89eede94f5f58d3446784c94cff634d98eac # v0.6.0
         with:
           package: ${{ matrix.package }}
           build_context: ${{ matrix.build_context }}
           build_file: ${{ matrix.build_file }}
-          tags: ${{ github.event.number }}
           tag_fallback: latest
-          token: ${{ secrets.GITHUB_TOKEN }}
+          tags: ${{ github.event.number }}
           triggers: ${{ matrix.triggers }}
 
   deploy:
