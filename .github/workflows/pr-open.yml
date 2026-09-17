@@ -43,6 +43,7 @@ jobs:
           build_context: ${{ matrix.build_context }}
           build_file: ${{ matrix.build_file }}
           tag_fallback: latest
+          tags: ${{ github.event.number }}
           triggers: ${{ matrix.triggers }}
 
   deploy:
