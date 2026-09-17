@@ -107,10 +107,14 @@ describe('MultiFilter', () => {
 
 describe('FilterUtils', () => {
   describe('hashFilters', () => {
-    it('should return a non-empty string', () => {
+    it('should return a non-empty string for filter input', () => {
       const f = new Filter<string>({ filter: { queryParam: 'name', value: 'acme' } });
       expect(typeof FilterUtils.hashFilters(f)).toBe('string');
       expect(FilterUtils.hashFilters(f).length).toBeGreaterThan(0);
+    });
+
+    it('should return an empty string when called with no arguments', () => {
+      expect(FilterUtils.hashFilters()).toBe('');
     });
 
     it('should return the same hash for identical filter states', () => {
@@ -123,10 +127,6 @@ describe('FilterUtils', () => {
       const a = new Filter<string>({ filter: { queryParam: 'name', value: 'acme' } });
       const b = new Filter<string>({ filter: { queryParam: 'name', value: 'other' } });
       expect(FilterUtils.hashFilters(a)).not.toBe(FilterUtils.hashFilters(b));
-    });
-
-    it('should return a hash when called with no arguments', () => {
-      expect(typeof FilterUtils.hashFilters()).toBe('string');
     });
   });
 });

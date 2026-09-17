@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AboutComponent } from './about.component';
-import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 describe('AboutComponent', () => {
   let component: AboutComponent;
@@ -19,15 +18,10 @@ describe('AboutComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have faArrowUpRightFromSquare icon defined', () => {
-    expect(component.faArrowUpRightFromSquare).toBeDefined();
-    expect(component.faArrowUpRightFromSquare).toBe(faArrowUpRightFromSquare);
-  });
-
-  it('should have icon with expected properties', () => {
-    const icon = component.faArrowUpRightFromSquare;
-    expect(icon.iconName).toBe('arrow-up-right-from-square');
-    expect(icon.prefix).toBe('fas');
+  it('should render the training link', () => {
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector('a[href*="bPu8Fx187gWLV3rC5RjpbKEKkDBwIX93"]');
+    expect(link).toBeTruthy();
+    expect(link?.getAttribute('target')).toBe('_blank');
   });
 
   it('should render the about template', () => {

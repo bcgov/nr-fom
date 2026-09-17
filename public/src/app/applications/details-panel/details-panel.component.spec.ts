@@ -101,8 +101,8 @@ describe('DetailsPanelComponent', () => {
     expect(component.projectPlanCodeEnum).toBeDefined();
   });
 
-  it('should have faArrowUpRightFromSquare icon', () => {
-    expect(component.faArrowUpRightFromSquare).toBeDefined();
+  it('should have getCommentingClosingDate defined', () => {
+    expect(component.getCommentingClosingDate).toBeDefined();
   });
 
   describe('clearAllFilters', () => {

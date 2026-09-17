@@ -1,5 +1,4 @@
 import { DELIMITER } from '@public-core/constants/appConstants';
-import hash from 'object-hash';
 
 /**
  * Basic required filter fields.
@@ -168,11 +167,11 @@ export class MultiFilter<T> implements IMultiFilter {
 }
 
 export class FilterUtils {
-  public static hashFilters(...filters: IFilter[]) {
-    if (!filters || filters.length <= 0) {
-      return hash({});
+  public static hashFilters(...filters: IFilter[]): string {
+    if (!filters || filters.length === 0) {
+      return '';
     }
 
-    return hash(filters);
+    return JSON.stringify(filters.map(f => f.getQueryParamsString()));
   }
 }
