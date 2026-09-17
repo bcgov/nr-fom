@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MailerModule, MailerService } from '@nestjs-modules/mailer';
+import nodemailer from 'nodemailer';
 import { PinoLogger } from 'nestjs-pino';
 import { MailService } from './mail.service';
+import { MAIL_TRANSPORTER } from './mail.config';
 import { Project } from '../../app/modules/project/project.entity';
 import { District } from '../../app/modules/district/district.entity';
 import { ForestClient } from '../../app/modules/forest-client/forest-client.entity';
@@ -9,7 +10,7 @@ import { mockLoggerFactory } from '../../app/factories/mock-logger.factory';
 
 describe('MailService', () => {
   let service: MailService;
-  let mockMailerService: { sendMail: jest.Mock };
+  let mockTransporter: { sendMail: jest.Mock };
   const originalEnv = process.env;
 
   const createMockProject = (): Project => {
@@ -36,14 +37,14 @@ describe('MailService', () => {
     delete process.env.FOM_EMAIL_NOTIFY;
     delete process.env.HOSTNAME;
 
-    mockMailerService = {
+    mockTransporter = {
       sendMail: jest.fn().mockResolvedValue({ messageId: 'test-message-id' }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MailService,
-        { provide: MailerService, useValue: mockMailerService },
+        { provide: MAIL_TRANSPORTER, useValue: mockTransporter },
         { provide: PinoLogger, useValue: mockLoggerFactory() },
       ],
     }).compile();
@@ -65,8 +66,8 @@ describe('MailService', () => {
 
       await service.sendDistrictNotification(project);
 
-      expect(mockMailerService.sendMail).toHaveBeenCalledTimes(1);
-      const callArg = mockMailerService.sendMail.mock.calls[0][0];
+      expect(mockTransporter.sendMail).toHaveBeenCalledTimes(1);
+      const callArg = mockTransporter.sendMail.mock.calls[0][0];
 
       expect(callArg.to).toBe('FLNR.CascadesDistrict@gov.bc.ca');
       expect(callArg.from).toBe('"FOMDoNotReply" <Do-Not-Reply@gov.bc.ca>');
@@ -81,8 +82,8 @@ describe('MailService', () => {
 
       await service.sendDistrictNotification(project);
 
-      expect(mockMailerService.sendMail).toHaveBeenCalledTimes(1);
-      const callArg = mockMailerService.sendMail.mock.calls[0][0];
+      expect(mockTransporter.sendMail).toHaveBeenCalledTimes(1);
+      const callArg = mockTransporter.sendMail.mock.calls[0][0];
       expect(callArg.to).toBe('dev-team@example.com');
     });
 
@@ -92,14 +93,14 @@ describe('MailService', () => {
 
       await service.sendDistrictNotification(project);
 
-      expect(mockMailerService.sendMail).toHaveBeenCalledTimes(1);
-      const callArg = mockMailerService.sendMail.mock.calls[0][0];
+      expect(mockTransporter.sendMail).toHaveBeenCalledTimes(1);
+      const callArg = mockTransporter.sendMail.mock.calls[0][0];
       expect(callArg.subject).toContain('https://fom.nrs.gov.bc.ca/admin/');
       expect(callArg.html).toContain('https://fom.nrs.gov.bc.ca/admin/a/1001');
     });
 
     it('propagates error when mailerService fails', async () => {
-      mockMailerService.sendMail.mockRejectedValueOnce(new Error('SMTP connection refused'));
+      mockTransporter.sendMail.mockRejectedValueOnce(new Error('SMTP connection refused'));
       const project = createMockProject();
 
       await expect(service.sendDistrictNotification(project)).rejects.toThrow('SMTP connection refused');
@@ -107,20 +108,17 @@ describe('MailService', () => {
   });
 
   describe('Nodemailer runtime integration (jsonTransport)', () => {
-    it('compiles message structure through real MailerService and Nodemailer v10 without sending email', async () => {
+    it('compiles message structure through real Transporter and Nodemailer v10 without sending email', async () => {
+      const realTransporter = nodemailer.createTransport({
+        jsonTransport: true,
+      }, {
+        from: '"No Reply" <noreply@example.com>',
+      });
+
       const integrationModule: TestingModule = await Test.createTestingModule({
-        imports: [
-          MailerModule.forRoot({
-            transport: {
-              jsonTransport: true,
-            },
-            defaults: {
-              from: '"No Reply" <noreply@example.com>',
-            },
-          }),
-        ],
         providers: [
           MailService,
+          { provide: MAIL_TRANSPORTER, useValue: realTransporter },
           { provide: PinoLogger, useValue: mockLoggerFactory() },
         ],
       }).compile();

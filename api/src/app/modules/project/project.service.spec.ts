@@ -1,11 +1,11 @@
 import { DateTimeUtil } from "@api-core/dateTimeUtil";
-import { ProjectCreateRequest, ProjectUpdateRequest } from '@api-modules/project/project.dto';
+import { ProjectCreateRequest, ProjectUpdateRequest, ProjectWorkflowStateChangeRequest, ProjectResponse } from '@api-modules/project/project.dto';
 import { Project } from '@api-modules/project/project.entity';
 import { ProjectService } from '@api-modules/project/project.service';
 import { PublicNotice } from "@api-modules/project/public-notice.entity";
 import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.entity';
 import { Submission } from "@api-modules/submission/submission.entity";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, InternalServerErrorException } from "@nestjs/common";
 import { User } from "@utility/security/user";
 import dayjs from 'dayjs';
 import { mockLoggerFactory } from '../../factories/mock-logger.factory';
@@ -439,6 +439,86 @@ describe('ProjectService', () => {
       });
     });
 
+  });
+
+  describe('workflowStateChange', () => {
+    let workflowService: ProjectService;
+    let mockRepository: any;
+    let mockMailService: any;
+    let user: User;
+    let request: ProjectWorkflowStateChangeRequest;
+    let sampleEntity: Project;
+
+    beforeEach(() => {
+      mockRepository = {
+        update: jest.fn().mockResolvedValue({ affected: 1 }),
+      };
+      mockMailService = {
+        sendDistrictNotification: jest.fn().mockResolvedValue(undefined),
+      };
+      workflowService = new ProjectService(
+        mockRepository as any,
+        mockLoggerFactory(),
+        null,
+        null,
+        null,
+        null,
+        mockMailService as any
+      );
+
+      user = new User();
+      user.isForestClient = true;
+      user.userName = 'testuser';
+      user.clientIds = ['00001012'];
+
+      request = new ProjectWorkflowStateChangeRequest();
+      request.revisionCount = 1;
+      request.workflowStateCode = WorkflowStateEnum.FINALIZED;
+
+      sampleEntity = new Project();
+      sampleEntity.id = 1001;
+      sampleEntity.revisionCount = 1;
+      sampleEntity.forestClientId = '00001012';
+      sampleEntity.workflowStateCode = WorkflowStateEnum.COMMENT_CLOSED;
+      sampleEntity.district = { id: 1, name: 'Cascades Natural Resource District' } as any;
+
+      jest.spyOn(workflowService as any, 'findEntityWithCommonRelations').mockResolvedValue(sampleEntity);
+      jest.spyOn(workflowService, 'validateWorkflowTransitionRules').mockResolvedValue(undefined);
+      jest.spyOn(workflowService, 'convertEntity').mockReturnValue(new ProjectResponse());
+    });
+
+    it('sends district notification email via mailService when transitioning to FINALIZED', async () => {
+      await workflowService.workflowStateChange(1001, request, user);
+
+      expect(mockRepository.update).toHaveBeenCalledWith(1001, expect.objectContaining({
+        workflowStateCode: WorkflowStateEnum.FINALIZED,
+        revisionCount: 2,
+        updateUser: 'testuser',
+      }));
+      expect(mockMailService.sendDistrictNotification).toHaveBeenCalledTimes(1);
+      expect(mockMailService.sendDistrictNotification).toHaveBeenCalledWith(sampleEntity);
+    });
+
+    it('throws InternalServerErrorException when sending district notification email fails', async () => {
+      mockMailService.sendDistrictNotification.mockRejectedValue(new Error('SMTP connection failure'));
+
+      await expect(workflowService.workflowStateChange(1001, request, user))
+        .rejects
+        .toThrow(new InternalServerErrorException('Problem sending FOM finalized notification email.'));
+    });
+
+    it('does not send notification email when transitioning to a non-FINALIZED state', async () => {
+      sampleEntity.workflowStateCode = WorkflowStateEnum.INITIAL;
+      request.workflowStateCode = WorkflowStateEnum.PUBLISHED;
+      jest.spyOn(workflowService as any, 'updatePublicNoticeIfRequired').mockResolvedValue(undefined);
+
+      await workflowService.workflowStateChange(1001, request, user);
+
+      expect(mockRepository.update).toHaveBeenCalledWith(1001, expect.objectContaining({
+        workflowStateCode: WorkflowStateEnum.PUBLISHED,
+      }));
+      expect(mockMailService.sendDistrictNotification).not.toHaveBeenCalled();
+    });
   });
 
   function getSampleProjectEntityData(): Partial<Project> {

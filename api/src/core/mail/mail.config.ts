@@ -1,3 +1,6 @@
+import nodemailer, { Transporter } from 'nodemailer';
+
+export const MAIL_TRANSPORTER = 'MAIL_TRANSPORTER';
 
 export async function getMailConfig(): Promise<any> {
     if (process.env.SMTP_SERVER) {
@@ -9,7 +12,8 @@ export async function getMailConfig(): Promise<any> {
         // is at Mailtrap.
         const localService= {
             host: "smtp.mailtrap.io",
-            port: 2525,
+            port: 465,
+            secure: true,
             auth: {
               user: "249d20b3906b70",
               pass: "844353993e632a"
@@ -19,6 +23,16 @@ export async function getMailConfig(): Promise<any> {
     }
 }
 
+export async function createMailTransporter(): Promise<Transporter> {
+    const config = await getMailConfig();
+    return nodemailer.createTransport({
+        secure: true,
+        ...(typeof config === 'string' ? { url: config } : config),
+    }, {
+        from: '"No Reply" <noreply@example.com>',
+    });
+}
+
 
 /**
  * Dev/Test env test account:
@@ -26,7 +40,8 @@ export async function getMailConfig(): Promise<any> {
  *  Mailtrap account (this was signup based on personal Github account.)
     {
         host: "smtp.mailtrap.io",
-        port: 2525,
+        port: 465,
+        secure: true,
         auth: {
             user: "249d20b3906b70",
             pass: "844353993e632a"
@@ -43,7 +58,8 @@ export async function getMailConfig(): Promise<any> {
     Nodemailer configuration
     const transporter = nodemailer.createTransport({
         host: 'smtp.ethereal.email',
-        port: 587,
+        port: 465,
+        secure: true,
         auth: {
             user: 'devyn.russel75@ethereal.email',
             pass: 'f6Kuw3jmNdNPRTFa8J'

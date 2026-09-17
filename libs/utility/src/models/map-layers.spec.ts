@@ -52,27 +52,31 @@ describe('MapLayers', () => {
             expect(mapLayers.getAllOverlayLayersNames().filter(n => n.includes('Forest Development')).length).toBe(1);
         });
 
-        describe('colour layer', () => {
-            it('draws approved units only, against the shared BCGW endpoint', () => {
-                const colour = fduColour();
-                expect(colour._url).toBe('https://openmaps.gov.bc.ca/geo/ows');
-                expect(colour.wmsParams.layers).toBe(FDU_WMS_LAYER);
-                // 1417 = Approved. Previous/Draft/Submitted are deliberately excluded: every
-                // historical amendment is its own polygon, so including them is illegible.
-                expect(colour.wmsParams.styles).toBe('1417');
+        describe('border layer', () => {
+            it('draws approved units with a heavier 3px stroke, against the shared BCGW endpoint', () => {
+                const border = fduColour();
+                expect(border._url).toBe('https://openmaps.gov.bc.ca/geo/ows');
+                expect(border.wmsParams.layers).toBe(FDU_WMS_LAYER);
+                expect(border.wmsParams.styles).toBe('');
+                expect(border.wmsParams.sld_body).toContain('<CssParameter name="stroke-width">3</CssParameter>');
+                expect(border.wmsParams.sld_body).toContain('#728944');
+                expect(border.wmsParams.sld_body).not.toContain('<CssParameter name="stroke">#FFFFFF</CssParameter>');
+                expect(border.wmsParams.sld_body).toContain('<ogc:Literal>APPROVED</ogc:Literal>');
             });
 
-            it('pairs one layer entry per style entry', () => {
-                // Guards the positional layers/styles pairing if FDU_SHOWN_STATUSES gains entries.
-                const colour = fduColour();
-                expect(colour.wmsParams.layers.split(',').length)
-                    .toBe(colour.wmsParams.styles.split(',').length);
-                colour.wmsParams.layers.split(',').forEach((name: string) => expect(name).toBe(FDU_WMS_LAYER));
+            it('uses a subtle white casing around the olive green stroke when isMiniMap option is true', () => {
+                const miniMapLayers = new MapLayers({ isMiniMap: true });
+                const miniFduGroup = miniMapLayers.getOverlayByName(FDU_OVERLAY_NAME) as L.LayerGroup;
+                const miniBorder = (miniFduGroup.getLayers()[0] as any);
+                expect(miniBorder.wmsParams.sld_body).toContain('<CssParameter name="stroke">#FFFFFF</CssParameter>');
+                expect(miniBorder.wmsParams.sld_body).toContain('<CssParameter name="stroke-width">5</CssParameter>');
+                expect(miniBorder.wmsParams.sld_body).toContain('<CssParameter name="stroke">#728944</CssParameter>');
+                expect(miniBorder.wmsParams.sld_body).toContain('<CssParameter name="stroke-width">3</CssParameter>');
             });
 
             it('matches the status the labels are filtered to', () => {
-                // Colour and labels must agree, or units would be drawn with no label and vice versa.
-                expect(fduColour().wmsParams.styles).toBe('1417');
+                // Border and labels must agree, or units would be drawn with no label and vice versa.
+                expect(fduColour().wmsParams.sld_body).toContain('<ogc:Literal>APPROVED</ogc:Literal>');
                 expect(fduLabels().wmsParams.sld_body).toContain('<ogc:Literal>APPROVED</ogc:Literal>');
             });
 
