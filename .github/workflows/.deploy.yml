@@ -138,12 +138,12 @@ jobs:
           - name: api
             overwrite: true
             parameters:
-              -p AWS_USER_POOLS_WEB_CLIENT_ID="${{ inputs.aws_user_pools_web_client_id }}"
-              -p BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME="${{ inputs.batch_client_rfsh_api_tkn_op_secret_name }}"
+              -p AWS_USER_POOLS_WEB_CLIENT_ID=${{ inputs.aws_user_pools_web_client_id }}
+              -p BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME=${{ inputs.batch_client_rfsh_api_tkn_op_secret_name }}
               -p DB_TESTDATA=${{ inputs.db_testdata }}
               -p FOM_EMAIL_NOTIFY=${{ inputs.email_notify }}
-              -p LOGOUT_SITEMINDER_URL="${{ inputs.logout_siteminder_url }}"
-              -p LOGOUT_KEYCLOAK_URL="${{ inputs.logout_keycloak_url }}"
+              -p LOGOUT_SITEMINDER_URL=${{ inputs.logout_siteminder_url }}
+              -p LOGOUT_KEYCLOAK_URL=${{ inputs.logout_keycloak_url }}
           - name: admin
             overwrite: true
           - name: db
