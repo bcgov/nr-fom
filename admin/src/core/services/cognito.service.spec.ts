@@ -3,16 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { CognitoService } from './cognito.service';
 import { ConfigService } from '@utility/services/config.service';
-import { Amplify } from 'aws-amplify';
-import { signOut } from 'aws-amplify/auth';
+import { Amplify } from '@aws-amplify/core';
+import { signOut } from '@aws-amplify/auth';
 
-jest.mock('aws-amplify', () => ({
+jest.mock('@aws-amplify/core', () => ({
   Amplify: {
     configure: jest.fn()
   }
 }));
 
-jest.mock('aws-amplify/auth', () => ({
+jest.mock('@aws-amplify/auth', () => ({
   getCurrentUser: jest.fn(),
   fetchAuthSession: jest.fn(),
   signInWithRedirect: jest.fn(),
