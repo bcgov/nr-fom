@@ -4,7 +4,7 @@ import { of, throwError } from 'rxjs';
 import { CognitoService } from './cognito.service';
 import { ConfigService } from '@utility/services/config.service';
 import { Amplify } from '@aws-amplify/core';
-import { signOut } from '@aws-amplify/auth';
+import { fetchAuthSession, getCurrentUser, signInWithRedirect, signOut } from '@aws-amplify/auth';
 
 jest.mock('@aws-amplify/core', () => ({
   Amplify: {
@@ -17,6 +17,14 @@ jest.mock('@aws-amplify/auth', () => ({
   fetchAuthSession: jest.fn(),
   signInWithRedirect: jest.fn(),
   signOut: jest.fn()
+}));
+
+jest.mock('jwt-decode', () => ({
+  jwtDecode: jest.fn((token: string) =>
+    token === 'mock-id-token'
+      ? { sub: '12345', 'custom:idp_name': 'idir' }
+      : { sub: '12345' }
+  )
 }));
 
 describe('CognitoService', () => {
@@ -148,6 +156,97 @@ describe('CognitoService', () => {
       expect(service.initialized).toBe(true);
       expect(mockHttpClient.get).toHaveBeenCalledTimes(2);
       expect(Amplify.configure).toHaveBeenCalledTimes(1);
+    });
+
+    it('should bootstrap auth and refresh token when cognito is enabled and user is logged in', async () => {
+      window.history.pushState({}, '', '/');
+      mockHttpClient.get.mockReturnValue(of({
+        enabled: true,
+        aws_user_pools_web_client_id: 'client_id',
+        aws_user_pools_id: 'pools_id',
+        oauth: { domain: 'domain', redirectSignIn: 'signin', redirectSignOut: 'signout' }
+      }));
+      (getCurrentUser as jest.Mock).mockResolvedValueOnce({ userId: 'user-1' });
+      const refreshSpy = jest.spyOn(service, 'refreshToken').mockResolvedValueOnce();
+
+      await service.init();
+
+      expect(getCurrentUser).toHaveBeenCalledTimes(1);
+      expect(refreshSpy).toHaveBeenCalledTimes(1);
+      expect(service.initialized).toBe(true);
+    });
+
+    it('should call login when cognito is enabled and user is not signed in', async () => {
+      window.history.pushState({}, '', '/');
+      mockHttpClient.get.mockReturnValue(of({
+        enabled: true,
+        aws_user_pools_web_client_id: 'client_id',
+        aws_user_pools_id: 'pools_id',
+        oauth: { domain: 'domain', redirectSignIn: 'signin', redirectSignOut: 'signout' }
+      }));
+      (getCurrentUser as jest.Mock).mockRejectedValueOnce(new Error('Not signed in'));
+      const loginSpy = jest.spyOn(service, 'login').mockResolvedValueOnce();
+
+      service.init();
+      await new Promise(process.nextTick);
+
+      expect(getCurrentUser).toHaveBeenCalledTimes(1);
+      expect(loginSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('login', () => {
+    it('should call signInWithRedirect', async () => {
+      await service.login();
+      expect(signInWithRedirect).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('refreshToken', () => {
+    beforeEach(() => {
+      service.awsCognitoConfig = { enabled: true } as any;
+    });
+
+    it('should call fetchAuthSession with forceRefresh: true and set cognitoAuthToken on valid tokens', async () => {
+      const mockIdToken = 'mock-id-token';
+      const mockAccessToken = 'mock-access-token';
+      (fetchAuthSession as jest.Mock).mockResolvedValueOnce({
+        tokens: {
+          idToken: { toString: () => mockIdToken },
+          accessToken: { toString: () => mockAccessToken }
+        }
+      });
+
+      await service.refreshToken();
+
+      expect(fetchAuthSession).toHaveBeenCalledWith({ forceRefresh: true });
+      expect(service.getToken()).toEqual({
+        decodedIdToken: expect.objectContaining({ sub: '12345', 'custom:idp_name': 'idir' }),
+        decodedAccessToken: expect.objectContaining({ sub: '12345' }),
+        jwtToken: { idToken: mockIdToken, accessToken: mockAccessToken }
+      });
+    });
+
+    it('should call fetchAuthSession with forceRefresh: true and trigger logout when tokens are missing', async () => {
+      const logoutSpy = jest.spyOn(service, 'logout').mockResolvedValueOnce();
+      (fetchAuthSession as jest.Mock).mockResolvedValueOnce({
+        tokens: undefined
+      });
+
+      await service.refreshToken();
+
+      expect(fetchAuthSession).toHaveBeenCalledWith({ forceRefresh: true });
+      expect(logoutSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call fetchAuthSession with forceRefresh: true and trigger logout on fetch error', async () => {
+      const logoutSpy = jest.spyOn(service, 'logout').mockResolvedValueOnce();
+      (fetchAuthSession as jest.Mock).mockRejectedValueOnce(new Error('Auth refresh failed'));
+
+      await service.refreshToken();
+
+      expect(fetchAuthSession).toHaveBeenCalledWith({ forceRefresh: true });
+      expect(logoutSpy).toHaveBeenCalledTimes(1);
     });
   });
 
