@@ -250,6 +250,49 @@ describe('CognitoService', () => {
     });
   });
 
+  describe('updateToken', () => {
+    beforeEach(() => {
+      service.awsCognitoConfig = { enabled: true } as any;
+    });
+
+    it('should call fetchAuthSession with forceRefresh: true and emit next on success', (done) => {
+      const mockIdToken = 'mock-id-token';
+      const mockAccessToken = 'mock-access-token';
+      (fetchAuthSession as jest.Mock).mockResolvedValueOnce({
+        tokens: {
+          idToken: { toString: () => mockIdToken },
+          accessToken: { toString: () => mockAccessToken }
+        }
+      });
+
+      service.updateToken().subscribe({
+        next: (val) => {
+          expect(val).toBeUndefined();
+          expect(fetchAuthSession).toHaveBeenCalledWith({ forceRefresh: true });
+          expect(service.getToken()).toEqual({
+            decodedIdToken: expect.objectContaining({ sub: '12345', 'custom:idp_name': 'idir' }),
+            decodedAccessToken: expect.objectContaining({ sub: '12345' }),
+            jwtToken: { idToken: mockIdToken, accessToken: mockAccessToken }
+          });
+          done();
+        },
+        error: () => done.fail('Should not error')
+      });
+    });
+
+    it('should emit error when fetchAuthSession rejects', (done) => {
+      (fetchAuthSession as jest.Mock).mockRejectedValueOnce(new Error('Refresh failed'));
+
+      service.updateToken().subscribe({
+        next: () => done.fail('Should not emit next'),
+        error: () => {
+          expect(fetchAuthSession).toHaveBeenCalledWith({ forceRefresh: true });
+          done();
+        }
+      });
+    });
+  });
+
   describe('logout', () => {
     const CLIENT_ID = 'cognito-app-client';
     const CONFIG: any = {
