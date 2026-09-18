@@ -22,6 +22,7 @@ describe('AboutComponent', () => {
     const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector('a[href*="bPu8Fx187gWLV3rC5RjpbKEKkDBwIX93"]');
     expect(link).toBeTruthy();
     expect(link?.getAttribute('target')).toBe('_blank');
+    expect(link?.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
   });
 
   it('should render the about template', () => {

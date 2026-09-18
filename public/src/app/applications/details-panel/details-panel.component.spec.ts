@@ -21,6 +21,14 @@ describe('DetailsPanelComponent', () => {
   let mockModalService: Partial<NgbModal>;
   let navEndSubject: Subject<any>;
 
+  beforeAll(() => {
+    (global as any).ResizeObserver = jest.fn().mockImplementation(() => ({
+      observe: jest.fn(),
+      unobserve: jest.fn(),
+      disconnect: jest.fn(),
+    }));
+  });
+
   beforeEach(async () => {
     navEndSubject = new Subject<any>();
 
@@ -103,6 +111,26 @@ describe('DetailsPanelComponent', () => {
 
   it('should have getCommentingClosingDate defined', () => {
     expect(component.getCommentingClosingDate).toBeDefined();
+  });
+
+  it('should render the iMapBC link with decorative svg when project is loaded', () => {
+    component.workflowStatus.set({
+      COMMENT_OPEN: { code: 'COMMENT_OPEN', description: 'Comment Open' } as any,
+    });
+    component.project.set({
+      id: 1,
+      name: 'Test Project',
+      description: 'Desc',
+      workflowState: { code: 'COMMENT_OPEN', description: 'Comment Open' },
+      forestClient: { name: 'Client 1' },
+      projectPlanCode: 'Fsp',
+    } as any);
+    fixture.detectChanges();
+
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector('a[href*="imap4m"]');
+    expect(link).toBeTruthy();
+    expect(link?.getAttribute('target')).toBe('_blank');
+    expect(link?.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
   });
 
   describe('clearAllFilters', () => {
