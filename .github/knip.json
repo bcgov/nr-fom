@@ -17,7 +17,6 @@
     "@angular-eslint/schematics",
     "@angular-devkit/core",
     "@angular-devkit/architect",
-    "@fortawesome/fontawesome-svg-core",
     "@typescript-eslint/parser",
     "@typescript-eslint/eslint-plugin"
   ]

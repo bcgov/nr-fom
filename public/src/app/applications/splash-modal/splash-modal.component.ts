@@ -1,8 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { UrlService } from '@public-core/services/url.service';
 
 
@@ -13,7 +11,6 @@ export enum SplashModalResult {
 }
 
 @Component({
-  imports: [FontAwesomeModule],
   templateUrl: './splash-modal.component.html',
   styleUrl: './splash-modal.component.scss'
 })
@@ -22,8 +19,6 @@ export class SplashModalComponent {
   private router = inject(Router);
   private urlSvc = inject(UrlService);
   activeModal = inject(NgbActiveModal);
-
-  public faArrowUpRightFromSquare = faArrowUpRightFromSquare;
 
   public dismiss() {
     this.activeModal.close(SplashModalResult.Dismissed);
