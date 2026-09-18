@@ -3,8 +3,9 @@ import { Injectable, inject } from "@angular/core";
 import { AwsCognitoConfig } from "@api-client";
 import { User } from "@utility/security/user";
 import { ConfigService } from "@utility/services/config.service";
-import { Amplify, ResourcesConfig } from "@aws-amplify/core";
+import { Amplify, ResourcesConfig, defaultStorage } from "@aws-amplify/core";
 import { fetchAuthSession, getCurrentUser, signInWithRedirect, signOut } from "@aws-amplify/auth";
+import { cognitoUserPoolsTokenProvider } from "@aws-amplify/auth/cognito";
 import { jwtDecode } from "jwt-decode";
 import { lastValueFrom, Observable } from "rxjs";
 import { buildFederatedLogoutUrl, FederatedLogoutConfig } from "../utils/logout-chain";
@@ -223,7 +224,15 @@ export class CognitoService {
 
           const amplifyConfig = this.toAmplifyConfig(this.awsCognitoConfig);
           console.log("Using amplify config = " + JSON.stringify(amplifyConfig));
-          Amplify.configure(amplifyConfig);
+          if (amplifyConfig.Auth) {
+            cognitoUserPoolsTokenProvider.setAuthConfig(amplifyConfig.Auth);
+            cognitoUserPoolsTokenProvider.setKeyValueStorage(defaultStorage);
+          }
+          Amplify.configure(amplifyConfig, {
+            Auth: {
+              tokenProvider: cognitoUserPoolsTokenProvider,
+            },
+          });
         } catch (error) {
           this.loadRemoteConfigPromise = null;
           throw error;

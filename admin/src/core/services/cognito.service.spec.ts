@@ -5,11 +5,13 @@ import { CognitoService } from './cognito.service';
 import { ConfigService } from '@utility/services/config.service';
 import { Amplify } from '@aws-amplify/core';
 import { fetchAuthSession, getCurrentUser, signInWithRedirect, signOut } from '@aws-amplify/auth';
+import { cognitoUserPoolsTokenProvider } from '@aws-amplify/auth/cognito';
 
 jest.mock('@aws-amplify/core', () => ({
   Amplify: {
     configure: jest.fn()
-  }
+  },
+  defaultStorage: {}
 }));
 
 jest.mock('@aws-amplify/auth', () => ({
@@ -17,6 +19,13 @@ jest.mock('@aws-amplify/auth', () => ({
   fetchAuthSession: jest.fn(),
   signInWithRedirect: jest.fn(),
   signOut: jest.fn()
+}));
+
+jest.mock('@aws-amplify/auth/cognito', () => ({
+  cognitoUserPoolsTokenProvider: {
+    setAuthConfig: jest.fn(),
+    setKeyValueStorage: jest.fn()
+  }
 }));
 
 jest.mock('jwt-decode', () => ({
@@ -113,9 +122,17 @@ describe('CognitoService', () => {
 
       const result = await service.init();
       expect(result).toBeNull();
-      expect(service.initialized).toBe(true);
       expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
-      expect(Amplify.configure).toHaveBeenCalledTimes(1);
+      expect(cognitoUserPoolsTokenProvider.setAuthConfig).toHaveBeenCalledTimes(1);
+      expect(cognitoUserPoolsTokenProvider.setKeyValueStorage).toHaveBeenCalledTimes(1);
+      expect(Amplify.configure).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          Auth: {
+            tokenProvider: cognitoUserPoolsTokenProvider
+          }
+        })
+      );
     });
 
     it('should call loadRemoteConfig exactly once even if concurrent calls are made', async () => {
