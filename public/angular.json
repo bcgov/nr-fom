@@ -19,7 +19,7 @@
           "builder": "@angular/build:application",
           "options": {
             "allowedCommonJsDependencies": [
-                "leaflet", "leaflet.markercluster", "object-hash"
+                "leaflet", "leaflet.markercluster"
             ],
             "baseHref": "/public/",
             "outputPath": {

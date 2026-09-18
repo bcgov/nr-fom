@@ -115,7 +115,7 @@ jobs:
 
       - name: OpenShift Init
         id: openshift-init
-        uses: bcgov/actions-openshift/deployer@50414269295ed040baf0d05cb4c7f4d76c7bcd8c # v0.2.0
+        uses: bcgov/actions-openshift/deployer@75454b2b33edf37135f6f167775c77a3414207f6 # v0.3.0
         with:
           oc_namespace: ${{ vars.OC_NAMESPACE }}
           oc_server: ${{ vars.OC_SERVER }}
@@ -138,12 +138,12 @@ jobs:
           - name: api
             overwrite: true
             parameters:
-              -p AWS_USER_POOLS_WEB_CLIENT_ID="${{ inputs.aws_user_pools_web_client_id }}"
-              -p BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME="${{ inputs.batch_client_rfsh_api_tkn_op_secret_name }}"
+              -p AWS_USER_POOLS_WEB_CLIENT_ID=${{ inputs.aws_user_pools_web_client_id }}
+              -p BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME=${{ inputs.batch_client_rfsh_api_tkn_op_secret_name }}
               -p DB_TESTDATA=${{ inputs.db_testdata }}
               -p FOM_EMAIL_NOTIFY=${{ inputs.email_notify }}
-              -p LOGOUT_SITEMINDER_URL="${{ inputs.logout_siteminder_url }}"
-              -p LOGOUT_KEYCLOAK_URL="${{ inputs.logout_keycloak_url }}"
+              -p LOGOUT_SITEMINDER_URL=${{ inputs.logout_siteminder_url }}
+              -p LOGOUT_KEYCLOAK_URL=${{ inputs.logout_keycloak_url }}
           - name: admin
             overwrite: true
           - name: db
@@ -151,7 +151,7 @@ jobs:
           - name: public
             overwrite: true
     steps:
-      - uses: bcgov/actions-openshift/deployer@50414269295ed040baf0d05cb4c7f4d76c7bcd8c # v0.2.0
+      - uses: bcgov/actions-openshift/deployer@75454b2b33edf37135f6f167775c77a3414207f6 # v0.3.0
         with:
           file: ${{ matrix.name }}/openshift.deploy.yml
           oc_namespace: ${{ vars.OC_NAMESPACE }}

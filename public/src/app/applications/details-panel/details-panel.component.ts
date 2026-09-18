@@ -6,8 +6,6 @@ import {
     AttachmentResponse, AttachmentService, ProjectPlanCodeEnum, ProjectResponse, ProjectService,
     SpatialFeaturePublicResponse, SpatialFeatureService, WorkflowStateCode
 } from '@api-client';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { periodOperationsTxt, woodlotOperationsTxt } from '@public-core/constants/appConstants';
 import { UrlService } from '@public-core/services/url.service';
@@ -33,7 +31,7 @@ import { Filter } from '../utils/filter';
  */
 @Component({
   imports: [
-    FontAwesomeModule, DatePipe, TitleCasePipe, ShapeInfoComponent,
+    DatePipe, TitleCasePipe, ShapeInfoComponent,
     DetailsMapComponent, TooltipModule, MatTooltipModule
   ],
   selector: 'app-details-panel',
@@ -63,7 +61,6 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   public readonly workflowStatus = signal<Record<string, WorkflowStateCode>>({});
   public projectIdFilter = new Filter<string>({ filter: { queryParam: 'id', value: null } });
   public readonly attachments = signal<AttachmentResponse[]>([]);
-  public faArrowUpRightFromSquare = faArrowUpRightFromSquare;
   public getCommentingClosingDate = getCommentingClosingDate;
   public periodOperationsTooltipTxt = "An FSP holder has three years to apply for a cutting permit or road permit for cutblocks and roads displayed on a FOM. This is called the validity period, it starts on the day commenting opens on a FOM. For BC Timber Sales the validity period starts on the day commenting closes.";
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;

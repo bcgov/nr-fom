@@ -959,7 +959,7 @@ Both apps use the modern `@angular/build:application` builder (esbuild/Vite), no
 | Dev-server port | 4200 | 4300 |
 | Initial-bundle budget | warn 5 MB / error 6.1 MB | warn 5 MB / error 5 MB |
 | Component-style budget | warn 6 KB / error 10 KB | warn 8 KB / error 10 KB |
-| `allowedCommonJsDependencies` | `leaflet`, `json-2-csv` | `leaflet`, `leaflet.markercluster`, `object-hash` |
+| `allowedCommonJsDependencies` | `leaflet`, `json-2-csv` | `leaflet`, `leaflet.markercluster` |
 | Global `scripts` | leaflet, markercluster, apexcharts | leaflet, markercluster |
 | Extra global style | — | `@angular/material/prebuilt-themes/indigo-pink.css` |
 

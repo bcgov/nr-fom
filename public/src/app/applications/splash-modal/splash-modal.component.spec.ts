@@ -47,8 +47,11 @@ describe('SplashModalComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have faArrowUpRightFromSquare icon', () => {
-    expect(component.faArrowUpRightFromSquare).toBeDefined();
+  it('should render the training link', () => {
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector('a[href*="bPu8Fx187gWLV3rC5RjpbKEKkDBwIX93"]');
+    expect(link).toBeTruthy();
+    expect(link?.getAttribute('target')).toBe('_blank');
+    expect(link?.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
   });
 
   describe('dismiss', () => {
