@@ -202,10 +202,14 @@ describe('CognitoService', () => {
         oauth: { domain: 'domain', redirectSignIn: 'signin', redirectSignOut: 'signout' }
       }));
       (getCurrentUser as jest.Mock).mockRejectedValueOnce(new Error('Not signed in'));
-      const loginSpy = jest.spyOn(service, 'login').mockResolvedValueOnce();
+      let resolveLogin!: () => void;
+      const loginCalled = new Promise<void>((resolve) => {
+        resolveLogin = resolve;
+      });
+      const loginSpy = jest.spyOn(service, 'login').mockImplementation(async () => resolveLogin());
 
-      service.init();
-      await new Promise(process.nextTick);
+      void service.init();
+      await loginCalled;
 
       expect(getCurrentUser).toHaveBeenCalledTimes(1);
       expect(loginSpy).toHaveBeenCalledTimes(1);
