@@ -14,7 +14,7 @@ permissions:
 jobs:
   cleanup:
     name: Cleanup and Images
-    uses: bcgov/actions-openshift/.github/workflows/.pr-close.yml@75454b2b33edf37135f6f167775c77a3414207f6 # v0.3.0
+    uses: bcgov/actions-openshift/.github/workflows/.pr-close.yml@75454b2b33edf37135f6f167775c77a3414207f6 # v0.3.1
     secrets:
       oc_namespace: ${{ vars.OC_NAMESPACE }}
       oc_token: ${{ secrets.OC_TOKEN }}

@@ -15,8 +15,40 @@ concurrency:
 permissions: {}
 
 jobs:
+  vars:
+    name: Resolve Images
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: read
+    strategy:
+      matrix:
+        package: [admin, api, db, public]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      # Resolve the image digest built for this commit (squash merges walk back to the PR build)
+      - name: Resolve image
+        id: tracker
+        uses: bcgov/actions/image-tracker@4026bfd276b8a5839029106099b13edfb594b2c3 # v0.8.0
+        with:
+          package: ${{ matrix.package }}
+          max_depth: 100
+
+      # Tag that digest with the merge commit SHA; deploys and promotion use this tag
+      - name: Tag image with commit SHA
+        uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          target: ${{ steps.tracker.outputs.digest }}
+          tags: ${{ github.sha }}
+
   deploy:
     name: Deploy (TEST)
+    needs: [vars]
     permissions:
       contents: read
       issues: write
@@ -30,6 +62,7 @@ jobs:
       email_notify: Heartwood@gov.bc.ca  # TEST environment, set to team inbox.
       logout_siteminder_url: https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi
       logout_keycloak_url: https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout
+      tag: ${{ github.sha }}
       target: test
 
   images-promote:

@@ -26,12 +26,25 @@ jobs:
     needs: [init]
     permissions:
       pull-requests: write
-    uses: bcgov/quickstart-openshift-helpers/.github/workflows/.pr-validate.yml@v1.2.1
-    with:
-      markdown_links: |
-        - [api](https://fom-${{ needs.init.outputs.mod-tag }}.apps.silver.devops.gov.bc.ca/api)
-        - [admin](https://fom-${{ needs.init.outputs.mod-tag }}.apps.silver.devops.gov.bc.ca/admin)
-        - [public](https://fom-${{ needs.init.outputs.mod-tag }}.apps.silver.devops.gov.bc.ca/public)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: bcgov/actions/pr-validate@4026bfd276b8a5839029106099b13edfb594b2c3 # v0.8.0
+        with:
+          add_markdown: |
+            ---
+
+            Thanks for the PR!
+
+            Deployments, as required, will be available below:
+            - [api](https://fom-${{ needs.init.outputs.mod-tag }}.apps.silver.devops.gov.bc.ca/api)
+            - [admin](https://fom-${{ needs.init.outputs.mod-tag }}.apps.silver.devops.gov.bc.ca/admin)
+            - [public](https://fom-${{ needs.init.outputs.mod-tag }}.apps.silver.devops.gov.bc.ca/public)
+
+            Please create PRs in draft mode.  Mark as ready to enable:
+            - [Analysis Workflow](https://github.com/${{ github.repository }}/actions/workflows/analysis.yml)
+
+            After merge, new images are deployed in:
+            - [Merge Workflow](https://github.com/${{ github.repository }}/actions/workflows/merge.yml)
 
   # ==========================================================================
   # WARNING: This job acts as the required merge gate for this workflow.
@@ -46,7 +59,7 @@ jobs:
     timeout-minutes: 1
     steps:
       - name: Validate Results
-        uses: bcgov/actions/workflow-results@c4694d429e6c8025974ba383f6f26ff8a41f7755 # v0.7.1
+        uses: bcgov/actions/workflow-results@4026bfd276b8a5839029106099b13edfb594b2c3 # v0.8.0
         with:
           needs: ${{ toJson(needs) }}
           title: 'Validate Results'
