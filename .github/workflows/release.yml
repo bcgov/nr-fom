@@ -36,7 +36,7 @@ jobs:
           max_depth: 100
 
       - name: Tag Image as Release
-        uses: shrink/actions-docker-registry-tag@v5
+        uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.package }}
@@ -72,7 +72,7 @@ jobs:
         package: [admin, api, db, public]
     timeout-minutes: 5
     steps:
-      - uses: shrink/actions-docker-registry-tag@v5
+      - uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5
         with:
           registry: ghcr.io
           repository: ${{ github.repository }}/${{ matrix.package }}
