@@ -79,20 +79,13 @@ jobs:
       triggered: ${{ steps.openshift-init.outputs.triggered }}
     runs-on: ubuntu-24.04
     steps:
-      # Get PR number - requires squash merges to main
-      - name: PR Number
-        id: pr
-        if: inputs.tag == ''
-        uses: bcgov/action-get-pr@v0.3.1
-
       - name: Vars
         id: vars
         run: |
           # Set variables
           if [ -z "${{ inputs.tag }}" ]; then
-            echo "Creating tag"
-            echo "tag=${{ steps.pr.outputs.pr }}"
-            echo "tag=${{ steps.pr.outputs.pr }}" >> $GITHUB_OUTPUT
+            echo "::error::No tag provided; callers must pass an image tag (merge.yml resolves one with image-tracker)"
+            exit 1
           else
             echo "Using tag parameter"
             echo "tag=${{ inputs.tag }}"
