@@ -16,7 +16,7 @@ export const options = {
   },
 };
 
-// ponytail: scans at most this many published projects for an attachment; set
+// Limit: scans at most this many published projects for an attachment; set
 // ATTACHMENT_ID to target a specific (e.g. large) file instead.
 const MAX_PROJECTS_SCANNED = 25;
 
