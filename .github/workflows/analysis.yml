@@ -89,14 +89,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Run Trivy vulnerability scanner in repo mode
+      - name: Run Trivy secret and misconfiguration scan in repo mode
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           format: "sarif"
           output: "trivy-results.sarif"
-          ignore-unfixed: true
           scan-type: "fs"
-          scanners: "vuln,secret,config"
+          # npm dependency CVEs are reported by Dependabot; "vuln" would duplicate them
+          scanners: "secret,config"
           severity: "CRITICAL,HIGH"
 
       - name: Upload Trivy scan results to GitHub Security tab
