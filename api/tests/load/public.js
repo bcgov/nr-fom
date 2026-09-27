@@ -28,6 +28,17 @@ function isStatus200(res) {
   return res.status === 200;
 }
 
+function isJsonArray(res) {
+  if (typeof res.body !== "string") {
+    return false;
+  }
+  try {
+    return Array.isArray(JSON.parse(res.body));
+  } catch {
+    return false;
+  }
+}
+
 export function setup() {
   const base = requireBase();
   const res = http.get(`${base}/project/publicSummary`, { timeout: "60s" });
@@ -57,6 +68,7 @@ export default function publicMapLoad(data) {
   const summary = http.get(`${base}/project/publicSummary`, { timeout: "30s" });
   const summaryOk = check(summary, {
     "publicSummary status 200": isStatus200,
+    "publicSummary json array": isJsonArray,
   });
   errorRate.add(!summaryOk, { tag1: "publicSummary" });
 
