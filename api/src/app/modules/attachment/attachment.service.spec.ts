@@ -352,5 +352,40 @@ describe('AttachmentService', () => {
       removeObjectSpy.mockRestore();
       consoleErrorSpy.mockRestore();
     });
+
+    it('getObjectStream returns the object body stream', async () => {
+      const body = Readable.from(['content']);
+      const sendSpy = jest
+        .spyOn(s3Client, 'send')
+        .mockImplementation(async () => ({ Body: body }));
+
+      const result = await service.getObjectStream('test-bucket', 'test-object');
+      expect(result).toBe(body);
+      expect(sendSpy.mock.calls[0][0].input).toEqual({ Bucket: 'test-bucket', Key: 'test-object' });
+
+      sendSpy.mockRestore();
+    });
+
+    it('uploadFileObjectStorage logs error on object storage failure', async () => {
+      const sendSpy = jest
+        .spyOn(s3Client, 'send')
+        .mockImplementation(async () => {
+          throw new Error('Object storage connection timeout');
+        });
+      const loggerErrorSpy = jest.spyOn(service['logger'], 'error');
+
+      const request = new AttachmentCreateRequest();
+      request.projectId = TEST_PROJECT_ID;
+      request.fileName = 'test.pdf';
+      request.fileContents = Buffer.from('content');
+      service.uploadFileObjectStorage(request, TEST_ATTACHMENT_ID);
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(loggerErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining(`${TEST_PROJECT_ID}/${TEST_ATTACHMENT_ID}/test.pdf`),
+        expect.any(Error));
+
+      sendSpy.mockRestore();
+    });
   });
 });
