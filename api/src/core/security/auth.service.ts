@@ -113,7 +113,6 @@ export class AuthService {
     constructor(private logger: PinoLogger) {
         this.awsConfig = Object.assign(new AwsCognitoConfig(), aswCognitoEnvJson);
         this.awsConfig.enabled = (process.env.SECURITY_ENABLED || 'true') === 'true';
-        console.log(this.awsConfig)
         const jwksUri = `https://cognito-idp.${this.awsConfig.aws_cognito_region}.amazonaws.com/${this.awsConfig.aws_user_pools_id}/.well-known/jwks.json`;
         console.log("jwksUri", jwksUri);
         this.jwksClient = new JwksClient({
@@ -144,7 +143,6 @@ export class AuthService {
         }
 
         try {
-            console.log("Header bearer token (cognitoToken):", token)
             const cognitoToken = JSON.parse(token);
             const cognitoIdToken = cognitoToken['idToken'];
             const cognitoAccessToken = cognitoToken['accessToken'];
