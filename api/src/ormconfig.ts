@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 
 // Duplicated with database.configuration.ts. Partly deliberately to allow different credentials to be used (if desired).

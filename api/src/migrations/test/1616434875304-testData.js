@@ -1,4 +1,3 @@
-require('dotenv').config();
 const { MigrationInterface, QueryRunner } = require('typeorm');
 
 module.exports = class testdata1616434875304 {
