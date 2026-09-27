@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { User } from '@utility/security/user';
 import { Readable } from 'node:stream';
 import { Repository } from 'typeorm';
-import { minioClient } from '../../../minio';
+import { s3Client } from '../../../minio';
 import { mockLoggerFactory } from '../../factories/mock-logger.factory';
 import { ProjectAuthService } from '../project/project-auth.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
@@ -325,12 +325,10 @@ describe('AttachmentService', () => {
       expect(deleteObjectSpy).toHaveBeenCalled();
     });
 
-    it('deleteObject resolves true on successful MinIO removal', async () => {
+    it('deleteObject resolves true on successful object removal', async () => {
       const removeObjectSpy = jest
-        .spyOn(minioClient, 'removeObject')
-        .mockImplementation((bucket: any, objectName: any, cb: any) => {
-          cb(null);
-        });
+        .spyOn(s3Client, 'send')
+        .mockImplementation(async () => ({}));
 
       const result = await service.deleteObject('test-bucket', 'test-object');
       expect(result).toBe(true);
@@ -338,11 +336,11 @@ describe('AttachmentService', () => {
       removeObjectSpy.mockRestore();
     });
 
-    it('deleteObject resolves false and logs error on MinIO failure', async () => {
+    it('deleteObject resolves false and logs error on object storage failure', async () => {
       const removeObjectSpy = jest
-        .spyOn(minioClient, 'removeObject')
-        .mockImplementation((bucket: any, objectName: any, cb: any) => {
-          cb(new Error('MinIO connection timeout'));
+        .spyOn(s3Client, 'send')
+        .mockImplementation(async () => {
+          throw new Error('Object storage connection timeout');
         });
 
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});

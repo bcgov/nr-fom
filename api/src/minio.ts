@@ -1,10 +1,15 @@
-var Minio = require('minio')
+import { ListBucketsCommand, S3Client } from '@aws-sdk/client-s3';
 
 // Default URL if not defined to avoid startup errors in unit tests, batch, etc.
-export const minioClient =  new Minio.Client({
-    endPoint:  process.env.OBJECT_STORAGE_URL || 'nrs.objectstore.gov.bc.ca',
-    accessKey: process.env.OBJECT_STORAGE_ACCESS_ID,
-    secretKey: process.env.OBJECT_STORAGE_SECRET
+// Path-style and us-east-1 match the previous minio client defaults for non-AWS endpoints.
+export const s3Client = new S3Client({
+    endpoint: `https://${process.env.OBJECT_STORAGE_URL || 'nrs.objectstore.gov.bc.ca'}`,
+    forcePathStyle: true,
+    region: 'us-east-1',
+    credentials: {
+        accessKeyId: process.env.OBJECT_STORAGE_ACCESS_ID,
+        secretAccessKey: process.env.OBJECT_STORAGE_SECRET
+    }
 });
 
 export function verifyObjectStorageConnection() {
@@ -12,14 +17,13 @@ export function verifyObjectStorageConnection() {
         console.error("Object storage credentials not provided.");
         return;
     }
-    minioClient.listBuckets(function(err, buckets) {
-        if (err) { 
-         console.error("Error connecting to object storage", err);
-         return;
-        } 
-        
-        console.log('Succssful connection to object storage. Buckets accessible = ' + buckets.length);
-      });
+    s3Client.send(new ListBucketsCommand({}))
+        .then(({ Buckets }) => {
+            console.log('Succssful connection to object storage. Buckets accessible = ' + Buckets?.length);
+        })
+        .catch(err => {
+            console.error("Error connecting to object storage", err);
+        });
 }
 
 verifyObjectStorageConnection();
