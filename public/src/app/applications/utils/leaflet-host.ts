@@ -11,7 +11,7 @@ export function mapContainer(host: ElementRef<HTMLElement>): HTMLElement | null 
 }
 
 export function initMap(container: HTMLElement, options: L.MapOptions): L.Map {
-  // ponytail: double-init caused filter-freeze when two maps shared getElementById('map')
+  // double-init caused filter-freeze when two maps shared getElementById('map')
   if ((container as any)._leaflet_id != null) {
     throw new Error('Leaflet map already initialized on this container');
   }
