@@ -366,6 +366,44 @@ describe('AttachmentService', () => {
       sendSpy.mockRestore();
     });
 
+    it('getObjectStream rejects when object storage fails', async () => {
+      const sendSpy = jest
+        .spyOn(s3Client, 'send')
+        .mockImplementation(async () => {
+          throw new Error('NoSuchKey');
+        });
+
+      await expect(service.getObjectStream('test-bucket', 'test-object')).rejects.toThrow('NoSuchKey');
+
+      sendSpy.mockRestore();
+    });
+
+    it('uploadFileObjectStorage puts the file contents under the object key', async () => {
+      const bucket = process.env.OBJECT_STORAGE_BUCKET;
+      process.env.OBJECT_STORAGE_BUCKET = 'test-bucket';
+      const sendSpy = jest
+        .spyOn(s3Client, 'send')
+        .mockImplementation(async () => ({}));
+      const loggerErrorSpy = jest.spyOn(service['logger'], 'error');
+
+      const request = new AttachmentCreateRequest();
+      request.projectId = TEST_PROJECT_ID;
+      request.fileName = 'test.pdf';
+      request.fileContents = Buffer.from('content');
+      service.uploadFileObjectStorage(request, TEST_ATTACHMENT_ID);
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(sendSpy.mock.calls[0][0].input).toEqual({
+        Bucket: 'test-bucket',
+        Key: service.createObjectUrl(TEST_PROJECT_ID, TEST_ATTACHMENT_ID, 'test.pdf'),
+        Body: request.fileContents,
+      });
+      expect(loggerErrorSpy).not.toHaveBeenCalled();
+
+      sendSpy.mockRestore();
+      process.env.OBJECT_STORAGE_BUCKET = bucket;
+    });
+
     it('uploadFileObjectStorage logs error on object storage failure', async () => {
       const sendSpy = jest
         .spyOn(s3Client, 'send')

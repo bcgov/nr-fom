@@ -19,7 +19,7 @@ export function verifyObjectStorageConnection() {
     }
     s3Client.send(new ListBucketsCommand({}))
         .then(({ Buckets }) => {
-            console.log('Succssful connection to object storage. Buckets accessible = ' + Buckets?.length);
+            console.log('Successful connection to object storage. Buckets accessible = ' + Buckets?.length);
         })
         .catch(err => {
             console.error("Error connecting to object storage", err);
