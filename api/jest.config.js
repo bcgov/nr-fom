@@ -10,7 +10,6 @@ module.exports = {
   },
   "testRegex": ".*\\.(spec|e2e-spec)\\.ts$",
   "modulePaths": ["<rootDir>/src", "<rootDir>/src/"],
-  transformIgnorePatterns: ['node_modules/(?!(jose|jwks-rsa)/)'],
   // 'moduleNameMapper' important to map some 'paths' from tsconfig.json for jest.
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' } ),
   moduleFileExtensions: ['ts', 'js'],

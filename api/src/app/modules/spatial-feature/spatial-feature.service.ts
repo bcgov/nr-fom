@@ -38,7 +38,7 @@ const BCGW_EXTRACT_PARAMS: string[] = [
   WorkflowStateEnum.FINALIZED,
 ];
 
-// ponytail: FETCH size bounds heap to one batch; drop to 1 if a single geometry is huge.
+// FETCH size bounds heap to one batch; drop to 1 if a single geometry is huge.
 const BCGW_EXTRACT_FETCH_SIZE = 100;
 
 export type BcgwExtractRow = {
