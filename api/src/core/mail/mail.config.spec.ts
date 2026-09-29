@@ -32,18 +32,13 @@ describe('MailConfig and MailModule', () => {
       expect(config).toBe('smtp://smtp.test.gov.bc.ca');
     });
 
-    it('returns localService when SMTP_SERVER is not set', async () => {
+    it('warns and returns jsonTransport when SMTP_SERVER is not set', async () => {
       delete process.env.SMTP_SERVER;
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
       const config = await getMailConfig();
-      expect(config).toEqual({
-        host: 'smtp.mailtrap.io',
-        port: 465,
-        secure: true,
-        auth: {
-          user: '249d20b3906b70',
-          pass: '844353993e632a',
-        },
-      });
+      expect(config).toEqual({ jsonTransport: true });
+      expect(warn).toHaveBeenCalledWith('SMTP_SERVER is not set; emails will not be sent.');
+      warn.mockRestore();
     });
   });
 
@@ -67,11 +62,13 @@ describe('MailConfig and MailModule', () => {
       expect(options.ignoreTLS).toBe(true);
     });
 
-    it('creates transporter when SMTP_SERVER is unset (using localService object)', async () => {
+    it('creates a non-sending transporter when SMTP_SERVER is unset', async () => {
       delete process.env.SMTP_SERVER;
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
       const transporter = await createMailTransporter();
-      expect(transporter).toBeDefined();
-      expect(typeof transporter.sendMail).toBe('function');
+      const info = await transporter.sendMail({ to: 'test@example.com', subject: 'test', text: 'test' });
+      expect(info.envelope.to).toEqual(['test@example.com']);
+      warn.mockRestore();
     });
   });
 
