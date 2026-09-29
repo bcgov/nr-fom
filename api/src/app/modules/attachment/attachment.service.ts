@@ -1,11 +1,12 @@
 import { DataService } from '@core';
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from "@utility/security/user";
 import { PinoLogger } from 'nestjs-pino';
-import { Stream } from 'node:stream';
+import { Readable, Stream } from 'node:stream';
 import { Repository } from 'typeorm';
-import { minioClient } from '../../../minio';
+import { s3Client } from '../../../minio';
 import { ProjectAuthService } from '../project/project-auth.service';
 import { WorkflowStateEnum } from '../project/workflow-state-code.entity';
 import { AttachmentTypeEnum } from './attachment-type-code.entity';
@@ -68,13 +69,12 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
 
     const objectName = this.createObjectUrl(request.projectId, primaryKey, request.fileName);
 
-    minioClient.putObject(process.env.OBJECT_STORAGE_BUCKET, objectName, request.fileContents, (error, objInfo) => {
-      if(error) {
+    s3Client.send(new PutObjectCommand({ Bucket: process.env.OBJECT_STORAGE_BUCKET, Key: objectName, Body: request.fileContents }))
+      .catch(error => {
         this.logger.error(
-          `Minio Client encountered problem while uploading file to storage to ${process.env.OBJECT_STORAGE_BUCKET}, location: ${objectName}`,
+          `S3 Client encountered problem while uploading file to storage to ${process.env.OBJECT_STORAGE_BUCKET}, location: ${objectName}`,
           error);
-      }
-    });
+      });
   }
   async isCreateAuthorized(dto: AttachmentCreateRequest, user?: User): Promise<boolean> {
     if (dto.attachmentTypeCode == AttachmentTypeEnum.INTERACTION) {
@@ -187,22 +187,19 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
 
   async getObjectStream(bucket: string, objectName: string): Promise<Stream>{
 
-    return minioClient.getObject(bucket, objectName);
+    const { Body } = await s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: objectName }));
+    return Body as Readable;
   }
 
 
   async deleteObject(bucket: string, objectName: string): Promise<boolean>{
     
-    return new Promise((resolve, _reject) => {
-
-      return minioClient.removeObject(bucket, objectName, function (err: any) {
-        if (err) {
-          console.error("Unable to remove object: ", err);
-          return resolve(false);
-        }
-      return resolve(true);
+    return s3Client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectName }))
+      .then(() => true)
+      .catch(err => {
+        console.error("Unable to remove object: ", err);
+        return false;
       });
-    });
   }
 
   async stream2buffer(stream: Stream): Promise<Buffer> {
