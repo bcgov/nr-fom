@@ -17,7 +17,7 @@ permissions: {}
 jobs:
   vars:
     name: Resolve Images
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       packages: write
@@ -71,7 +71,7 @@ jobs:
     needs: [deploy]
     permissions:
       packages: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       matrix:
         component: [api, admin, db, public]

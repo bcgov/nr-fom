@@ -77,7 +77,7 @@ jobs:
       tag: ${{ steps.vars.outputs.tag }}
       url: ${{ steps.vars.outputs.url }}
       triggered: ${{ steps.openshift-init.outputs.triggered }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Vars
         id: vars
@@ -122,7 +122,7 @@ jobs:
     name: Deploy
     environment: ${{ inputs.environment }}
     needs: [init]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     strategy:
       matrix:
@@ -164,7 +164,7 @@ jobs:
     name: Notify Failure
     needs: [init, deploy]
     if: always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       issues: write
