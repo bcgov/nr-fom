@@ -12,7 +12,7 @@ permissions: {}
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       packages: write
       id-token: write
@@ -64,7 +64,7 @@ jobs:
     name: Smoke Test
     needs: [deploy]
     if: needs.deploy.outputs.triggered == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Wait for App to respond
         run: |
@@ -97,7 +97,7 @@ jobs:
     name: PR Results
     needs: [build, deploy, smoke]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 1
     steps:
       - name: PR Results
