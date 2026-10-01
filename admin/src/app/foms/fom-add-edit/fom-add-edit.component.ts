@@ -120,9 +120,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   private scrollToFragment: string | null = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> | null = null;
 
-  // Operation years are a year-only picker: this year through seven years ahead.
-  readonly operationYearMin: Date = DateTime.now().toJSDate();
-  readonly operationYearMax: Date = DateTime.now().plus({years: 7}).toJSDate();
+  // yearSelected writes 1 January. Bounds are whole years so that day is inside [min] and [max].
+  readonly operationYearMin: Date = DateTime.now().startOf('year').toJSDate();
+  readonly operationYearMax: Date = DateTime.now().plus({ years: 7 }).endOf('year').toJSDate();
 
   constructor() {
     const user = this.cognitoService.getUser();

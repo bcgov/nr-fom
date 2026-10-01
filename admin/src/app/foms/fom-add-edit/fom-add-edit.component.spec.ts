@@ -10,7 +10,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { ForestClientService, ProjectService } from '@api-client';
 import { RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { of } from 'rxjs';
@@ -252,6 +252,32 @@ describe('FomAddEditComponent', () => {
 
     it('still loads the forest client list', () => {
       expect(forestClientFindMock).toHaveBeenCalled();
+    });
+
+    // yearSelected emits 1 January. A min of "today" rejects that day and blocks save.
+    it('saves the current operation year when the picker writes 1 January', () => {
+      const year = new Date().getFullYear();
+      const januaryFirst = new Date(year, 0, 1);
+      const picker = { close: jest.fn() };
+
+      component.selectOperationYear('opStartDate', januaryFirst, picker as never);
+      component.selectOperationYear('opEndDate', januaryFirst, picker as never);
+      component.fg.get('forestClient')?.setValue({ id: 1 });
+      fixture.detectChanges();
+
+      expect(component.fg.get('opStartDate')?.hasError('matDatepickerMin')).toBe(false);
+      expect(component.fg.get('opEndDate')?.hasError('matDatepickerMin')).toBe(false);
+      expect(component.fg.get('opStartDate')?.hasError('matDatepickerMax')).toBe(false);
+      expect(component.fg.get('opEndDate')?.hasError('matDatepickerMax')).toBe(false);
+
+      jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      component.submit();
+
+      const create = TestBed.inject(ProjectService).projectControllerCreate as jest.Mock;
+      expect(create).toHaveBeenCalledWith(expect.objectContaining({
+        operationStartYear: year,
+        operationEndYear: year,
+      }));
     });
   });
 
