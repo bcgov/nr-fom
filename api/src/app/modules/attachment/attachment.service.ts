@@ -1,6 +1,6 @@
 import { DataService } from '@core';
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from "@utility/security/user";
 import { PinoLogger } from 'nestjs-pino';
@@ -186,9 +186,15 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
 
 
   async getObjectStream(bucket: string, objectName: string): Promise<Stream>{
-
-    const { Body } = await s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: objectName }));
-    return Body as Readable;
+    try {
+      const { Body } = await s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: objectName }));
+      return Body as Readable;
+    } catch (error: unknown) {
+      if (error instanceof Error && (error.name === 'NoSuchKey' || error.name === 'NotFound')) {
+        throw new NotFoundException();
+      }
+      throw error;
+    }
   }
 
 
