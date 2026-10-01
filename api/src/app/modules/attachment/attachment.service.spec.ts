@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { User } from '@utility/security/user';
 import { Readable } from 'node:stream';
 import { Repository } from 'typeorm';
@@ -272,6 +272,27 @@ describe('AttachmentService', () => {
         ForbiddenException
       );
     });
+
+    it.each(['NoSuchKey', 'NotFound'])(
+      'throws NotFoundException when the stored object is missing (%s)',
+      async (errorName: string) => {
+        const entity = new Attachment();
+        entity.id = TEST_ATTACHMENT_ID;
+        entity.projectId = TEST_PROJECT_ID;
+        entity.fileName = 'contents-not-stored-notice.txt';
+        entity.attachmentType = { code: AttachmentTypeEnum.PUBLIC_NOTICE } as AttachmentTypeCode;
+
+        (mockRepository.findOne as jest.Mock).mockResolvedValue(entity);
+
+        const missing = new Error('The specified key does not exist.');
+        missing.name = errorName;
+        jest.spyOn(s3Client, 'send').mockImplementation(async () => {
+          throw missing;
+        });
+
+        await expect(service.getFileContent(TEST_ATTACHMENT_ID, undefined)).rejects.toThrow(NotFoundException);
+      }
+    );
 
     it('reads object stream and returns AttachmentFileResponse with buffer', async () => {
       const entity = new Attachment();
