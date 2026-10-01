@@ -300,7 +300,7 @@ describe('AttachmentService', () => {
         },
       });
 
-      await expect(service.stream2buffer(errorStream)).rejects.toContain('Stream read failure');
+      await expect(service.stream2buffer(errorStream)).rejects.toThrow('Stream read failure');
     });
   });
 

@@ -239,6 +239,18 @@ describe('ProjectService', () => {
 
   });
 
+  describe('isDistrictExist', () => {
+    it('returns false and records the lookup error when the district lookup fails', async () => {
+      const logger = mockLoggerFactory();
+      const debug = jest.spyOn(logger, 'debug');
+      const districtService = { findOne: jest.fn().mockRejectedValue(new Error('missing district')) };
+      const localService = new ProjectService(null, logger, districtService as any, null, null, null, null);
+
+      await expect(localService.isDistrictExist(4)).resolves.toBe(false);
+      expect(debug).toHaveBeenCalled();
+    });
+  });
+
   describe('validateWorkflowTransitionRules', () => {
     let user: User;
     let entity: Partial<Project> = getSampleProjectEntityData();

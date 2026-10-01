@@ -100,69 +100,109 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     if (!user) {
       return false;
     }
+    if (this.ministryUserCannotEdit(user)) {
+      return false;
+    }
+    if (!this.forestClientCanEdit(user, entity)) {
+      return false;
+    }
+    if (!this.workflowStateAllowsClientEdit(entity)) {
+      return false;
+    }
+    if (this.commentingOpenDateChangeBlocked(entity, dto)) {
+      return false;
+    }
+    if (this.commentingClosedDateShortened(entity, dto)) {
+      return false;
+    }
+    if (this.lockedOperationFieldsChanged(entity, dto)) {
+      return false;
+    }
+    if (this.commentClosedFieldsChanged(entity, dto)) {
+      return false;
+    }
+    return true;
+  }
 
+  private ministryUserCannotEdit(user: User): boolean {
     if (user.isMinistry && !user.isForestClient) {
       this.logger.debug(`Ministry user cannot edit FOM.`);
-      return false;
+      return true;
     }
+    return false;
+  }
 
-    if (!user.isForestClient || !user.isAuthorizedForClientId(entity.forestClientId)) {
-      return false;
-    }
+  private forestClientCanEdit(user: User, entity: Project): boolean {
+    return user.isForestClient && user.isAuthorizedForClientId(entity.forestClientId);
+  }
 
-    // Workflow states that forest client user is allowed to edit in. 
+  // Workflow states that forest client user is allowed to edit in.
+  private workflowStateAllowsClientEdit(entity: Project): boolean {
     if (![WorkflowStateEnum.INITIAL, WorkflowStateEnum.COMMENT_OPEN, WorkflowStateEnum.COMMENT_CLOSED]
         .includes(entity.workflowStateCode as WorkflowStateEnum)) {
       this.logger.debug(`Not allowed to edit FOM in state other than INITIAL, COMMENT_OPEN and COMMENT_CLOSED.`);
       return false;
     }
-
-    // Cannot change commenting open date once state is commenting open (or later).
-    if (WorkflowStateEnum.INITIAL !== entity.workflowStateCode) {
-      if (entity.commentingOpenDate !== dto.commentingOpenDate) {
-        this.logger.debug(`Cannot change commenting open date once state is ${entity.workflowStateCode}.`);
-        return false;
-      }
-    }
-
-    // When commenting open, can change closed date but can't make it shorter.
-    if (WorkflowStateEnum.COMMENT_OPEN == entity.workflowStateCode) {
-      if (DateTimeUtil.getBcDate(dto.commentingClosedDate).startOf('day').isBefore(
-          DateTimeUtil.getBcDate(entity.commentingOpenDate).startOf('day').add(30, 'day'))) {        
-        this.logger.debug(`Not allowed to make commenting closed date shorter.`);
-        return false;
-      }
-    }
-
-    // When COMMENT_CLOSED, cannot change: "Start of Operation", "End of Operation", "FSP ID", "District",
-    // "FOM Name", "Timber Sales Manager Name", "Description"
-    if (WorkflowStateEnum.COMMENT_OPEN == entity.workflowStateCode) {
-        if (entity.operationStartYear !== dto.operationStartYear ||
-            entity.operationEndYear !== dto.operationEndYear ||
-            entity.fspId !== dto.fspId ||
-            entity.districtId !== dto.districtId ||
-            entity.name !== dto.name ||
-            entity.bctsMgrName !== dto.bctsMgrName ||
-            entity.description !== dto.description
-        ) {
-          this.logger.debug(`Cannot change "Start of Operation", "End of Operation", "FSP ID", "District",
-                            "FOM Name", "Timber Sales Manager Name", "Description" for state ${entity.workflowStateCode}.`);
-          return false;
-        }
-      }
-      
-    // When COMMENT_CLOSED, cannot change "commenting open date" "commenting closed date", "district".
-    if (WorkflowStateEnum.COMMENT_CLOSED == entity.workflowStateCode) {
-      if (entity.commentingOpenDate !== dto.commentingOpenDate ||
-          entity.commentingClosedDate !== dto.commentingClosedDate ||
-          entity.districtId !== dto.districtId
-      ) {
-        this.logger.debug(`Cannot change commenting closed date for state ${entity.workflowStateCode}.`);
-        return false;
-      }
-    }
-
     return true;
+  }
+
+  // Cannot change commenting open date once state is commenting open (or later).
+  private commentingOpenDateChangeBlocked(entity: Project, dto: ProjectUpdateRequest): boolean {
+    if (WorkflowStateEnum.INITIAL === entity.workflowStateCode) {
+      return false;
+    }
+    if (entity.commentingOpenDate !== dto.commentingOpenDate) {
+      this.logger.debug(`Cannot change commenting open date once state is ${entity.workflowStateCode}.`);
+      return true;
+    }
+    return false;
+  }
+
+  // When commenting open, can change closed date but can't make it shorter.
+  private commentingClosedDateShortened(entity: Project, dto: ProjectUpdateRequest): boolean {
+    if (WorkflowStateEnum.COMMENT_OPEN != entity.workflowStateCode) {
+      return false;
+    }
+    if (DateTimeUtil.getBcDate(dto.commentingClosedDate).startOf('day').isBefore(
+        DateTimeUtil.getBcDate(entity.commentingOpenDate).startOf('day').add(30, 'day'))) {
+      this.logger.debug(`Not allowed to make commenting closed date shorter.`);
+      return true;
+    }
+    return false;
+  }
+
+  private lockedOperationFieldsChanged(entity: Project, dto: ProjectUpdateRequest): boolean {
+    if (WorkflowStateEnum.COMMENT_OPEN != entity.workflowStateCode) {
+      return false;
+    }
+    if (entity.operationStartYear !== dto.operationStartYear ||
+        entity.operationEndYear !== dto.operationEndYear ||
+        entity.fspId !== dto.fspId ||
+        entity.districtId !== dto.districtId ||
+        entity.name !== dto.name ||
+        entity.bctsMgrName !== dto.bctsMgrName ||
+        entity.description !== dto.description
+    ) {
+      this.logger.debug(`Cannot change "Start of Operation", "End of Operation", "FSP ID", "District",
+                            "FOM Name", "Timber Sales Manager Name", "Description" for state ${entity.workflowStateCode}.`);
+      return true;
+    }
+    return false;
+  }
+
+  // When COMMENT_CLOSED, cannot change "commenting open date" "commenting closed date", "district".
+  private commentClosedFieldsChanged(entity: Project, dto: ProjectUpdateRequest): boolean {
+    if (WorkflowStateEnum.COMMENT_CLOSED != entity.workflowStateCode) {
+      return false;
+    }
+    if (entity.commentingOpenDate !== dto.commentingOpenDate ||
+        entity.commentingClosedDate !== dto.commentingClosedDate ||
+        entity.districtId !== dto.districtId
+    ) {
+      this.logger.debug(`Cannot change commenting closed date for state ${entity.workflowStateCode}.`);
+      return true;
+    }
+    return false;
   }
 
   async isDeleteAuthorized(entity: Project, user?: User): Promise<boolean> {
@@ -551,10 +591,26 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
    * @param stateTransition WorkflowStateEnum transition to
    */
   async validateWorkflowTransitionRules(entity: Project, stateTransition: WorkflowStateEnum, user: User) {
+    this.assertTransitionPlanHolder(entity, stateTransition);
+
+    if (!await this.isDistrictExist(entity.districtId)) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+            Missing District.`);
+    }
+
+    if (WorkflowStateEnum.PUBLISHED === stateTransition) {
+      this.validatePublishedTransition(entity, stateTransition);
+    }
+
+    if (WorkflowStateEnum.FINALIZED === stateTransition) {
+      await this.validateFinalizedTransition(entity, stateTransition, user);
+    }
+  }
+
+  private assertTransitionPlanHolder(entity: Project, stateTransition: WorkflowStateEnum): void {
     const projectPlanCode = entity.projectPlanCode;
     const fspId = entity.fspId;
     const woodlotLicenseNumber = entity.woodlotLicenseNumber;
-    const districtId = entity.districtId;
 
     if (projectPlanCode == ProjectPlanCodeEnum.FSP && (isNil(fspId) || isNaN(fspId))) {
       throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}. 
@@ -562,114 +618,103 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
     }
 
     if (projectPlanCode == ProjectPlanCodeEnum.WOODLOT && (isNil(woodlotLicenseNumber) || isEmpty(woodlotLicenseNumber))) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}. 
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}. 
               Missing Woodlot License Number.`);
-      }
+    }
+  }
 
-    if (!await this.isDistrictExist(districtId)) {
+  private validatePublishedTransition(entity: Project, stateTransition: WorkflowStateEnum): void {
+    if (isNil(entity.commentingOpenDate) || !dayjs(entity.commentingOpenDate, this.DATE_FORMAT).isValid()) {
       throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
-            Missing District.`);
+        Missing Commenting Open Date`);
     }
 
-    // validating PUBLISHED transitioning
-    if (WorkflowStateEnum.PUBLISHED === stateTransition) {
-      // Required COMMENTING_OPEN_DATE
-      if (isNil(entity.commentingOpenDate) || !dayjs(entity.commentingOpenDate, this.DATE_FORMAT).isValid()) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
-        Missing Commenting Open Date`);
-      }
-
-      // Required COMMENTING_OPEN_DATE: must be at least one day after publish is pushed
-      const dayDiff = DateTimeUtil.diffNow(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER, 'day');
-      if (dayDiff < 1) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+    const dayDiff = DateTimeUtil.diffNow(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER, 'day');
+    if (dayDiff < 1) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Commenting Open Date: must be at least one day after publish is pushed.`);
-      }
+    }
 
-      // Required: COMMENTING_CLOSED_DATE
-      if (isNil(entity.commentingClosedDate) || !dayjs(entity.commentingClosedDate, this.DATE_FORMAT).isValid()) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+    if (isNil(entity.commentingClosedDate) || !dayjs(entity.commentingClosedDate, this.DATE_FORMAT).isValid()) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Missing Commenting Closed Date.`);
-      }
+    }
 
-      // Required: COMMENTING_CLOSED_DATE at least 30 days after commenting open
-      const openClosedDatesDiff = DateTimeUtil.diff(entity.commentingOpenDate, entity.commentingClosedDate, 
-                                  DateTimeUtil.TIMEZONE_VANCOUVER, 'day');
-      if (openClosedDatesDiff < 30) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+    const openClosedDatesDiff = DateTimeUtil.diff(entity.commentingOpenDate, entity.commentingClosedDate,
+                                DateTimeUtil.TIMEZONE_VANCOUVER, 'day');
+    if (openClosedDatesDiff < 30) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Commenting Closed Date: must be at least 30 days after Commenting Open Date.`);
-      }
+    }
 
-      // Required proposed submission
-      const submissions = entity.submissions;
-      if (!submissions || submissions.length == 0) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+    const submissions = entity.submissions;
+    if (!submissions || submissions.length == 0) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Proposed submission is required.`);
-      }
-      const proposed = submissions.filter(s => s.submissionTypeCode == SubmissionTypeCodeEnum.PROPOSED);
-      if (!proposed) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+    }
+    const proposed = submissions.filter(s => s.submissionTypeCode == SubmissionTypeCodeEnum.PROPOSED);
+    if (!proposed) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Proposed submission is required.`);
-      }
+    }
 
-      // Checks postDate on or before commenting open date and 1 day later than today (before published)
-      // However, it could be empty = then no check.
-      const publicNotices = entity.publicNotices;
-      if (!_.isEmpty(publicNotices)) {
-        const postDate = publicNotices[0].postDate;
-        if (!_.isEmpty(postDate)) {
-					const commentingOpenDate = entity.commentingOpenDate;
-					if (postDate && !DateTimeUtil.isPNPostdateOnOrBeforeCommentingOpenDate(postDate, commentingOpenDate)) {
-						throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}. 
+    this.validatePublicNoticePostDate(entity, stateTransition);
+  }
+
+  private validatePublicNoticePostDate(entity: Project, stateTransition: WorkflowStateEnum): void {
+    const publicNotices = entity.publicNotices;
+    if (_.isEmpty(publicNotices)) {
+      return;
+    }
+    const postDate = publicNotices[0].postDate;
+    if (_.isEmpty(postDate)) {
+      return;
+    }
+
+    const commentingOpenDate = entity.commentingOpenDate;
+    if (postDate && !DateTimeUtil.isPNPostdateOnOrBeforeCommentingOpenDate(postDate, commentingOpenDate)) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}. 
 						Online Public Notice Publish Date ${postDate} should be on or before commenting start date 
 						${commentingOpenDate}.`);
-					}
-					// Must be at least one day after publish is pushed
-					const dayDiff = DateTimeUtil.diffNow(postDate, DateTimeUtil.TIMEZONE_VANCOUVER, 'day');
-					if (dayDiff < 1) {
-							throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+    }
+    const noticeDayDiff = DateTimeUtil.diffNow(postDate, DateTimeUtil.TIMEZONE_VANCOUVER, 'day');
+    if (noticeDayDiff < 1) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
 							Online Public Notice Publish Date: must be at least one day in the future.`);
-					}
-        }
-      }
+    }
+  }
 
-    } // end validating PUBLISHED transitioning
-
-    // validating FINALIZED transitioning
-    if (WorkflowStateEnum.FINALIZED === stateTransition) {
-      // Final Submission submitted
-      const submissions = entity.submissions;
-      if (!submissions || submissions.length == 0) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+  private async validateFinalizedTransition(entity: Project, stateTransition: WorkflowStateEnum, user: User): Promise<void> {
+    const submissions = entity.submissions;
+    if (!submissions || submissions.length == 0) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Final Submission is required.`);
-      }
-      const final = submissions.filter(s => s.submissionTypeCode == SubmissionTypeCodeEnum.FINAL);
-      if (!final || final.length == 0) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+    }
+    const finalSubmission = submissions.filter(s => s.submissionTypeCode == SubmissionTypeCodeEnum.FINAL);
+    if (!finalSubmission || finalSubmission.length == 0) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Final Submission is required.`);
-      }
-
-      // Public Notice attached
-      const publicNotices = await this.attachmentService.findByProjectIdAndAttachmentTypes(entity.id, 
-                            [AttachmentTypeEnum.PUBLIC_NOTICE]);
-      if (!publicNotices || publicNotices.length == 0) {
-        throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
-        Public Notice is required.`);
-      }
-
-      // All comments classified
-      if (entity.commentClassificationMandatory) { // by default this field is mandatory, only ministry can chang it from admin page.
-        const publicComments = await this.publicCommentService.findByProjectId(entity.id, user);
-        if (publicComments && publicComments.length > 0) {
-          const unClassifiedComments = publicComments.filter(p => p.response == null);
-          if (unClassifiedComments && unClassifiedComments.length > 0) {
-            throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
-            All comments must be classified.`);
-          }
-        }
-      } 
     }
 
+    const publicNotices = await this.attachmentService.findByProjectIdAndAttachmentTypes(entity.id,
+                          [AttachmentTypeEnum.PUBLIC_NOTICE]);
+    if (!publicNotices || publicNotices.length == 0) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+        Public Notice is required.`);
+    }
+
+    if (!entity.commentClassificationMandatory) {
+      return;
+    }
+    const publicComments = await this.publicCommentService.findByProjectId(entity.id, user);
+    if (!publicComments || publicComments.length == 0) {
+      return;
+    }
+    const unClassifiedComments = publicComments.filter(p => p.response == null);
+    if (unClassifiedComments && unClassifiedComments.length > 0) {
+      throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
+            All comments must be classified.`);
+    }
   }
 
   async isDistrictExist(districtId: number): Promise<boolean> {
@@ -682,6 +727,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
       return true;
     }
     catch (error) {
+      this.logger.debug(`District lookup failed for ${districtId}: %o`, error);
       return false;
     }
   }
