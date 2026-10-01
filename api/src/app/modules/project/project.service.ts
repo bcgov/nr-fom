@@ -652,8 +652,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
       throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Proposed submission is required.`);
     }
-    const proposed = submissions.filter(s => s.submissionTypeCode == SubmissionTypeCodeEnum.PROPOSED);
-    if (!proposed) {
+    if (!submissions.some(s => s.submissionTypeCode === SubmissionTypeCodeEnum.PROPOSED)) {
       throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Proposed submission is required.`);
     }
@@ -690,8 +689,7 @@ export class ProjectService extends DataService<Project, Repository<Project>, Pr
       throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Final Submission is required.`);
     }
-    const finalSubmission = submissions.filter(s => s.submissionTypeCode == SubmissionTypeCodeEnum.FINAL);
-    if (!finalSubmission || finalSubmission.length == 0) {
+    if (!submissions.some(s => s.submissionTypeCode === SubmissionTypeCodeEnum.FINAL)) {
       throw new BadRequestException(`Unable to transition FOM ${entity.id} to ${stateTransition}.  
         Final Submission is required.`);
     }

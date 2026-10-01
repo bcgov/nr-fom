@@ -1,10 +1,12 @@
 import { DateTimeUtil } from "@api-core/dateTimeUtil";
 import { ProjectCreateRequest, ProjectUpdateRequest, ProjectWorkflowStateChangeRequest, ProjectResponse } from '@api-modules/project/project.dto';
 import { Project } from '@api-modules/project/project.entity';
+import { ProjectPlanCodeEnum } from '@api-modules/project/project-plan-code.entity';
 import { ProjectService } from '@api-modules/project/project.service';
 import { PublicNotice } from "@api-modules/project/public-notice.entity";
 import { WorkflowStateEnum } from '@api-modules/project/workflow-state-code.entity';
 import { Submission } from "@api-modules/submission/submission.entity";
+import { SubmissionTypeCodeEnum } from "@api-modules/submission/submission-type-code.entity";
 import { BadRequestException, InternalServerErrorException } from "@nestjs/common";
 import { User } from "@utility/security/user";
 import dayjs from 'dayjs';
@@ -99,6 +101,99 @@ describe('ProjectService', () => {
       entity.workflowStateCode = WorkflowStateEnum.PUBLISHED;
       expect(await service.isUpdateAuthorized(request, entity, user)).toBe(false);
     });
+
+    it('ministry user who is also the forest client can update in INITIAL', async () => {
+      user.isMinistry = true;
+      user.isForestClient = true;
+      user.clientIds.push(TEST_CLIENT_ID);
+      entity.forestClientId = TEST_CLIENT_ID;
+      entity.workflowStateCode = WorkflowStateEnum.INITIAL;
+      expect(await service.isUpdateAuthorized(request, entity, user)).toBe(true);
+    });
+
+    it('rejects a commenting open date change after INITIAL', async () => {
+      authorizeForestClient();
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_OPEN;
+      entity.commentingOpenDate = '2026-06-01';
+      request.commentingOpenDate = '2026-06-02';
+      expect(await service.isUpdateAuthorized(request, entity, user)).toBe(false);
+    });
+
+    it('allows an unchanged commenting open date after INITIAL when later locks do not apply', async () => {
+      authorizeForestClient();
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_CLOSED;
+      entity.commentingOpenDate = '2026-06-01';
+      entity.commentingClosedDate = '2026-07-15';
+      entity.districtId = 10;
+      request.commentingOpenDate = '2026-06-01';
+      request.commentingClosedDate = '2026-07-15';
+      request.districtId = 10;
+      expect(await service.isUpdateAuthorized(request, entity, user)).toBe(true);
+    });
+
+    it('rejects a commenting closed date shorter than 30 days while commenting is open', async () => {
+      authorizeForestClient();
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_OPEN;
+      entity.commentingOpenDate = '2026-06-01';
+      request.commentingOpenDate = '2026-06-01';
+      entity.commentingClosedDate = '2026-07-15';
+      request.commentingClosedDate = '2026-06-15';
+      expect(await service.isUpdateAuthorized(request, entity, user)).toBe(false);
+    });
+
+    it('allows a commenting closed date at least 30 days out while commenting is open', async () => {
+      authorizeForestClient();
+      alignCommentOpenFields();
+      request.commentingClosedDate = '2026-07-01';
+      expect(await service.isUpdateAuthorized(request, entity, user)).toBe(true);
+    });
+
+    it('rejects a locked operation field change while commenting is open', async () => {
+      authorizeForestClient();
+      alignCommentOpenFields();
+      request.description = 'changed';
+      expect(await service.isUpdateAuthorized(request, entity, user)).toBe(false);
+    });
+
+    it('rejects a district change while commenting is closed', async () => {
+      authorizeForestClient();
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_CLOSED;
+      entity.commentingOpenDate = '2026-06-01';
+      entity.commentingClosedDate = '2026-07-15';
+      entity.districtId = 10;
+      request.commentingOpenDate = '2026-06-01';
+      request.commentingClosedDate = '2026-07-15';
+      request.districtId = 11;
+      expect(await service.isUpdateAuthorized(request, entity, user)).toBe(false);
+    });
+
+    function authorizeForestClient() {
+      user.isForestClient = true;
+      user.clientIds.push(TEST_CLIENT_ID);
+      entity.forestClientId = TEST_CLIENT_ID;
+    }
+
+    function alignCommentOpenFields() {
+      entity.workflowStateCode = WorkflowStateEnum.COMMENT_OPEN;
+      entity.commentingOpenDate = '2026-06-01';
+      entity.commentingClosedDate = '2026-07-15';
+      entity.operationStartYear = 2026;
+      entity.operationEndYear = 2027;
+      entity.fspId = 10;
+      entity.districtId = 10;
+      entity.name = 'FOM';
+      entity.bctsMgrName = 'Manager';
+      entity.description = 'Same';
+      request.commentingOpenDate = entity.commentingOpenDate;
+      request.commentingClosedDate = '2026-07-15';
+      request.operationStartYear = entity.operationStartYear;
+      request.operationEndYear = entity.operationEndYear;
+      request.fspId = entity.fspId;
+      request.districtId = entity.districtId;
+      request.name = entity.name;
+      request.bctsMgrName = entity.bctsMgrName;
+      request.description = entity.description;
+    }
 
   });
 
@@ -249,6 +344,28 @@ describe('ProjectService', () => {
       await expect(localService.isDistrictExist(4)).resolves.toBe(false);
       expect(debug).toHaveBeenCalled();
     });
+
+    it('returns false when the district id is missing', async () => {
+      await expect(service.isDistrictExist(null)).resolves.toBe(false);
+      await expect(service.isDistrictExist(Number.NaN)).resolves.toBe(false);
+    });
+
+    it('returns true when the district lookup succeeds', async () => {
+      const districtService = { findOne: jest.fn().mockResolvedValue({ id: 4 }) };
+      const localService = new ProjectService(null, mockLoggerFactory(), districtService as any, null, null, null, null);
+      await expect(localService.isDistrictExist(4)).resolves.toBe(true);
+    });
+  });
+
+  describe('findAllUnsecured', () => {
+    it('logs find options and returns the converted rows', async () => {
+      const repository = { find: jest.fn().mockResolvedValue([]) };
+      const localService = new ProjectService(repository as any, mockLoggerFactory(), null, null, null, null, null);
+      const options = { take: 5 };
+
+      await expect(localService.findAllUnsecured(options as any)).resolves.toEqual([]);
+      expect(repository.find).toHaveBeenCalled();
+    });
   });
 
   describe('validateWorkflowTransitionRules', () => {
@@ -265,7 +382,12 @@ describe('ProjectService', () => {
           districtSpy = jest.spyOn(service, 'isDistrictExist').mockResolvedValue(true); // not important, return true for testing.
           postdateOnOrBeforeCommentingOpenDateSpy = jest.spyOn(DateTimeUtil, 'isPNPostdateOnOrBeforeCommentingOpenDate');
           entity.workflowStateCode = "INITIAL";
-          entity.submissions = [new Submission()] // setup only, not important.
+          entity.projectPlanCode = undefined;
+          entity.fspId = 10;
+          entity.woodlotLicenseNumber = undefined;
+          const proposedSubmission = new Submission();
+          proposedSubmission.submissionTypeCode = SubmissionTypeCodeEnum.PROPOSED;
+          entity.submissions = [proposedSubmission];
           // FOM entity can only has 1 publicNotice
           const publicNoticeWithNoPostDate = new PublicNotice()
           entity.publicNotices = [publicNoticeWithNoPostDate];
@@ -448,6 +570,214 @@ describe('ProjectService', () => {
         expect(postdateOnOrBeforeCommentingOpenDateSpy).toHaveBeenCalledWith(
           entity.publicNotices[0].postDate, entity.commentingOpenDate);
         jest.restoreAllMocks();
+      });
+
+      it('fails when submissions exist but none are PROPOSED', async () => {
+        entity.commentingOpenDate = dayjs.tz(DateTimeUtil.nowBC().add(1, 'day'), DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
+        entity.commentingClosedDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
+            .add(closeDateAfterOpeningDateDays, 'day')
+            .format(DateTimeUtil.DATE_FORMAT);
+        const finalOnly = new Submission();
+        finalOnly.submissionTypeCode = SubmissionTypeCodeEnum.FINAL;
+        entity.submissions = [finalOnly];
+        entity.publicNotices = null;
+
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Proposed submission is required');
+      });
+
+      it('fails when the district does not exist', async () => {
+        districtSpy.mockResolvedValue(false);
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Missing District');
+      });
+
+      it('fails when an FSP plan has no FSP id', async () => {
+        entity.projectPlanCode = ProjectPlanCodeEnum.FSP;
+        entity.fspId = null;
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Missing FSP ID');
+      });
+
+      it('fails when an FSP id is not a number', async () => {
+        entity.projectPlanCode = ProjectPlanCodeEnum.FSP;
+        entity.fspId = Number.NaN;
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Missing FSP ID');
+      });
+
+      it('fails when a woodlot plan has no licence number', async () => {
+        entity.projectPlanCode = ProjectPlanCodeEnum.WOODLOT;
+        entity.woodlotLicenseNumber = null;
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Missing Woodlot License Number');
+      });
+
+      it('fails when a woodlot licence number is blank', async () => {
+        entity.projectPlanCode = ProjectPlanCodeEnum.WOODLOT;
+        entity.woodlotLicenseNumber = '';
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Missing Woodlot License Number');
+      });
+
+      it('passes plan-holder checks for a woodlot with a licence number', async () => {
+        entity.projectPlanCode = ProjectPlanCodeEnum.WOODLOT;
+        entity.woodlotLicenseNumber = 'W1234';
+        entity.commentingOpenDate = dayjs.tz(DateTimeUtil.nowBC().add(1, 'day'), DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
+        entity.commentingClosedDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
+            .add(closeDateAfterOpeningDateDays, 'day')
+            .format(DateTimeUtil.DATE_FORMAT);
+        entity.publicNotices = null;
+
+        await service.validateWorkflowTransitionRules(entity as Project, stateTransition, user);
+      });
+
+      it('fails when commenting open date is missing', async () => {
+        entity.commentingOpenDate = null;
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Missing Commenting Open Date');
+      });
+
+      it('fails when commenting open date is not at least one day ahead', async () => {
+        entity.commentingOpenDate = DateTimeUtil.nowBC().format(DateTimeUtil.DATE_FORMAT);
+        entity.commentingClosedDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
+            .add(closeDateAfterOpeningDateDays, 'day')
+            .format(DateTimeUtil.DATE_FORMAT);
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('at least one day after publish is pushed');
+      });
+
+      it('fails when commenting closed date is missing', async () => {
+        entity.commentingOpenDate = dayjs.tz(DateTimeUtil.nowBC().add(1, 'day'), DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
+        entity.commentingClosedDate = null;
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Missing Commenting Closed Date');
+      });
+
+      it('fails when commenting closed date is fewer than 30 days after open', async () => {
+        entity.commentingOpenDate = dayjs.tz(DateTimeUtil.nowBC().add(1, 'day'), DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
+        entity.commentingClosedDate = entity.commentingOpenDate;
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('at least 30 days after Commenting Open Date');
+      });
+
+      it('fails when there are no submissions', async () => {
+        entity.commentingOpenDate = dayjs.tz(DateTimeUtil.nowBC().add(1, 'day'), DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
+        entity.commentingClosedDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
+            .add(closeDateAfterOpeningDateDays, 'day')
+            .format(DateTimeUtil.DATE_FORMAT);
+        entity.submissions = [];
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Proposed submission is required');
+      });
+
+      it('fails when submissions are missing', async () => {
+        entity.commentingOpenDate = dayjs.tz(DateTimeUtil.nowBC().add(1, 'day'), DateTimeUtil.TIMEZONE_VANCOUVER).format(DateTimeUtil.DATE_FORMAT);
+        entity.commentingClosedDate = dayjs.tz(entity.commentingOpenDate, DateTimeUtil.TIMEZONE_VANCOUVER)
+            .add(closeDateAfterOpeningDateDays, 'day')
+            .format(DateTimeUtil.DATE_FORMAT);
+        entity.submissions = null;
+        await expect(service.validateWorkflowTransitionRules(entity as Project, stateTransition, user))
+          .rejects
+          .toThrow('Proposed submission is required');
+      });
+    });
+
+    describe('"FINALIZED" transition', () => {
+      const finalized = WorkflowStateEnum.FINALIZED;
+
+      function finalizedService(notices: unknown, comments: unknown) {
+        const attachmentService = {
+          findByProjectIdAndAttachmentTypes: jest.fn().mockResolvedValue(notices),
+        };
+        const publicCommentService = {
+          findByProjectId: jest.fn().mockResolvedValue(comments),
+        };
+        const local = new ProjectService(
+          null, mockLoggerFactory(), null, null, attachmentService as any, publicCommentService as any, null
+        );
+        jest.spyOn(local, 'isDistrictExist').mockResolvedValue(true);
+        return local;
+      }
+
+      function readyEntity(): Partial<Project> {
+        const ready = { ...getSampleProjectEntityData() };
+        const finalSubmission = new Submission();
+        finalSubmission.submissionTypeCode = SubmissionTypeCodeEnum.FINAL;
+        ready.submissions = [finalSubmission];
+        ready.commentClassificationMandatory = false;
+        return ready;
+      }
+
+      it('fails when there is no final submission', async () => {
+        const local = finalizedService([{ id: 1 }], []);
+        const ready = readyEntity();
+        ready.submissions = [new Submission()];
+        await expect(local.validateWorkflowTransitionRules(ready as Project, finalized, new User()))
+          .rejects
+          .toThrow('Final Submission is required');
+      });
+
+      it('fails when submissions are missing', async () => {
+        const local = finalizedService([{ id: 1 }], []);
+        const ready = readyEntity();
+        ready.submissions = null;
+        await expect(local.validateWorkflowTransitionRules(ready as Project, finalized, new User()))
+          .rejects
+          .toThrow('Final Submission is required');
+      });
+
+      it('fails when no public notice is attached', async () => {
+        const local = finalizedService([], []);
+        await expect(local.validateWorkflowTransitionRules(readyEntity() as Project, finalized, new User()))
+          .rejects
+          .toThrow('Public Notice is required');
+      });
+
+      it('fails when the public notice lookup returns nothing', async () => {
+        const local = finalizedService(null, []);
+        await expect(local.validateWorkflowTransitionRules(readyEntity() as Project, finalized, new User()))
+          .rejects
+          .toThrow('Public Notice is required');
+      });
+
+      it('passes when comment classification is not mandatory', async () => {
+        const local = finalizedService([{ id: 1 }], null);
+        await local.validateWorkflowTransitionRules(readyEntity() as Project, finalized, new User());
+      });
+
+      it('passes when classification is mandatory and there are no comments', async () => {
+        const local = finalizedService([{ id: 1 }], []);
+        const ready = readyEntity();
+        ready.commentClassificationMandatory = true;
+        await local.validateWorkflowTransitionRules(ready as Project, finalized, new User());
+      });
+
+      it('fails when classification is mandatory and a comment is unclassified', async () => {
+        const local = finalizedService([{ id: 1 }], [{ response: null }]);
+        const ready = readyEntity();
+        ready.commentClassificationMandatory = true;
+        await expect(local.validateWorkflowTransitionRules(ready as Project, finalized, new User()))
+          .rejects
+          .toThrow('All comments must be classified');
+      });
+
+      it('passes when classification is mandatory and every comment is classified', async () => {
+        const local = finalizedService([{ id: 1 }], [{ response: { code: 'CONSIDERED' } }]);
+        const ready = readyEntity();
+        ready.commentClassificationMandatory = true;
+        await local.validateWorkflowTransitionRules(ready as Project, finalized, new User());
       });
     });
 
