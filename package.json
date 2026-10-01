@@ -28,11 +28,6 @@
     "@playwright/test": "^1.63.0"
   },
   "overrides": {
-    "ngx-bootstrap": {
-      "@angular/core": "^22.0.1",
-      "@angular/common": "^22.0.1",
-      "@angular/forms": "^22.0.1"
-    },
     "ioredis": "^5.0.4",
     "typeorm": "^1.0.0",
     "@nestjs/typeorm": {

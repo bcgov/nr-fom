@@ -51,7 +51,7 @@ describe('AppFormControlDirective', () => {
     expect(classesOf('typed')).toContain('invalid');
   });
 
-  // The regression this mode exists for: a bsDatepicker popup renders in <body>, so it blurs the
+  // The regression this mode exists for: a datepicker popup renders in <body>, so it blurs the
   // input one event before the picked date reaches the control. Reacting to that blur flashed the
   // "required" error on every first pick.
   it('should stay quiet when an error-on-dirty field is only touched', () => {

@@ -4,8 +4,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { COMMENT_STATUS_FILTER_PARAMS, FOMFiltersService, FOM_FILTER_NAME } from '@public-core/services/fomFilters.service';
 import { UrlService } from '@public-core/services/url.service';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
 import { DateTime } from "luxon";
-import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { IUpdateEvent } from '../projects.component';
 import { Filter, FilterUtils, IMultiFilterFields, MultiFilter } from '../utils/filter';
 
@@ -19,8 +20,9 @@ import { Filter, FilterUtils, IMultiFilterFields, MultiFilter } from '../utils/f
 @Component({
   imports: [
     FormsModule,
-    BsDatepickerModule
+    MatDatepickerModule
 ],
+  providers: provideIsoDateAdapter(),
   selector: 'app-find-panel',
   templateUrl: './find-panel.component.html',
   styleUrl: './find-panel.component.scss'

@@ -5,10 +5,10 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading } from '@angular/router';
 import { Configuration } from '@api-client';
 import { errorInterceptor } from '@public-core/interceptors/http-error.interceptor';
+import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
 import { retrieveApiBasePath } from '@utility/services/config.service';
 import { AppComponent } from 'app/app.component';
 import { AppRoutes } from 'app/app.routes';
-import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 const apiConfig = new Configuration({
     basePath: retrieveApiBasePath()
@@ -20,9 +20,9 @@ const coreProviders = [
     // Generated API client config — functional provider replacing ApiModule.forRoot()
     { provide: Configuration, useValue: apiConfig },
     importProvidersFrom(
-        BsDatepickerModule,
         MatDialogModule
     ),
+    ...provideIsoDateAdapter(),
 ]
 
 const routesProviders = [

@@ -40,14 +40,14 @@
                     class="form-control"
                     type="text"
                     placeholder="YYYY-MM-DD"
-                    bsDatepicker
-                    [minDate]="minDate"
-                    [maxDate]="maxDate"
-                    onkeydown="return false"
+                    [matDatepicker]="postedOnAfterPicker"
+                    [min]="minDate"
+                    [max]="maxDate"
+                    (keydown)="$event.preventDefault()"
+                    (click)="postedOnAfterPicker.open()"
                     [(ngModel)]="postedOnAfterFilter().filter.value"
-                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
-                containerClass: 'theme-dark-blue', showWeekNumbers: false  }"
                     />
+                    <mat-datepicker #postedOnAfterPicker />
                   </div>
                 </div>
               </div>

@@ -8,9 +8,9 @@ import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemo
 import { Configuration } from '@api-client';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
+import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
 import { retrieveApiBasePath } from '@utility/services/config.service';
 import { AppRoutes } from 'app/app.routes';
-import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 import { AppComponent } from './app/app.component';
 import { errorInterceptor } from './core/interceptors/http-error.interceptor';
 import { CognitoService } from './core/services/cognito.service';
@@ -38,12 +38,12 @@ const coreProviders = [
     // Generated API client config — functional provider replacing ApiModule.forRoot()
     { provide: Configuration, useValue: apiConfig },
     importProvidersFrom(
-        BsDatepickerModule,
         NgbModule,
         RxReactiveFormsModule,
         MatDialogModule,
         MatSnackBarModule
     ),
+    ...provideIsoDateAdapter(),
     provideAppInitializer(() => inject(CognitoService).init()),
 ]
 

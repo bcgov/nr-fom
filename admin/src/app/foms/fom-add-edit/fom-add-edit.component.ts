@@ -32,7 +32,8 @@ import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-
 import { AppFormControlDirective } from '@admin-core/directives/form-control.directive';
 import { ICodeTable } from '@admin-core/models/code-tables';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { BsDatepickerConfig, BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
+import { provideIsoDateAdapter, YearDateDirective } from '@utility/dates/iso-date.adapter';
 
 type ApplicationPageType = 'create' | 'edit';
 
@@ -40,14 +41,15 @@ type ApplicationPageType = 'create' | 'edit';
     imports: [
     FormsModule,
     ReactiveFormsModule,
-    BsDatepickerModule,
+    MatDatepickerModule,
+    YearDateDirective,
     AppFormControlDirective,
     UploadBoxComponent
 ],
     selector: 'app-application-add-edit',
     templateUrl: './fom-add-edit.component.html',
     styleUrl: './fom-add-edit.component.scss',
-    providers: [DatePipe]
+    providers: [DatePipe, ...provideIsoDateAdapter()]
 })
 export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
@@ -118,14 +120,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   private scrollToFragment: string | null = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> | null = null;
 
-  // bsDatepicker config object
-  readonly bsConfig = {
-    dateInputFormat: 'YYYY',
-    minMode: 'year',
-    minDate: DateTime.now().toJSDate(),
-    maxDate: DateTime.now().plus({years: 7}).toJSDate(), // current + 7 years
-    containerClass: 'theme-dark-blue'
-  } as Partial<BsDatepickerConfig>
+  // Operation years are a year-only picker: this year through seven years ahead.
+  readonly operationYearMin: Date = DateTime.now().toJSDate();
+  readonly operationYearMax: Date = DateTime.now().plus({years: 7}).toJSDate();
 
   constructor() {
     const user = this.cognitoService.getUser();
@@ -374,6 +371,20 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   * Closed Date cannot be before (30 days after Comment Opening Date)
   * if FOM status is in 'Commenting Open".
   */
+  /**
+   * Year view writes the chosen year and closes. The picker would otherwise continue into months.
+   * Day is pinned to the 1st, matching how operation years are stored for comparison.
+   */
+  selectOperationYear(field: 'opStartDate' | 'opEndDate', normalizedYear: Date, picker: MatDatepicker<Date>): void {
+    const control = this.fg.get(field);
+    if (!control) {
+      return;
+    }
+    control.setValue(DateTime.fromJSDate(normalizedYear).set({ day: 1 }).toJSDate());
+    control.markAsDirty();
+    picker.close();
+  }
+
   validateClosedDate(closedDate: Date | null): void {
     if (!closedDate) return;
 
@@ -398,7 +409,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  toggleClosedDate(newCommentingOpenDate: Date): void {
+  toggleClosedDate(newCommentingOpenDate: Date | null): void {
     const commentingClosedDateField = this.fg.get('commentingClosedDate');
     if (!commentingClosedDateField) return;
     // Only enable commenting_closed_date when commenting_open_date is present.

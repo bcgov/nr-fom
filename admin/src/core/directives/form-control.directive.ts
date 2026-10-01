@@ -10,7 +10,7 @@ export class AppFormControlDirective {
   readonly appFormControl = input.required<AbstractControl | null>();
 
   /**
-   * Opt-in for readonly inputs whose value can only come from a picker popup (bsDatepicker).
+   * Opt-in for readonly inputs whose value can only come from a picker popup.
    * The popup is rendered in <body>, so clicking a date blurs the input on mousedown - one event
    * *before* the picked value reaches the control. With the default `touched` trigger that briefly
    * marks an empty required field as invalid, flashing the error message and red border away again
