@@ -164,9 +164,9 @@ export class InteractionController {
         request.body['communicationDetails'],
         file?.originalname?.includes(".")? file.originalname: request.body['filename'],
         file? file.buffer: request.body?.['file']?.['buffer'],
-        id,
         await new ParseIntPipe().transform(request.body['revisionCount'], null)
       );
+      updateRequest.id = id;
 
       if (Boolean(updateRequest.fileName) !== Boolean(updateRequest.file)) {
         throw new BadRequestException('Attachment filename and contents must be provided together.');

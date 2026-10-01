@@ -72,10 +72,9 @@ export class InteractionUpdateRequest extends InteractionCreateRequest {
     communicationDetails = null,
     fileName = null,
     file = null,
-    id = null,
     revisionCount = null) {
     super(projectId, stakeholder, communicationDate, communicationDetails, fileName, file);
-    this.id = id;
+    this.id = null;
     this.revisionCount = revisionCount;
   }
 

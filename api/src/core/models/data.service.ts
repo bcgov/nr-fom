@@ -245,7 +245,7 @@ export abstract class DataService<
    * @memberof DataService
    */
   async findAllUnsecured(options?: FindManyOptions<E> | undefined): Promise<O[]> {
-    this.logger.debug(`${this.constructor.name}.findAll options %o ` + options);
+    this.logger.debug(`${this.constructor.name}.findAll options %o`, options);
 
     const findAll = await this.repository.find(this.addCommonRelationsToFindOptions(options));
     return findAll.map((r) => this.convertEntity(r));
