@@ -286,7 +286,9 @@ describe('AttachmentService', () => {
 
         const missing = new Error('The specified key does not exist.');
         missing.name = errorName;
-        jest.spyOn(s3Client, 'send').mockRejectedValue(missing);
+        jest.spyOn(s3Client, 'send').mockImplementation(async () => {
+          throw missing;
+        });
 
         await expect(service.getFileContent(TEST_ATTACHMENT_ID, undefined)).rejects.toThrow(NotFoundException);
       }
