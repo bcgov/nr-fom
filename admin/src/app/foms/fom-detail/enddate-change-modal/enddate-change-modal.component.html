@@ -36,21 +36,19 @@
               type="text"
               class="form-control"
               placeholder="YYYY-MM-DD"
-              bsDatepicker
-              [bsValue]="minDate"
-              [minDate]="minDate"
+              [matDatepicker]="nccdDatepicker"
+              [min]="minDate"
               (keydown)="$event.preventDefault()"
+              (click)="nccdDatepicker.open()"
               [(ngModel)]="newCommentingClosedDate"
-              #nccdDatepicker="bsDatepicker"
               id="newCommentingClosedDate"
               name="newCommentingClosedDate"
-              [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
-              showWeekNumbers: false  }"
               />
+              <mat-datepicker #nccdDatepicker />
               <div class="input-group-append">
                 <button class="btn btn-icon"  type="button" tabindex="-1"
-                  (click)="nccdDatepicker.show()"
-                  [attr.aria-expanded]="nccdDatepicker.isOpen">
+                  (click)="nccdDatepicker.open()"
+                  [attr.aria-expanded]="nccdDatepicker.opened">
                   <em class="material-icons">date_range</em>
                 </button>
               </div>

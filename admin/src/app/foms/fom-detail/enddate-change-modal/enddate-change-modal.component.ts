@@ -4,18 +4,20 @@ import { FormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ProjectCommentingClosedDateChangeRequest, ProjectService } from '@api-client';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
 import { DateTime } from 'luxon';
-import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 @Component({
     imports: [
     MatProgressBarModule,
     FormsModule,
-    BsDatepickerModule,
+    MatDatepickerModule,
     DatePipe
 ],
     templateUrl: './enddate-change-modal.component.html',
     styleUrl: './enddate-change-modal.component.scss',
+    providers: provideIsoDateAdapter(),
     encapsulation: ViewEncapsulation.None // Important to make bootstrap modal custom styling property 'windowClass' work.
 })
 export class EnddateChangeModalComponent implements OnInit {

@@ -15,7 +15,6 @@ import { FeatureSelectService } from '@utility/services/featureSelect.service';
 import { DetailsMapComponent } from 'app/applications/details-panel/details-map/details-map.component';
 import { ShapeInfoComponent } from 'app/applications/details-panel/shape-info/shape-info.component';
 import { saveAs } from "file-saver-es";
-import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { indexBy } from 'remeda';
 import { Subject, forkJoin } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -32,7 +31,7 @@ import { Filter } from '../utils/filter';
 @Component({
   imports: [
     DatePipe, TitleCasePipe, ShapeInfoComponent,
-    DetailsMapComponent, TooltipModule, MatTooltipModule
+    DetailsMapComponent, MatTooltipModule
   ],
   selector: 'app-details-panel',
   templateUrl: './details-panel.component.html',

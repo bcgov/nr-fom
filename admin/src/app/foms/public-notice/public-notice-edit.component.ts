@@ -13,8 +13,9 @@ import {
 } from '@api-client';
 import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
+import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
+import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
 import { DateTime } from "luxon";
-import { BsDatepickerModule } from "ngx-bootstrap/datepicker";
 import { lastValueFrom } from 'rxjs';
 import { PublicNoticeForm } from './public-notice.form';
 
@@ -22,12 +23,12 @@ import { PublicNoticeForm } from './public-notice.form';
     imports: [
     FormsModule,
     ReactiveFormsModule,
-    BsDatepickerModule
+    MatDatepickerModule
 ],
     selector: 'app-public-notice-edit',
     templateUrl: './public-notice-edit.component.html',
     styleUrl: './public-notice-edit.component.scss',
-    providers: [DatePipe]
+    providers: [DatePipe, ...provideIsoDateAdapter()]
 })
 export class PublicNoticeEditComponent {
   private router = inject(Router);
@@ -123,9 +124,7 @@ export class PublicNoticeEditComponent {
       }
     }
     else { // a case there was public notice saved for the project.
-      // This is a tricky case. "bsDatepicker" when (minDate=maxDate) and when previous field date falls
-      // outside of the date range, "bsDatepicker" has problem initializing it and even if you trying picking from UI.
-      // So, specifically set it here for corner cases.
+      // A saved post date outside the selectable range cannot be picked, so clamp it before the form is built.
       const pnPostDate = this.publicNoticeResponse?.postDate;
       if (pnPostDate && this.publicNoticeResponse) {
         const startOfPnPostDate = DateTime.fromISO(pnPostDate).startOf('day');
@@ -255,15 +254,17 @@ export class PublicNoticeEditComponent {
     }
   }
 
-  warnIfPostDateSelectionNotAvailable(postDatePicker: { toggle: () => void }) {
+  warnIfPostDateSelectionNotAvailable(postDatePicker: MatDatepicker<Date>): void {
     const startOfMinPostDate = DateTime.fromJSDate(this.minPostDate).startOf('day');
     const startOfCommentingOpenDate = DateTime.fromISO(this.project.commentingOpenDate).startOf('day');
     if (!this.project.commentingOpenDate || startOfMinPostDate > startOfCommentingOpenDate)
     {
-      postDatePicker.toggle(); // bsDatepicker seems to have strange behaviour. hide() won't work, use toggle() instead.
+      postDatePicker.close();
       this.modalSvc.openWarningDialog(`Commenting Start Date must be entered first and at least one day in the future before 
         Notice Publishing Date is available for selection.`);
+      return;
     }
+    postDatePicker.open();
   }
 }
 

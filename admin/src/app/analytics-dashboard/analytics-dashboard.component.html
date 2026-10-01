@@ -13,25 +13,25 @@
             <label for="startDate">Start date</label>
             <div class="input-group">
               <input
-                #startDatePicker="bsDatepicker"
                 id="startDate"
                 name="startDate"
                 readonly
                 type="text"
                 (keydown)="$event.preventDefault()"
+                (click)="startDatePicker.open()"
                 class="form-control readonly-normal"
                 placeholder="YYYY-MM-DD"
-                bsDatepicker
-                [minDate]="minDate"
-                [maxDate]="maxDate"
+                [matDatepicker]="startDatePicker"
+                [min]="minDate"
+                [max]="maxDate"
                 [(ngModel)]="startDate"
-                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
-                (bsValueChange)="onDateChange('startDate', $event)"
+                (dateChange)="onDateChange('startDate', $event.value)"
                 />
+                <mat-datepicker #startDatePicker />
                 <div class="input-group-append">
                   <button
-                    class="btn btn-icon" type="button" tabindex="-1" (click)="startDatePicker.show()"
-                    [attr.aria-expanded]="startDatePicker.isOpen">
+                    class="btn btn-icon" type="button" tabindex="-1" (click)="startDatePicker.open()"
+                    [attr.aria-expanded]="startDatePicker.opened">
                     <em class="material-icons">date_range</em>
                   </button>
                 </div>
@@ -41,24 +41,24 @@
               <label for="endDate">End date</label>
               <div class="input-group">
                 <input
-                  #endDatePicker="bsDatepicker"
                   id="endDate"
                   name="endDate"
                   type="text"
                   (keydown)="$event.preventDefault()"
+                  (click)="endDatePicker.open()"
                   class="form-control readonly-normal"
                   placeholder="YYYY-MM-DD"
-                  bsDatepicker
-                  [minDate]="minDate"
-                  [maxDate]="maxDate"
+                  [matDatepicker]="endDatePicker"
+                  [min]="minDate"
+                  [max]="maxDate"
                   [(ngModel)]="endDate"
-                  [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
-                  (bsValueChange)="onDateChange('endDate', $event)"
+                  (dateChange)="onDateChange('endDate', $event.value)"
                   />
+                  <mat-datepicker #endDatePicker />
                   <div class="input-group-append">
                     <button
-                      class="btn btn-icon" type="button" tabindex="-1" (click)="endDatePicker.show()"
-                      [attr.aria-expanded]="endDatePicker.isOpen">
+                      class="btn btn-icon" type="button" tabindex="-1" (click)="endDatePicker.open()"
+                      [attr.aria-expanded]="endDatePicker.opened">
                       <em class="material-icons">date_range</em>
                     </button>
                   </div>

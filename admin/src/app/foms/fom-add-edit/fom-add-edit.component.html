@@ -73,25 +73,24 @@
                     type="text"
                     class="form-control readonly-normal"
                     placeholder="YYYY-MM-DD"
-                    bsDatepicker
-                    [minDate]="minOpeningDate"
+                    [matDatepicker]="openDate"
+                    [min]="minOpeningDate"
                     (keydown)="$event.preventDefault()"
-                    #openDate="bsDatepicker"
+                    (click)="openDate.open()"
                     id="commentingOpenDate"
                     name="commentingOpenDate"
                     formControlName="commentingOpenDate"
-                  [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
-                                containerClass: 'theme-dark-blue', showWeekNumbers: false }"
-                    (bsValueChange)="toggleClosedDate($event)"
+                    (dateChange)="toggleClosedDate($event.value)"
                     [appFormControl]="fg.get('commentingOpenDate')"
                     />
                     <div class="input-group-append">
                       <button
-                        class="btn btn-icon" type="button" tabindex="-1" (click)="openDate.show()"
-                        [attr.aria-expanded]="openDate.isOpen">
+                        class="btn btn-icon" type="button" tabindex="-1" (click)="openDate.open()"
+                        [attr.aria-expanded]="openDate.opened">
                         <em class="material-icons">date_range</em>
                       </button>
                     </div>
+                    <mat-datepicker #openDate />
                   </div>
                 }
                 @if (isCommentingClosedState) {
@@ -116,24 +115,23 @@
                       type="text"
                       class="form-control readonly-normal"
                       placeholder="YYYY-MM-DD"
-                      bsDatepicker
-                      [minDate]="minClosedDate"
+                      [matDatepicker]="closedDate"
+                      [min]="minClosedDate"
                       (keydown)="$event.preventDefault()"
-                      #closedDate="bsDatepicker"
+                      (click)="closedDate.open()"
                       id="commentingClosedDate"
                       name="commentingClosedDate"
                       formControlName="commentingClosedDate"
-                      (bsValueChange)="validateClosedDate($event)"
-                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
-                containerClass: 'theme-dark-blue', showWeekNumbers: false  }"
+                      (dateChange)="validateClosedDate($event.value)"
                       [appFormControl]="fg.get('commentingClosedDate')"
                       />
                       <div class="input-group-append">
-                        <button class="btn btn-icon"  type="button" tabindex="-1" (click)="closedDate.show()"
-                          [attr.aria-expanded]="closedDate.isOpen">
+                        <button class="btn btn-icon"  type="button" tabindex="-1" (click)="closedDate.open()"
+                          [attr.aria-expanded]="closedDate.opened">
                           <em class="material-icons">date_range</em>
                         </button>
                       </div>
+                      <mat-datepicker #closedDate />
                     </div>
                   }
                   @if (isCommentingClosedState) {
@@ -154,7 +152,7 @@
                 <div class="form-group col">
                   <label for="op-start-year" [class.required]="!isCommentingOpenState">Start of Operations</label>
                   @if (!isCommentingOpenState) {
-                    <div>
+                    <div appYearDate>
                       <input
                         readonly
                         id="op-start-year"
@@ -163,11 +161,18 @@
                         type="text"
                         placeholder="YYYY"
                         formControlName="opStartDate"
-                        bsDatepicker
+                        [matDatepicker]="opStartPicker"
+                        [min]="operationYearMin"
+                        [max]="operationYearMax"
                         (keydown)="$event.preventDefault()"
-                        [bsConfig]="bsConfig"
+                        (click)="opStartPicker.open()"
                         [appFormControl]="fg.get('opStartDate')"
                         />
+                        <mat-datepicker
+                          #opStartPicker
+                          startView="multi-year"
+                          (yearSelected)="selectOperationYear('opStartDate', $event, opStartPicker)"
+                          />
                         @if ((isSubmitSaveClicked || fieldTouchedOrDirty('opStartDate'))
                           && getErrorMessage('opStartDate', 'required')) {
                           <div class="invalid-feedback"
@@ -193,7 +198,7 @@
                   <div class="form-group col">
                     <label for="op-end-year" [class.required]="!isCommentingOpenState">End of Operations</label>
                     @if (!isCommentingOpenState) {
-                      <div>
+                      <div appYearDate>
                         <input
                           readonly
                           id="op-end-year"
@@ -202,13 +207,20 @@
                           type="text"
                           placeholder="YYYY"
                           formControlName="opEndDate"
-                          bsDatepicker
+                          [matDatepicker]="opEndPicker"
+                          [min]="operationYearMin"
+                          [max]="operationYearMax"
                           (keydown)="$event.preventDefault()"
-                          [bsConfig]="bsConfig"
+                          (click)="opEndPicker.open()"
                           [appFormControl]="fg.get('opEndDate')"
                           appFormControlErrorOnDirty
                           [appFormControlSubmitted]="isSubmitSaveClicked"
                           />
+                          <mat-datepicker
+                            #opEndPicker
+                            startView="multi-year"
+                            (yearSelected)="selectOperationYear('opEndDate', $event, opEndPicker)"
+                            />
                           @if ((isSubmitSaveClicked || fieldDirty('opEndDate'))
                             && getErrorMessage('opEndDate', 'required')) {
                             <div class="invalid-feedback"

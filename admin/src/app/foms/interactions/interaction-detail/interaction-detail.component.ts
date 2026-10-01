@@ -9,19 +9,21 @@ import { InteractionDetailForm, InteractionRequest } from './interaction-detail.
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSvc';
 import { DatePipe } from '@angular/common';
-import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
 
 @Component({
     imports: [
     FormsModule,
     ReactiveFormsModule,
-    BsDatepickerModule,
+    MatDatepickerModule,
     DatePipe,
     UploadBoxComponent
 ],
     selector: 'app-interaction-detail',
     templateUrl: './interaction-detail.component.html',
     styleUrl: './interaction-detail.component.scss',
+    providers: provideIsoDateAdapter(),
     exportAs: 'interactionForm'
 })
 export class InteractionDetailComponent {

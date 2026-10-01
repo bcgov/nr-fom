@@ -24,23 +24,22 @@
               type="text"
               class="form-control col-md-6"
               placeholder="YYYY-MM-DD"
-              bsDatepicker
-              #communicationDatePickerDate="bsDatepicker"
+              [matDatepicker]="communicationDatePickerDate"
               id="communicationDatePickerDate"
               name="communicationDatePickerDate"
               formControlName="communicationDatePickerDate"
-              [maxDate]="maxDate"
-              [minDate]="minDate"
+              [max]="maxDate"
+              [min]="minDate"
               readonly
               (keydown)="$event.preventDefault()"
-          [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
-          containerClass: 'theme-dark-blue', showWeekNumbers: false  }"
+              (click)="communicationDatePickerDate.open()"
               />
+              <mat-datepicker #communicationDatePickerDate />
               <div class="input-group-append">
                 <button class="btn btn-icon"  type="button" tabindex="-1"
-                  (click)="communicationDatePickerDate.show()"
+                  (click)="communicationDatePickerDate.open()"
                   [disabled]="!editMode"
-                  [attr.aria-expanded]="communicationDatePickerDate.isOpen">
+                  [attr.aria-expanded]="communicationDatePickerDate.opened">
                   <em class="material-icons">date_range</em>
                 </button>
               </div>

@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { AfterViewInit, Component, OnInit, inject, input, linkedSignal, viewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { ProjectPlanCodeFilterEnum, ResponseCodeEnum } from '@api-client';
@@ -17,13 +18,13 @@ import {
   ChartComponent,
   NgApexchartsModule
 } from 'ng-apexcharts';
-import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
 
 @Component({
     imports: [
     FormsModule,
     ReactiveFormsModule,
-    BsDatepickerModule,
+    MatDatepickerModule,
     NgApexchartsModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -32,7 +33,7 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
     selector: 'app-analytics-dashboard',
     templateUrl: './analytics-dashboard.component.html',
     styleUrl: './analytics-dashboard.component.scss',
-    providers: [DatePipe]
+    providers: [DatePipe, ...provideIsoDateAdapter()]
 })
 export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
   private analyticsDashboardDataService = inject(AnalyticsDashboardDataService);
@@ -103,7 +104,10 @@ export class AnalyticsDashboardComponent implements OnInit, AfterViewInit {
     this.applyChartOptions();
   }
 
-  onDateChange(type: 'startDate' | 'endDate', value: Date) {
+  onDateChange(type: 'startDate' | 'endDate', value: Date | null): void {
+    if (!value) {
+      return;
+    }
     if (type === 'startDate') {
       this.startDate = value;
       // If new startDate is after endDate, adjust endDate

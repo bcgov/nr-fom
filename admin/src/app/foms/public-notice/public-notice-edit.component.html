@@ -70,18 +70,16 @@
                 class="form-control readonly-normal"
                 style="width: 10rem;"
                 placeholder="YYYY-MM-DD"
-                bsDatepicker
-                #postDatePicker="bsDatepicker"
-                [minDate]="minPostDate"
-                [maxDate]="maxPostDate"
+                [matDatepicker]="postDatePicker"
+                [min]="minPostDate"
+                [max]="maxPostDate"
                 (keydown)="$event.preventDefault()"
                 (click)="warnIfPostDateSelectionNotAvailable(postDatePicker)"
                 id="post-date"
                 name="pn-post-date"
                 formControlName="pnPostDate"
-                [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
-                              containerClass: 'theme-dark-blue', showWeekNumbers: false }"
                 />
+                <mat-datepicker #postDatePicker />
                 @if ((form.submitted || fieldTouchedOrDirty('pnPostDate'))
                   && getErrorMessage('pnPostDate', 'minDate')) {
                   <div class="invalid-feedback"

@@ -2,7 +2,7 @@
 
 > **Scope:** `admin/` and `public/` Angular frontend applications
 > **Shared dependencies:** `libs/client/typescript-ng` (generated API client) · `libs/utility/src` (hand-written shared utilities)
-> **Stack:** Angular 22 · TypeScript 6 · Angular Material 22 · ng-bootstrap 21 · ngx-bootstrap 21 · Leaflet 1.9 · RxJS 7.8 · Jest 30 · ESLint 10
+> **Stack:** Angular 22 · TypeScript 6 · Angular Material 22 · ng-bootstrap 21 · Leaflet 1.9 · RxJS 7.8 · Jest 30 · ESLint 10
 > **Created:** May 2026 · **Last verified against code:** 2026-08-18
 
 ---
@@ -176,7 +176,8 @@ const coreProviders = [
   provideHttpClient(withInterceptors([errorInterceptor, cognitoTokenInterceptor])),
   // Generated API client config — functional provider replacing ApiModule.forRoot()
   { provide: Configuration, useValue: apiConfig },
-  importProvidersFrom(BsDatepickerModule, NgbModule, RxReactiveFormsModule, MatDialogModule, MatSnackBarModule),
+  importProvidersFrom(NgbModule, RxReactiveFormsModule, MatDialogModule, MatSnackBarModule),
+  ...provideIsoDateAdapter(),
   provideAppInitializer(() => inject(CognitoService).init()),
 ];
 
@@ -207,7 +208,8 @@ const coreProviders = [
   provideZonelessChangeDetection(),
   provideHttpClient(withInterceptors([errorInterceptor])),
   { provide: Configuration, useValue: apiConfig },
-  importProvidersFrom(BsDatepickerModule, MatDialogModule),
+  importProvidersFrom(MatDialogModule),
+  ...provideIsoDateAdapter(),
 ];
 // same routesProviders shape as admin
 ```
@@ -371,7 +373,7 @@ Two distinct loading concepts now coexist deliberately:
 
 | Directive | Purpose |
 |-----------|---------|
-| `AppFormControlDirective` (`[appFormControl]`) | Signal-input directive that applies `is-invalid` / `invalid` classes from an `AbstractControl`'s state. Two extra inputs solve a real UX bug: `appFormControlErrorOnDirty` switches the trigger from `touched` to `dirty` for picker-only fields (`bsDatepicker` blurs the input one event *before* the picked value lands, which flashed a required error), and `appFormControlSubmitted` lights up never-touched fields once save is attempted. It also emits an `error-on-dirty` marker class so the global `.form-control.ng-touched.ng-invalid` SCSS rule can opt out. |
+| `AppFormControlDirective` (`[appFormControl]`) | Signal-input directive that applies `is-invalid` / `invalid` classes from an `AbstractControl`'s state. Two extra inputs solve a real UX bug: `appFormControlErrorOnDirty` switches the trigger from `touched` to `dirty` for picker-only fields (the datepicker overlay blurs the input one event *before* the picked value lands, which flashed a required error), and `appFormControlSubmitted` lights up never-touched fields once save is attempted. It also emits an `error-on-dirty` marker class so the global `.form-control.ng-touched.ng-invalid` SCSS rule can opt out. |
 
 #### Pipes
 
@@ -1045,10 +1047,10 @@ Flat ESLint 10 config (`eslint.config.mjs`) per app: `typescript-eslint` recomme
 ## 17. Key Architectural Decisions
 
 ### ADR-1: Standalone components, zero NgModules
-Neither app declares an `@NgModule`. `importProvidersFrom(...)` bridges the remaining module-only third-party libraries (`BsDatepickerModule`, `NgbModule`, `RxReactiveFormsModule`, `MatDialogModule`, `MatSnackBarModule`). *Consequence:* the dependency graph is explicit per component; the cost is a longer `imports` array on each component.
+Neither app declares an `@NgModule`. `importProvidersFrom(...)` bridges the remaining module-only third-party libraries (`NgbModule`, `RxReactiveFormsModule`, `MatDialogModule`, `MatSnackBarModule`). Date inputs use `MatDatepicker` with `provideIsoDateAdapter()`. *Consequence:* the dependency graph is explicit per component; the cost is a longer `imports` array on each component.
 
 ### ADR-2: Zoneless change detection (both apps)
-`provideZonelessChangeDetection()` means no `zone.js` monkey-patching. *Consequences:* (a) all view-relevant state must be a signal or flow through a template binding — a value written from an async callback and read directly by the template will not repaint (see the "written from async callbacks, so the view only learns about them through signals" comment in `DetailsPanelComponent`); (b) `setTimeout` does not schedule change detection, so DOM timing goes through `afterNextRender` / `ResizeObserver`; (c) tests must use `setupZonelessTestEnv()` + `whenStable()`; (d) `ngx-bootstrap`'s datepicker is the most zoneless-sensitive component in either app and the first thing to regression-test on any upgrade.
+`provideZonelessChangeDetection()` means no `zone.js` monkey-patching. *Consequences:* (a) all view-relevant state must be a signal or flow through a template binding — a value written from an async callback and read directly by the template will not repaint (see the "written from async callbacks, so the view only learns about them through signals" comment in `DetailsPanelComponent`); (b) `setTimeout` does not schedule change detection, so DOM timing goes through `afterNextRender` / `ResizeObserver`; (c) tests must use `setupZonelessTestEnv()` + `whenStable()`; (d) readonly date inputs open `MatDatepicker` in an overlay, which blurs the input before the picked value is written; `appFormControlErrorOnDirty` ignores that blur.
 
 ### ADR-3: Lazy loading via `loadComponent` + `PreloadAllModules`
 Routes are code-split, and `withPreloading(PreloadAllModules)` fetches them in the background so navigation stays instant. Only auth-critical / default routes are eager. *Trade-off:* smaller initial parse, at the cost of background network use after boot.
@@ -1060,7 +1062,7 @@ Data loading, derived state, and component I/O are signal-based. RxJS is used wh
 State lives in `providedIn: 'root'` services holding signals or `BehaviorSubject`s. Appropriate for the app's complexity — no complex derived cross-entity state, no optimistic updates, no time-travel requirement.
 
 ### ADR-6: Single hoisted npm workspace
-The repo root is an npm workspaces root (`workspaces: ["libs", "public", "admin", "api"]`). All installs are one hoisted `npm ci --ignore-scripts` at the root, in Docker and in docker-compose alike, so the app and the `libs` source it compiles in-place resolve `@angular/*` to one physical copy — which is what prevents `NG0203`. `package.json` `overrides` force `ngx-bootstrap` onto Angular 22 peers. *Consequence:* installs happen at the repo root; a per-app `npm ci` inside `admin/` or `public/` is not a supported path.
+The repo root is an npm workspaces root (`workspaces: ["libs", "public", "admin", "api"]`). All installs are one hoisted `npm ci --ignore-scripts` at the root, in Docker and in docker-compose alike, so the app and the `libs` source it compiles in-place resolve `@angular/*` to one physical copy — which is what prevents `NG0203`. Root `package.json` `overrides` pin selected transitive dependencies. *Consequence:* installs happen at the repo root; a per-app `npm ci` inside `admin/` or `public/` is not a supported path.
 
 ### ADR-7: Generated API client, provided app-side
 The client is generated from the NestJS OpenAPI spec, guaranteeing type safety across the API boundary. Because the generator cannot emit functional providers, `ApiModule.forRoot()` is bypassed and `Configuration` is provided directly in `main.ts` — solving the problem without hand-editing generated output. *Consequence:* client regeneration must follow every API schema change; `api.module.ts` remains dead generated code.
@@ -1225,7 +1227,7 @@ readonly searched = computed(() => this.projectsResource.status() !== 'idle');
 | Bundle-size enforcement | `angular.json` budgets (initial + per-component style) |
 | Generated-code protection | `libs/client/typescript-ng/.openapi-generator-ignore`; explicit "do not hand-edit" rules in the instructions file |
 | CI gates | `pr-open.yml` matrix build + deploy + smoke, with a merge-blocking `results` job |
-| Dependency currency | `renovate.json`, plus root `overrides` pinning `ngx-bootstrap` peers to Angular 22 |
+| Dependency currency | `renovate.json`, plus root `overrides` for selected transitive dependencies |
 | Local-dev parity | `docker-compose.yml` (single hoisted install, health-gated startup ordering) |
 
 **Per-app validation checklist** (from the instructions file):

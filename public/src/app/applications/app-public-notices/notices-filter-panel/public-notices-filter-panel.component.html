@@ -34,12 +34,13 @@
               class="form-control width-min-medium"
               title="Filter by Posted As Of"
               placeholder="YYYY-MM-DD"
-              bsDatepicker
-              [maxDate]="maxDate"
+              [matDatepicker]="postedAsOfPicker"
+              [max]="maxDate"
+              (keydown)="$event.preventDefault()"
+              (click)="postedAsOfPicker.open()"
               [(ngModel)]="filter.commentingOpenDate.value"
-            [bsConfig]="{ dateInputFormat: 'YYYY-MM-DD', adaptivePosition: true,
-            containerClass: 'theme-dark-blue', showWeekNumbers: false  }"
               />
+            <mat-datepicker #postedAsOfPicker />
             </div>
           </div>
 

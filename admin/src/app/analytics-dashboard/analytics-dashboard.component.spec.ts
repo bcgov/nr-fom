@@ -2,8 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { ProjectPlanCodeFilterEnum } from '@api-client';
-import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
-
 // Mock ng-apexcharts before the component is imported.
 // jest.mock is hoisted above all imports. The factory returns plain objects
 // that Angular treats as standalone components/modules. The stub needs no
@@ -114,7 +112,7 @@ describe('AnalyticsDashboardComponent', () => {
     const NgApexchartsModule = (await import('ng-apexcharts')).NgApexchartsModule;
 
     await TestBed.configureTestingModule({
-      imports: [AnalyticsDashboardComponent, BsDatepickerModule],
+      imports: [AnalyticsDashboardComponent],
       providers: [
         provideAnimationsAsync('noop'),
         { provide: AnalyticsDashboardDataService, useValue: mockDataService }
