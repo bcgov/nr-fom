@@ -3,7 +3,8 @@
 Repository facts for automated coding assistants. Teams may edit or remove this file.
 
 ## Layout
-- npm workspaces: `admin/` and `public/` (Angular), `api/` (NestJS, TypeORM), `libs/` (`@fom/shared`, consumed as source), `db/` (PostgreSQL/PostGIS)
+- npm workspaces: `admin/` and `public/` (Angular), `api/` (NestJS, TypeORM), `libs/` (`@fom/shared`, consumed as source)
+- `db/` is the PostgreSQL/PostGIS image, not a workspace
 - OpenShift templates (not Helm): `libs/openshift.init.yml` and `{admin,api,db,public}/openshift.deploy.yml`
 - Workflows: `.github/workflows/` (`pr-open.yml` builds and calls `.deploy.yml`; `merge.yml` deploys TEST; `release.yml` deploys PROD; `analysis.yml` tests; `load.yml` is k6). Playwright specs: `e2e/`
 
