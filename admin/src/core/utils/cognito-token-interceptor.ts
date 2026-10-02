@@ -1,8 +1,28 @@
 import { CognitoService } from "@admin-core/services/cognito.service";
 import { HttpInterceptorFn, HttpRequest } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
+import { AwsCognitoConfig } from "@api-client";
 import { Observable, Subject, throwError } from "rxjs";
 import { catchError, switchMap, tap } from "rxjs/operators";
+
+/**
+ * The OIDC client uses this app's HttpClient for discovery and token refresh.
+ * Those hosts must not receive the API bearer, which is a JSON blob of both tokens.
+ */
+export function isCognitoOidcRequest(url: string, config: AwsCognitoConfig | undefined): boolean {
+  const domain = config?.oauth?.domain;
+  const region = config?.aws_cognito_region;
+  if (!domain || !region) {
+    return false;
+  }
+  let host: string;
+  try {
+    host = new URL(url).host;
+  } catch {
+    return false;
+  }
+  return host === domain || host === `cognito-idp.${region}.amazonaws.com`;
+}
 
 /**
  * Coordinates a single in-flight token refresh across concurrent requests.
@@ -27,10 +47,17 @@ function addAuthHeader(
   request: HttpRequest<unknown>,
   cognitoService: CognitoService
 ): HttpRequest<unknown> {
-  let authToken: any = cognitoService.getToken();
-
+  const token = cognitoService.getToken();
+  let authToken: string;
   if (cognitoService.awsCognitoConfig.enabled) {
-    authToken = JSON.stringify(authToken['jwtToken']);
+    if (typeof token !== "object" || token == null) {
+      throw new Error("Cognito auth token is missing.");
+    }
+    authToken = JSON.stringify(token.jwtToken);
+  } else if (typeof token === "string") {
+    authToken = token;
+  } else {
+    throw new Error("Cognito auth token is missing.");
   }
 
   return request.clone({
@@ -44,7 +71,7 @@ function addAuthHeader(
 function refreshToken(
   cognitoService: CognitoService,
   state: TokenRefreshState
-): Observable<any> {
+): Observable<void> {
   if (state.inProgress) {
     return new Observable((observer) => {
       state.refreshed$.subscribe(() => {
@@ -72,7 +99,7 @@ export const cognitoTokenInterceptor: HttpInterceptorFn = (request, next) => {
   const cognitoService = inject(CognitoService);
   const state = inject(TokenRefreshState);
 
-  if (!cognitoService.initialized) {
+  if (!cognitoService.initialized || isCognitoOidcRequest(request.url, cognitoService.awsCognitoConfig)) {
     return next(request);
   }
 

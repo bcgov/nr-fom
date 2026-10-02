@@ -1,4 +1,4 @@
-import { buildFederatedLogoutUrl, FederatedLogoutConfig } from './logout-chain';
+import { buildCognitoLogoutUrl, buildFederatedLogoutUrl, FederatedLogoutConfig } from './logout-chain';
 
 const CONFIG: FederatedLogoutConfig = {
   siteminderLogoutUrl: 'https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi',
@@ -114,6 +114,17 @@ describe('buildFederatedLogoutUrl', () => {
       // encoding is the entire correctness argument of this chain, so it is asserted
       // structurally rather than by matching an encoded fragment.
       expect(cognito.searchParams.get('logout_uri')).toBe(CONFIG.appReturnUrl);
+    });
+
+    it('uses the same Cognito logout URL the chain embeds as its last hop', () => {
+      const direct = buildCognitoLogoutUrl(CONFIG);
+      const nested = unwrap(
+        unwrap(buildFederatedLogoutUrl(CONFIG, 'idir')!, 'returl').href,
+        'post_logout_redirect_uri'
+      );
+
+      expect(direct).toBe(nested.href);
+      expect(buildCognitoLogoutUrl({ ...CONFIG, cognitoDomain: '' })).toBeNull();
     });
 
     it('encodes the inner query separators so the outer hop cannot swallow them', () => {

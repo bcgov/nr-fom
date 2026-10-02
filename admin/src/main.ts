@@ -10,10 +10,11 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
 import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
 import { retrieveApiBasePath } from '@utility/services/config.service';
+import { AbstractSecurityStorage, DefaultLocalStorageService, provideAuth, StsConfigLoader } from 'angular-auth-oidc-client';
 import { AppRoutes } from 'app/app.routes';
 import { AppComponent } from './app/app.component';
 import { errorInterceptor } from './core/interceptors/http-error.interceptor';
-import { CognitoService } from './core/services/cognito.service';
+import { CognitoService, StagedOidcConfigLoader } from './core/services/cognito.service';
 import { cognitoTokenInterceptor } from './core/utils/cognito-token-interceptor';
 
 const apiConfig = new Configuration({
@@ -44,6 +45,14 @@ const coreProviders = [
         MatSnackBarModule
     ),
     ...provideIsoDateAdapter(),
+    provideAuth({
+      loader: {
+        provide: StsConfigLoader,
+        useClass: StagedOidcConfigLoader,
+      },
+    }),
+    // localStorage so a login survives a new tab. The library default is sessionStorage.
+    { provide: AbstractSecurityStorage, useClass: DefaultLocalStorageService },
     provideAppInitializer(() => inject(CognitoService).init()),
 ]
 

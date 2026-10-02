@@ -3,7 +3,7 @@
  *
  *   app -> Siteminder logoff.cgi -> Keycloak end-session -> Cognito /logout -> app
  *
- * Why this order, rather than Amplify's signOut() which hits Cognito first: putting
+ * Why this order, rather than the OIDC client's server logoff, which hits Cognito first: putting
  * Cognito last means Keycloak's `post_logout_redirect_uri` is the *Cognito* /logout
  * URL - one stable, app-agnostic value - so this app's own URL only ever has to be
  * registered as a Cognito sign-out URL, never on the shared FAM-managed Keycloak
@@ -59,9 +59,25 @@ const keycloakClientIdFor = (
 };
 
 /**
+ * Cognito's /logout expects `logout_uri`, not the OIDC end-session parameters
+ * `logoff()` would send. The federated chain embeds this URL as its last hop,
+ * and the caller uses it alone when the chain cannot be built.
+ */
+export function buildCognitoLogoutUrl(config: FederatedLogoutConfig): string | null {
+  if (!config.cognitoDomain || !config.cognitoClientId || !config.appReturnUrl) {
+    return null;
+  }
+  return (
+    `https://${config.cognitoDomain}/logout` +
+    `?client_id=${encodeURIComponent(config.cognitoClientId)}` +
+    `&logout_uri=${encodeURIComponent(config.appReturnUrl)}`
+  );
+}
+
+/**
  * @returns the chain URL to navigate to, or null when the IdP is unknown or any
  *   required config value is missing. Callers must treat null as "not configured"
- *   and fall back to Amplify's signOut(), which is a Cognito-only sign-out - far
+ *   and fall back to buildCognitoLogoutUrl(), a Cognito-only sign-out - far
  *   better than navigating to a malformed URL.
  */
 export function buildFederatedLogoutUrl(
@@ -69,22 +85,17 @@ export function buildFederatedLogoutUrl(
   idpProvider?: string
 ): string | null {
   const keycloakClientId = keycloakClientIdFor(config, idpProvider);
+  const cognitoLogout = buildCognitoLogoutUrl(config);
   if (
     !config.siteminderLogoutUrl ||
     !config.keycloakLogoutUrl ||
     !keycloakClientId ||
-    !config.cognitoDomain ||
-    !config.cognitoClientId ||
-    !config.appReturnUrl
+    !cognitoLogout
   ) {
     return null;
   }
 
   // Innermost: Cognito clears its own session cookie, then returns to the app.
-  const cognitoLogout =
-    `https://${config.cognitoDomain}/logout` +
-    `?client_id=${encodeURIComponent(config.cognitoClientId)}` +
-    `&logout_uri=${encodeURIComponent(config.appReturnUrl)}`;
 
   // Keycloak clears its session, then returns to the Cognito logout URL. That Cognito
   // URL is the only value needing registration on the shared FAM Keycloak client's
