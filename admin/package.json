@@ -51,7 +51,6 @@
     "@angular/build": "^22.0.6",
     "@angular/cli": "^22.0.1",
     "@angular/compiler-cli": "^22.0.1",
-    "@noble/hashes": "^2.2.0",
     "@types/file-saver-es": "^2.0.3",
     "@types/jest": "^30.0.0",
     "@types/leaflet": "^1.9.12",
