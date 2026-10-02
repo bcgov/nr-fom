@@ -36,7 +36,7 @@ Four properties define the architecture:
 | **Signal-based reactivity** | `rxResource` for data loading, `signal` / `computed` / `linkedSignal` for state, `input()` / `output()` / `viewChild()` for the component API. Templates use `@if` / `@for` control flow (×201 / ×40); a single `AsyncPipe` appears, in `admin/app.component`. |
 | **Strict TypeScript** | `strict: true` + `strictTemplates` in both apps (`strictPropertyInitialization` deliberately **off**). |
 
-The **admin** app is authentication-required (AWS Cognito via `aws-amplify` v6). The **public** app is fully unauthenticated.
+The **admin** app is authentication-required (AWS Cognito via `angular-auth-oidc-client`). The **public** app is fully unauthenticated.
 
 Both apps share the generated TypeScript API client (`libs/client/typescript-ng`) and the `libs/utility` package. They are **independently deployable** — each has its own `package.json`, `angular.json`, `Dockerfile`, `Caddyfile`, and OpenShift deployment manifest — but they install from a **single hoisted npm workspace root** (see §17, ADR-6).
 
@@ -331,7 +331,7 @@ readonly analyticsData = linkedSignal(() => this.initialAnalyticsData());  // wr
 
 | Service | Purpose |
 |---------|---------|
-| `CognitoService` | AWS Cognito authentication via `aws-amplify` v6. Manages sign-in, federated sign-out, token refresh, and exposes the current `User`. Supports a fake-user mode (`mock-user.ts`) when `awsCognitoConfig.enabled = false` (local dev). |
+| `CognitoService` | AWS Cognito authentication via `angular-auth-oidc-client` (authorization code + PKCE against the user-pool issuer). Manages sign-in, federated sign-out, token refresh, and exposes the current `User`. Supports a fake-user mode (`mock-user.ts`) when `awsCognitoConfig.enabled = false` (local dev). |
 | `StateService` | Pre-loaded reference/code-table data plus a readiness observable (`isReady$` via `BehaviorSubject`). |
 | `LoadingService` | Counter-backed global loading signal (see below). |
 | `ModalService` | Wrapper over `MatDialog` + `MatSnackBar`. Typed helpers: `openDialog`, `openErrorDialog`, `openWarningDialog`, `openConfirmationDialog`, `openComponentDialog<T>`, `openSnackBar`. |
@@ -514,14 +514,13 @@ provideAppInitializer → CognitoService.init()
   │                        (no config fetch, no login redirect)
   │
   ├─ loadRemoteConfig() → GET <apiBase>/api/awsCognitoConfig  (memoised promise)
-  │     └─ Amplify.configure(toAmplifyConfig(config))
   │     └─ If config.enabled = false → getFakeUser() [local dev only], initialized = true
   │
-  ├─ getCurrentUser() succeeds
-  │     └─ refreshToken() → fetchAuthSession({ forceRefresh: true }) → jwtDecode
-  │           └─ initialized = true
+  ├─ stage OpenID config (authority = Cognito user-pool issuer) and checkAuth()
+  │     └─ authenticated → refreshToken() → forceRefreshSession()
+  │           └─ ID and access payloads from the OIDC client, initialized = true
   │
-  └─ getCurrentUser() fails → signInWithRedirect() [Cognito hosted UI]
+  └─ not authenticated → authorize() [Cognito hosted UI, IDIR / BCeID]
 ```
 
 There is **no `canActivate` for authentication anywhere in the route table.** Authentication is enforced by two things working together: `init()` above (which redirects to the hosted UI when there is no session) and `HeaderComponent.ngOnInit`, which routes an unauthenticated or unauthorized user to `/not-authorized` (skipping the redirect when already on `/not-authorized`, matched on `pathname` so a stray query string cannot defeat the check, and when `cognitoService.loggedOut`). `HeaderComponent.ngOnInit` also force-routes an admin-role-only user straight to `/analytics-dashboard`. Anything that changes either one changes the app's authentication behaviour globally.
@@ -551,9 +550,9 @@ Three things that are easy to get wrong:
 
 - **Encode each nested URL exactly once**, where it is embedded in the enclosing query string. Miss it and `logoff.cgi` parses the inner `?…&…` as its own parameters, silently dropping the next hop's redirect target. The symptom is Siteminder or Keycloak landing on a default page instead of continuing.
 - **The Keycloak client id depends on the IdP the user signed in with**, read from `custom:idp_name` on the ID token. FAM registers one client for IDIR and one for BCeID Business; sending the wrong one leaves that IdP's session alive. Matching is by **substring, case-insensitively** (`keycloakClientIdFor`), so it holds whether the claim carries the bare IdP name (`idir`) or the Cognito provider name (`DEV-IDIR` / `TEST-IDIR` / `PROD-IDIR`).
-- **Amplify's `signOut()` must not run on this path.** It redirects to Cognito first, which pre-empts the chain. `logout()` clears the stored tokens locally (`clearStoredTokens()` sweeps `CognitoIdentityServiceProvider.<clientId>*` out of `localStorage`) and then navigates.
+- **`OidcSecurityService.logoff()` must not run on this path.** It redirects to Cognito first, and Cognito's `/logout` does not accept OIDC end-session parameters. `logout()` calls `logoffLocal()` to drop the local session, then navigates the chain. The Cognito-only fallback navigates to `buildCognitoLogoutUrl()` (`client_id` + `logout_uri`).
 
-`appReturnUrl` is taken from `awsCognitoConfig.oauth.redirectSignOut` rather than a locally built `origin + '/admin/logout'`, so the chain's final hop and the Amplify fallback cannot land on different URLs.
+`appReturnUrl` is taken from `awsCognitoConfig.oauth.redirectSignOut` rather than a locally built `origin + '/admin/logout'`, so the chain's final hop and the Cognito-only fallback cannot land on different URLs.
 
 | Piece | Where |
 |---|---|
@@ -563,7 +562,7 @@ Three things that are easy to get wrong:
 | Loop-breaker on the landing | `CognitoService.isLogoutLanding()`, `HeaderComponent.ngOnInit` |
 | Endpoints and client ids | `logout` block of `GET /api/awsCognitoConfig`, from the `aws-cognito-env.json` ConfigMap |
 
-`buildFederatedLogoutUrl()` returns `null` when the IdP is unknown or any config value is missing; the caller then falls back to a plain Amplify `signOut()`. That is a Cognito-only logout — degraded, but far better than navigating to a malformed URL. It is also what happens in local development, where the chain is normally unconfigured, and on the `refreshToken()` failure path, where the session is already gone and the IdP can no longer be read.
+`buildFederatedLogoutUrl()` returns `null` when the IdP is unknown or any config value is missing; the caller then navigates to `buildCognitoLogoutUrl()`. That is a Cognito-only logout — degraded, but far better than navigating to a malformed URL. It is also what happens in local development, where the chain is normally unconfigured, and on the `refreshToken()` failure path, where the session is already gone and the IdP can no longer be read.
 
 ### Authorization Model
 
@@ -588,7 +587,7 @@ Roles come from `cognito:groups` on the **access** token:
 3. The refreshed token is re-attached to the original request and the request is retried once.
 4. If the refresh itself fails, the **original 403** is rethrown (not the refresh error).
 
-The interceptor short-circuits when `cognitoService.initialized` is false, which is what keeps it safe on the logout landing: `init()` early-returns there, so `awsCognitoConfig` is never populated and `addAuthHeader` — which dereferences it — is never reached.
+The interceptor short-circuits when `cognitoService.initialized` is false, which is what keeps it safe on the logout landing: `init()` early-returns there, so `awsCognitoConfig` is never populated and `addAuthHeader` — which dereferences it — is never reached. It also passes through requests to the Cognito hosted-UI domain and `cognito-idp.<region>.amazonaws.com`: the OIDC client shares this `HttpClient`, and those calls must not carry the API bearer.
 
 ---
 
@@ -1071,7 +1070,7 @@ The client is generated from the NestJS OpenAPI spec, guaranteeing type safety a
 API base URL and environment label come from `localStorage`, populated by a ConfigMap-mounted `env.js`. One image, many environments.
 
 ### ADR-9: Federated logout chain owned by the frontend
-See §7. Building the Siteminder → Keycloak → Cognito chain in the app (rather than relying on Amplify `signOut()`) is what makes a real logout possible while keeping only *one* FOM URL on the FAM-managed allow-list. The pure builder is isolated in `logout-chain.ts` and unit-tested; the caller degrades to a Cognito-only sign-out when config is incomplete.
+See §7. Building the Siteminder → Keycloak → Cognito chain in the app (rather than relying on the OIDC client's server logoff) is what makes a real logout possible while keeping only *one* FOM URL on the FAM-managed allow-list. The pure builder is isolated in `logout-chain.ts` and unit-tested; the caller degrades to a Cognito-only sign-out when config is incomplete.
 
 ### ADR-10: Signal Forms adopted incrementally
 `@angular/forms/signals` is used for two new/rewritten components while the established RxWeb decorator pattern stays in place for the four large admin forms. *Rationale:* the RxWeb models encode substantial conditional validation and are typed against generated DTOs; a wholesale rewrite carries more risk than value today. *Consequence:* three form technologies coexist — pick by the table in §10, not by preference.
@@ -1259,7 +1258,7 @@ Each of these is a bug that has actually occurred in this codebase and is guarde
 | Two Leaflet maps sharing `id="map"` | Double-init froze filtering. Use `.map-host` + `initMap()`'s guard. |
 | Sizing a Leaflet map with `setTimeout` | Use `observeMapSize()`; where no resize occurs (splash-modal close), use `afterNextRender`. |
 | Building the `markerClusterGroup` in `ngOnInit` | `ngOnChanges` → `drawMap` runs first and throws, aborting change detection. Build it in the constructor. |
-| Calling Amplify `signOut()` on the logout path | It redirects to Cognito first and pre-empts the federated chain. |
+| Calling `OidcSecurityService.logoff()` on the logout path | It redirects to Cognito first and pre-empts the federated chain. Use `logoffLocal()`, then the chain. |
 | Double- or zero-encoding a nested logout URL | `logoff.cgi` swallows the next hop. Encode exactly once, at the point of embedding. |
 | Dereferencing `awsCognitoConfig` on the logout landing | `init()` early-returns there, so it is `undefined`. Use `?.` — see `HeaderComponent.navigateToLogout`. |
 | Writing view state from an async callback into a plain field | Zoneless: the view never learns. Make it a `signal`. |
