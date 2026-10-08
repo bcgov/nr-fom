@@ -24,7 +24,7 @@ parameters:
     required: true
   - name: DB_VERSION
     description: Database version number, e.g. v17
-    value: "17"
+    value: "18"
   - name: CRONJOB_RESTORE_TAG
     description: Image tag for database restore cronjob; e.g. PR number, latest or prod
     value: prod
@@ -155,7 +155,7 @@ objects:
                 claimName: ${NAME}-${ZONE}-${COMPONENT}-${DB_VERSION}
           containers:
             - name: ${NAME}
-              # Override manually like this - 'image: postgis/postgis:17-master'
+              # Override manually like this - 'image: postgis/postgis:18-master'
               image: ${REGISTRY}/${ORG}/nr-fom/${COMPONENT}:${TAG}
               securityContext:
                 runAsNonRoot: true

@@ -1,6 +1,6 @@
 # PostgreSQL Database Major Version Upgrade Steps
 
-This guide outlines the steps to migrate a database to PostgreSQL v17 in an OpenShift environment. It can be reused for upgrading to other versions.
+This guide outlines the steps to migrate a database to PostgreSQL v18 in an OpenShift environment. It can be reused for upgrading to other versions.
 
 ## Prerequisites
 - Create a pr branch before upgrading, update the db/openshift.deployment.yml for DB_VERSION to next version (e.g., 18)
@@ -37,9 +37,9 @@ Navigate to the `db` directory: `cd db`. The script renames the original databas
 ./rename_deployment.sh fom-${TARGET}-db
 ```
 
-### 5. Deploy the New PostgreSQL Database (e.g., v17)
+### 5. Deploy the New PostgreSQL Database (e.g., v18)
 
-Create a new deployment config (e.g., `fom-819-db`) with PostgreSQL v17 and a new PVC (e.g., `fom-819-db-17`) that has the default data:
+Create a new deployment config (e.g., `fom-819-db`) with PostgreSQL v18 and a new PVC (e.g., `fom-819-db-18`) that has the default data:
 
 ```bash
 oc process -f openshift.deploy.yml -p ZONE=${TARGET} -p TAG=${TARGET} | oc apply -f -
