@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Get PR Number Mod 50
         id: mod-tag
-        run: echo "mod-tag=$(( ${{ github.event.number }} % 50 ))" >> $GITHUB_OUTPUT
+        run: echo "mod-tag=$(( ${{ github.event.number }} % 50 ))" >> "$GITHUB_OUTPUT"
 
   validate:
     name: Validate PR
