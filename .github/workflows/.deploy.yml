@@ -108,7 +108,7 @@ jobs:
 
       - name: OpenShift Init
         id: openshift-init
-        uses: bcgov/actions-openshift/deployer@ea9651011c0bf9d15aad22cf5aa2fae93c096edf # v0.3.2
+        uses: bcgov/actions-openshift/deployer@97cb3f8a5a6d134594c85224d3f593e3c0e90647 # v0.4.0
         with:
           oc_namespace: ${{ vars.OC_NAMESPACE }}
           oc_server: ${{ vars.OC_SERVER }}
@@ -144,7 +144,7 @@ jobs:
           - name: public
             overwrite: true
     steps:
-      - uses: bcgov/actions-openshift/deployer@ea9651011c0bf9d15aad22cf5aa2fae93c096edf # v0.3.2
+      - uses: bcgov/actions-openshift/deployer@97cb3f8a5a6d134594c85224d3f593e3c0e90647 # v0.4.0
         with:
           file: ${{ matrix.name }}/openshift.deploy.yml
           oc_namespace: ${{ vars.OC_NAMESPACE }}
