@@ -42,7 +42,7 @@ jobs:
           PR: ${{ github.event.inputs.pr }}
         run: |
           if [ "${EVENT_NAME}" = "schedule" ]; then
-            TARGET=test
+            TARGET="test"
           fi
           TARGET="${TARGET:-test}"
           case "${TARGET}" in
