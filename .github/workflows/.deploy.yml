@@ -113,7 +113,7 @@ jobs:
           oc_namespace: ${{ vars.OC_NAMESPACE }}
           oc_server: ${{ vars.OC_SERVER }}
           oc_token: ${{ secrets.OC_TOKEN }}
-          file: libs/openshift.init.yml
+          file: openshift.init.yml
           overwrite: false
           parameters: -p ZONE=${{ inputs.target }}
           triggers: ${{ inputs.triggers }}
