@@ -24,17 +24,29 @@ jobs:
           - package: admin
             build_context: ./
             build_file: admin/Dockerfile
-            triggers: ('admin/' 'libs/')
+            triggers: |
+              admin/
+              libs/
+              package.json
+              package-lock.json
           - package: api
             build_context: ./
             build_file: api/Dockerfile
-            triggers: ('api/' 'libs/')
+            triggers: |
+              api/
+              libs/
+              package.json
+              package-lock.json
           - package: db
-            triggers: ('db')
+            triggers: db/
           - package: public
             build_context: ./
             build_file: public/Dockerfile
-            triggers: ('public/' 'libs/')
+            triggers: |
+              public/
+              libs/
+              package.json
+              package-lock.json
     steps:
       - uses: actions/checkout@v7
       - uses: bcgov/actions/builder@79aefe3a7abb2d0d00b1b3ea4cfbf12727a10638 # v0.9.0
@@ -58,7 +70,14 @@ jobs:
       db_testdata: true
       email_notify: nonexistent@gov.bc.ca  # lower environment fake email address to send
       replica_count: 1
-      triggers: ('db/' 'libs/' 'api/' 'admin/' 'public/')
+      triggers: |
+        admin/
+        api/
+        db/
+        libs/
+        public/
+        package.json
+        package-lock.json
 
   smoke:
     name: Smoke Test
