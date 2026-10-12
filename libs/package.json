@@ -5,10 +5,28 @@
   "engines": {
     "node": ">=26.0.0 || ^24.15.0 || ^22.22.3"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "default": "./index.ts"
+    },
+    "./client": {
+      "types": "./client/typescript-ng/index.ts",
+      "default": "./client/typescript-ng/index.ts"
+    },
+    "./utility": {
+      "types": "./utility/src/index.ts",
+      "default": "./utility/src/index.ts"
+    },
+    "./utility/*": {
+      "types": "./utility/src/*.ts",
+      "default": "./utility/src/*.ts"
+    }
+  },
   "scripts": {
-    "test-unit": "set LOG_LEVEL=warn && jest"
+    "test-unit": "LOG_LEVEL=warn jest"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

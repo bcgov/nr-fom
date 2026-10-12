@@ -16,6 +16,21 @@ concurrency:
 permissions: {}
 
 jobs:
+  tests-libs:
+    name: Unit Tests (libs)
+    if: (! github.event.pull_request.draft)
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: bcgov/actions/test-and-analyse@79aefe3a7abb2d0d00b1b3ea4cfbf12727a10638 # v0.9.0
+        with:
+          commands: |
+            cd .. && npm ci --ignore-scripts && cd -
+            npm run test-unit
+          dir: libs
+          cache: ""
+          node_version: 24
+          knip_config: .github/knip.json
+
   tests-admin:
     name: Unit Tests (admin)
     if: (! github.event.pull_request.draft)
@@ -128,7 +143,7 @@ jobs:
   # ==========================================================================
   results:
     name: Analysis Results
-    needs: [tests-admin, tests-api, tests-public, trivy, tests-e2e]
+    needs: [tests-libs, tests-admin, tests-api, tests-public, trivy, tests-e2e]
     if: always()
     runs-on: ubuntu-26.04
     timeout-minutes: 1
