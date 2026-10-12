@@ -7,7 +7,7 @@ Repository facts for automated coding assistants. Teams may edit or remove this 
 - `admin/` is the portal where Forest Clients and Ministry staff create, edit, submit, and review FOMs. `public/` is where citizens discover FOMs and submit comments.
 - `libs/client/typescript-ng/` is the generated OpenAPI Angular client (`@api-client`). `libs/utility/` is shared security, authentication, and TypeScript helpers.
 - `db/` is the PostgreSQL 18/PostGIS image, not a workspace
-- OpenShift templates (not Helm): `libs/openshift.init.yml` and `{admin,api,db,public}/openshift.deploy.yml`
+- OpenShift templates (not Helm): `openshift.init.yml` and `{admin,api,db,public}/openshift.deploy.yml`
 - Workflows: `.github/workflows/` (`pr-open.yml` builds and calls `.deploy.yml`; `merge.yml` deploys TEST; `release.yml` deploys PROD; `analysis.yml` tests; `load.yml` is k6). Playwright specs: `e2e/`
 
 ## Build, test, deploy
