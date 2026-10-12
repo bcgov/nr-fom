@@ -1,11 +1,3 @@
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
-![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)
-
-[![Analysis](https://github.com/bcgov/nr-fom/actions/workflows/analysis.yml/badge.svg)](https://github.com/bcgov/nr-fom/actions/workflows/analysis.yml)
-[![DEMO (merge)](https://github.com/bcgov/nr-fom/actions/workflows/merge-demo.yml/badge.svg)](https://github.com/bcgov/nr-fom/actions/workflows/merge-demo.yml)
-[![TEST (merge)](https://github.com/bcgov/nr-fom/actions/workflows/merge-main.yml/badge.svg)](https://github.com/bcgov/nr-fom/actions/workflows/merge-main.yml)
-[![PROD (release)](https://github.com/bcgov/nr-fom/actions/workflows/release.yml/badge.svg)](https://github.com/bcgov/nr-fom/actions/workflows/release.yml)
-
 # Forest Operation Map (FOM) LIBS
 
 ## Overview
