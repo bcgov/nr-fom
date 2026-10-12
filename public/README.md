@@ -1,6 +1,3 @@
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](../LICENSE)
-![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)
-
 # Forest Operation Map (FOM) - Public Front-end
 
 Angular front-end where the public reviews and comments on FOM projects. Served under `/public`.
