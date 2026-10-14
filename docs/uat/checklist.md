@@ -7,7 +7,7 @@ Environment (deploys automatically on merge to main):
 
 Time: about 35-45 minutes. Sections go from highest risk to lowest.
 Logins: Anon = no login; IDIR = ministry user; BCeID = forest client user for the FOM's client (needed to create, publish, withdraw, finalize).
-Before you start: wait for the merge deploy to go green, tail the API pod logs (`oc logs -f deploy/<fom-test-api>`), and have a small PDF, a JPG and `docs/uat/cutblocks-test.geojson` handy (Ian's two-cut-block test file, in lat/long).
+Before you start: wait for the merge deploy to go green, tail the API pod logs (`oc logs -f deploy/<fom-test-api>`), and have a small PDF, a JPG and `docs/uat/cutblocks-test.json` handy (Ian's two-cut-block test file, in lat/long).
 
 ## 0. Deploy and API logs (3 min)
 | # | Step | Expected | If it fails |
@@ -48,26 +48,27 @@ Use the Initial FOM from 3.1, so deletes are allowed.
 | 4.1 | Edit FOM, upload a PDF as Supporting Document, Save | Listed under Attachments; no attachment.service error in the log | PutObject (#1155) |
 | 4.2 | Click the attachment | Downloads and opens intact | GetObject (#1155) |
 | 4.3 | Upload and download a JPG | Works, correct content type | #1155 |
-| 4.4 | Anonymous `curl .../api/attachment/file/<attId>` | Downloads | #1155 or auth (#1162) |
+| 4.4 | Get the attachment id from the API or the browser network tab (UI attachment links are `blob:` URLs), then anonymous `curl .../api/attachment/file/<attId>` | Downloads | #1155 or auth (#1162) |
 | 4.5 | Delete the PDF, confirm, reload | Gone from list; no "Unable to remove object" in log; the old file URL no longer returns the file | DeleteObject (#1155) |
-| 4.6 | Add Online Public Notice with a file, then upload a second public notice file | Only one public notice listed (the second replaces the first) | Replace deletes old object first (#1155) |
-| 4.7 | Spatial upload `/a/<id>/upload`, choose Cut block, upload `cutblocks-test.geojson` | Two cut blocks appear: a small one near Kelowna and a larger one west of Williams Lake (near Anahim Lake). Shape info table lists both with their dev dates (2022-03-30 and 2022-03-31) | Whole upload fails: spatial/submission API (#1162, no S3). Only block #1 rejected or missing its date: it uses `DEVELOPMENT_DATE` while block #2 uses `DEV_DATE`, so the file may be deliberately testing the alternate name; compare with what FOM accepts before calling it a regression |
-| 4.8 | Optional: throwaway Initial FOM with one attachment, delete it | Deleted, no S3 errors in log | Project delete removes attachments (#1155) |
+| 4.6 | Edit FOM > Newspaper Public Notice: upload a file, then upload a second newspaper public notice file (Online Public Notice is text only) | Only one newspaper public notice listed (the second replaces the first) | Replace deletes old object first (#1155) |
+| 4.7 | Before uploading, set both development dates in `docs/uat/cutblocks-test.json` to future dates (the file ships with 2022 dates, which are rejected as past: "must be on or after today") | File ready with future dates on both cut blocks | - |
+| 4.8 | Spatial upload `/a/<id>/upload`, choose Cut block, upload `docs/uat/cutblocks-test.json` | Two cut blocks appear: a small one near Kelowna and a larger one west of Williams Lake (near Anahim Lake). Shape info table lists both with their (updated) development dates | Whole upload fails: spatial/submission API (#1162, no S3). Only block #1 rejected or missing its date: it uses `DEVELOPMENT_DATE` while block #2 uses `DEV_DATE`, so the file may be deliberately testing the alternate name; compare with what FOM accepts before calling it a regression |
+| 4.9 | Optional: throwaway Initial FOM with one attachment, delete it | Deleted, no S3 errors in log | Project delete removes attachments (#1155) |
 
 ## 5. Interactions and comments (5 min, IDIR or BCeID)
 | # | Step | Expected | If it fails |
 |---|---|---|---|
 | 5.1 | Public: open a Commenting Open FOM (e.g. `/public/a/1072/details`), Submit a Comment | Success message | #1162 |
-| 5.2 | Admin: Review Comments `/comments/:id`, set a response, Save | Persists after reload | #1162 |
+| 5.2 | Admin: on a Commenting Closed FOM, Review Comments `/comments/:id`, set a response, Save (responses are disabled while commenting is open) | Persists after reload | #1162 |
 | 5.3 | `/interactions/:id`, Add New with a file, Save; download it; delete it | Listed, downloads, deletes | S3 for interactions (#1155) |
 | 5.4 | Summary Report `/a/:id/summary` | Renders | #1162 |
 
 ## 6. Public site (6 min, Anon)
 | # | Step | Expected | If it fails |
 |---|---|---|---|
-| 6.1 | `/public` splash/training modal and About page | External links show the inline SVG icon, no missing glyphs | Fontawesome removal (#1138) |
+| 6.1 | `/public` How-to videos header link (external training page) and About page | External links show the inline SVG icon, no missing glyphs | Fontawesome removal (#1138) |
 | 6.2 | Map: pan, zoom, clusters, click a pin, open the FOM | Clusters split, popup works, details load | #1138 |
-| 6.3 | Find panel: filter by District and Commenting Open/Closed; reload; change a filter back | Results, pins and URL params update; filters restored on reload; list refreshes | object-hash replacement (#1138) |
+| 6.3 | Find panel: filter by FOM Number, Holder Name, Posted As Of, or the Commenting Open/Closed toggles (no District filter) | Map and count update; no URL query params | object-hash replacement (#1138) |
 | 6.4 | FOM details: external links and attachments | Icons render, attachment downloads | #1138, #1155 |
 | 6.5 | Layers: turn on Forest Development Units, zoom to 8+ | Olive 3px outline, approved units only, only at zoom 8+; no CSP errors for openmaps.gov.bc.ca | FDU layer / CSP (#1115, #1137) |
 | 6.6 | Details mini-map (public and admin) | FDU outline with white halo, if the layer is present there | #1137 |
