@@ -285,8 +285,10 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onSuccess(id: number) {
-    this.router.navigate([`a/${id}`])
+    this.modalSvc.openSnackBar({ message: 'Your FOM was saved', duration: 4000 });
+    this.router.navigate([`a/${id}`]);
   }
+
 
   async saveApplication() {
     this.isSubmitSaveClicked = true;

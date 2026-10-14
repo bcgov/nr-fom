@@ -201,9 +201,11 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   onSuccess(id: number) {
-    this.router.navigate([`a/${id}`])
+    this.modalSvc.openSnackBar({ message: 'Spatial data uploaded successfully', duration: 4000 });
+    this.router.navigate([`a/${id}`]);
     this.isSubmitting = false;
   }
+
 
   changeGeoType(e: Event) {
     this.fg()?.get('spatialObjectCode')?.setValue((e.target as HTMLSelectElement).value);

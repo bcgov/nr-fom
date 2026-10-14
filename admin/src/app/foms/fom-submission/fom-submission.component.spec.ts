@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { FomSubmissionComponent } from './fom-submission.component';
 import { CognitoService } from '@admin-core/services/cognito.service';
@@ -31,7 +31,7 @@ describe('FomSubmissionComponent', () => {
         },
         { provide: ProjectService, useValue: { projectControllerFindOne: jest.fn().mockReturnValue(of({})) } },
         { provide: SubmissionService, useValue: { submissionControllerFindSubmissionDetailForCurrentSubmissionType: jest.fn().mockReturnValue(of({})) } },
-        { provide: ModalService, useValue: { openErrorDialog: jest.fn(), openConfirmationDialog: jest.fn() } },
+        { provide: ModalService, useValue: { openErrorDialog: jest.fn(), openConfirmationDialog: jest.fn(), openSnackBar: jest.fn() } },
         { provide: CognitoService, useValue: { getUser: jest.fn().mockReturnValue({ isAuthorizedForClientId: jest.fn() }) } },
         { provide: RxFormBuilder, useValue: { formGroup: jest.fn().mockReturnValue({ get: jest.fn().mockReturnValue({ setValue: jest.fn() }), value: {} }) } },
         { provide: MatSnackBar, useValue: { open: jest.fn(), dismiss: jest.fn() } },
@@ -47,6 +47,24 @@ describe('FomSubmissionComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('shows a success toast and navigates on successful spatial submission', () => {
+    const modalSvc = TestBed.inject(ModalService);
+    const router = TestBed.inject(Router);
+    jest.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    component.originalSubmissionRequest = { projectId: 42 } as any;
+    component.isSubmitting = true;
+
+    component.onSuccess(42);
+
+    expect(modalSvc.openSnackBar).toHaveBeenCalledWith({
+      message: 'Spatial data uploaded successfully',
+      duration: 4000,
+    });
+    expect(router.navigate).toHaveBeenCalledWith(['a/42']);
+    expect(component.isSubmitting).toBe(false);
   });
 
   it('populates project()/spatialSubmission() signals from the load (replaces the ngOnInit cdr)', () => {

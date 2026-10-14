@@ -1,12 +1,18 @@
+@use "../themes/default.scss" as theme;
+
 // Material Snackbar
 // ref: https://material.angular.io/components/snack-bar/
 .mat-mdc-snack-bar-container {
-  // background: yellow;
-  // color: $black;
+  &.snackbar {
+    --mdc-snackbar-container-color: #{theme.$dark-moderate-lime-green};
+    --mdc-snackbar-supporting-text-color: #{theme.$white};
+    --mat-snack-bar-button-color: #{theme.$white};
+  }
+
   .mat-mdc-simple-snack-bar {
     .mat-mdc-snack-bar-action {
-      // color: unset;
       font-weight: 600;
     }
   }
 }
+
