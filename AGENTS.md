@@ -9,6 +9,7 @@ Repository facts for automated coding assistants. Teams may edit or remove this 
 - `db/` is the PostgreSQL 18/PostGIS image, not a workspace
 - OpenShift templates (not Helm): `openshift.init.yml` and `{admin,api,db,public}/openshift.deploy.yml`
 - Workflows: `.github/workflows/` (`pr-open.yml` builds and calls `.deploy.yml`; `merge.yml` deploys TEST; `release.yml` deploys PROD; `analysis.yml` tests; `load.yml` is k6). Playwright specs: `e2e/`
+- Manual QA/UAT checklists and fixtures: `docs/uat/`
 
 ## Build, test, deploy
 - Docker and Podman are interchangeable. When only Podman is installed, use Podman. A `docker compose` command below is the same with `podman compose`.
