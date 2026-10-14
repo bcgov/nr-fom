@@ -67,6 +67,7 @@ Use the Initial FOM from 3.1, so deletes are allowed.
 | 5.1 | Public: open a Commenting Open FOM (e.g. `/public/a/1072/details`), Submit a Comment | Success message | #1162 |
 | 5.1a | In 5.1: T&C "I agree" enables NEXT; bad phone shows "Enter a valid phone number, e.g. 123-456-7890"; "Commenting On" lists Overall FOM plus each shape; counter counts down from 4000 | "Thank you for your comment! All comments will be provided to the FOM Holder." | #1162 / public form |
 | 5.1b | Admin, same FOM: comment appears in Review Comments with the chosen shape | Listed, unclassified | #1162 |
+| 5.1c | On that FOM (or its Online Public Notice): confirm Commenting Closed is 30 days after the Commenting Open / start date given in the notice | Comment period runs 30 days from that start date | Comment period |
 | 5.2 | Admin: on a Commenting Closed FOM, Review Comments `/comments/:id`, set a response, Save (responses are disabled while commenting is open) | Persists after reload | #1162 |
 | 5.3 | `/interactions/:id`, Add New with a file, Save; download it; delete it | Listed, downloads, deletes | S3 for interactions (#1155) |
 | 5.4 | Summary Report `/a/:id/summary` | Renders | #1162 |
@@ -86,6 +87,7 @@ Use the Initial FOM from 3.1, so deletes are allowed.
 | 6.5 | Layers: turn on Forest Development Units, zoom to 8+ | Olive 3px outline, approved units only, only at zoom 8+; no CSP errors for openmaps.gov.bc.ca | FDU layer / CSP (#1115, #1137) |
 | 6.6 | Details mini-map (public and admin) | FDU outline with white halo, if the layer is present there | #1137 |
 | 6.7 | Public Notices tab | List loads; a notice opens | #1162 |
+| 6.8 | Open an Online Public Notice | Shows the business address and hours, the 30-day commenting timeframe, and the 3-year validity period | Public notice content |
 
 ## 7. Finalize email (3-5 min, conditional, BCeID)
 Needs an existing Commenting Closed FOM for your BCeID client with final spatial, a public notice, and every comment classified. If you don't have one, skip to 7.3.
