@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+		"type":"Polygon",
+		"coordinates":[[[-119.397280854,49.815298833],[-119.394459294,49.815127941],[-119.394863101,49.812334408],[-119.39768449,49.812505292],[-119.397280854,49.815298833]]]
+		}
+	  ,
+      "properties": {
+        "DEVELOPMENT_DATE": "2022-03-30",
+        "NAME": "lat/long specified cutblock #1 mapped from cutblock id 200"
+      }
+    },
+    { 
+      "type": "Feature", 
+      "geometry": {
+		"type":"Polygon",
+		"coordinates":[[[-124.667049923,52.651503193],[-124.515880983,52.739359312],[-124.370933855,52.647751958],[-124.374334159,52.558112332],[-124.669832475,52.561855973],[-124.667049923,52.651503193]]]
+		}
+	  , 
+      "properties": {
+        "DEV_DATE": "2022-03-31",
+        "NAME": "lat/long specified cutblock #2 mapped from cutblock id 600"
+      } 
+    }
+  ]
+}
