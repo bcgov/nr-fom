@@ -48,7 +48,7 @@ Use any FOM that is **Commenting Open** (for example your own once it opens, or 
 | 4.2 | Choose **Submit a Comment**, tick "I agree", enter a comment and choose what it's about. Submit. | "Thank you for your comment!" |
 | 4.3 | Enter a bad phone number before submitting. | "Enter a valid phone number, e.g. 123-456-7890". |
 | 4.4 | In admin (BCeID), open that FOM's comments. | Your comment is listed and not yet classified. |
-| 4.5 | Try to respond to the comment while commenting is still open. | Responses are not available until commenting closes. |
+| 4.5 | Respond to the comment (pick a response and save) while commenting is still open. | Saved. Holders can classify comments during the commenting period, and after it closes. |
 
 ## 5. Respond to comments (BCeID)
 Use a FOM for your company that is **Commenting Closed**.

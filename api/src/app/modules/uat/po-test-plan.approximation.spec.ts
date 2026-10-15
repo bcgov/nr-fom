@@ -224,12 +224,12 @@ describe('PO test plan approximations (#1135)', () => {
       }));
     });
 
-    // BUG (#1135): the admin UI disables responses while commenting is open, but the API accepts them.
-    // PublicCommentService.isUpdateAuthorized allows COMMENT_OPEN as well as COMMENT_CLOSED.
-    // Marked expected-failing so CI stays green; it will start failing (and need un-marking) once the API is fixed.
-    it.failing('rejects a response while commenting is open [known bug: API allows it]', async () => {
+    // Holders can classify and respond while commenting is still open. The admin UI allows this too
+    // (review-comments.component.ts canReplyComment: COMMENT_OPEN or COMMENT_CLOSED).
+    it('saves a response from the FOM holder while commenting is open', async () => {
       fom.workflowStateCode = WorkflowStateEnum.COMMENT_OPEN;
-      await expect(commentService.update(7, responseRequest(), bceidUser())).rejects.toThrow(ForbiddenException);
+      await commentService.update(7, responseRequest(), bceidUser());
+      expect(commentRepository.update).toHaveBeenCalled();
     });
 
     it('rejects a response after the FOM is Finalized', async () => {
