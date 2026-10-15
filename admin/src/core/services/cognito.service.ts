@@ -81,12 +81,23 @@ export class CognitoService {
       return new Promise(() => undefined);
     }
     console.log("Signed in...");
-    await this.refreshToken();
+    // Use the session checkAuth already restored from localStorage. A forced
+    // refresh on every hard reload was signing TEST users out: Cognito rejects
+    // or fails the refresh, refreshToken() calls logout(), and the chain lands
+    // on /admin/logout. Silent renew and the 403 interceptor still refresh.
+    try {
+      this.cognitoAuthToken = await this.sessionFromExistingTokens(login.idToken, login.accessToken);
+    } catch (error) {
+      console.error("Problem reading restored session tokens:", error);
+      await this.logout();
+      return;
+    }
     this.initialized = true;
   }
 
   /**
-   * Automatically logout if unable to refresh the session.
+   * Force-refresh the Cognito session. Used by the HTTP interceptor on 403.
+   * Logs out when the refresh fails.
    */
   async refreshToken(): Promise<void> {
     try {
@@ -271,11 +282,15 @@ export class CognitoService {
     };
   }
 
-  private async refreshAndObtainAwsCognitoUserSession(): Promise<CognitoAuthToken> {
-    const refreshed = await firstValueFrom(this.oidc.forceRefreshSession());
-    const idToken = refreshed.idToken;
-    const accessToken = refreshed.accessToken;
-    if (!refreshed.isAuthenticated || !idToken || !accessToken) {
+  /**
+   * Build the app token blob from tokens already held by the OIDC client
+   * (after checkAuth), without calling the token endpoint.
+   */
+  private async sessionFromExistingTokens(
+    idToken: string | undefined,
+    accessToken: string | undefined
+  ): Promise<CognitoAuthToken> {
+    if (!idToken || !accessToken) {
       throw new Error("Unable to obtain Cognito auth session tokens.");
     }
     const decodedIdToken = await firstValueFrom(this.oidc.getPayloadFromIdToken());
@@ -288,6 +303,14 @@ export class CognitoService {
       decodedAccessToken,
       jwtToken: { idToken, accessToken },
     };
+  }
+
+  private async refreshAndObtainAwsCognitoUserSession(): Promise<CognitoAuthToken> {
+    const refreshed = await firstValueFrom(this.oidc.forceRefreshSession());
+    if (!refreshed.isAuthenticated) {
+      throw new Error("Unable to obtain Cognito auth session tokens.");
+    }
+    return this.sessionFromExistingTokens(refreshed.idToken, refreshed.accessToken);
   }
 
 }
