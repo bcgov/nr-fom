@@ -211,7 +211,7 @@ describe('CognitoService', () => {
       expect(oidc.checkAuth).not.toHaveBeenCalled();
     });
 
-    it('should stage the Cognito issuer and refresh when the user is already signed in', async () => {
+    it('should stage the Cognito issuer and reuse stored tokens when the user is already signed in', async () => {
       window.history.pushState({}, '', '/');
       mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
       oidc.checkAuth.mockImplementation(() => {
@@ -233,15 +233,43 @@ describe('CognitoService', () => {
           triggerAuthorizationResultEvent: true,
         });
         expect(staged?.customParamsAuthRequest).toBeUndefined();
-        return of({ isAuthenticated: true });
+        return of({
+          isAuthenticated: true,
+          idToken: 'stored-id-token',
+          accessToken: 'stored-access-token',
+        });
       });
-      const refreshSpy = jest.spyOn(service, 'refreshToken').mockResolvedValueOnce();
+      oidc.getPayloadFromIdToken.mockReturnValue(of({ sub: '12345', 'custom:idp_name': 'idir' }));
+      oidc.getPayloadFromAccessToken.mockReturnValue(of({ sub: '12345' }));
+      const refreshSpy = jest.spyOn(service, 'refreshToken');
+      const logoutSpy = jest.spyOn(service, 'logout');
 
       await service.init();
 
       expect(oidc.checkAuth).toHaveBeenCalledTimes(1);
-      expect(refreshSpy).toHaveBeenCalledTimes(1);
+      expect(refreshSpy).not.toHaveBeenCalled();
+      expect(oidc.forceRefreshSession).not.toHaveBeenCalled();
+      expect(logoutSpy).not.toHaveBeenCalled();
       expect(service.initialized).toBe(true);
+      expect(service.getToken()).toEqual({
+        decodedIdToken: { sub: '12345', 'custom:idp_name': 'idir' },
+        decodedAccessToken: { sub: '12345' },
+        jwtToken: { idToken: 'stored-id-token', accessToken: 'stored-access-token' },
+      });
+    });
+
+    it('should logout when checkAuth is authenticated but tokens are missing', async () => {
+      window.history.pushState({}, '', '/');
+      mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
+      oidc.checkAuth.mockReturnValue(of({ isAuthenticated: true, idToken: '', accessToken: '' }));
+      const logoutSpy = jest.spyOn(service, 'logout').mockResolvedValueOnce();
+      const refreshSpy = jest.spyOn(service, 'refreshToken');
+
+      await service.init();
+
+      expect(refreshSpy).not.toHaveBeenCalled();
+      expect(logoutSpy).toHaveBeenCalledTimes(1);
+      expect(service.initialized).toBe(false);
     });
 
     it('should call login when cognito is enabled and user is not signed in', async () => {
