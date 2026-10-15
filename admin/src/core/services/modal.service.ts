@@ -24,9 +24,14 @@ export class ModalService {
   modalOpen = false;
   dialogRefClose$: Observable<MatDialogRef<any>>;
 
-  openSnackBar( { message, button }: { message: string, button?: string; } ) {
-    return this.snackBar.open( message, button ?? button, { verticalPosition: 'top', panelClass: 'snackbar'} )
+  openSnackBar( { message, button, duration }: { message: string, button?: string; duration?: number; } ) {
+    return this.snackBar.open( message, button ?? button, {
+      verticalPosition: 'top',
+      panelClass: 'snackbar',
+      ...(duration !== undefined ? { duration } : {})
+    });
   }
+
 
   openDialog(config: { data: DialogData }): MatDialogRef<any> {
     const { data } = config;

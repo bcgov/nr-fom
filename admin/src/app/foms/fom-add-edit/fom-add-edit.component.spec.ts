@@ -128,7 +128,7 @@ describe('FomAddEditComponent', () => {
         { provide: StateService, useValue: { getCodeTable: () => [{ id: 3, name: 'A District' }] } },
         { provide: LoadingService, useValue: { loading: signal(false) } },
         { provide: CognitoService, useValue: { getUser: () => ({ isMinistry: true, isForestClient: false, isAuthorizedForClientId: () => true }) } },
-        { provide: ModalService, useValue: { openWarningDialog: jest.fn(), openConfirmationDialog: jest.fn() } },
+        { provide: ModalService, useValue: { openWarningDialog: jest.fn(), openConfirmationDialog: jest.fn(), openSnackBar: jest.fn() } },
         { provide: MatSnackBar, useValue: { open: jest.fn(), dismiss: jest.fn() } },
         { provide: RxFormBuilder, useValue: { formGroup: jest.fn().mockImplementation(buildFormGroup) } },
       ],
@@ -270,6 +270,7 @@ describe('FomAddEditComponent', () => {
       expect(component.fg.get('opStartDate')?.hasError('matDatepickerMax')).toBe(false);
       expect(component.fg.get('opEndDate')?.hasError('matDatepickerMax')).toBe(false);
 
+      const modalSvc = TestBed.inject(ModalService);
       jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
       component.submit();
 
@@ -278,6 +279,27 @@ describe('FomAddEditComponent', () => {
         operationStartYear: year,
         operationEndYear: year,
       }));
+      expect(modalSvc.openSnackBar).toHaveBeenCalledWith({ message: 'Your FOM was saved', duration: 4000 });
+    });
+
+    it('shows a success toast when saveApplication completes', async () => {
+      const modalSvc = TestBed.inject(ModalService);
+      jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      const updateMock = jest.fn().mockReturnValue(of({ id: 7 }));
+      TestBed.inject(ProjectService).projectControllerUpdate = updateMock;
+
+      component.originalProjectResponse = {
+        id: 7,
+        district: { id: 3 },
+        workflowState: { code: 'INITIAL' },
+        forestClient: { id: 'c1' },
+      } as any;
+      component.fg.get('description')?.setValue('Updated description');
+
+      await component.saveApplication();
+
+      expect(modalSvc.openSnackBar).toHaveBeenCalledWith({ message: 'Your FOM was saved', duration: 4000 });
+      expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['a/7']);
     });
   });
 
