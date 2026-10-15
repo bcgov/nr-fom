@@ -258,6 +258,46 @@ describe('CognitoService', () => {
       });
     });
 
+    it('should refresh at startup when the restored tokens are already expired', async () => {
+      window.history.pushState({}, '', '/');
+      mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
+      oidc.checkAuth.mockReturnValue(of({ isAuthenticated: true, idToken: 'old-id', accessToken: 'old-access' }));
+      const past = Math.floor(Date.now() / 1000) - 3600;
+      const future = Math.floor(Date.now() / 1000) + 3600;
+      oidc.getPayloadFromIdToken
+        .mockReturnValueOnce(of({ sub: '1', exp: past }))
+        .mockReturnValueOnce(of({ sub: '1', exp: future }));
+      oidc.getPayloadFromAccessToken
+        .mockReturnValueOnce(of({ sub: '1', exp: past }))
+        .mockReturnValueOnce(of({ sub: '1', exp: future }));
+      oidc.forceRefreshSession.mockReturnValue(of({ isAuthenticated: true, idToken: 'new-id', accessToken: 'new-access' }));
+
+      await service.init();
+
+      expect(oidc.forceRefreshSession).toHaveBeenCalledTimes(1);
+      expect(service.initialized).toBe(true);
+      expect((service.getToken() as CognitoAuthToken).jwtToken).toEqual({ idToken: 'new-id', accessToken: 'new-access' });
+    });
+
+    it('should sign in again when expired restored tokens cannot be refreshed', async () => {
+      window.history.pushState({}, '', '/');
+      mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
+      oidc.checkAuth.mockReturnValue(of({ isAuthenticated: true, idToken: 'old-id', accessToken: 'old-access' }));
+      const past = Math.floor(Date.now() / 1000) - 3600;
+      oidc.getPayloadFromIdToken.mockReturnValue(of({ sub: '1', exp: past }));
+      oidc.getPayloadFromAccessToken.mockReturnValue(of({ sub: '1', exp: past }));
+      oidc.forceRefreshSession.mockReturnValue(throwError(() => new Error('refresh rejected')));
+      const logoutSpy = jest.spyOn(service, 'logout');
+
+      void service.init();
+      await new Promise((r) => setTimeout(r, 0));
+
+      expect(oidc.logoffLocal).toHaveBeenCalledTimes(1);
+      expect(oidc.authorize).toHaveBeenCalledTimes(1);
+      expect(logoutSpy).not.toHaveBeenCalled();
+      expect(service.initialized).toBe(false);
+    });
+
     it('should logout when checkAuth is authenticated but tokens are missing', async () => {
       window.history.pushState({}, '', '/');
       mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
@@ -430,13 +470,15 @@ describe('CognitoService', () => {
       });
     });
 
-    it('should emit error when the refresh rejects', (done) => {
+    it('should emit error and sign in again when the refresh rejects', (done) => {
       oidc.forceRefreshSession.mockReturnValue(throwError(() => new Error('Refresh failed')));
 
       service.updateToken().subscribe({
         next: () => done.fail('Should not emit next'),
         error: () => {
           expect(oidc.forceRefreshSession).toHaveBeenCalledWith();
+          expect(oidc.logoffLocal).toHaveBeenCalledTimes(1);
+          expect(oidc.authorize).toHaveBeenCalledTimes(1);
           done();
         }
       });

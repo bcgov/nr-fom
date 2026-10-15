@@ -136,6 +136,22 @@ describe('CognitoTokenInterceptor', () => {
     req1.flush('forbidden', { status: 403, statusText: 'Forbidden' });
   });
 
+  it('should refresh again on a later 403 after a failed refresh', () => {
+    mockCognitoService.initialized = true;
+    mockCognitoService.updateToken
+      .mockReturnValueOnce(throwError(() => new Error('Refresh failed')))
+      .mockReturnValueOnce(of(undefined));
+
+    httpClient.get('/api/first').subscribe({ error: () => undefined });
+    httpMock.expectOne('/api/first').flush('forbidden', { status: 403, statusText: 'Forbidden' });
+
+    httpClient.get('/api/second').subscribe();
+    httpMock.expectOne('/api/second').flush('forbidden', { status: 403, statusText: 'Forbidden' });
+
+    expect(mockCognitoService.updateToken).toHaveBeenCalledTimes(2);
+    httpMock.expectOne('/api/second').flush({});
+  });
+
   it('should propagate other (non-403) errors directly', (done) => {
     mockCognitoService.initialized = true;
 

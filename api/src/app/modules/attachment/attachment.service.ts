@@ -110,18 +110,37 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
       [WorkflowStateEnum.INITIAL, WorkflowStateEnum.COMMENT_OPEN, WorkflowStateEnum.COMMENT_CLOSED], user);
   }
 
+  private static readonly PUBLIC_WORKFLOW_STATES = [
+    WorkflowStateEnum.COMMENT_OPEN,
+    WorkflowStateEnum.COMMENT_CLOSED,
+    WorkflowStateEnum.FINALIZED,
+  ];
+
+  private async canViewProjectAttachments(projectId: number, user?: User): Promise<boolean> {
+    if (user?.isMinistry) {
+      return true;
+    }
+    if (user?.isForestClient && await this.projectAuthService.isForestClientUserAccess(projectId, user)) {
+      return true;
+    }
+    return this.projectAuthService.isAnonymousUserAllowedStateAccess(
+      projectId,
+      AttachmentService.PUBLIC_WORKFLOW_STATES,
+      undefined
+    );
+  }
+
   async isViewAuthorized(entity: Attachment, user?: User): Promise<boolean> {
     const attachmentTypeCode = entity.attachmentType?.code;
     if (attachmentTypeCode == AttachmentTypeEnum.PUBLIC_NOTICE || attachmentTypeCode == AttachmentTypeEnum.SUPPORTING_DOC) {
-      // These document types are viewable by the public.
-      return true;
+      return this.canViewProjectAttachments(entity.projectId, user);
     }
 
     if (user?.isMinistry) {
       return true;
     }
 
-    // Forest client users can access irregardless of the workflow state.
+    // Forest client users can access interactions regardless of workflow state.
     return this.projectAuthService.isForestClientUserAccess(entity.projectId, user);
   }
 
@@ -246,13 +265,10 @@ export class AttachmentService extends DataService<Attachment, Repository<Attach
   */
   async findByProjectIdNoInteraction(projectId: number, user?: User): Promise<AttachmentResponse[]> {
 
-    if (user && !user.isMinistry) {
-      // Don't check workflow states for viewing the comments.
-      if (! await this.projectAuthService.isForestClientUserAccess(projectId, user)) {
-        throw new ForbiddenException();
-      }
+    if (! await this.canViewProjectAttachments(projectId, user)) {
+      throw new ForbiddenException();
     }
-    
+
     const query = this.repository.createQueryBuilder("a")
       .leftJoinAndSelect("a.attachmentType", "attachmentType")
       .andWhere("a.project_id = :projectId", {projectId: `${projectId}`})
