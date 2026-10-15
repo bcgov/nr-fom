@@ -1,4 +1,12 @@
-@if (!isAppLoading() && !project()) {
+@if (!isAppLoading() && !project() && projectUnavailable()) {
+  <div class="flex-panel">
+    <div class="flex-panel__header">
+      <h2 class="title">This FOM isn't available</h2>
+    </div>
+  </div>
+}
+
+@if (!isAppLoading() && !project() && !projectUnavailable()) {
   <div class="flex-panel">
     <div class="flex-panel__header">
       <h2 class="title">No Project Selected</h2>

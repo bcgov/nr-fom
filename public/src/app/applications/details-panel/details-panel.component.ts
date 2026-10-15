@@ -55,6 +55,8 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
   // All five are written from async callbacks, so the view only learns about them through signals.
   public readonly isAppLoading = signal(false);
   public readonly project = signal<ProjectResponse | null>(null);
+  /** True when the requested id was found but is not public (API 403). */
+  public readonly projectUnavailable = signal(false);
   public readonly projectSpatialDetail = signal<SpatialFeaturePublicResponse[]>([]);
   public currentPeriodDaysRemainingCount = 0;
   public readonly workflowStatus = signal<Record<string, WorkflowStateCode>>({});
@@ -97,30 +99,48 @@ export class DetailsPanelComponent implements OnDestroy, OnInit {
     if (!projectId) {
       // no project to display
       this.project.set(null);
+      this.projectUnavailable.set(false);
       return;
     }
 
     this.isAppLoading.set(true);
-    forkJoin({
-      project: this.projectService.projectControllerFindOne(projectId),
-      spatialDetail: this.spatialFeatureService.spatialFeatureControllerGetForProject(projectId),
-      attachments: this.attachmentService.attachmentControllerFind(projectId)
-    })
+    this.projectUnavailable.set(false);
+    // Load the project first. Unpublished FOMs return 403 here; the HTTP
+    // interceptor shows "This FOM isn't available." Loading spatial next avoids
+    // a second 403 dialog from forkJoin.
+    this.projectService.projectControllerFindOne(projectId)
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: (results) => {
-        this.project.set(results.project);
-        this.projectSpatialDetail.set(results.spatialDetail);
-        this.attachments.set([...results.attachments].sort(
-            (a, b) => a.attachmentType.code.localeCompare(b.attachmentType.code)
-        ));
-        this.isAppLoading.set(false);
-        this.projectIdFilter.filter.value = results.project.id.toString();
-        this.saveQueryParameters();
-        this.update.emit(results.project);
+      next: (project) => {
+        forkJoin({
+          spatialDetail: this.spatialFeatureService.spatialFeatureControllerGetForProject(projectId),
+          attachments: this.attachmentService.attachmentControllerFind(projectId)
+        })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (results) => {
+            this.project.set(project);
+            this.projectSpatialDetail.set(results.spatialDetail);
+            this.attachments.set([...results.attachments].sort(
+                (a, b) => a.attachmentType.code.localeCompare(b.attachmentType.code)
+            ));
+            this.isAppLoading.set(false);
+            this.projectIdFilter.filter.value = project.id.toString();
+            this.saveQueryParameters();
+            this.update.emit(project);
+          },
+          error: (err) => {
+            console.error(err);
+            this.isAppLoading.set(false);
+          }
+        });
       },
       error: (err) => {
         console.error(err);
+        this.project.set(null);
+        this.projectSpatialDetail.set([]);
+        this.attachments.set([]);
+        this.projectUnavailable.set(err?.status === 403);
         this.isAppLoading.set(false);
       }
     });

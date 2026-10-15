@@ -7,7 +7,7 @@ import { UrlService } from '@public-core/services/url.service';
 import { FeatureSelectService } from '@utility/services/featureSelect.service';
 import { ConfigService } from '@utility/services/config.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 describe('DetailsPanelComponent', () => {
   let component: DetailsPanelComponent;
@@ -174,6 +174,40 @@ describe('DetailsPanelComponent', () => {
       (mockUrlService.getQueryParam as jest.Mock).mockReturnValue(null);
       component.getProjectDetails();
       expect(component.project()).toBeNull();
+      expect(component.projectUnavailable()).toBe(false);
+    });
+
+    it('marks the FOM unavailable on 403 and does not load spatial or attachments', () => {
+      (mockUrlService.getQueryParam as jest.Mock).mockReturnValue('100454');
+      (mockProjectService.projectControllerFindOne as jest.Mock).mockReturnValue(
+        throwError(() => ({ status: 403, message: 'Forbidden' }))
+      );
+
+      component.getProjectDetails();
+
+      expect(mockProjectService.projectControllerFindOne).toHaveBeenCalledWith(100454);
+      expect(mockSpatialFeatureService.spatialFeatureControllerGetForProject).not.toHaveBeenCalled();
+      expect(mockAttachmentService.attachmentControllerFind).not.toHaveBeenCalled();
+      expect(component.project()).toBeNull();
+      expect(component.projectUnavailable()).toBe(true);
+      expect(component.isAppLoading()).toBe(false);
+    });
+
+    it('loads spatial and attachments after a successful project fetch', () => {
+      (mockUrlService.getQueryParam as jest.Mock).mockReturnValue('1108');
+      const project = { id: 1108, name: 'Published' };
+      (mockProjectService.projectControllerFindOne as jest.Mock).mockReturnValue(of(project));
+      (mockSpatialFeatureService.spatialFeatureControllerGetForProject as jest.Mock).mockReturnValue(of([{ featureId: 1 }]));
+      (mockAttachmentService.attachmentControllerFind as jest.Mock).mockReturnValue(of([]));
+
+      component.getProjectDetails();
+
+      expect(mockProjectService.projectControllerFindOne).toHaveBeenCalledWith(1108);
+      expect(mockSpatialFeatureService.spatialFeatureControllerGetForProject).toHaveBeenCalledWith(1108);
+      expect(mockAttachmentService.attachmentControllerFind).toHaveBeenCalledWith(1108);
+      expect(component.project()).toEqual(project);
+      expect(component.projectUnavailable()).toBe(false);
+      expect(component.isAppLoading()).toBe(false);
     });
   });
 });

@@ -81,4 +81,50 @@ describe('errorInterceptor — global loading signal', () => {
       .flush('server error', { status: 500, statusText: 'Internal Server Error' });
     expect(loadingSvc.loading()).toBe(false);
   });
+
+
+  it('shows a clear FOM-not-available dialog for 403 on GET /api/project/:id', (done) => {
+    httpClient.get('/api/project/100454').subscribe({
+      next: () => done.fail('request should have errored'),
+      error: () => {
+        expect(mockModalService.openDialog).toHaveBeenCalledWith({
+          disableClose: true,
+          autoFocus: true,
+          data: {
+            message: `This FOM isn't available.`,
+            title: `FOM not available`,
+            buttons: { cancel: { text: 'OK' } },
+          },
+        });
+        done();
+      },
+    });
+
+    httpMock
+      .expectOne('/api/project/100454')
+      .flush({ message: 'Forbidden', statusCode: 403 }, { status: 403, statusText: 'Forbidden' });
+  });
+
+  it('keeps the generic error dialog for other 403s', (done) => {
+    httpClient.get('/api/spatial-feature?projectId=100454').subscribe({
+      next: () => done.fail('request should have errored'),
+      error: () => {
+        expect(mockModalService.openDialog).toHaveBeenCalledWith({
+          disableClose: true,
+          autoFocus: true,
+          data: {
+            message: `The request failed to process due to an error. Please try again later.`,
+            title: `Error`,
+            buttons: { cancel: { text: 'OK' } },
+          },
+        });
+        done();
+      },
+    });
+
+    httpMock
+      .expectOne('/api/spatial-feature?projectId=100454')
+      .flush({ message: 'Forbidden', statusCode: 403 }, { status: 403, statusText: 'Forbidden' });
+  });
+
 });
