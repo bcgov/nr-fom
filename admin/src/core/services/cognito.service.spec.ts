@@ -211,7 +211,7 @@ describe('CognitoService', () => {
       expect(oidc.checkAuth).not.toHaveBeenCalled();
     });
 
-    it('should stage the Cognito issuer and reuse stored tokens when the user is already signed in', async () => {
+    it('regression (#1200): init with stored tokens must not force refresh or log out', async () => {
       window.history.pushState({}, '', '/');
       mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
       oidc.checkAuth.mockImplementation(() => {
