@@ -92,7 +92,38 @@ export class CognitoService {
       await this.logout();
       return;
     }
+    if (CognitoService.isExpired(this.cognitoAuthToken)) {
+      // The API rejects an expired JWT with 403. Refresh now rather than send
+      // it; if Cognito will not refresh, sign in again (the hosted UI is silent
+      // while the IdP session lives) instead of leaving a dead session.
+      try {
+        this.cognitoAuthToken = await this.refreshAndObtainAwsCognitoUserSession();
+      } catch (error) {
+        console.error("Restored session is expired and could not be refreshed:", error);
+        await this.reauthenticate();
+        return new Promise(() => undefined);
+      }
+    }
     this.initialized = true;
+  }
+
+  /**
+   * True when either JWT's exp claim (seconds) is in the past.
+   */
+  static isExpired(token: CognitoAuthToken, nowMs: number = Date.now()): boolean {
+    const nowSec = Math.floor(nowMs / 1000);
+    return [token?.decodedIdToken?.['exp'], token?.decodedAccessToken?.['exp']]
+      .some((exp) => typeof exp === "number" && exp <= nowSec);
+  }
+
+  /**
+   * Drop the local OIDC tokens and start a fresh hosted UI sign-in.
+   * Unlike logout(), this does not end the IDIR/BCeID session, so the
+   * user normally comes straight back signed in with valid tokens.
+   */
+  public async reauthenticate(): Promise<void> {
+    this.oidc.logoffLocal();
+    await this.login();
   }
 
   /**
@@ -118,7 +149,10 @@ export class CognitoService {
         })
         .catch((err) => {
           console.error("Cognito token refresh error:", err);
-          observer.error();
+          // Without this the session stays dead: stored tokens keep failing
+          // with 403 even across reloads. Re-sign-in instead.
+          this.reauthenticate().catch((e) => console.error("Re-sign-in failed:", e));
+          observer.error(err);
         });
 
       return {

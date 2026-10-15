@@ -3,7 +3,7 @@ import { HttpInterceptorFn, HttpRequest } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { AwsCognitoConfig } from "@api-client";
 import { Observable, Subject, throwError } from "rxjs";
-import { catchError, switchMap, tap } from "rxjs/operators";
+import { catchError, finalize, switchMap, tap } from "rxjs/operators";
 
 /**
  * The OIDC client uses this app's HttpClient for discovery and token refresh.
@@ -82,9 +82,10 @@ function refreshToken(
   } else {
     state.inProgress = true;
     return cognitoService.updateToken().pipe(
-      tap(() => {
+      tap(() => state.refreshed$.next()),
+      // Reset on failure too, or every later 403 waits forever on refreshed$.
+      finalize(() => {
         state.inProgress = false;
-        state.refreshed$.next();
       })
     );
   }
