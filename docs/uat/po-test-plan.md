@@ -70,12 +70,15 @@ The FOM needs to be Commenting Closed, with the final map uploaded, a public not
 TEST only emails Heartwood@gov.bc.ca, not the districts.
 
 ## 7. Ministry reviewer (IDIR, optional)
+**Use a reviewer-only IDIR** (FOM reviewer role only, not an admin). A full admin IDIR, which may also hold forest client roles, *can* create, edit, publish, finalize and respond, so it will not show the read-only behaviour below. These steps match checklist 2.7, 2.8, 5.6 and 5.8.
 | # | Step | Expected |
 |---|---|---|
 | 7.1 | Sign in to admin with IDIR and search by district. | FOMs from every company are listed. |
 | 7.2 | Open a FOM. | You can view the map, public notice, comments and summary report. |
 | 7.3 | Look for edit, upload, publish, finalize and comment responses. | None are available. Ministry reviewers can only change the Commenting Closed date and the Mandatory classification setting. |
 | 7.4 | Go directly to `/admin/a/create`. | You can't create a FOM. |
+| 7.5 | Open a **Commenting Closed** FOM (for example 100452). Under Comment Period Details, note the Comment Classification value (Mandatory or not), choose **Change to...**, then reload. | The new value is kept after reload. *(Checklist 5.6)* |
+| 7.6 | Change it back to the value you noted in 7.5 and reload. | The original value is restored. Don't skip this step. |
 
 ## 8. Reporting problems
 For each problem, send the Heartwood team (Heartwood@gov.bc.ca) or add a comment on issue #1135 with:

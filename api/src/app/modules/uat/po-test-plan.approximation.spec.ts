@@ -41,6 +41,23 @@ function idirUser(): User {
   return user;
 }
 
+// FOM_ADMIN group only: admin pages, but no FOM_REVIEWER or FOM_SUBMITTER_<client> group.
+function adminOnlyUser(): User {
+  const user = new User();
+  user.userName = 'idir-admin';
+  user.isAdmin = true;
+  return user;
+}
+
+// A "full" IDIR admin holding FOM_ADMIN, FOM_REVIEWER and FOM_SUBMITTER_<client> together.
+function fullAdminUser(clientId = CLIENT_ID): User {
+  const user = bceidUser(clientId);
+  user.userName = 'idir-full-admin';
+  user.isMinistry = true;
+  user.isAdmin = true;
+  return user;
+}
+
 function commentClosedFom(overrides: Partial<Project> = {}): Project {
   const fom = new Project();
   Object.assign(fom, {
@@ -224,8 +241,51 @@ describe('PO test plan approximations (#1135)', () => {
       await expect(commentService.update(7, responseRequest(), idirUser())).rejects.toThrow(ForbiddenException);
     });
 
+    it('rejects a response from an admin-only IDIR user', async () => {
+      await expect(commentService.update(7, responseRequest(), adminOnlyUser())).rejects.toThrow(ForbiddenException);
+    });
+
+    it('accepts a response from a full IDIR admin who also holds the submitter role for the client', async () => {
+      await commentService.update(7, responseRequest(), fullAdminUser());
+      expect(commentRepository.update).toHaveBeenCalled();
+    });
+
     it('rejects a response from a BCeID user for another client', async () => {
       await expect(commentService.update(7, responseRequest(), bceidUser(OTHER_CLIENT_ID))).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('2 Role guards: reviewer vs admin vs full admin', () => {
+    const create = () => Object.assign(new ProjectCreateRequest(), { forestClientNumber: CLIENT_ID });
+
+    it('admin-only IDIR users cannot create, edit or finalize', async () => {
+      expect(await projectService.isCreateAuthorized(create(), adminOnlyUser())).toBe(false);
+      fom.workflowStateCode = WorkflowStateEnum.INITIAL;
+      expect(await projectService.isUpdateAuthorized(new ProjectUpdateRequest(), fom, adminOnlyUser())).toBe(false);
+      fom.workflowStateCode = WorkflowStateEnum.COMMENT_CLOSED;
+      await expect(projectService.workflowStateChange(FOM_ID, finalizeRequest(), adminOnlyUser())).rejects.toThrow(ForbiddenException);
+    });
+
+    it('full IDIR admins with the submitter role can create, edit and finalize for that client', async () => {
+      expect(await projectService.isCreateAuthorized(create(), fullAdminUser())).toBe(true);
+      fom.workflowStateCode = WorkflowStateEnum.INITIAL;
+      expect(await projectService.isUpdateAuthorized(new ProjectUpdateRequest(), fom, fullAdminUser())).toBe(true);
+      fom.workflowStateCode = WorkflowStateEnum.COMMENT_CLOSED;
+      await projectService.workflowStateChange(FOM_ID, finalizeRequest(), fullAdminUser());
+      expect(fom.workflowStateCode).toBe(WorkflowStateEnum.FINALIZED);
+    });
+
+    it('full IDIR admins are still limited to the clients in their submitter roles', async () => {
+      expect(await projectService.isCreateAuthorized(create(), fullAdminUser(OTHER_CLIENT_ID))).toBe(false);
+      await expect(projectService.workflowStateChange(FOM_ID, finalizeRequest(), fullAdminUser(OTHER_CLIENT_ID))).rejects.toThrow(ForbiddenException);
+    });
+
+    it('only reviewer (ministry) users can change classification mandatory; BCeID users cannot', async () => {
+      const request = { revisionCount: fom.revisionCount, commentClassificationMandatory: false } as any;
+      await expect(projectService.commentClassificationMandatoryChange(FOM_ID, request, bceidUser())).rejects.toThrow(ForbiddenException);
+      await expect(projectService.commentClassificationMandatoryChange(FOM_ID, request, adminOnlyUser())).rejects.toThrow(ForbiddenException);
+      await projectService.commentClassificationMandatoryChange(FOM_ID, request, idirUser());
+      expect(projectRepository.update).toHaveBeenCalledWith(FOM_ID, expect.objectContaining({ commentClassificationMandatory: false }));
     });
   });
 
