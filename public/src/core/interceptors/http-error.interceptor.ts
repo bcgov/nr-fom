@@ -19,14 +19,25 @@ export const errorInterceptor: HttpInterceptorFn = (request, next) => {
         mssg: `${request.urlWithParams} failed with error: ${error}`,
       });
 
+      const status = err?.status;
+      // Unpublished / non-public FOMs return 403 from GET /api/project/:id.
+      const projectDetailForbidden =
+        status === 403 && /\/api\/project\/\d+(?:\?|$)/.test(request.url);
+
       modalSvc.openDialog({
         disableClose: true,
         autoFocus: true,
-        data: {
-          message: `The request failed to process due to an error. Please try again later.`,
-          title: `Error`,
-          buttons: { cancel: { text: 'OK' } },
-        },
+        data: projectDetailForbidden
+          ? {
+              message: `This FOM isn't available.`,
+              title: `FOM not available`,
+              buttons: { cancel: { text: 'OK' } },
+            }
+          : {
+              message: `The request failed to process due to an error. Please try again later.`,
+              title: `Error`,
+              buttons: { cancel: { text: 'OK' } },
+            },
       });
 
       return throwError(() => err);
