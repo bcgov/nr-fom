@@ -31,6 +31,7 @@ describe('AttachmentService', () => {
     mockProjectAuthService = {
       isForestClientUserAllowedStateAccess: jest.fn(),
       isForestClientUserAccess: jest.fn(),
+      isAnonymousUserAllowedStateAccess: jest.fn(),
     };
 
     service = new AttachmentService(
@@ -141,14 +142,44 @@ describe('AttachmentService', () => {
   });
 
   describe('isViewAuthorized', () => {
-    it('returns true for PUBLIC_NOTICE and SUPPORTING_DOC for public users', async () => {
-      const notice = new Attachment();
-      notice.attachmentType = { code: AttachmentTypeEnum.PUBLIC_NOTICE } as AttachmentTypeCode;
-      expect(await service.isViewAuthorized(notice, undefined)).toBe(true);
+    const publicStates = [
+      WorkflowStateEnum.COMMENT_OPEN,
+      WorkflowStateEnum.COMMENT_CLOSED,
+      WorkflowStateEnum.FINALIZED,
+    ];
 
+    it('returns true for PUBLIC_NOTICE on a published FOM for anonymous users', async () => {
+      const notice = new Attachment();
+      notice.projectId = TEST_PROJECT_ID;
+      notice.attachmentType = { code: AttachmentTypeEnum.PUBLIC_NOTICE } as AttachmentTypeCode;
+      (mockProjectAuthService.isAnonymousUserAllowedStateAccess as jest.Mock).mockResolvedValue(true);
+
+      expect(await service.isViewAuthorized(notice, undefined)).toBe(true);
+      expect(mockProjectAuthService.isAnonymousUserAllowedStateAccess).toHaveBeenCalledWith(
+        TEST_PROJECT_ID,
+        publicStates,
+        undefined
+      );
+    });
+
+    it('returns false for PUBLIC_NOTICE on an unpublished FOM for anonymous users', async () => {
+      const notice = new Attachment();
+      notice.projectId = TEST_PROJECT_ID;
+      notice.attachmentType = { code: AttachmentTypeEnum.PUBLIC_NOTICE } as AttachmentTypeCode;
+      (mockProjectAuthService.isAnonymousUserAllowedStateAccess as jest.Mock).mockResolvedValue(false);
+
+      expect(await service.isViewAuthorized(notice, undefined)).toBe(false);
+    });
+
+    it('returns true for SUPPORTING_DOC for ministry users on an unpublished FOM', async () => {
+      const ministryUser = new User();
+      ministryUser.isMinistry = true;
       const doc = new Attachment();
+      doc.projectId = TEST_PROJECT_ID;
       doc.attachmentType = { code: AttachmentTypeEnum.SUPPORTING_DOC } as AttachmentTypeCode;
-      expect(await service.isViewAuthorized(doc, undefined)).toBe(true);
+
+      expect(await service.isViewAuthorized(doc, ministryUser)).toBe(true);
+      expect(mockProjectAuthService.isAnonymousUserAllowedStateAccess).not.toHaveBeenCalled();
     });
 
     it('returns true for ministry user on any attachment type', async () => {
@@ -164,6 +195,7 @@ describe('AttachmentService', () => {
     it('delegates to projectAuthService.isForestClientUserAccess for non-ministry interaction viewing', async () => {
       const clientUser = new User();
       clientUser.isMinistry = false;
+      clientUser.isForestClient = true;
 
       const interaction = new Attachment();
       interaction.projectId = TEST_PROJECT_ID;
@@ -173,6 +205,66 @@ describe('AttachmentService', () => {
 
       expect(await service.isViewAuthorized(interaction, clientUser)).toBe(true);
       expect(mockProjectAuthService.isForestClientUserAccess).toHaveBeenCalledWith(TEST_PROJECT_ID, clientUser);
+    });
+  });
+
+  describe('findByProjectIdNoInteraction', () => {
+    const publicStates = [
+      WorkflowStateEnum.COMMENT_OPEN,
+      WorkflowStateEnum.COMMENT_CLOSED,
+      WorkflowStateEnum.FINALIZED,
+    ];
+
+    function mockListQuery(records: Attachment[] = []) {
+      const qb = {
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(records),
+      };
+      (mockRepository.createQueryBuilder as jest.Mock).mockReturnValue(qb);
+      return qb;
+    }
+
+    it('throws ForbiddenException for anonymous users on an unpublished FOM', async () => {
+      (mockProjectAuthService.isAnonymousUserAllowedStateAccess as jest.Mock).mockResolvedValue(false);
+
+      await expect(service.findByProjectIdNoInteraction(TEST_PROJECT_ID, undefined)).rejects.toThrow(
+        ForbiddenException
+      );
+      expect(mockRepository.createQueryBuilder).not.toHaveBeenCalled();
+    });
+
+    it('returns the list for anonymous users on a published FOM', async () => {
+      (mockProjectAuthService.isAnonymousUserAllowedStateAccess as jest.Mock).mockResolvedValue(true);
+      const entity = new Attachment();
+      entity.id = TEST_ATTACHMENT_ID;
+      entity.projectId = TEST_PROJECT_ID;
+      entity.fileName = 'notice.pdf';
+      entity.attachmentType = { code: AttachmentTypeEnum.PUBLIC_NOTICE } as AttachmentTypeCode;
+      mockListQuery([entity]);
+
+      const result = await service.findByProjectIdNoInteraction(TEST_PROJECT_ID, undefined);
+
+      expect(mockProjectAuthService.isAnonymousUserAllowedStateAccess).toHaveBeenCalledWith(
+        TEST_PROJECT_ID,
+        publicStates,
+        undefined
+      );
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(TEST_ATTACHMENT_ID);
+    });
+
+    it('returns the list for ministry users on an unpublished FOM', async () => {
+      const ministryUser = new User();
+      ministryUser.isMinistry = true;
+      mockListQuery([]);
+
+      const result = await service.findByProjectIdNoInteraction(TEST_PROJECT_ID, ministryUser);
+
+      expect(result).toEqual([]);
+      expect(mockProjectAuthService.isAnonymousUserAllowedStateAccess).not.toHaveBeenCalled();
+      expect(mockProjectAuthService.isForestClientUserAccess).not.toHaveBeenCalled();
     });
   });
 
@@ -283,6 +375,7 @@ describe('AttachmentService', () => {
         entity.attachmentType = { code: AttachmentTypeEnum.PUBLIC_NOTICE } as AttachmentTypeCode;
 
         (mockRepository.findOne as jest.Mock).mockResolvedValue(entity);
+        (mockProjectAuthService.isAnonymousUserAllowedStateAccess as jest.Mock).mockResolvedValue(true);
 
         const missing = new Error('The specified key does not exist.');
         missing.name = errorName;
@@ -302,6 +395,7 @@ describe('AttachmentService', () => {
       entity.attachmentType = { code: AttachmentTypeEnum.PUBLIC_NOTICE } as AttachmentTypeCode;
 
       (mockRepository.findOne as jest.Mock).mockResolvedValue(entity);
+      (mockProjectAuthService.isAnonymousUserAllowedStateAccess as jest.Mock).mockResolvedValue(true);
 
       const stream = Readable.from([Buffer.from('chunk1-'), Buffer.from('chunk2')]);
       jest.spyOn(service, 'getObjectStream').mockResolvedValue(stream as any);
@@ -336,6 +430,7 @@ describe('AttachmentService', () => {
 
       (mockRepository.findOne as jest.Mock).mockResolvedValue(entity);
       (mockProjectAuthService.isForestClientUserAllowedStateAccess as jest.Mock).mockResolvedValue(true);
+      (mockProjectAuthService.isAnonymousUserAllowedStateAccess as jest.Mock).mockResolvedValue(true);
       (mockRepository.delete as jest.Mock).mockResolvedValue({ affected: 1 });
 
       const deleteObjectSpy = jest.spyOn(service, 'deleteObject').mockResolvedValue(true);
