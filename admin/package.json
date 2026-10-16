@@ -28,7 +28,7 @@
     "@popperjs/core": "^2.11.8",
     "@rxweb/reactive-form-validators": "^13.0.1",
     "angular-auth-oidc-client": "^22.0.1",
-    "apexcharts": "^7.0.0",
+    "apexcharts": "^8.0.0",
     "bootstrap": "^5.3.3",
     "file-saver-es": "^2.0.5",
     "json-2-csv": "5.6.0",
