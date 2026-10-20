@@ -21,7 +21,7 @@ jobs:
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-26.04
     steps:
-      - uses: bcgov/actions/test-and-analyse@79aefe3a7abb2d0d00b1b3ea4cfbf12727a10638 # v0.9.0
+      - uses: bcgov/actions/test-and-analyse@122a9b1c6c082b1b1f18c300020fbdc417b6b0b2 # v0.10.0
         with:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
@@ -36,7 +36,7 @@ jobs:
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-26.04
     steps:
-      - uses: bcgov/actions/test-and-analyse@79aefe3a7abb2d0d00b1b3ea4cfbf12727a10638 # v0.9.0
+      - uses: bcgov/actions/test-and-analyse@122a9b1c6c082b1b1f18c300020fbdc417b6b0b2 # v0.10.0
         with:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
@@ -54,7 +54,7 @@ jobs:
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-26.04
     steps:
-      - uses: bcgov/actions/test-and-analyse@79aefe3a7abb2d0d00b1b3ea4cfbf12727a10638 # v0.9.0
+      - uses: bcgov/actions/test-and-analyse@122a9b1c6c082b1b1f18c300020fbdc417b6b0b2 # v0.10.0
         with:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
@@ -83,7 +83,7 @@ jobs:
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-26.04
     steps:
-      - uses: bcgov/actions/test-and-analyse@79aefe3a7abb2d0d00b1b3ea4cfbf12727a10638 # v0.9.0
+      - uses: bcgov/actions/test-and-analyse@122a9b1c6c082b1b1f18c300020fbdc417b6b0b2 # v0.10.0
         with:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
@@ -148,7 +148,7 @@ jobs:
 
       - name: Check triggers
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions/diff-triggers@79aefe3a7abb2d0d00b1b3ea4cfbf12727a10638 # v0.9.0
+        uses: bcgov/actions/diff-triggers@122a9b1c6c082b1b1f18c300020fbdc417b6b0b2 # v0.10.0
         id: diff
         with:
           triggers: |
@@ -203,7 +203,7 @@ jobs:
     timeout-minutes: 1
     steps:
       - name: Analysis Results
-        uses: bcgov/actions/workflow-results@79aefe3a7abb2d0d00b1b3ea4cfbf12727a10638 # v0.9.0
+        uses: bcgov/actions/workflow-results@122a9b1c6c082b1b1f18c300020fbdc417b6b0b2 # v0.10.0
         with:
           needs: ${{ toJson(needs) }}
           title: 'Analysis Results'
