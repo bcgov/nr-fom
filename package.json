@@ -28,6 +28,6 @@
     "lint": "npm run lint --workspaces --if-present"
   },
   "devDependencies": {
-    "@playwright/test": "^1.64.0"
+    "@playwright/test": "^1.64.1"
   }
 }
