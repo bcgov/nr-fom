@@ -89,26 +89,26 @@ jobs:
           else
             echo "Using tag parameter"
             echo "tag=${{ inputs.tag }}"
-            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
           fi
 
           if [ ! -z "${{ inputs.url }}" ]; then
             echo "Using URL parameter"
             echo "url=${{ inputs.url }}"
-            echo "url=${{ inputs.url }}" >> $GITHUB_OUTPUT
+            echo "url=${{ inputs.url }}" >> "$GITHUB_OUTPUT"
           elif [ '${{ github.event_name }}' == 'pull_request' ]; then
             echo "Creating URL from inputs.target (= github.event.number) mod 50"
             echo "url=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca"
-            echo "url=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca" >> $GITHUB_OUTPUT
+            echo "url=fom-$(( ${{ inputs.target }} % 50 )).apps.silver.devops.gov.bc.ca" >> "$GITHUB_OUTPUT"
           else
             echo "Creating URL from inputs.target"
             echo "url=fom-${{ inputs.target }}.apps.silver.devops.gov.bc.ca"
-            echo "url=fom-${{ inputs.target }}.apps.silver.devops.gov.bc.ca" >> $GITHUB_OUTPUT
+            echo "url=fom-${{ inputs.target }}.apps.silver.devops.gov.bc.ca" >> "$GITHUB_OUTPUT"
           fi
 
       - name: OpenShift Init
         id: openshift-init
-        uses: bcgov/actions-openshift/deployer@4dbe4f6d25d14cbdb01e525a302e61e31f96c3ed # v0.5.0
+        uses: bcgov/actions-openshift/deployer@46f2614322f7ba1a5ad88a7e4e1b98569c80dcf7 # v0.6.0
         with:
           oc_namespace: ${{ vars.OC_NAMESPACE }}
           oc_server: ${{ vars.OC_SERVER }}
@@ -144,7 +144,7 @@ jobs:
           - name: public
             overwrite: true
     steps:
-      - uses: bcgov/actions-openshift/deployer@4dbe4f6d25d14cbdb01e525a302e61e31f96c3ed # v0.5.0
+      - uses: bcgov/actions-openshift/deployer@46f2614322f7ba1a5ad88a7e4e1b98569c80dcf7 # v0.6.0
         with:
           file: ${{ matrix.name }}/openshift.deploy.yml
           oc_namespace: ${{ vars.OC_NAMESPACE }}
@@ -171,9 +171,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Notify Owners on Failure
-        uses: bcgov/actions/workflow-notifier@122a9b1c6c082b1b1f18c300020fbdc417b6b0b2 # v0.10.0
+        uses: bcgov/actions/workflow-notifier@8843560d44aa717798dacb6831bf87161d0658ca # v0.11.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           title: "Deployment Failure: FOM (${{ inputs.target }})"
-          labels: "bug,failure,deployment"
 
