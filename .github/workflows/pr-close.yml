@@ -20,5 +20,9 @@ jobs:
       oc_token: ${{ secrets.OC_TOKEN }}
     with:
       cleanup: label
-      packages: api public admin db
+      packages: |
+        api
+        public
+        admin
+        db
       cleanup_name: fom-${{ github.event.number }}
