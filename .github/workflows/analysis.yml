@@ -199,6 +199,10 @@ jobs:
     name: Analysis Results
     needs: [changes, tests-libs, tests-admin, tests-api, tests-public, trivy, tests-e2e]
     if: always()
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
     runs-on: ubuntu-26.04
     timeout-minutes: 1
     steps:
