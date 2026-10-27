@@ -70,6 +70,7 @@ services:
       - DB_TYPE=postgres
       - DB_USERNAME=postgres
       - SECURITY_ENABLED=false
+      - DATA_ENCRYPTION_KEY=defaultkey
       - BYPASS_CORS=true
       - OBJECT_STORAGE_URL=nrs.objectstore.gov.bc.ca
       - OBJECT_STORAGE_ACCESS_ID=nr-fom-dev

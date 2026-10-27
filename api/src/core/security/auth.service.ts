@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { decode, verify } from 'jsonwebtoken';
+import { decode, JwtPayload, verify } from 'jsonwebtoken';
 import { JwksClient } from 'jwks-rsa';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -153,12 +153,29 @@ export class AuthService {
 
             const idToken_kid = untrustedDecodedIdToken.header.kid;
             const idPubkey = await this.jwksClient.getSigningKey(idToken_kid);
-            const decodedIdToken = verify(cognitoIdToken, idPubkey.getPublicKey());
+            const issuer = `https://cognito-idp.${this.awsConfig.aws_cognito_region}.amazonaws.com/${this.awsConfig.aws_user_pools_id}`;
+            const clientId = this.awsConfig.aws_user_pools_web_client_id;
+            // Cognito ID tokens carry 'aud' = app client id.
+            const decodedIdToken = verify(cognitoIdToken, idPubkey.getPublicKey(), {
+                algorithms: ['RS256'],
+                issuer,
+                audience: clientId,
+            }) as JwtPayload;
+            if (decodedIdToken.token_use !== 'id') {
+                throw new Error('ID token has unexpected token_use');
+            }
             this.logger.debug("Trusted decoded ID token = %o", decodedIdToken);
 
             const accessToken_kid = untrustedDecodedAccessToken.header.kid;
             const accessPubkey = await this.jwksClient.getSigningKey(accessToken_kid);
-            const decodedAccessToken = verify(cognitoAccessToken, accessPubkey.getPublicKey());
+            // Cognito access tokens have no 'aud'; the app client is in 'client_id'.
+            const decodedAccessToken = verify(cognitoAccessToken, accessPubkey.getPublicKey(), {
+                algorithms: ['RS256'],
+                issuer,
+            }) as JwtPayload;
+            if (decodedAccessToken.token_use !== 'access' || decodedAccessToken.client_id !== clientId) {
+                throw new Error('Access token has unexpected token_use or client_id');
+            }
             this.logger.debug("Trusted decoded Access token = %o", decodedAccessToken);
 
             const decodedToken = {
