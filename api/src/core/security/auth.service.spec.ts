@@ -1,5 +1,8 @@
 import { AuthService } from "@api-core/security/auth.service";
 import { mockLoggerFactory } from "../../app/factories/mock-logger.factory";
+import { ForbiddenException } from "@nestjs/common";
+import { generateKeyPairSync } from "crypto";
+import { sign } from "jsonwebtoken";
 import aswCognitoEnvJson from '../../assets/aws-cognito-env.json';
 
 describe('AuthService', () => {
@@ -51,5 +54,66 @@ describe('AuthService', () => {
         // Must stay in lockstep with the admin's `/admin/logout` route and with the
         // URL FAM allow-lists as a Cognito sign-out URL.
         expect(service.getAwsCognitoConfig().oauth.redirectSignOut).toMatch(/\/admin\/logout$/);
+    });
+
+    describe('verifyCognitoToken with security enabled', () => {
+        const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+        const issuer = `https://cognito-idp.${aswCognitoEnvJson.aws_cognito_region}.amazonaws.com/${aswCognitoEnvJson.aws_user_pools_id}`;
+        const clientId = aswCognitoEnvJson.aws_user_pools_web_client_id;
+        const pem = publicKey.export({ type: 'spki', format: 'pem' }).toString();
+
+        const idClaims = (o: object = {}) => ({ token_use: 'id', 'custom:idp_username': 'jdoe', 'custom:idp_display_name': 'J Doe', ...o });
+        const accessClaims = (o: object = {}) => ({ token_use: 'access', client_id: clientId, 'cognito:groups': ['FOM_SUBMITTER_1011'], ...o });
+        const signId = (claims = idClaims(), opts: object = {}) =>
+            sign(claims, privateKey, { algorithm: 'RS256', keyid: 'k1', issuer, audience: clientId, ...opts });
+        const signAccess = (claims = accessClaims(), opts: object = {}) =>
+            sign(claims, privateKey, { algorithm: 'RS256', keyid: 'k1', issuer, ...opts });
+        const header = (idToken: string, accessToken: string) => 'Bearer ' + JSON.stringify({ idToken, accessToken });
+
+        beforeEach(() => {
+            service.getAwsCognitoConfig().enabled = true;
+            (service as any).jwksClient = { getSigningKey: async () => ({ getPublicKey: () => pem }) };
+        });
+
+        it('accepts a valid ID/access token pair', async () => {
+            const user = await service.verifyCognitoToken(header(signId(), signAccess()));
+            expect(user.userName).toBe('jdoe');
+            expect(user.isForestClient).toBe(true);
+            expect(user.clientIds).toContain('1011');
+        });
+
+        it('rejects a missing bearer prefix', async () => {
+            await expect(service.verifyCognitoToken('junk')).rejects.toBeInstanceOf(ForbiddenException);
+        });
+
+        it('rejects a non-RS256 algorithm', async () => {
+            const hsId = sign(idClaims(), pem, { algorithm: 'HS256', keyid: 'k1', issuer, audience: clientId });
+            await expect(service.verifyCognitoToken(header(hsId, signAccess()))).rejects.toBeInstanceOf(ForbiddenException);
+        });
+
+        it('rejects a wrong issuer', async () => {
+            await expect(service.verifyCognitoToken(header(signId(idClaims(), { issuer: 'https://evil' }), signAccess())))
+                .rejects.toBeInstanceOf(ForbiddenException);
+        });
+
+        it('rejects an ID token with wrong audience', async () => {
+            await expect(service.verifyCognitoToken(header(signId(idClaims(), { audience: 'other-client' }), signAccess())))
+                .rejects.toBeInstanceOf(ForbiddenException);
+        });
+
+        it('rejects an ID token with wrong token_use', async () => {
+            await expect(service.verifyCognitoToken(header(signId(idClaims({ token_use: 'access' })), signAccess())))
+                .rejects.toBeInstanceOf(ForbiddenException);
+        });
+
+        it('rejects an access token with wrong token_use', async () => {
+            await expect(service.verifyCognitoToken(header(signId(), signAccess(accessClaims({ token_use: 'id' })))))
+                .rejects.toBeInstanceOf(ForbiddenException);
+        });
+
+        it('rejects an access token with wrong client_id', async () => {
+            await expect(service.verifyCognitoToken(header(signId(), signAccess(accessClaims({ client_id: 'other-client' })))))
+                .rejects.toBeInstanceOf(ForbiddenException);
+        });
     });
 });

@@ -1,8 +1,9 @@
+import { mockLoggerFactory } from '../../factories/mock-logger.factory';
 import { PublicCommentService } from './public-comment.service';
 
 describe('PublicCommentService DATA_ENCRYPTION_KEY', () => {
   const original = process.env.DATA_ENCRYPTION_KEY;
-  const logger = { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as any;
+  const logger = mockLoggerFactory();
 
   afterEach(() => {
     if (original === undefined) {
