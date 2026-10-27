@@ -78,6 +78,8 @@ function commentClosedFom(overrides: Partial<Project> = {}): Project {
   return fom;
 }
 
+process.env.DATA_ENCRYPTION_KEY = process.env.DATA_ENCRYPTION_KEY || 'test-encryption-key';
+
 describe('PO test plan approximations (#1135)', () => {
   const originalEnv = process.env;
   let fom: Project;

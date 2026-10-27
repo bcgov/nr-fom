@@ -27,7 +27,7 @@ export class PublicCommentService extends DataService<
   Repository<PublicComment>,
   PublicCommentAdminResponse
 > {
-  private readonly key = process.env.DATA_ENCRYPTION_KEY || 'defaultkey';
+  private readonly key: string;
 
   constructor(
     @InjectRepository(PublicComment)
@@ -36,6 +36,12 @@ export class PublicCommentService extends DataService<
     private projectAuthService: ProjectAuthService
   ) {
     super(repository, new PublicComment(), logger);
+    const key = process.env.DATA_ENCRYPTION_KEY;
+    if (!key) {
+      // Fail closed at startup: never encrypt/decrypt comments with a guessable default key.
+      throw new Error('DATA_ENCRYPTION_KEY environment variable must be set.');
+    }
+    this.key = key;
   }
 
   protected async saveEntity(
