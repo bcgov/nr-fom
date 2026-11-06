@@ -377,6 +377,13 @@ objects:
                           name: fom-object-storage
                     - name: OBJECT_STORAGE_URL
                       value: ${OBJECT_STORAGE_URL}
+                    # Required: the batch boots the full AppModule, and PublicCommentService
+                    # refuses to start without it (#1223).
+                    - name: DATA_ENCRYPTION_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          key: data-encryption-key
+                          name: ${NAME}-${ZONE}-${COMPONENT}
                   resources:
                     requests:
                       cpu: ${CPU_REQUEST}
@@ -445,6 +452,13 @@ objects:
                           name: fom-object-storage
                     - name: OBJECT_STORAGE_URL
                       value: ${OBJECT_STORAGE_URL}
+                    # Required: the batch boots the full AppModule, and PublicCommentService
+                    # refuses to start without it (#1223).
+                    - name: DATA_ENCRYPTION_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          key: data-encryption-key
+                          name: ${NAME}-${ZONE}-${COMPONENT}
                     - name: CLIENT_API_BASE_URL
                       valueFrom:
                         secretKeyRef:
