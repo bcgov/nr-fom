@@ -190,6 +190,29 @@ jobs:
         if: always()
         run: docker compose down
 
+  # The daily work-flow-state-change batch against a real database: boots it the
+  # way its CronJob does (template env only) and runs it with a fixed clock.
+  tests-api-batch:
+    name: Batch Tests (api)
+    needs: [changes]
+    if: (! github.event.pull_request.draft) && needs.changes.outputs.triggered == 'true'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Start database and install dependencies via Compose
+        run: |
+          docker compose up -d --wait db
+          docker compose run --rm init-deps
+
+      - name: Run batch tests (Containerized)
+        run: docker compose run --rm --no-deps --entrypoint sh api -c "npm run test-batch --workspace=api"
+
+      - name: Stop services
+        if: always()
+        run: docker compose down
+
   # ==========================================================================
   # WARNING: This job acts as the required merge gate for this workflow.
   # If you add a new job to this workflow, you MUST add its ID to the 'needs'
@@ -197,7 +220,7 @@ jobs:
   # ==========================================================================
   results:
     name: Analysis Results
-    needs: [changes, tests-libs, tests-admin, tests-api, tests-public, trivy, tests-e2e]
+    needs: [changes, tests-libs, tests-admin, tests-api, tests-public, trivy, tests-e2e, tests-api-batch]
     if: always()
     permissions:
       contents: read
