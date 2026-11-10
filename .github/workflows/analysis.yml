@@ -213,6 +213,20 @@ jobs:
         if: always()
         run: docker compose down
 
+
+  # Stubbed-oc tests for the post-deploy CronJob health check used by merge.yml and release.yml.
+  tests-batch-check:
+    name: Script Tests
+    if: (! github.event.pull_request.draft)
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Test batch-job-check.sh with stubbed oc output
+        run: .github/scripts/batch-job-check.test.sh
+
   # ==========================================================================
   # WARNING: This job acts as the required merge gate for this workflow.
   # If you add a new job to this workflow, you MUST add its ID to the 'needs'
@@ -220,7 +234,7 @@ jobs:
   # ==========================================================================
   results:
     name: Analysis Results
-    needs: [changes, tests-libs, tests-admin, tests-api, tests-public, trivy, tests-e2e, tests-api-batch]
+    needs: [changes, tests-libs, tests-admin, tests-api, tests-public, trivy, tests-e2e, tests-api-batch, tests-batch-check]
     if: always()
     permissions:
       contents: read

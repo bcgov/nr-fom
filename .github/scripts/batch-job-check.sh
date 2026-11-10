@@ -64,4 +64,4 @@ if (( now - $(epoch "${created}") > max_age )); then
   echo "::error::${cronjob} has no successful run, and it was created ${created}, $(age "${created}") ago (limit ${MAX_AGE_HOURS}h)"
   exit 1
 fi
-echo "::notice::${cronjob} was created ${created} and has not succeeded yet; its first scheduled run is still within ${MAX_AGE_HOURS}h. The daily Batch Check workflow will flag it if that run does not succeed."
+echo "::notice::${cronjob} was created ${created} and has not succeeded yet; its first scheduled run is still within ${MAX_AGE_HOURS}h."
