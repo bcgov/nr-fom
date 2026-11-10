@@ -88,6 +88,7 @@ Use the Initial FOM from 3.1, so deletes are allowed.
 | 6.6 | Details mini-map (public and admin) | FDU outline with white halo, if the layer is present there | #1137 |
 | 6.7 | Public Notices tab | List loads; a notice opens | #1162 |
 | 6.8 | Open an Online Public Notice | Shows the business address and hours, the 30-day commenting timeframe, and the 3-year validity period | Public notice content |
+| 6.9 | Needs a FOM published yesterday with today's Commenting Open date (BCeID: a FOM from 3.1, published the day before its open date). Today after 10:00 UTC (the batch runs about 08:xx UTC; the public list refreshes at 09:45 UTC): Find panel with only Commenting Open on | The FOM is listed as Commenting Open on the map and in the count | The daily work-flow-state-change batch did not run or failed: check its latest Job in OpenShift (#1223, #1234) |
 
 ## 7. Finalize email (3-5 min, conditional, BCeID)
 Needs an existing Commenting Closed FOM for your BCeID client with final spatial, a public notice, and every comment classified. If you don't have one, skip to 7.3.

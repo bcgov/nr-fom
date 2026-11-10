@@ -19,6 +19,7 @@
     "test-unit": "LOG_LEVEL=warn NODE_OPTIONS='--experimental-vm-modules' jest --coverage --maxWorkers=2 --testPathIgnorePatterns='e2e|perftest'",
     "test-unit-watch": "LOG_LEVEL=warn NODE_OPTIONS='--experimental-vm-modules' jest --testPathIgnorePatterns='e2e|perftest' --watch=true --maxWorkers=2",
     "test-e2e": "LOG_LEVEL=warn NODE_OPTIONS='--experimental-vm-modules' jest --testNamePattern='e2e' --maxWorkers=2 --testPathIgnorePatterns=perftest",
+    "test-batch": "nest build && LOG_LEVEL=warn NODE_OPTIONS='--experimental-vm-modules' jest --coverage=false --runInBand --transformIgnorePatterns=/node_modules/ --transformIgnorePatterns=/src/migrations/main/ --testPathPatterns=src/e2e/batch.e2e",
     "test:cov": "LOG_LEVEL=warn NODE_OPTIONS='--experimental-vm-modules' jest --coverage --maxWorkers=2 --testPathIgnorePatterns=perftest",
     "test-bcgw-extract-stress": "BCGW_EXTRACT_STRESS=1 NODE_OPTIONS='--expose-gc --experimental-vm-modules' LOG_LEVEL=warn jest --coverage=false --runInBand --testPathPatterns=perftest/bcgw-extract-memory"
   },
