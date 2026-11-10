@@ -1,0 +1,67 @@
+name: Batch Check
+
+# Daily check of the TEST and PROD work-flow-state-change-batch CronJobs. A
+# deploy's own check (merge.yml, release.yml) sees the run before that deploy;
+# this catches the first run of the newly deployed image, and a batch that
+# stops running between deploys.
+
+on:
+  schedule:
+    - cron: "30 11 * * *" # 11:30 UTC, after the 08:xx UTC batch; a missed run is then over 26h old
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/scripts/batch-job-check.sh
+      - .github/scripts/batch-job-check.test.sh
+      - .github/workflows/.batch-check.yml
+      - .github/workflows/batch-check.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  tests:
+    name: Script Tests
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Test batch-job-check.sh with stubbed oc output
+        run: .github/scripts/batch-job-check.test.sh
+
+  check:
+    name: Check (${{ matrix.target }})
+    needs: [tests]
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [test, prod]
+    uses: ./.github/workflows/.batch-check.yml
+    secrets:
+      OC_TOKEN: ${{ secrets.OC_TOKEN }}
+    with:
+      environment: ${{ matrix.target }}
+      target: ${{ matrix.target }}
+
+  notify:
+    name: Notify Failure
+    needs: [tests, check]
+    if: always() && contains(needs.*.result, 'failure') && github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      issues: write
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Notify Owners on Failure
+        uses: bcgov/actions/workflow-notifier@d209bb08aabe15e5e69aca53b24d338a7b2843d5 # v0.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Batch Check Failure: FOM work-flow-state-change-batch"

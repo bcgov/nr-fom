@@ -1,0 +1,40 @@
+name: .Batch Check
+
+# Read-only: checks that the API's work-flow-state-change-batch CronJob is
+# healthy (latest Job not failed, last success at most 26h old). That batch is
+# the only thing that opens and closes FOMs for public comment.
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub environment holding the OpenShift namespace and token; test or prod
+        required: true
+        type: string
+      target:
+        description: Deployment target (template ZONE); test or prod
+        required: true
+        type: string
+    secrets:
+      OC_TOKEN:
+        description: OpenShift token; the environment's OC_TOKEN applies
+        required: true
+
+permissions: {}
+
+jobs:
+  check:
+    name: Batch Job (${{ inputs.target }})
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: bcgov/actions-openshift/oc-runner@4ad9f97c20e0e00454bfd35e54537ee8622fa166 # v0.7.0
+        with:
+          oc_namespace: ${{ vars.OC_NAMESPACE }}
+          oc_server: ${{ vars.OC_SERVER }}
+          oc_token: ${{ secrets.OC_TOKEN }}
+          commands: .github/scripts/batch-job-check.sh fom-${{ inputs.target }}-work-flow-state-change-batch
+          timeout: 2m

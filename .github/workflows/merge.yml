@@ -65,6 +65,18 @@ jobs:
       tag: ${{ github.sha }}
       target: test
 
+  batch-check:
+    name: Batch Check (TEST)
+    needs: [deploy]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/.batch-check.yml
+    secrets:
+      OC_TOKEN: ${{ secrets.OC_TOKEN }}
+    with:
+      environment: test
+      target: test
+
   images-promote:
     name: Promote images (TEST)
     continue-on-error: true # If no prod tags
