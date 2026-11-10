@@ -143,33 +143,54 @@ jobs:
       contents: read
     outputs:
       triggered: ${{ steps.result.outputs.triggered }}
+      api_batch: ${{ steps.result.outputs.api_batch }}
+      script_tests: ${{ steps.result.outputs.script_tests }}
     steps:
       - uses: actions/checkout@v7
 
+      # filters (not triggers): per-component outputs. The action's own
+      # `triggered` is true if ANY filter matches, so E2E uses the `app` key.
       - name: Check triggers
         if: github.event_name == 'pull_request'
         uses: bcgov/actions/diff-triggers@d209bb08aabe15e5e69aca53b24d338a7b2843d5 # v0.12.0
         id: diff
         with:
-          triggers: |
-            admin/
-            api/
-            db/
-            e2e/
-            libs/
-            public/
-            docker-compose.yml
-            package.json
-            package-lock.json
-            playwright.config.ts
-            .github/workflows/analysis.yml
+          filters: |
+            app:
+              - admin/
+              - api/
+              - db/
+              - e2e/
+              - libs/
+              - public/
+              - docker-compose.yml
+              - package.json
+              - package-lock.json
+              - playwright.config.ts
+              - .github/workflows/analysis.yml
+            api_batch:
+              - api/
+              - db/
+            script_tests:
+              - .github/scripts/batch-job-check*
+              - .github/workflows/.batch-check.yml
+              - .github/workflows/merge.yml
+              - .github/workflows/release.yml
 
       - id: result
         run: |
           if [ "${{ github.event_name }}" != "pull_request" ]; then
-            echo "triggered=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "triggered=true"
+              echo "api_batch=true"
+              echo "script_tests=true"
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "triggered=${{ steps.diff.outputs.triggered }}" >> "$GITHUB_OUTPUT"
+            {
+              echo "triggered=${{ steps.diff.outputs.app }}"
+              echo "api_batch=${{ steps.diff.outputs.api_batch }}"
+              echo "script_tests=${{ steps.diff.outputs.script_tests }}"
+            } >> "$GITHUB_OUTPUT"
           fi
 
   tests-e2e:
@@ -195,7 +216,7 @@ jobs:
   tests-api-batch:
     name: Batch Tests (api)
     needs: [changes]
-    if: (! github.event.pull_request.draft) && needs.changes.outputs.triggered == 'true'
+    if: (! github.event.pull_request.draft) && needs.changes.outputs.api_batch == 'true'
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
@@ -217,7 +238,8 @@ jobs:
   # Stubbed-oc tests for the post-deploy CronJob health check used by merge.yml and release.yml.
   tests-batch-check:
     name: Script Tests
-    if: (! github.event.pull_request.draft)
+    needs: [changes]
+    if: (! github.event.pull_request.draft) && needs.changes.outputs.script_tests == 'true'
     permissions:
       contents: read
     runs-on: ubuntu-26.04
