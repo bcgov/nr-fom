@@ -60,6 +60,11 @@ jobs:
       issues: write
     runs-on: ubuntu-26.04
     steps:
+      # Scheduled runs have no actor to notify; the notifier falls back to CODEOWNERS from the workspace
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: .github/CODEOWNERS
+          sparse-checkout-cone-mode: false
       - name: Notify Owners on Failure
         uses: bcgov/actions/workflow-notifier@d209bb08aabe15e5e69aca53b24d338a7b2843d5 # v0.12.0
         with:
