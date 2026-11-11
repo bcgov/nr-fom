@@ -49,6 +49,7 @@
     "@types/jest": "^30.0.0",
     "@types/leaflet": "^1.9.12",
     "jest": "^30.0.0",
+    "jest-environment-jsdom": "^30.3.0",
     "jest-sonar-reporter": "^2.0.0",
     "ts-jest": "^29.4.4",
     "typescript": "^6.0.3"
