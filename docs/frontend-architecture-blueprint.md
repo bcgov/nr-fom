@@ -517,11 +517,16 @@ provideAppInitializer → CognitoService.init()
   │     └─ If config.enabled = false → getFakeUser() [local dev only], initialized = true
   │
   ├─ stage OpenID config (authority = Cognito user-pool issuer) and checkAuth()
-  │     └─ authenticated → refreshToken() → forceRefreshSession()
-  │           └─ ID and access payloads from the OIDC client, initialized = true
+  │     └─ authenticated → ID and access payloads from the OIDC client
+  │           ├─ sign-in callback → measure the PC clock's offset from the tokens' iat
+  │           ├─ exp passed (on Cognito's clock) → forceRefreshSession(),
+  │           │     or a fresh hosted UI sign-in if Cognito will not refresh
+  │           └─ initialized = true
   │
   └─ not authenticated → authorize() [Cognito hosted UI, IDIR / BCeID]
 ```
+
+**Token times never use the PC clock as-is.** A PC clock an hour off (old time zone data after BC stopped changing clocks in November 2026, or a US Pacific zone) made every fresh ID token look issued an hour away or already expired, so `checkAuth()` came back signed out and `init()` sent the browser to the hosted UI again, in an endless loop. `disableIdTokenValidation` turns off the OIDC client's ID token checks, whose `iat` and `exp` checks use the PC clock and have no setting for an hour of skew. The API verifies both tokens' signature, issuer, client and expiry with the server's clock on every request. `init()`'s own `exp` check subtracts the offset measured at sign-in or refresh (`fom_admin_clock_offset_ms` in localStorage). The OIDC client's access token expiry is already relative to when the PC received the token.
 
 There is **no `canActivate` for authentication anywhere in the route table.** Authentication is enforced by two things working together: `init()` above (which redirects to the hosted UI when there is no session) and `HeaderComponent.ngOnInit`, which routes an unauthenticated or unauthorized user to `/not-authorized` (skipping the redirect when already on `/not-authorized`, matched on `pathname` so a stray query string cannot defeat the check, and when `cognitoService.loggedOut`). `HeaderComponent.ngOnInit` also force-routes an admin-role-only user straight to `/analytics-dashboard`. Anything that changes either one changes the app's authentication behaviour globally.
 

@@ -65,6 +65,8 @@ describe('CognitoService', () => {
 
   afterEach(() => {
     window.history.pushState({}, '', '/');
+    window.localStorage.removeItem(CognitoService.CLOCK_OFFSET_KEY);
+    jest.restoreAllMocks();
   });
 
   it('should be created', () => {
@@ -231,6 +233,7 @@ describe('CognitoService', () => {
           autoUserInfo: false,
           renewUserInfoAfterTokenRenew: false,
           triggerAuthorizationResultEvent: true,
+          disableIdTokenValidation: true,
         });
         expect(staged?.customParamsAuthRequest).toBeUndefined();
         return of({
@@ -338,6 +341,102 @@ describe('CognitoService', () => {
 
       await expect(service.init()).rejects.toThrow('discovery failed');
       expect(loginSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  // A PC clock an hour off (BC stayed on UTC-7; old time zone data says UTC-8)
+  // must not make fresh tokens look expired or loop back to the hosted UI.
+  describe('client clock skew', () => {
+    const HOUR_MS = 3600 * 1000;
+
+    function cognitoTokens(serverNowSec: number) {
+      return {
+        id: { sub: '1', iat: serverNowSec, exp: serverNowSec + 3600 },
+        access: { sub: '1', iat: serverNowSec, exp: serverNowSec + 300 },
+      };
+    }
+
+    describe('isExpired', () => {
+      const serverNowMs = 1_800_000_000_000;
+      const serverNowSec = serverNowMs / 1000;
+      const fresh: CognitoAuthToken = {
+        decodedIdToken: cognitoTokens(serverNowSec).id,
+        decodedAccessToken: cognitoTokens(serverNowSec).access,
+        jwtToken: { idToken: 'id', accessToken: 'access' },
+      };
+
+      it.each([
+        ['on time', 0],
+        ['an hour ahead', HOUR_MS],
+        ['an hour behind', -HOUR_MS],
+      ])('a fresh token is not expired with the browser clock %s, given its offset', (_label, skew) => {
+        expect(CognitoService.isExpired(fresh, serverNowMs + skew, skew)).toBe(false);
+      });
+
+      it('an hour-ahead clock without the offset reads a fresh token as expired', () => {
+        expect(CognitoService.isExpired(fresh, serverNowMs + HOUR_MS)).toBe(true);
+      });
+
+      it('an hour-behind clock still sees a token past its exp, given its offset', () => {
+        const later = serverNowMs + 301 * 1000;
+        expect(CognitoService.isExpired(fresh, later - HOUR_MS, -HOUR_MS)).toBe(true);
+      });
+    });
+
+    describe('init on the sign-in callback', () => {
+      it.each([
+        ['on time', 0],
+        ['an hour ahead', HOUR_MS],
+        ['an hour behind', -HOUR_MS],
+      ])('signs in once, without a refresh or another redirect, with the browser clock %s', async (_label, skew) => {
+        const serverNowMs = Date.now();
+        jest.spyOn(Date, 'now').mockReturnValue(serverNowMs + skew);
+        window.history.pushState({}, '', '/admin/search?code=abc&state=xyz');
+        mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
+        oidc.checkAuth.mockReturnValue(of({ isAuthenticated: true, idToken: 'id', accessToken: 'access' }));
+        const tokens = cognitoTokens(Math.floor(serverNowMs / 1000));
+        oidc.getPayloadFromIdToken.mockReturnValue(of(tokens.id));
+        oidc.getPayloadFromAccessToken.mockReturnValue(of(tokens.access));
+
+        await service.init();
+
+        expect(service.initialized).toBe(true);
+        expect(oidc.forceRefreshSession).not.toHaveBeenCalled();
+        expect(oidc.authorize).not.toHaveBeenCalled();
+        const stored = Number(window.localStorage.getItem(CognitoService.CLOCK_OFFSET_KEY));
+        expect(Math.abs(stored - skew)).toBeLessThan(1000);
+      });
+    });
+
+    it('a reload of a restored session uses the stored offset instead of refreshing', async () => {
+      const serverNowMs = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(serverNowMs + HOUR_MS);
+      window.localStorage.setItem(CognitoService.CLOCK_OFFSET_KEY, String(HOUR_MS));
+      window.history.pushState({}, '', '/admin/search');
+      mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
+      oidc.checkAuth.mockReturnValue(of({ isAuthenticated: true, idToken: 'id', accessToken: 'access' }));
+      const tokens = cognitoTokens(Math.floor(serverNowMs / 1000) - 60);
+      oidc.getPayloadFromIdToken.mockReturnValue(of(tokens.id));
+      oidc.getPayloadFromAccessToken.mockReturnValue(of(tokens.access));
+
+      await service.init();
+
+      expect(service.initialized).toBe(true);
+      expect(oidc.forceRefreshSession).not.toHaveBeenCalled();
+    });
+
+    it('a refresh records the offset from the new tokens', async () => {
+      const serverNowMs = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(serverNowMs - HOUR_MS);
+      const tokens = cognitoTokens(Math.floor(serverNowMs / 1000));
+      oidc.forceRefreshSession.mockReturnValue(of({ isAuthenticated: true, idToken: 'id', accessToken: 'access' }));
+      oidc.getPayloadFromIdToken.mockReturnValue(of(tokens.id));
+      oidc.getPayloadFromAccessToken.mockReturnValue(of(tokens.access));
+
+      await service.refreshToken();
+
+      const stored = Number(window.localStorage.getItem(CognitoService.CLOCK_OFFSET_KEY));
+      expect(Math.abs(stored + HOUR_MS)).toBeLessThan(1000);
     });
   });
 

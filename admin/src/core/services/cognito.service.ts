@@ -51,6 +51,11 @@ export class CognitoService {
   public loggedOut = false;
   private fakeUser: User | null;
   public initialized: boolean = false;
+  /** This browser's clock minus Cognito's, in ms. See measureClockOffset(). */
+  private clockOffsetMs = 0;
+
+  /** localStorage key for the last measured clock offset, so a reload can reuse it. */
+  static readonly CLOCK_OFFSET_KEY = "fom_admin_clock_offset_ms";
 
   public isLogoutLanding(): boolean {
     return window.location.pathname.replace(/\/+$/, '').endsWith('/logout');
@@ -72,6 +77,9 @@ export class CognitoService {
     const openId = this.toOpenIdConfiguration(this.awsCognitoConfig);
     console.log("Using OIDC authority " + openId.authority);
     this.stagedOidc.config = openId;
+    // Read before checkAuth(), which strips ?code=&state= from the address bar.
+    const isSignInCallback = new URLSearchParams(window.location.search).has("code");
+    this.clockOffsetMs = CognitoService.readStoredClockOffset();
     const login = await firstValueFrom(this.oidc.checkAuth());
     if (!login.isAuthenticated) {
       console.log(login.errorMessage ?? "Not signed in");
@@ -92,7 +100,11 @@ export class CognitoService {
       await this.logout();
       return;
     }
-    if (CognitoService.isExpired(this.cognitoAuthToken)) {
+    if (isSignInCallback) {
+      // Tokens straight from the token endpoint: their iat is Cognito's "now".
+      this.measureClockOffset(this.cognitoAuthToken);
+    }
+    if (CognitoService.isExpired(this.cognitoAuthToken, Date.now(), this.clockOffsetMs)) {
       // The API rejects an expired JWT with 403. Refresh now rather than send
       // it; if Cognito will not refresh, sign in again (the hosted UI is silent
       // while the IdP session lives) instead of leaving a dead session.
@@ -108,12 +120,35 @@ export class CognitoService {
   }
 
   /**
-   * True when either JWT's exp claim (seconds) is in the past.
+   * True when either JWT's exp claim (seconds) is in the past on Cognito's
+   * clock. clockOffsetMs (browser clock minus Cognito's) converts the browser's
+   * now to Cognito's, so a wrong PC clock does not make fresh tokens look
+   * expired (or stale ones look valid).
    */
-  static isExpired(token: CognitoAuthToken, nowMs: number = Date.now()): boolean {
-    const nowSec = Math.floor(nowMs / 1000);
+  static isExpired(token: CognitoAuthToken, nowMs: number = Date.now(), clockOffsetMs: number = 0): boolean {
+    const nowSec = Math.floor((nowMs - clockOffsetMs) / 1000);
     return [token?.decodedIdToken?.['exp'], token?.decodedAccessToken?.['exp']]
       .some((exp) => typeof exp === "number" && exp <= nowSec);
+  }
+
+  /**
+   * Record how far this browser's clock is from Cognito's, using tokens that
+   * were just issued: their iat is Cognito's time of issue. Network latency
+   * makes the browser look a second or two ahead, which only makes isExpired()
+   * that much earlier. Stored so a reload of a restored session can use it.
+   */
+  private measureClockOffset(token: CognitoAuthToken, nowMs: number = Date.now()): void {
+    const iat = token.decodedAccessToken?.["iat"];
+    if (typeof iat !== "number") {
+      return;
+    }
+    this.clockOffsetMs = nowMs - iat * 1000;
+    window.localStorage.setItem(CognitoService.CLOCK_OFFSET_KEY, String(this.clockOffsetMs));
+  }
+
+  private static readStoredClockOffset(): number {
+    const stored = Number(window.localStorage.getItem(CognitoService.CLOCK_OFFSET_KEY));
+    return Number.isFinite(stored) ? stored : 0;
   }
 
   /**
@@ -313,6 +348,15 @@ export class CognitoService {
       autoUserInfo: false,
       renewUserInfoAfterTokenRenew: false,
       triggerAuthorizationResultEvent: true,
+      // The library checks the ID token's iat (within 120 s) and exp against
+      // this PC's clock, with no setting to widen the exp check. A PC clock an
+      // hour off (old time zone data after BC stopped changing clocks) failed
+      // every sign-in, so checkAuth() came back signed out and init() sent the
+      // browser to the hosted UI again: an endless redirect loop. The API
+      // verifies both tokens' signature, issuer, client and expiry on every
+      // request with the server's clock, and these tokens come straight from
+      // Cognito's token endpoint over TLS (code flow with PKCE and state).
+      disableIdTokenValidation: true,
     };
   }
 
@@ -344,7 +388,9 @@ export class CognitoService {
     if (!refreshed.isAuthenticated) {
       throw new Error("Unable to obtain Cognito auth session tokens.");
     }
-    return this.sessionFromExistingTokens(refreshed.idToken, refreshed.accessToken);
+    const session = await this.sessionFromExistingTokens(refreshed.idToken, refreshed.accessToken);
+    this.measureClockOffset(session);
+    return session;
   }
 
 }
