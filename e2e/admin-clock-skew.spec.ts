@@ -21,7 +21,6 @@ const POOL_ID = `${REGION}_E2Eskew`;
 const CLIENT_ID = 'e2e-skew-client-id';
 const DOMAIN = `fom-e2e-skew.auth.${REGION}.amazoncognito.com`;
 const ISSUER = `https://cognito-idp.${REGION}.amazonaws.com/${POOL_ID}`;
-const REDIRECT_SIGN_IN = 'http://localhost:4200/admin/search';
 const DISPLAY_NAME = 'E2E Skew Tester';
 const KID = 'e2e-skew-kid';
 const HOUR_MS = 3600 * 1000;
@@ -72,7 +71,9 @@ interface SignInMocks {
   refreshes: number;
 }
 
-async function mockCognito(page: Page): Promise<SignInMocks> {
+/** The callback must land on the admin under test, which holds the OIDC state and PKCE verifier. */
+async function mockCognito(page: Page, baseURL: string): Promise<SignInMocks> {
+  const redirectSignIn = new URL('/admin/search', baseURL).toString();
   const mocks: SignInMocks = { authorizeCalls: 0, codeExchanges: 0, refreshes: 0 };
   let nonce = '';
   let codeChallenge = '';
@@ -88,8 +89,8 @@ async function mockCognito(page: Page): Promise<SignInMocks> {
         oauth: {
           domain: DOMAIN,
           scope: ['openid'],
-          redirectSignIn: REDIRECT_SIGN_IN,
-          redirectSignOut: 'http://localhost:4200/admin/logout',
+          redirectSignIn,
+          redirectSignOut: new URL('/admin/logout', baseURL).toString(),
           responseType: 'code',
         },
         logout: {},
@@ -117,7 +118,7 @@ async function mockCognito(page: Page): Promise<SignInMocks> {
       mocks.authorizeCalls++;
       nonce = url.searchParams.get('nonce') ?? '';
       codeChallenge = url.searchParams.get('code_challenge') ?? '';
-      const back = new URL(REDIRECT_SIGN_IN);
+      const back = new URL(redirectSignIn);
       back.searchParams.set('code', `e2e-code-${mocks.authorizeCalls}`);
       back.searchParams.set('state', url.searchParams.get('state') ?? '');
       return route.fulfill({ status: 302, headers: { location: back.toString() } });
@@ -149,9 +150,10 @@ test.describe('Admin - sign-in with the PC clock off by an hour', () => {
     ['an hour ahead', HOUR_MS],
     ['an hour behind', -HOUR_MS],
   ] as const) {
-    test(`signs in once and stays signed in with the clock ${label}`, async ({ page }) => {
+    test(`signs in once and stays signed in with the clock ${label}`, async ({ page, baseURL }) => {
+      if (!baseURL) throw new Error('The admin project must set baseURL.');
       await page.clock.install({ time: Date.now() + skewMs });
-      const mocks = await mockCognito(page);
+      const mocks = await mockCognito(page, baseURL);
 
       await page.goto('/admin/search');
       await expect(userName(page)).toContainText(DISPLAY_NAME, { timeout: 15000 });
