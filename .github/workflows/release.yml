@@ -61,6 +61,18 @@ jobs:
       target: prod
       url: fom.nrs.gov.bc.ca
 
+  batch-check:
+    name: Batch Check (PROD)
+    needs: [deploy]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/.batch-check.yml
+    secrets:
+      OC_TOKEN: ${{ secrets.OC_TOKEN }}
+    with:
+      environment: prod
+      target: prod
+
   promote-prod:
     name: Promote Prod Tag
     needs: [deploy]
