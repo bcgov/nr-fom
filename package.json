@@ -29,5 +29,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1"
+  },
+  "overrides": {
+    "get-uri": "8.0.2"
   }
 }
