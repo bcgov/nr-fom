@@ -21,13 +21,12 @@ jobs:
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-26.04
     steps:
-      - uses: bcgov/actions/test-and-analyse@d209bb08aabe15e5e69aca53b24d338a7b2843d5 # v0.12.0
+      - uses: bcgov/actions/test-and-analyse@6c8ac0469fcf0d826533bc526c90119b8f149884 # v0.13.0
         with:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
           working_directory: libs
-          cache: ""
           node_version: 24
           knip_config: .github/knip.json
 
@@ -36,7 +35,7 @@ jobs:
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-26.04
     steps:
-      - uses: bcgov/actions/test-and-analyse@d209bb08aabe15e5e69aca53b24d338a7b2843d5 # v0.12.0
+      - uses: bcgov/actions/test-and-analyse@6c8ac0469fcf0d826533bc526c90119b8f149884 # v0.13.0
         with:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
@@ -45,7 +44,6 @@ jobs:
           # Workspaces use a single root package-lock.json; the action's npm cache
           # keys on <dir>/package-lock.json (now absent), so disable it to avoid
           # "Some specified paths were not resolved, unable to cache dependencies".
-          cache: ""
           node_version: 24
           knip_config: .github/knip.json
 
@@ -54,14 +52,13 @@ jobs:
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-26.04
     steps:
-      - uses: bcgov/actions/test-and-analyse@d209bb08aabe15e5e69aca53b24d338a7b2843d5 # v0.12.0
+      - uses: bcgov/actions/test-and-analyse@6c8ac0469fcf0d826533bc526c90119b8f149884 # v0.13.0
         with:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
           working_directory: api
           # See note in tests-admin: single root lockfile -> disable per-dir npm cache.
-          cache: ""
           node_version: 24
           knip_config: .github/knip.json
           sonar_token: ${{ secrets.SONAR_TOKEN }}
@@ -83,14 +80,13 @@ jobs:
     if: (! github.event.pull_request.draft)
     runs-on: ubuntu-26.04
     steps:
-      - uses: bcgov/actions/test-and-analyse@d209bb08aabe15e5e69aca53b24d338a7b2843d5 # v0.12.0
+      - uses: bcgov/actions/test-and-analyse@6c8ac0469fcf0d826533bc526c90119b8f149884 # v0.13.0
         with:
           commands: |
             cd .. && npm ci --ignore-scripts && cd -
             npm run test-unit
           working_directory: public
           # See note in tests-admin: single root lockfile -> disable per-dir npm cache.
-          cache: ""
           node_version: 24
           knip_config: .github/knip.json
 
@@ -148,7 +144,7 @@ jobs:
 
       - name: Check triggers
         if: github.event_name == 'pull_request'
-        uses: bcgov/actions/diff-triggers@d209bb08aabe15e5e69aca53b24d338a7b2843d5 # v0.12.0
+        uses: bcgov/actions/diff-triggers@6c8ac0469fcf0d826533bc526c90119b8f149884 # v0.13.0
         id: diff
         with:
           triggers: |
@@ -230,7 +226,7 @@ jobs:
     timeout-minutes: 1
     steps:
       - name: Analysis Results
-        uses: bcgov/actions/workflow-results@d209bb08aabe15e5e69aca53b24d338a7b2843d5 # v0.12.0
+        uses: bcgov/actions/workflow-results@6c8ac0469fcf0d826533bc526c90119b8f149884 # v0.13.0
         with:
           needs: ${{ toJson(needs) }}
           title: 'Analysis Results'
