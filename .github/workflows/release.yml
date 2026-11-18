@@ -33,7 +33,6 @@ jobs:
         with:
           packages: ${{ matrix.package }}
           revision: ${{ github.sha }}
-          max_depth: 100
 
       - name: Tag Image as Release
         uses: shrink/actions-docker-registry-tag@e6aaef25c595b6e0edd18bf4c7dbfea3abd43299 # v5

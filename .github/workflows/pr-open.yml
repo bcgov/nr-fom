@@ -55,7 +55,6 @@ jobs:
           context: ${{ matrix.build_context }}
           file: ${{ matrix.build_file }}
           tag_fallback: latest
-          tags: ${{ github.event.number }}
           triggers: ${{ matrix.triggers }}
 
   deploy:
