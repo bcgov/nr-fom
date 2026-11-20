@@ -34,7 +34,7 @@ RUN rm -rf node_modules
 
 
 # Deploy container
-FROM caddy:2.11.8-alpine
+FROM caddy:2.11.9-alpine
 
 # Copy over Caddyfile and static content
 ARG build_dir
