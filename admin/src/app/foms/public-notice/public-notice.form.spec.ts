@@ -1,35 +1,14 @@
-import { TestBed } from '@angular/core/testing';
-import { ReactiveFormConfig, RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
+import { FormGroup } from '@angular/forms';
 import { DateTime } from 'luxon';
 import { PublicNoticeForm } from './public-notice.form';
 
 describe('PublicNoticeForm', () => {
-  let formBuilder: RxFormBuilder;
-
-  beforeAll(() => {
-    ReactiveFormConfig.set({
-      validationMessage: {
-        required: 'This field is required.',
-        notEmpty: 'Cannot be empty.',
-        email: 'Invalid email address.',
-        minDate: 'Date is before minimum allowed.'
-      }
-    });
-  });
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [RxFormBuilder]
-    });
-    formBuilder = TestBed.inject(RxFormBuilder);
-  });
-
-  function createFormGroup(initial?: Partial<PublicNoticeForm>): RxFormGroup {
+  function createFormGroup(initial?: Partial<PublicNoticeForm>): FormGroup {
     const formModel = new PublicNoticeForm();
     if (initial) {
       Object.assign(formModel, initial);
     }
-    return formBuilder.formGroup(formModel) as RxFormGroup;
+    return formModel.toFormGroup();
   }
 
   describe('Core validations', () => {
@@ -86,6 +65,15 @@ describe('PublicNoticeForm', () => {
 
       expect(model.pnPostDate).toBeDefined();
       expect(model.pnPostDate instanceof Date).toBe(true);
+    });
+
+    it('rejects past pnPostDate and whitespace-only required text fields', () => {
+      const form = createFormGroup({
+        reviewAddress: '   ',
+        pnPostDate: DateTime.now().minus({ days: 1 }).toJSDate(),
+      });
+      expect(form.controls['reviewAddress'].hasError('notEmpty')).toBe(true);
+      expect(form.controls['pnPostDate'].hasError('minDate')).toBe(true);
     });
   });
 });
