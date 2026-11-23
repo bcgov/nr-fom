@@ -1,32 +1,14 @@
-import { TestBed } from '@angular/core/testing';
+import { FormGroup } from '@angular/forms';
 import { SpatialObjectCodeEnum, SubmissionTypeCodeEnum } from '@api-client';
-import { ReactiveFormConfig, RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
 import { FomSubmissionForm } from './fom-submission.form';
 
 describe('FomSubmissionForm', () => {
-  let formBuilder: RxFormBuilder;
-
-  beforeAll(() => {
-    ReactiveFormConfig.set({
-      validationMessage: {
-        required: 'This field is required.'
-      }
-    });
-  });
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [RxFormBuilder]
-    });
-    formBuilder = TestBed.inject(RxFormBuilder);
-  });
-
-  function createFormGroup(initial?: Partial<FomSubmissionForm>): RxFormGroup {
+  function createFormGroup(initial?: Partial<FomSubmissionForm>): FormGroup {
     const formModel = new FomSubmissionForm();
     if (initial) {
       Object.assign(formModel, initial);
     }
-    return formBuilder.formGroup(formModel) as RxFormGroup;
+    return formModel.toFormGroup();
   }
 
   it('validates required fields for spatial submission', () => {

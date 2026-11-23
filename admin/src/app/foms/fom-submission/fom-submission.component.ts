@@ -9,7 +9,6 @@ import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/s
 import { Router } from '@angular/router';
 import { ProjectPlanCodeEnum, ProjectResponse, ProjectService, SpatialObjectCodeEnum, SubmissionDetailResponse, SubmissionRequest, SubmissionService, SubmissionTypeCodeEnum, WorkflowStateEnum } from '@api-client';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
-import { RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
 import { User } from '@utility/security/user';
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -17,7 +16,7 @@ import { FomSubmissionForm } from './fom-submission.form';
 import { SubmissionOverviewFaqComponent } from './submission-overview-faq.component';
 
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 @Component({
@@ -40,7 +39,6 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   private router = inject(Router);
   snackBar = inject(MatSnackBar);
   private projectSvc = inject(ProjectService);
-  private formBuilder = inject(RxFormBuilder);
   private loadingSvc = inject(LoadingService);
   private modalSvc = inject(ModalService);
   private submissionSvc = inject(SubmissionService);
@@ -48,7 +46,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   private destroyRef = inject(DestroyRef);
 
   // Signal so the template's `@if (fg())` gate is reactive
-  public readonly fg = signal<RxFormGroup | undefined>(undefined);
+  public readonly fg = signal<FormGroup | undefined>(undefined);
   public readonly project = signal<ProjectResponse | undefined>(undefined);
   public readonly spatialSubmission = signal<SubmissionDetailResponse | undefined>(undefined);
   public originalSubmissionRequest:  SubmissionRequest;
@@ -87,7 +85,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
     }
 
     // allow synchronous navigation if everything is OK
-    if (!fg.dirty && !fg.isModified) {
+    if (!fg.dirty) {
       return true;
     }
 
@@ -127,7 +125,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
         jsonSpatialSubmission: Object
       }
       const form = new FomSubmissionForm(this.originalSubmissionRequest);
-      const fg = <RxFormGroup>this.formBuilder.formGroup(form);
+      const fg = form.toFormGroup();
       fg.get('projectId')?.setValue(this.originalSubmissionRequest.projectId);
       fg.get('submissionTypeCode')?.setValue(this.originalSubmissionRequest.submissionTypeCode);
       this.fg.set(fg);
@@ -173,7 +171,9 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
           }
 
           this.originalSubmissionRequest.jsonSpatialSubmission = JSON.parse(content);
-          this.fg()?.get('jsonSpatialSubmission')?.setValue(this.originalSubmissionRequest.jsonSpatialSubmission);
+          const jsonCtrl = this.fg()?.get('jsonSpatialSubmission');
+          jsonCtrl?.setValue(this.originalSubmissionRequest.jsonSpatialSubmission);
+          jsonCtrl?.markAsDirty();
         } catch (_parseError) {
           this.modalSvc.openErrorDialog('The selected file is not valid JSON. Please fix the file and try again.');
         }
@@ -208,7 +208,9 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
 
 
   changeGeoType(e: Event) {
-    this.fg()?.get('spatialObjectCode')?.setValue((e.target as HTMLSelectElement).value);
+    const geoCtrl = this.fg()?.get('spatialObjectCode');
+    geoCtrl?.setValue((e.target as HTMLSelectElement).value);
+    geoCtrl?.markAsDirty();
   }
 
   getGeoSpatialTypeDescription(type: string){

@@ -3,31 +3,15 @@ import { LoadingService } from '@admin-core/services/loading.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormControl, FormGroup } from '@angular/forms';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { Router, provideRouter } from '@angular/router';
 import { PublicNoticeService } from '@api-client';
-import { RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { from } from 'rxjs';
 import { PublicNoticeEditComponent } from './public-notice-edit.component';
 
 // Mimics a real HTTP response: resolves on a later microtask/macrotask, never synchronously like of().
 function asyncOf<T>(value: T) {
   return from(new Promise<T>((resolve) => setTimeout(() => resolve(value), 0)));
-}
-
-// The template binds every control below, so the builder must return a group containing all of them.
-function buildFormGroup() {
-  return new FormGroup({
-    pnPostDate: new FormControl(null),
-    reviewAddress: new FormControl(null),
-    reviewBusinessHours: new FormControl(null),
-    isReceiveCommentsSameAsReview: new FormControl(false),
-    receiveCommentsAddress: new FormControl(null),
-    receiveCommentsBusinessHours: new FormControl(null),
-    mailingAddress: new FormControl(null),
-    email: new FormControl(null),
-  });
 }
 
 describe('PublicNoticeEditComponent', () => {
@@ -104,7 +88,6 @@ describe('PublicNoticeEditComponent', () => {
         { provide: CognitoService, useValue: { getUser: () => ({ isForestClient: true, isAuthorizedForClientId: () => true }) } },
         { provide: ModalService, useValue: { openWarningDialog: jest.fn(), openConfirmationDialog: jest.fn() } },
         { provide: LoadingService, useValue: { loading: signal(false) } },
-        { provide: RxFormBuilder, useValue: { formGroup: jest.fn().mockImplementation(buildFormGroup) } },
       ],
     }).compileComponents();
 
@@ -185,6 +168,14 @@ describe('PublicNoticeEditComponent', () => {
     });
 
     it('submits a new public notice on valid form submission and navigates back', async () => {
+      component.publicNoticeFormGroup.patchValue({
+        reviewAddress: '123 Review St',
+        reviewBusinessHours: '9am - 5pm',
+        receiveCommentsAddress: '456 Comment St',
+        receiveCommentsBusinessHours: '9am - 5pm',
+        mailingAddress: 'Box 123',
+        email: 'valid.user@gov.bc.ca',
+      });
       const navSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
       await component.onSubmit();
       expect(createMock).toHaveBeenCalledWith(expect.objectContaining({ projectId: 2 }));

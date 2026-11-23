@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormControl, FormGroup } from '@angular/forms';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import { from, of } from 'rxjs';
@@ -9,7 +8,6 @@ import { CognitoService } from '@admin-core/services/cognito.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSvc';
 import { AttachmentService, InteractionService } from '@api-client';
-import { RxFormBuilder } from '@rxweb/reactive-form-validators';
 
 // Mimics a real HTTP response: resolves on a later microtask/macrotask, never synchronously like of().
 function asyncOf<T>(value: T) {
@@ -58,19 +56,6 @@ describe('InteractionsComponent', () => {
         { provide: ModalService, useValue: { openConfirmationDialog: jest.fn().mockReturnValue({ afterClosed: () => of(true) }) } },
         { provide: AttachmentService, useValue: { attachmentControllerFind: jest.fn().mockReturnValue(of([])) } },
         { provide: AttachmentResolverSvc, useValue: { getAttachments: jest.fn(), getFileContents: jest.fn() } },
-        {
-          provide: RxFormBuilder,
-          // Real FormGroup so the detail component's [formGroup] renders when an engagement is selected.
-          useValue: {
-            formGroup: jest.fn().mockImplementation(() => new FormGroup({
-              communicationDatePickerDate: new FormControl(null),
-              stakeholder: new FormControl(null),
-              communicationDetails: new FormControl(''),
-              filename: new FormControl(null),
-              fileContent: new FormControl(null),
-            })),
-          },
-        },
       ],
     }).compileComponents();
 
