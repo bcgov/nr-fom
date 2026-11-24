@@ -9,7 +9,7 @@ import { catchError, tap } from 'rxjs/operators';
 
 import { AttachmentTypeEnum } from "@admin-core/models/attachmentTypeEnum";
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
-import { CognitoService } from "@admin-core/services/cognito.service";
+import { KeycloakService } from "@admin-core/services/keycloak.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { LoadingService } from '@admin-core/services/loading.service';
@@ -63,7 +63,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   private modalSvc = inject(ModalService);
   private datePipe = inject(DatePipe);
   private forestSvc = inject(ForestClientService);
-  private cognitoService = inject(CognitoService);
+  private keycloakService = inject(KeycloakService);
   private destroyRef = inject(DestroyRef);
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
@@ -97,7 +97,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
   public isSubmitSaveClicked = false;
   public descriptionValue: string | null = null;
-  // Populated from the authenticated Cognito session in the constructor.
+  // Populated from the authenticated SSO session in the constructor.
   public user!: User;
   public readonly attachments = signal<AttachmentResponse[]>([]);
   public readonly attachmentsInitialNotice = signal<AttachmentResponse[]>([]);
@@ -125,7 +125,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly operationYearMax: Date = DateTime.now().plus({ years: 7 }).endOf('year').toJSDate();
 
   constructor() {
-    const user = this.cognitoService.getUser();
+    const user = this.keycloakService.getUser();
     if (user) {
       this.user = user;
     }

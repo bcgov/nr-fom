@@ -1,4 +1,4 @@
-import { CognitoService } from "@admin-core/services/cognito.service";
+import { KeycloakService } from "@admin-core/services/keycloak.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { LoadingService } from '@admin-core/services/loading.service';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
@@ -34,7 +34,7 @@ export class PublicNoticeEditComponent {
   private router = inject(Router);
   private formBuilder = inject(RxFormBuilder);
   loadingSvc = inject(LoadingService);
-  private cognitoService = inject(CognitoService);
+  private keycloakService = inject(KeycloakService);
   private modalSvc = inject(ModalService);
   private publicNoticeService = inject(PublicNoticeService);
   private datePipe = inject(DatePipe);
@@ -44,7 +44,7 @@ export class PublicNoticeEditComponent {
   readonly projectDetail = input.required<ProjectResponse>();
   readonly editMode = input.required<boolean>(); // 'edit'/'view' mode, from route data
 
-  // Populated from the authenticated Cognito session in the constructor.
+  // Populated from the authenticated SSO session in the constructor.
   user!: User;
   project: ProjectResponse;
   readonly projectId = computed(() => Number(this.appId()));
@@ -75,7 +75,7 @@ export class PublicNoticeEditComponent {
   readonly formReady = signal(false);
 
   constructor() {
-    const user = this.cognitoService.getUser();
+    const user = this.keycloakService.getUser();
     if (user) {
       this.user = user;
     }

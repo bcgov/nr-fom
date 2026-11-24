@@ -11,11 +11,9 @@
  */
 
 
-export interface AwsCognitoOauthConfig { 
-    domain: string;
-    scope: Array<string>;
-    redirectSignIn: string;
-    redirectSignOut: string;
-    responseType: string;
+export interface KeycloakConfig { 
+    enabled: boolean;
+    issuerUri?: string;
+    clientId?: string;
 }
 

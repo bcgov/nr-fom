@@ -1,4 +1,10 @@
-// Represents a user's information extracted from Keycloak JWT.
+import { parseRole, rolesFromClaims, SCOPE_FOREST_CLIENT, scopeValue } from './fam-roles';
+
+export const FOM_REVIEWER_ROLE = 'FOM_REVIEWER';
+export const FOM_SUBMITTER_ROLE = 'FOM_SUBMITTER';
+export const FOM_ADMIN_ROLE = 'FOM_ADMIN';
+
+// Represents a user's information extracted from a BC Gov SSO (Keycloak) access token.
 export class User {
     userName!: string; 
     displayName!: string;
@@ -23,64 +29,65 @@ export class User {
       return user;
     }
 
-    // This function is reserved for Keycloak.
-    static convertJwtToUser(jwt: any): User {
-      const user = new User();
-      user.userName = jwt['username'];
-      user.displayName = jwt['displayName'];
-      let roles: string[] | undefined;
-      if (jwt['resource_access'] && jwt['resource_access']['fom']) {
-        roles = jwt['resource_access']['fom']['roles'];
-      }
-      if (roles) {
-        roles.forEach(role => {
-          if (role == 'fom_ministry') {
-            user.isMinistry = true;
-          }
-          if (role.startsWith('fom_forest_client')) {
-            user.isForestClient = true;
-            const clientStartIndex = 'fom_forest_client_'.length;
-            if (role.length > clientStartIndex) {
-              const clientId = role.substring(clientStartIndex);
-              user.clientIds.push(clientId);
+    /**
+     * Builds the user from a verified BC Gov SSO (Keycloak) ACCESS token.
+     *
+     * Profile claims must be mapped onto the access token in the CSS console;
+     * without them `idir_username` is absent and the user falls back to the GUID.
+     *
+     * Roles (see fam-roles.ts):
+     *   FOM_REVIEWER                         -> ministry
+     *   FOM_ADMIN                            -> admin
+     *   FOM_SUBMITTER_FOREST_CLIENT-<number> -> forest client for <number>
+     */
+    static convertKeycloakClaimsToUser(claims: Record<string, unknown>): User {
+        const user = new User();
+        user.userName = User.usernameFromClaims(claims);
+        const displayName = claims['display_name'];
+        user.displayName = typeof displayName === 'string' && displayName.trim() ? displayName : user.userName;
+
+        rolesFromClaims(claims).forEach(role => {
+            if (role === FOM_REVIEWER_ROLE) {
+                user.isMinistry = true;
+                return;
             }
-          }
+            if (role === FOM_ADMIN_ROLE) {
+                user.isAdmin = true;
+                return;
+            }
+            const parsed = parseRole(role);
+            if (parsed.baseRole === FOM_SUBMITTER_ROLE) {
+                user.isForestClient = true;
+                const clientId = scopeValue(parsed, SCOPE_FOREST_CLIENT);
+                if (clientId && !user.clientIds.includes(clientId)) {
+                    user.clientIds.push(clientId);
+                }
+            }
         });
-      }
-  
-      return user;
+        return user;
     }
 
-    static convertAwsCognitoDecodedTokenToUser(decodedToken: any): User {
-        const user = new User();
-        const idToken = decodedToken['decodedIdToken'];
-        const accessToken = decodedToken['decodedAccessToken']
-        user.userName = idToken['custom:idp_username'];
-        user.displayName = idToken['custom:idp_display_name'];
-        let roles: string[];
-        roles = accessToken['cognito:groups'];
-
-        if (roles) {
-            const FOM_REVIEWER_ROLE = 'FOM_REVIEWER';
-            const FOM_SUBMITTER_ROLE = 'FOM_SUBMITTER';
-            const FOM_ADMIN_ROLE = 'FOM_ADMIN';
-            roles.forEach(role => {
-                if (role == FOM_REVIEWER_ROLE) {
-                    user.isMinistry = true;
-                }
-                if (role == FOM_ADMIN_ROLE) {
-                    user.isAdmin = true;
-                }
-                if (role.startsWith(FOM_SUBMITTER_ROLE)) {
-                    user.isForestClient = true;
-                    const clientStartIndex = `${FOM_SUBMITTER_ROLE}_`.length;
-                    if (role.length > clientStartIndex) {
-                        const clientId = role.substring(clientStartIndex);
-                        user.clientIds.push(clientId);
-                    }
-                }
-		        });
-		    }
-        return user;
+    /**
+     * The identity written to the create_user / update_user audit columns.
+     *
+     * The username exactly as issued (it is a name; case is left alone). Only
+     * when no username claim is present does it fall back to the GUID, which is
+     * upper-cased: the realm can send one GUID in different cases across claims,
+     * and a GUID's hex spelling carries no meaning.
+     */
+    static usernameFromClaims(claims: Record<string, unknown>): string {
+        for (const name of ['idir_username', 'bceid_username']) {
+            const value = claims[name];
+            if (typeof value === 'string' && value.trim()) {
+                return value.trim();
+            }
+        }
+        for (const name of ['idir_user_guid', 'bceid_user_guid']) {
+            const value = claims[name];
+            if (typeof value === 'string' && value.trim()) {
+                return value.trim().toUpperCase();
+            }
+        }
+        return '';
     }
 }

@@ -1,5 +1,5 @@
 import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSvc';
-import { CognitoService } from '@admin-core/services/cognito.service';
+import { KeycloakService } from '@admin-core/services/keycloak.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { Component, input, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -109,7 +109,7 @@ describe('FomDetailComponent', () => {
           },
         },
         {
-          provide: CognitoService,
+          provide: KeycloakService,
           useValue: {
             getUser: () => ({
               isMinistry: true,

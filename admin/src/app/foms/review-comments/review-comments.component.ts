@@ -3,7 +3,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
-import { CognitoService } from "@admin-core/services/cognito.service";
+import { KeycloakService } from "@admin-core/services/keycloak.service";
 import { LoadingService } from '@admin-core/services/loading.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
@@ -43,7 +43,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
   private stateSvc = inject(StateService);
   private projectSvc = inject(ProjectService);
   private spatialFeatureService = inject(SpatialFeatureService);
-  private cognitoService = inject(CognitoService);
+  private keycloakService = inject(KeycloakService);
   private modalSvc = inject(ModalService);
   private injector = inject(Injector);
   loadingSvc = inject(LoadingService);
@@ -99,7 +99,7 @@ export class ReviewCommentsComponent implements OnInit, OnDestroy {
     this.filterProjectComments(this.allPublicComments(), this.selectedScope()));
 
   constructor() {
-    this.user = this.cognitoService.getUser()!;
+    this.user = this.keycloakService.getUser()!;
   }
 
   ngOnInit() {

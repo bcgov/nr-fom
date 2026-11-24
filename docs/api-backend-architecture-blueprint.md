@@ -2,7 +2,7 @@
 
 > **Scope:** `api/` NestJS backend
 > **Shared dependencies:** `libs/utility/src` (the `User` domain object and shared types)
-> **Stack:** NestJS 11 · TypeORM 1.1 · TypeScript 6 · PostgreSQL/PostGIS · AWS Cognito · MinIO Object Storage · Pino · Jest 30
+> **Stack:** NestJS 11 · TypeORM 1.1 · TypeScript 6 · PostgreSQL/PostGIS · BC Gov SSO (Keycloak) · MinIO Object Storage · Pino · Jest 30
 > **Last verified against code:** 2026-08-18
 
 ---
@@ -70,7 +70,7 @@ flowchart TD
     objectStore[MinIO<br/>NRS Object Store]
   end
 
-  cognito[AWS Cognito<br/>via FAM]
+  sso[BC Gov SSO<br/>Keycloak standard realm<br/>FAM-managed integration]
   fcApi[Forest Client API]
   bcgw[BCGW]
   smtp[SMTP Gov Mail]
@@ -84,7 +84,7 @@ flowchart TD
 
   api -->|TypeORM SQL| db
   api -->|MinIO SDK| objectStore
-  api -->|JWKS verify| cognito
+  api -->|JWKS verify| sso
   api -->|HTTP Axios| fcApi
   api -->|Nodemailer| smtp
   bcgw -->|GET /spatial-feature/bcgw-extract| api
@@ -140,7 +140,6 @@ api/src/
 │   ├── ormconfig-migration-main.ts
 │   └── ormconfig-migration-test.ts
 │
-├── assets/aws-cognito-env.json ← Cognito + federated-logout config (ConfigMap-mounted)
 ├── e2e/app.e2e.spec.ts
 └── perftest/
 ```
@@ -191,7 +190,7 @@ Step detail:
 | Step | What actually happens |
 |---|---|
 | read metadata | `Reflector.getAllAndOverride('authGuardMeta', [handler, class])`; absent ⇒ `SECURED` |
-| verifyToken | `AuthService.verifyCognitoToken()` — the bearer is `{"idToken","accessToken"}`, both verified against the Cognito JWKS via `jwks-rsa` |
+| verifyToken | `AuthService.verifyToken()` — the bearer is the raw Keycloak access token, verified against the realm JWKS via `jwks-rsa` |
 | attach User | `request.headers['user'] = user` |
 | 403 | The guard resolves `false` (it does not throw — throwing surfaces as a 500) |
 | validate body | Global `ValidationPipe({ whitelist: true })`; in NestJS pipes run after guards |
@@ -302,7 +301,7 @@ Wraps `@nestjs/config` with a **Joi validation schema**. `AppConfigService` expo
 
 #### `SecurityModule`
 
-Provides and exports **`AuthService`** and registers **`AuthController`** (`GET /awsCognitoConfig`). It does **not** provide the guards — `AuthGuard` and `AdminOperationGuard` are `@Injectable()` classes referenced directly in `@UseGuards(...)`, and NestJS instantiates them from the injector of the module whose controller uses them. This is why nearly every feature module imports `SecurityModule`: it is what makes `AuthService` resolvable for `AuthGuard`.
+Provides and exports **`AuthService`** and registers **`AuthController`** (`GET /keycloakConfig`). It does **not** provide the guards — `AuthGuard` and `AdminOperationGuard` are `@Injectable()` classes referenced directly in `@UseGuards(...)`, and NestJS instantiates them from the injector of the module whose controller uses them. This is why nearly every feature module imports `SecurityModule`: it is what makes `AuthService` resolvable for `AuthGuard`.
 
 #### `DataService<E, R, O>` (abstract)
 
@@ -350,7 +349,7 @@ All paths are relative to the global prefix (`api` by default; see `getGlobalPre
 | `spatial-feature` | **none** | `GET /spatial-feature?projectId=` · `GET /spatial-feature/bcgw-extract?version=1.0-final` |
 | `external` | **none** | `GET /external/fom-by-fsp?fspId=` |
 | `district` | **none** | `GET /district` · `GET /district/:id` |
-| `auth` | **none** | `GET /awsCognitoConfig` |
+| `auth` | **none** | `GET /keycloakConfig` |
 | Code tables | **none** | `GET /attachment-type-code` · `/workflow-state-code` · `/comment-scope-code` · `/response-code` · `/submission-type-code` |
 | *(outside the prefix)* | — | `GET /health-check` |
 
@@ -473,19 +472,38 @@ The guard resolves `false` rather than throwing, because throwing from a NestJS 
 
 ### Token verification (`AuthService`)
 
-The bearer token is **not a bare JWT** — it is a JSON object carrying both Cognito tokens:
+The bearer token is the raw BC Gov SSO (Keycloak) **access token** issued to FOM's CSS integration:
 
 ```
-Authorization: Bearer {"idToken":"<jwt>","accessToken":"<jwt>"}
+Authorization: Bearer <access-token-jwt>
 ```
 
-`verifyCognitoToken()` decodes each without verifying to read its `kid`, fetches the matching signing key from the Cognito JWKS endpoint via `jwks-rsa` (cached, rate-limited), verifies both signatures with `jsonwebtoken.verify()`, and builds the `User` from the pair via `User.convertAwsCognitoDecodedTokenToUser()` — display name and username from the **ID** token, roles from `cognito:groups` on the **access** token.
+`verifyToken()` decodes the token without verifying to read its `kid`, fetches the matching signing key from `<KEYCLOAK_ISSUER_URI>/protocol/openid-connect/certs` via `jwks-rsa` (cached, rate-limited), and verifies it with `jsonwebtoken.verify()` (`RS256` only, `issuer` must equal `KEYCLOAK_ISSUER_URI`). Two further checks follow:
+
+- **`azp` must equal `KEYCLOAK_CLIENT_ID`.** The standard realm is shared by many apps and signs all their tokens with the same keys; `azp` is what proves the token was issued to FOM. Keycloak emits no `token_use` claim.
+- **`typ` must be `Bearer` when present**, which rejects an ID token (it also carries `azp`).
+
+Any failure is logged at `warn` and rejected with `ForbiddenException`. The `User` is built from the verified claims by `User.convertKeycloakClaimsToUser()`:
+
+| User field | Source |
+|---|---|
+| `userName` | `idir_username`, else `bceid_username`, else `idir_user_guid` / `bceid_user_guid` upper-cased. Written to the `create_user` / `update_user` audit columns. |
+| `displayName` | `display_name`, else `userName` |
+| roles | `client_roles`, falling back to `resource_access.<azp>.roles`; FAM `FAM:` sidecar entries (e.g. `FAM:EXPIRES:…`) are dropped |
+
+| Role | User flag |
+|---|---|
+| `FOM_REVIEWER` | `isMinistry` |
+| `FOM_ADMIN` | `isAdmin` |
+| `FOM_SUBMITTER_FOREST_CLIENT-<number>` | `isForestClient`, and `<number>` added to `clientIds` |
+
+Scoped role names follow FAM's grammar (`<CODE>_FOREST_CLIENT-<value>`, `_DISTRICT-`, `_REGION-`, chainable) and are parsed right-to-left by `libs/utility/src/security/fam-roles.ts`. Profile claims (`idir_username`, `display_name`, …) must be mapped onto the access token in the CSS console; without them the username falls back to the GUID.
 
 When `SECURITY_ENABLED=false` (local dev only), the token is parsed directly as a serialized `User` with no verification at all.
 
-### `GET /awsCognitoConfig`
+### `GET /keycloakConfig`
 
-`AuthController` serves the whole `AwsCognitoConfig` — user pool, client id, OAuth redirect URLs, **and the `logout` block** (Siteminder URL, Keycloak URL, and the per-IdP Keycloak client ids) that the admin SPA uses to build its federated logout chain. The JSON is mounted from an OpenShift ConfigMap into `api/src/assets/aws-cognito-env.json`.
+`AuthController` serves `KeycloakConfig` — `enabled`, plus `issuerUri` and `clientId` (both `@ApiPropertyOptional`, absent when security is disabled). The values come from the `KEYCLOAK_ISSUER_URI` and `KEYCLOAK_CLIENT_ID` environment variables, so the admin SPA signs in against exactly the realm and client the API validates. Nothing else is served: the SPA derives its redirect URIs from its own origin, discovers the OIDC endpoints from the issuer, and builds the logout chain from the issuer (see the frontend blueprint).
 
 ### Authorization model
 
@@ -505,7 +523,7 @@ Enforcement is layered:
 
 | Guard | Applied to | Behaviour |
 |---|---|---|
-| `AuthGuard` | 8 controllers, via `@UseGuards` | Validates the Cognito token pair; defaults to `SECURED` when no `@AuthGuardMeta` is present |
+| `AuthGuard` | 8 controllers, via `@UseGuards` | Validates the Keycloak access token; defaults to `SECURED` when no `@AuthGuardMeta` is present |
 | `AdminOperationGuard` | `analytics-dashboard` only | Throws `ForbiddenException` unless `user.isAdmin` |
 | `@AuthGuardMeta(GUARD_OPTIONS.PUBLIC)` | Per endpoint | Bypasses the token check entirely |
 | `@AuthGuardMeta(GUARD_OPTIONS.ANONYMOUS_LIMITED)` | Per endpoint | Validates if a token is present, allows through if absent; the endpoint must implement the public-versus-authenticated logic itself |
@@ -579,11 +597,12 @@ Swagger UI is served **at the global prefix itself** (`/api`), not a sub-path �
 
 ## 10. External Integrations
 
-### AWS Cognito (via FAM)
+### BC Gov SSO (Keycloak, via FAM)
 
-- Config from `api/src/assets/aws-cognito-env.json`, ConfigMap-mounted in OpenShift.
+- FOM is a FAM-managed CSS integration (public client) on the Keycloak `standard` realm; FAM assigns its roles.
+- Config from `KEYCLOAK_ISSUER_URI` / `KEYCLOAK_CLIENT_ID`. `AuthService` throws at construction when security is enabled and either is blank — a blank client id would make the `azp` check meaningless.
 - `SECURITY_ENABLED=false` bypasses verification for local dev.
-- `jwks-rsa` fetches and caches signing keys; `jsonwebtoken.verify()` verifies both tokens.
+- `jwks-rsa` fetches and caches signing keys from the realm's `/protocol/openid-connect/certs`; `jsonwebtoken.verify()` verifies the access token.
 
 ### Forest Client API
 
@@ -739,7 +758,7 @@ Only the manifests this image needs are copied before `npm ci`; `npm` is pinned 
 
 ### OpenShift
 
-`api/openshift.deploy.yml` is a Template producing a ConfigMap (`aws-cognito-env.json`), a Deployment (3 replicas, 200Mi request / 2.2Gi limit), a Service, a Route, and the two CronJobs. Secrets (DB password, Forest Client API token) come from secret refs, not template values.
+`api/openshift.deploy.yml` is a Template producing a Deployment (3 replicas, 200Mi request / 2.2Gi limit), a Service, a Route, and the two CronJobs. Secrets (DB password, Forest Client API token) come from secret refs, not template values.
 
 ### CI
 
@@ -761,6 +780,8 @@ Only the manifests this image needs are copied before `npm ci`; `npm` is pinned 
 | `DB_TESTDATA` | `false` | Run test-data seed migrations at startup |
 | `DB_SSL` / `DB_SYNCHRONIZE` | `false` / `false` | Both stay false in every environment |
 | `SECURITY_ENABLED` | `true` | `false` bypasses token verification (local dev only) |
+| `KEYCLOAK_ISSUER_URI` | — | Realm issuer, e.g. `https://test.loginproxy.gov.bc.ca/auth/realms/standard`. Required when security is enabled. |
+| `KEYCLOAK_CLIENT_ID` | — | FOM's CSS integration client id; checked as every token's `azp`. Required when security is enabled. |
 | `BYPASS_CORS` | `false` | `true` enables `origin: '*'` (local dev only) |
 | `APP_PORT` | `3333` | Listen port |
 | `APP_ENV` / `NODE_ENV` | `development` | Joi-validated environment names |
@@ -779,9 +800,9 @@ Only the manifests this image needs are copied before `npm ci`; `npm` is pinned 
 
 `api/localdev.env` holds the local-development set (`SECURITY_ENABLED=false`, `BYPASS_CORS=true`, `DB_TESTDATA=true`).
 
-### Cognito ConfigMap (`aws-cognito-env.json`)
+### Keycloak settings in OpenShift and CI
 
-Generated by the OpenShift template. Beyond the user pool and OAuth settings, it carries the `logout` block consumed by the admin SPA's federated logout chain: `siteminderUrl`, `keycloakUrl`, `keycloakClientIdIdir`, `keycloakClientIdBceidBusiness`.
+`api/openshift.deploy.yml` takes `KEYCLOAK_ISSUER_URI` and `KEYCLOAK_CLIENT_ID` as required template parameters and sets them as container environment variables (there is no ConfigMap). `.github/workflows/.deploy.yml` passes them from the GitHub variables `vars.KEYCLOAK_ISSUER_URI` and `vars.KEYCLOAK_CLIENT_ID`: the repository-level values are the DEV realm (used by PR previews), and the `test` and `prod` environments override both.
 
 ---
 
@@ -867,6 +888,6 @@ Re-verify when any of the following change:
 - **A new controller or a change to `@UseGuards` / `@AuthGuardMeta`** → §5 (endpoint inventory), §7 (guard application).
 - **`DataService` or the base entities** → §4 (core), §6, §16.
 - **Cron schedules or cache logic** → §8, §12 — and check the three-way ordering still holds.
-- **`aws-cognito-env.json` shape** → §7, §14, and the frontend blueprint's logout-chain section.
+- **`KeycloakConfig` shape or the Keycloak env vars** → §7, §14, and the frontend blueprint's sign-in and logout-chain sections.
 - **DTOs or endpoints** → regenerate `libs/client/typescript-ng` and re-check `docs/frontend-architecture-blueprint.md` §6.1.
 - **Any change above** → mirror it in `.github/instructions/api-nestjs.instructions.md`, which agents load automatically for API work.

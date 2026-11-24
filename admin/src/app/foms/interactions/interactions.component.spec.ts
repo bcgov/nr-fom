@@ -5,7 +5,7 @@ import { provideRouter } from '@angular/router';
 import { from, of } from 'rxjs';
 
 import { InteractionsComponent } from './interactions.component';
-import { CognitoService } from '@admin-core/services/cognito.service';
+import { KeycloakService } from '@admin-core/services/keycloak.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSvc';
 import { AttachmentService, InteractionService } from '@api-client';
@@ -54,7 +54,7 @@ describe('InteractionsComponent', () => {
             interactionControllerRemove: removeMock,
           },
         },
-        { provide: CognitoService, useValue: { getUser: jest.fn().mockReturnValue({ isAuthorizedForClientId: () => true }) } },
+        { provide: KeycloakService, useValue: { getUser: jest.fn().mockReturnValue({ isAuthorizedForClientId: () => true }) } },
         { provide: ModalService, useValue: { openConfirmationDialog: jest.fn().mockReturnValue({ afterClosed: () => of(true) }) } },
         { provide: AttachmentService, useValue: { attachmentControllerFind: jest.fn().mockReturnValue(of([])) } },
         { provide: AttachmentResolverSvc, useValue: { getAttachments: jest.fn(), getFileContents: jest.fn() } },

@@ -1,5 +1,5 @@
 import { AttachmentResolverSvc } from "@admin-core/services/AttachmentResolverSvc";
-import { CognitoService } from "@admin-core/services/cognito.service";
+import { KeycloakService } from "@admin-core/services/keycloak.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { Component, ElementRef, Injector, OnInit, effect, inject, input, linkedSignal, signal, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -35,7 +35,7 @@ export class FomDetailComponent implements OnInit {
   private modalSvc = inject(ModalService);
   projectService = inject(ProjectService);
   attachmentResolverSvc = inject(AttachmentResolverSvc);
-  private cognitoService = inject(CognitoService);
+  private keycloakService = inject(KeycloakService);
   private ngbModalService = inject(NgbModal);
   private fss = inject(FeatureSelectService);
   private injector = inject(Injector);
@@ -65,7 +65,7 @@ export class FomDetailComponent implements OnInit {
   readonly projectMetrics = input.required<ProjectMetricsResponse>();
   public isProjectActive = false;
   public readonly attachments = signal<AttachmentResponse[]>([]);
-  // Populated from the authenticated Cognito session in the constructor.
+  // Populated from the authenticated SSO session in the constructor.
   public user!: User;
   public daysRemaining: number | null = null;
   private workflowStateChangeRequest: ProjectWorkflowStateChangeRequest = <ProjectWorkflowStateChangeRequest>{};
@@ -73,7 +73,7 @@ export class FomDetailComponent implements OnInit {
   private today = new Date(this.now.getFullYear(), this.now.getMonth(), this.now.getDate());
 
   constructor() {
-    const user = this.cognitoService.getUser();
+    const user = this.keycloakService.getUser();
     if (user) {
       this.user = user;
     }

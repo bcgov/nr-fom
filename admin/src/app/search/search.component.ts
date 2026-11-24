@@ -1,4 +1,4 @@
-import { CognitoService } from "@admin-core/services/cognito.service";
+import { KeycloakService } from "@admin-core/services/keycloak.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { DatePipe, Location, TitleCasePipe } from '@angular/common';
@@ -45,7 +45,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private stateSvc = inject(StateService);
-  private cognitoService = inject(CognitoService);
+  private keycloakService = inject(KeycloakService);
   snackBar = inject(MatSnackBar);
   searchProjectService = inject(ProjectService);
   private modalSvc = inject(ModalService);
@@ -54,7 +54,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   private destroyRef = inject(DestroyRef);
   private paramMap: ParamMap | null = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> | null = null;
-  // Populated from the authenticated Cognito session in the constructor.
+  // Populated from the authenticated SSO session in the constructor.
   public user!: User;
   public fNumber: number | string | null = null; // filter: FOM Number
   public fFspId: number | string | null = null; // filter: FSP ID
@@ -87,7 +87,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   readonly searched = computed(() => this.projectsResource.status() !== 'idle');
 
   constructor() {
-    const user = this.cognitoService.getUser();
+    const user = this.keycloakService.getUser();
     if (user) {
       this.user = user;
     }

@@ -1,4 +1,4 @@
-import { CognitoService } from '@admin-core/services/cognito.service';
+import { KeycloakService } from '@admin-core/services/keycloak.service';
 import { LoadingService } from '@admin-core/services/loading.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { signal } from '@angular/core';
@@ -101,7 +101,7 @@ describe('PublicNoticeEditComponent', () => {
             publicNoticeControllerUpdate: updateMock,
           },
         },
-        { provide: CognitoService, useValue: { getUser: () => ({ isForestClient: true, isAuthorizedForClientId: () => true }) } },
+        { provide: KeycloakService, useValue: { getUser: () => ({ isForestClient: true, isAuthorizedForClientId: () => true }) } },
         { provide: ModalService, useValue: { openWarningDialog: jest.fn(), openConfirmationDialog: jest.fn() } },
         { provide: LoadingService, useValue: { loading: signal(false) } },
         { provide: RxFormBuilder, useValue: { formGroup: jest.fn().mockImplementation(buildFormGroup) } },

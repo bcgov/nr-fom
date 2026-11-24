@@ -11,8 +11,12 @@ import { resolve } from 'path';
  * then crashed at startup, so FOMs stopped moving PUBLISHED -> COMMENT_OPEN and
  * COMMENT_OPEN -> COMMENT_CLOSED, and newly opened FOMs vanished from the public
  * site.
+ *
+ * The same applies to AuthService, which refuses to start without
+ * KEYCLOAK_ISSUER_URI and KEYCLOAK_CLIENT_ID while SECURITY_ENABLED is true
+ * (its default).
  */
-const REQUIRED_ENV = ['DATA_ENCRYPTION_KEY', 'DB_HOST', 'DB_PASSWORD'];
+const REQUIRED_ENV = ['DATA_ENCRYPTION_KEY', 'DB_HOST', 'DB_PASSWORD', 'KEYCLOAK_ISSUER_URI', 'KEYCLOAK_CLIENT_ID'];
 
 const template = readFileSync(resolve(__dirname, '../openshift.deploy.yml'), 'utf8');
 

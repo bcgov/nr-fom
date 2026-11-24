@@ -1,4 +1,4 @@
-import { CognitoService } from '@admin-core/services/cognito.service';
+import { KeycloakService } from '@admin-core/services/keycloak.service';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { provideRouter } from '@angular/router';
@@ -11,7 +11,7 @@ import { HeaderComponent } from './header.component';
  * decisions are worth pinning down.
  */
 describe('HeaderComponent', () => {
-  let mockCognitoService: any;
+  let mockKeycloakService: any;
   let navigate: jest.SpyInstance;
 
   const authorizedUser = {
@@ -22,18 +22,18 @@ describe('HeaderComponent', () => {
   };
 
   const setup = (user: any, loggedOut = false) => {
-    mockCognitoService = {
+    mockKeycloakService = {
       getUser: jest.fn().mockReturnValue(user),
       logout: jest.fn().mockResolvedValue(undefined),
       loggedOut,
-      awsCognitoConfig: { enabled: true }
+      keycloakConfig: { enabled: true }
     };
 
     TestBed.configureTestingModule({
       imports: [HeaderComponent],
       providers: [
         provideRouter([]),
-        { provide: CognitoService, useValue: mockCognitoService },
+        { provide: KeycloakService, useValue: mockKeycloakService },
         { provide: ConfigService, useValue: { getEnvironmentDisplay: () => 'TEST' } }
       ]
     });
@@ -117,26 +117,26 @@ describe('HeaderComponent', () => {
 
       await fixture.componentInstance.navigateToLogout();
 
-      expect(mockCognitoService.logout).toHaveBeenCalledTimes(1);
+      expect(mockKeycloakService.logout).toHaveBeenCalledTimes(1);
     });
 
     it('goes straight to the logout landing when security is disabled (local dev)', async () => {
       const fixture = setup(authorizedUser);
-      mockCognitoService.awsCognitoConfig = { enabled: false };
+      mockKeycloakService.keycloakConfig = { enabled: false };
 
       await fixture.componentInstance.navigateToLogout();
 
-      // No chain to run without Cognito; the full-page navigation to /admin/logout
-      // is what re-runs CognitoService.init().
-      expect(mockCognitoService.logout).not.toHaveBeenCalled();
+      // No chain to run without SSO; the full-page navigation to /admin/logout
+      // is what re-runs KeycloakService.init().
+      expect(mockKeycloakService.logout).not.toHaveBeenCalled();
     });
 
-    it('does not throw when awsCognitoConfig is undefined, as on the logout landing', async () => {
+    it('does not throw when keycloakConfig is undefined, as on the logout landing', async () => {
       const fixture = setup(null, true);
-      mockCognitoService.awsCognitoConfig = undefined;
+      mockKeycloakService.keycloakConfig = undefined;
 
       await expect(fixture.componentInstance.navigateToLogout()).resolves.not.toThrow();
-      expect(mockCognitoService.logout).not.toHaveBeenCalled();
+      expect(mockKeycloakService.logout).not.toHaveBeenCalled();
     });
   });
 });

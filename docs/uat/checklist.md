@@ -15,21 +15,21 @@ Before you start: wait for the merge deploy to go green, tail the API pod logs (
 | 0.1 | `oc get pods` | API, admin, public pods Ready, no restart loop | NestJS 12 / nestjs-pino 5 (#1162) or env loading without dotenv (#1149) |
 | 0.2 | API startup log | "Running DB Main Migrations..." then "Done DB Migrations.", no stack trace | #1149 or #1162 |
 | 0.3 | API startup log | `Successful connection to object storage. Buckets accessible = N` (N >= 1) | Object storage env, endpoint, path-style or region (#1155) |
-| 0.4 | Watch logs for the rest of the run | No bearer token or Cognito config JSON printed; structured JSON request logs | Token logged: #1150 regressed. Log format changed or went silent: nestjs-pino 5 (#1162) |
+| 0.4 | Watch logs for the rest of the run | No bearer token or Keycloak config JSON printed; structured JSON request logs | Token logged: #1150 regressed. Log format changed or went silent: nestjs-pino 5 (#1162) |
 
 ## 1. API quick checks (3 min, Anon)
 | # | Step | Expected | If it fails |
 |---|---|---|---|
 | 1.1 | Open `/api` | Swagger "FOM API" loads with every controller listed | ESM swagger under Nest 12 (#1162) |
 | 1.2 | `curl -s .../api/project/publicSummary \| jq length` | About 3092 | #1162 |
-| 1.3 | `curl -s .../api/awsCognitoConfig` | 200 JSON | #1150 or #1162 |
+| 1.3 | `curl -s .../api/keycloakConfig` | 200 JSON: `enabled: true` with the realm `issuerUri` and FOM `clientId` | #1150 or #1162 |
 | 1.4 | `curl -sI .../api/public-notice` and `.../api/district` | 200 | #1162 |
 | 1.5 | `curl -s -o /tmp/f.jpg -w '%{http_code} %{content_type}\n' .../api/attachment/file/1004` | `200 image/jpeg`, about 220 KB, file opens (first real S3 read on TEST) | S3 GetObject / streaming (#1155). Don't use seed attachments 40-42; their files are missing and they always 500 |
 
 ## 2. Admin login and auth (4 min)
 | # | Step | Expected | If it fails |
 |---|---|---|---|
-| 2.1 | `/admin`, log in with IDIR | Back on Search with your name in the header, no Amplify console errors | aws-amplify split (#1141) |
+| 2.1 | `/admin`, log in with IDIR | Back on Search with your name in the header, no auth errors in the console | BC Gov SSO migration |
 | 2.2 | Search a district, open a FOM | Detail page with map, attachments, metrics; API calls 200 | 401s: API token guard (#1150 or #1162) |
 | 2.3 | Analytics dashboard (ministry only) | Renders with data | #1162 |
 | 2.4 | Optional: reload after a few minutes | Session still valid | Token refresh (#1141) |

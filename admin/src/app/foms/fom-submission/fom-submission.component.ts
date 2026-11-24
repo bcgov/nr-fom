@@ -1,4 +1,4 @@
-import { CognitoService } from "@admin-core/services/cognito.service";
+import { KeycloakService } from "@admin-core/services/keycloak.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { LoadingService } from '@admin-core/services/loading.service';
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
@@ -44,7 +44,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   private loadingSvc = inject(LoadingService);
   private modalSvc = inject(ModalService);
   private submissionSvc = inject(SubmissionService);
-  private cognitoService = inject(CognitoService);
+  private keycloakService = inject(KeycloakService);
   private destroyRef = inject(DestroyRef);
 
   // Signal so the template's `@if (fg())` gate is reactive
@@ -63,7 +63,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   private scrollToFragment: string | null = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> | null = null;
-  // Populated from the authenticated Cognito session in the constructor.
+  // Populated from the authenticated SSO session in the constructor.
   private user!: User;
 
   readonly appId = input.required<string>();
@@ -73,7 +73,7 @@ export class FomSubmissionComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   constructor() {
-    const user = this.cognitoService.getUser();
+    const user = this.keycloakService.getUser();
     if (user) {
       this.user = user;
     }

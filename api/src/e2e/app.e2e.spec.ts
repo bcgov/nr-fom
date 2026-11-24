@@ -1,4 +1,4 @@
-import { AwsCognitoConfig } from '@api-core/security/auth.service';
+import { KeycloakConfig } from '@api-core/security/auth.service';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { User } from "@utility/security/user";
@@ -46,10 +46,10 @@ describe('API endpoints testing (e2e)', () => {
   });
 
   describe('Auth Endpoint', () => {
-    // Testing of other endpoints is based on AWS Cognito being disabled.
-    it('should have AWS Cognito disabled', async () => {
-      const res = await request(app.getHttpServer()).get('/awsCognitoConfig');
-      const config = res.body as AwsCognitoConfig;
+    // Testing of other endpoints is based on security being disabled.
+    it('should have security disabled', async () => {
+      const res = await request(app.getHttpServer()).get('/keycloakConfig');
+      const config = res.body as KeycloakConfig;
       expect(config.enabled).toBe(false);
     });
   });

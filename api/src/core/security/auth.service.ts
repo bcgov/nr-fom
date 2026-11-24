@@ -1,190 +1,98 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { decode, JwtPayload, verify } from 'jsonwebtoken';
 import { JwksClient } from 'jwks-rsa';
 import { PinoLogger } from 'nestjs-pino';
 
 import { User } from '@utility/security/user';
-import aswCognitoEnvJson from '../../assets/aws-cognito-env.json';
 
-export class AwsCognitoConfig {
-
+/**
+ * What the admin SPA needs to sign in against BC Gov SSO (Keycloak).
+ *
+ * Served by the API so the SPA authenticates against exactly the realm and client
+ * the API validates: both values are stored once (KEYCLOAK_ISSUER_URI,
+ * KEYCLOAK_CLIENT_ID on the API) and cannot drift apart. The SPA's redirect URIs
+ * are derived from its own origin, and oidc-client discovers every endpoint from
+ * the issuer, so nothing else is needed.
+ */
+export class KeycloakConfig {
   @ApiProperty()
   enabled: boolean = true;
 
-  @ApiProperty()
-  aws_cognito_domain: string;
+  /** Realm issuer, e.g. https://test.loginproxy.gov.bc.ca/auth/realms/standard. Absent when security is disabled. */
+  @ApiPropertyOptional()
+  issuerUri?: string;
 
-  @ApiProperty()
-  aws_cognito_region: string;
-
-  @ApiProperty()
-  aws_user_pools_id: string;
-
-  @ApiProperty()
-  aws_user_pools_web_client_id: string;
-
-  @ApiProperty()
-  aws_mandatory_sign_in: string = "enable"; // 'enable' or 'disable'
-
-  @ApiProperty({ type: () => AwsCognitoOauthConfig })
-  oauth: AuthAwsCognitoConfig = new AwsCognitoOauthConfig();
-
-  /**
-   * Endpoints and client ids for the federated logout chain the admin SPA drives
-   * (Siteminder -> Keycloak -> Cognito -> app).
-   */
-  @ApiProperty({ type: () => AwsCognitoLogoutConfig })
-  logout: AuthAwsCognitoLogoutConfig = new AwsCognitoLogoutConfig();
-
-  @ApiProperty()
-  federationTarget: string = 'COGNITO_USER_POOLS';
-}
-
-export interface AuthAwsCognitoConfig {
-  domain: string;
-  scope: string[];
-  redirectSignIn: string;
-  redirectSignOut: string;
-  responseType: string;
-}
-
-export interface AuthAwsCognitoLogoutConfig {
-  siteminderUrl: string;
-  keycloakUrl: string;
-  keycloakClientIdIdir: string;
-  keycloakClientIdBceidBusiness: string;
-}
-
-/**
- * Info: Need to define interface/type for Nest to properly generate OpenAPI model.
- * Ref: https://docs.nestjs.com/openapi/types-and-parameters
- * Example:
- *    interface AuthAwsCognitoConfig{}
- *    class AwsCognitoOauthConfig implements AuthAwsCognitoConfig {}
- *    Usage: @ApiProperty({ type: () => AwsCognitoOauthConfig })
- */
-export class AwsCognitoOauthConfig implements AuthAwsCognitoConfig {
-  @ApiProperty()
-  domain: string;
-
-  @ApiProperty()
-  scope: string[];
-
-  @ApiProperty()
-  redirectSignIn: string;
-
-  @ApiProperty()
-  redirectSignOut: string;
-
-  @ApiProperty()
-  responseType: string;
-}
-
-export class AwsCognitoLogoutConfig implements AuthAwsCognitoLogoutConfig {
-  /** Siteminder logoff.cgi base, without query string. */
-  @ApiProperty()
-  siteminderUrl: string;
-
-  /** Keycloak end-session endpoint for the 'standard' realm, without query string. */
-  @ApiProperty()
-  keycloakUrl: string;
-
-  /**
-   * Cognito's client id in Keycloak, per IdP. FAM registers one Keycloak client
-   * for IDIR and one for BCeID Business, and the end-session call must use the
-   * one matching the IdP the user signed in with. Both ids carry a '-dev-'
-   * segment in every realm - it is part of the client name, not an environment
-   * marker, so the same two values are correct in dev, test and prod.
-   */
-  @ApiProperty()
-  keycloakClientIdIdir: string;
-
-  @ApiProperty()
-  keycloakClientIdBceidBusiness: string;
+  /** FOM's CSS integration client id (public client). Absent when security is disabled. */
+  @ApiPropertyOptional()
+  clientId?: string;
 }
 
 @Injectable()
 export class AuthService {
-    private awsConfig: AwsCognitoConfig;
+    private config: KeycloakConfig;
 
-    private jwksClient;
+    private jwksClient: Pick<JwksClient, 'getSigningKey'>;
 
     constructor(private logger: PinoLogger) {
-        this.awsConfig = Object.assign(new AwsCognitoConfig(), aswCognitoEnvJson);
-        this.awsConfig.enabled = (process.env.SECURITY_ENABLED || 'true') === 'true';
-        const jwksUri = `https://cognito-idp.${this.awsConfig.aws_cognito_region}.amazonaws.com/${this.awsConfig.aws_user_pools_id}/.well-known/jwks.json`;
-        console.log("jwksUri", jwksUri);
+        this.config = new KeycloakConfig();
+        this.config.enabled = (process.env.SECURITY_ENABLED || 'true') === 'true';
+        const issuerUri = (process.env.KEYCLOAK_ISSUER_URI || '').trim().replace(/\/+$/, '');
+        const clientId = (process.env.KEYCLOAK_CLIENT_ID || '').trim();
+        if (this.config.enabled) {
+            // Fail fast. A blank client id would make the azp check meaningless: the
+            // standard realm is shared by many apps, all signed by the same keys.
+            if (!issuerUri || !clientId) {
+                throw new Error('KEYCLOAK_ISSUER_URI and KEYCLOAK_CLIENT_ID must be set when SECURITY_ENABLED is true.');
+            }
+            this.config.issuerUri = issuerUri;
+            this.config.clientId = clientId;
+        }
+        // Keycloak publishes its keys here, not at Cognito's /.well-known/jwks.json.
         this.jwksClient = new JwksClient({
-            jwksUri,
+            jwksUri: `${issuerUri}/protocol/openid-connect/certs`,
             cache: true, // Accept cache defaults
             rateLimit: true,
         });
     }
 
-    getAwsCognitoConfig(): AwsCognitoConfig {
-        return this.awsConfig;
+    getKeycloakConfig(): KeycloakConfig {
+        return this.config;
     }
 
-    async verifyToken(authHeader: string):Promise<User> {
-        return this.verifyCognitoToken(authHeader);
-    }
-
-    async verifyCognitoToken(authHeader: string):Promise<User> {
+    async verifyToken(authHeader: string): Promise<User> {
         const bearer = 'Bearer ';
         if (!authHeader?.startsWith(bearer) || authHeader.length <= bearer.length) {
             return Promise.reject(new ForbiddenException());
         }
-        const tokenStartIndex = bearer.length;
-        const token = authHeader.substr(tokenStartIndex);
-        if (!this.awsConfig.enabled) {
-        const user = User.convertJsonToUser(token);
-            return Promise.resolve(user);
+        const token = authHeader.substring(bearer.length);
+        if (!this.config.enabled) {
+            return User.convertJsonToUser(token);
         }
 
         try {
-            const cognitoToken = JSON.parse(token);
-            const cognitoIdToken = cognitoToken['idToken'];
-            const cognitoAccessToken = cognitoToken['accessToken'];
-            const untrustedDecodedIdToken = decode(cognitoIdToken, { complete: true });
-            const untrustedDecodedAccessToken = decode(cognitoAccessToken, { complete: true });
-            this.logger.debug("Untrusted decoded ID token %o", untrustedDecodedIdToken);
-            this.logger.debug("Untrusted decoded ACCESS token %o", untrustedDecodedAccessToken);
-
-            const idToken_kid = untrustedDecodedIdToken.header.kid;
-            const idPubkey = await this.jwksClient.getSigningKey(idToken_kid);
-            const issuer = `https://cognito-idp.${this.awsConfig.aws_cognito_region}.amazonaws.com/${this.awsConfig.aws_user_pools_id}`;
-            const clientId = this.awsConfig.aws_user_pools_web_client_id;
-            // Cognito ID tokens carry 'aud' = app client id.
-            const decodedIdToken = verify(cognitoIdToken, idPubkey.getPublicKey(), {
+            const untrusted = decode(token, { complete: true });
+            const kid = untrusted?.header?.kid;
+            if (!kid) {
+                throw new Error('Token has no kid');
+            }
+            const key = await this.jwksClient.getSigningKey(kid);
+            const claims = verify(token, key.getPublicKey(), {
                 algorithms: ['RS256'],
-                issuer,
-                audience: clientId,
+                issuer: this.config.issuerUri,
             }) as JwtPayload;
-            if (decodedIdToken.token_use !== 'id') {
-                throw new Error('ID token has unexpected token_use');
+            // Keycloak emits no token_use claim. What proves the token was issued to
+            // FOM (rather than to another app on the shared realm) is azp.
+            if (claims.azp !== this.config.clientId) {
+                throw new Error(`Token was issued to '${claims.azp}', not '${this.config.clientId}'`);
             }
-            this.logger.debug("Trusted decoded ID token = %o", decodedIdToken);
-
-            const accessToken_kid = untrustedDecodedAccessToken.header.kid;
-            const accessPubkey = await this.jwksClient.getSigningKey(accessToken_kid);
-            // Cognito access tokens have no 'aud'; the app client is in 'client_id'.
-            const decodedAccessToken = verify(cognitoAccessToken, accessPubkey.getPublicKey(), {
-                algorithms: ['RS256'],
-                issuer,
-            }) as JwtPayload;
-            if (decodedAccessToken.token_use !== 'access' || decodedAccessToken.client_id !== clientId) {
-                throw new Error('Access token has unexpected token_use or client_id');
+            // An ID token also carries azp; only access tokens are typ Bearer.
+            if (claims.typ !== undefined && claims.typ !== 'Bearer') {
+                throw new Error(`Unexpected token typ '${claims.typ}'`);
             }
-            this.logger.debug("Trusted decoded Access token = %o", decodedAccessToken);
-
-            const decodedToken = {
-                decodedIdToken,
-                decodedAccessToken
-            }
-            return User.convertAwsCognitoDecodedTokenToUser(decodedToken);
+            return User.convertKeycloakClaimsToUser(claims);
         } catch (err) {
-            this.logger.warn("Invalid token: %o", err);
+            this.logger.warn("Invalid token: %o", err instanceof Error ? err.message : err);
             return Promise.reject(new ForbiddenException());
         }
     }

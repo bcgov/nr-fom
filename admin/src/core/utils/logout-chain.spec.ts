@@ -1,141 +1,57 @@
-import { buildCognitoLogoutUrl, buildFederatedLogoutUrl, FederatedLogoutConfig } from './logout-chain';
+import { buildKeycloakLogoutUrl, buildLogoutChainUrl, siteminderLogoffUrl } from './logout-chain';
 
-const CONFIG: FederatedLogoutConfig = {
-  siteminderLogoutUrl: 'https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi',
-  keycloakLogoutUrl:
-    'https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout',
-  keycloakClientIdIdir: 'fsa-cognito-idir-dev-4088',
-  keycloakClientIdBceidBusiness: 'fsa-cognito-b-ce-id-business-dev-4090',
-  cognitoDomain: 'lza-prod-fam-user-pool-domain.auth.ca-central-1.amazoncognito.com',
-  cognitoClientId: '1iai0av52nvnjn7olurbi8unl0',
-  appReturnUrl: 'http://localhost:4200/admin/logout'
-};
+const TEST_ISSUER = 'https://test.loginproxy.gov.bc.ca/auth/realms/standard';
+const PROD_ISSUER = 'https://loginproxy.gov.bc.ca/auth/realms/standard';
+const LANDING = 'https://fom-test.apps.silver.devops.gov.bc.ca/admin/logout';
 
-/**
- * Peels the chain apart the way the browser does: read a query param, decode it
- * ONCE, parse the result as a URL. If any layer were double- or un-encoded this
- * would throw or yield the wrong host, which is the whole point of the exercise.
- */
-const unwrap = (url: string, param: string): URL =>
-  new URL(new URL(url).searchParams.get(param)!);
-
-describe('buildFederatedLogoutUrl', () => {
-  describe('IdP selection', () => {
-    it('uses the IDIR client id for an IDIR login, and not the BCeID one', () => {
-      const keycloak = unwrap(buildFederatedLogoutUrl(CONFIG, 'idir')!, 'returl');
-
-      expect(keycloak.searchParams.get('client_id')).toBe(CONFIG.keycloakClientIdIdir);
-      expect(keycloak.searchParams.get('client_id')).not.toBe(
-        CONFIG.keycloakClientIdBceidBusiness
-      );
-    });
-
-    it('uses the BCeID Business client id for a BCeID Business login', () => {
-      const keycloak = unwrap(buildFederatedLogoutUrl(CONFIG, 'bceidbusiness')!, 'returl');
-
-      expect(keycloak.searchParams.get('client_id')).toBe(
-        CONFIG.keycloakClientIdBceidBusiness
-      );
-    });
-
-    // The claim carries the bare IdP name today, but the Cognito identity providers
-    // are named DEV-IDIR / TEST-IDIR / PROD-IDIR. Matching tolerates both so a FAM
-    // attribute-mapping change cannot silently drop every logout to the fallback.
-    it.each([
-      ['idir', CONFIG.keycloakClientIdIdir],
-      ['IDIR', CONFIG.keycloakClientIdIdir],
-      ['DEV-IDIR', CONFIG.keycloakClientIdIdir],
-      ['PROD-IDIR', CONFIG.keycloakClientIdIdir],
-      ['bceidbusiness', CONFIG.keycloakClientIdBceidBusiness],
-      ['BCEIDBUSINESS', CONFIG.keycloakClientIdBceidBusiness],
-      ['TEST-BCEIDBUSINESS', CONFIG.keycloakClientIdBceidBusiness]
-    ])('resolves %s to the right Keycloak client', (idp, expected) => {
-      const keycloak = unwrap(buildFederatedLogoutUrl(CONFIG, idp)!, 'returl');
-
-      expect(keycloak.searchParams.get('client_id')).toBe(expected);
-    });
-
-    it.each([undefined, '', 'bceidbasic', 'github'])(
-      'returns null for an unusable idpProvider (%s)',
-      (idp) => {
-        expect(buildFederatedLogoutUrl(CONFIG, idp)).toBeNull();
-      }
-    );
-  });
-
-  describe('incomplete configuration', () => {
-    it.each([
-      'siteminderLogoutUrl',
-      'keycloakLogoutUrl',
-      'keycloakClientIdIdir',
-      'cognitoDomain',
-      'cognitoClientId',
-      'appReturnUrl'
-    ] as (keyof FederatedLogoutConfig)[])('returns null when %s is blank', (field) => {
-      expect(buildFederatedLogoutUrl({ ...CONFIG, [field]: '' }, 'idir')).toBeNull();
-    });
-
-    it('returns null when the BCeID client id is blank and the user is BCeID', () => {
-      expect(
-        buildFederatedLogoutUrl(
-          { ...CONFIG, keycloakClientIdBceidBusiness: '' },
-          'bceidbusiness'
-        )
-      ).toBeNull();
-    });
-
-    it('still builds for an IDIR user when only the BCeID client id is blank', () => {
-      expect(
-        buildFederatedLogoutUrl({ ...CONFIG, keycloakClientIdBceidBusiness: '' }, 'idir')
-      ).not.toBeNull();
+describe('logout-chain', () => {
+  describe('siteminderLogoffUrl', () => {
+    it('uses production Siteminder only for the production realm', () => {
+      expect(siteminderLogoffUrl(PROD_ISSUER)).toBe('https://logon7.gov.bc.ca/clp-cgi/logoff.cgi');
+      expect(siteminderLogoffUrl(TEST_ISSUER)).toBe('https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi');
+      expect(siteminderLogoffUrl('https://dev.loginproxy.gov.bc.ca/auth/realms/standard'))
+        .toBe('https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi');
+      expect(siteminderLogoffUrl('not a url')).toBe('https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi');
     });
   });
 
-  describe('chain structure', () => {
-    it('hands the browser to Siteminder first, skipping its interstitial', () => {
-      const url = buildFederatedLogoutUrl(CONFIG, 'idir')!;
-
-      expect(url.startsWith(`${CONFIG.siteminderLogoutUrl}?retnow=1&returl=`)).toBe(true);
+  describe('buildKeycloakLogoutUrl', () => {
+    it('targets the realm end-session endpoint with client, landing and hint', () => {
+      const url = new URL(buildKeycloakLogoutUrl({
+        issuerUri: TEST_ISSUER + '/', clientId: 'fom', postLogoutRedirectUri: LANDING, idToken: 'a.b.c',
+      }));
+      expect(`${url.origin}${url.pathname}`).toBe(`${TEST_ISSUER}/protocol/openid-connect/logout`);
+      expect(url.searchParams.get('client_id')).toBe('fom');
+      expect(url.searchParams.get('post_logout_redirect_uri')).toBe(LANDING);
+      expect(url.searchParams.get('id_token_hint')).toBe('a.b.c');
     });
 
-    it('nests Siteminder -> Keycloak -> Cognito -> app, each encoded exactly once', () => {
-      const url = buildFederatedLogoutUrl(CONFIG, 'idir')!;
+    it('omits id_token_hint when there is no ID token', () => {
+      const url = new URL(buildKeycloakLogoutUrl({ issuerUri: TEST_ISSUER, clientId: 'fom', postLogoutRedirectUri: LANDING }));
+      expect(url.searchParams.has('id_token_hint')).toBe(false);
+    });
+  });
 
-      // Layer 1: Siteminder's returl decodes once to the Keycloak end-session URL.
-      const keycloak = unwrap(url, 'returl');
-      expect(keycloak.origin + keycloak.pathname).toBe(CONFIG.keycloakLogoutUrl);
-
-      // Layer 2: its post_logout_redirect_uri decodes once to the Cognito logout URL.
-      const cognito = unwrap(keycloak.href, 'post_logout_redirect_uri');
-      expect(cognito.origin + cognito.pathname).toBe(`https://${CONFIG.cognitoDomain}/logout`);
-      expect(cognito.searchParams.get('client_id')).toBe(CONFIG.cognitoClientId);
-
-      // Layer 3: its logout_uri decodes once to exactly the app return URL. Single
-      // encoding is the entire correctness argument of this chain, so it is asserted
-      // structurally rather than by matching an encoded fragment.
-      expect(cognito.searchParams.get('logout_uri')).toBe(CONFIG.appReturnUrl);
+  describe('buildLogoutChainUrl', () => {
+    it('wraps the Keycloak URL in Siteminder logoff, encoded exactly once', () => {
+      const chain = buildLogoutChainUrl({ issuerUri: TEST_ISSUER, clientId: 'fom', postLogoutRedirectUri: LANDING, idToken: 'a.b.c' })!;
+      const outer = new URL(chain);
+      expect(`${outer.origin}${outer.pathname}`).toBe('https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi');
+      expect(outer.searchParams.get('retnow')).toBe('1');
+      // Only two top-level params: the Keycloak URL's own &s must not leak out.
+      expect([...outer.searchParams.keys()]).toStrictEqual(['retnow', 'returl']);
+      const inner = new URL(outer.searchParams.get('returl')!);
+      expect(inner.searchParams.get('post_logout_redirect_uri')).toBe(LANDING);
+      expect(inner.searchParams.get('client_id')).toBe('fom');
     });
 
-    it('uses the same Cognito logout URL the chain embeds as its last hop', () => {
-      const direct = buildCognitoLogoutUrl(CONFIG);
-      const nested = unwrap(
-        unwrap(buildFederatedLogoutUrl(CONFIG, 'idir')!, 'returl').href,
-        'post_logout_redirect_uri'
-      );
-
-      expect(direct).toBe(nested.href);
-      expect(buildCognitoLogoutUrl({ ...CONFIG, cognitoDomain: '' })).toBeNull();
-    });
-
-    it('encodes the inner query separators so the outer hop cannot swallow them', () => {
-      const url = buildFederatedLogoutUrl(CONFIG, 'idir')!;
-
-      // Exactly one '?' outside the encoded payload: Siteminder's own.
-      expect(url.split('?').length - 1).toBe(1);
-      // The inner URLs' separators survive as %3F / %26 rather than being parsed
-      // as Siteminder's own parameters.
-      expect(url).toContain('%3F');
-      expect(url).toContain('%26');
+    it.each([
+      ['issuer', { issuerUri: '', clientId: 'fom', postLogoutRedirectUri: LANDING }],
+      ['client id', { issuerUri: TEST_ISSUER, clientId: '', postLogoutRedirectUri: LANDING }],
+      ['landing', { issuerUri: TEST_ISSUER, clientId: 'fom', postLogoutRedirectUri: '' }],
+      ['valid issuer URL', { issuerUri: 'not a url', clientId: 'fom', postLogoutRedirectUri: LANDING }],
+    ])('is null without a %s', (_name, config) => {
+      expect(buildLogoutChainUrl(config)).toBeNull();
     });
   });
 });

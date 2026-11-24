@@ -36,7 +36,7 @@ Four properties define the architecture:
 | **Signal-based reactivity** | `rxResource` for data loading, `signal` / `computed` / `linkedSignal` for state, `input()` / `output()` / `viewChild()` for the component API. Templates use `@if` / `@for` control flow (×201 / ×40); a single `AsyncPipe` appears, in `admin/app.component`. |
 | **Strict TypeScript** | `strict: true` + `strictTemplates` in both apps (`strictPropertyInitialization` deliberately **off**). |
 
-The **admin** app is authentication-required (AWS Cognito via `angular-auth-oidc-client`). The **public** app is fully unauthenticated.
+The **admin** app is authentication-required (BC Gov SSO — Keycloak `standard` realm — via `angular-auth-oidc-client`). The **public** app is fully unauthenticated.
 
 Both apps share the generated TypeScript API client (`libs/client/typescript-ng`) and the `libs/utility` package. They are **independently deployable** — each has its own `package.json`, `angular.json`, `Dockerfile`, `Caddyfile`, and OpenShift deployment manifest — but they install from a **single hoisted npm workspace root** (see §17, ADR-6).
 
@@ -89,10 +89,10 @@ nr-fom/                       # npm workspaces root: libs, public, admin, api
 │   │   │   ├── interceptors/http-error.interceptor.ts
 │   │   │   ├── models/                    # attachmentTypeEnum, code-tables, dialog
 │   │   │   ├── pipes/newlines.pipe.ts
-│   │   │   ├── services/                  # AttachmentResolverSvc, cognito,
+│   │   │   ├── services/                  # AttachmentResolverSvc, keycloak,
 │   │   │   │                              # loading, modal, state, mock-user
 │   │   │   └── utils/                     # attachmentUploadService, commonUtil,
-│   │   │                                  # constants, cognito-token-interceptor,
+│   │   │                                  # constants, auth-token-interceptor,
 │   │   │                                  # logout-chain
 │   │   ├── assets/  (env/env.js, images, fonts, styles/)
 │   │   └── environments/
@@ -173,12 +173,12 @@ const coreProviders = [
   // Order is critical - the token interceptor must run after the error interceptor
   // (it is last in the array, so it sees the response first and can refresh+retry a
   // 403 before the error interceptor would surface a "Forbidden" dialog).
-  provideHttpClient(withInterceptors([errorInterceptor, cognitoTokenInterceptor])),
+  provideHttpClient(withInterceptors([errorInterceptor, authTokenInterceptor])),
   // Generated API client config — functional provider replacing ApiModule.forRoot()
   { provide: Configuration, useValue: apiConfig },
   importProvidersFrom(NgbModule, RxReactiveFormsModule, MatDialogModule, MatSnackBarModule),
   ...provideIsoDateAdapter(),
-  provideAppInitializer(() => inject(CognitoService).init()),
+  provideAppInitializer(() => inject(KeycloakService).init()),
 ];
 
 const routesProviders = [
@@ -196,7 +196,7 @@ bootstrapApplication(AppComponent, { providers: [...coreProviders, ...routesProv
 
 **Key behaviours:**
 
-1. `provideAppInitializer` blocks Angular startup until `CognitoService.init()` resolves, so authentication is settled before any route renders.
+1. `provideAppInitializer` blocks Angular startup until `KeycloakService.init()` resolves, so authentication is settled before any route renders.
 2. `withComponentInputBinding()` is load-bearing: route params, `resolve` keys, and route `data` are all delivered as component `input()`s (see §4.3).
 3. `withPreloading(PreloadAllModules)` means lazy routes are code-split for the initial payload but fetched eagerly in the background — a deliberate "split without a first-navigation penalty" trade.
 4. `AppComponent.ngOnInit()` awaits `StateService.getCodeTables()` (a `forkJoin` of 4 API calls) with a **10-second `timeout`**, then always calls `setReady()`. A hung code-table request degrades the UI rather than blocking it forever.
@@ -251,7 +251,7 @@ Both apps use **flat route tables with lazy `loadComponent()`**.
 | `**` | → `/` redirect | — | — | — |
 
 Notes:
-- `logout`, `not-authorized` and `search` are **eager on purpose**. `logout` is the URL registered as this app's Cognito sign-out URL and must render without a session; `search` is the default landing.
+- `logout`, `not-authorized` and `search` are **eager on purpose**. `logout` is the post-logout redirect URI registered on FOM's CSS integration and must render without a session; `search` is the default landing.
 - `adminGuard` is still the only route-level guard, protecting only the analytics dashboard. Authentication itself is enforced globally by `provideAppInitializer` + `HeaderComponent.ngOnInit` (see §7).
 - Route `data` (`mode`, `editMode`) is consumed as an `input()` thanks to `withComponentInputBinding()`.
 
@@ -331,7 +331,7 @@ readonly analyticsData = linkedSignal(() => this.initialAnalyticsData());  // wr
 
 | Service | Purpose |
 |---------|---------|
-| `CognitoService` | AWS Cognito authentication via `angular-auth-oidc-client` (authorization code + PKCE against the user-pool issuer). Manages sign-in, federated sign-out, token refresh, and exposes the current `User`. Supports a fake-user mode (`mock-user.ts`) when `awsCognitoConfig.enabled = false` (local dev). |
+| `KeycloakService` | BC Gov SSO (Keycloak) authentication via `angular-auth-oidc-client` (authorization code + PKCE, public client, authority = realm issuer). Manages sign-in, the Siteminder → Keycloak sign-out chain, token refresh, and exposes the current `User` (built from the access-token claims). Supports a fake-user mode (`mock-user.ts`) when `keycloakConfig.enabled = false` (local dev). |
 | `StateService` | Pre-loaded reference/code-table data plus a readiness observable (`isReady$` via `BehaviorSubject`). |
 | `LoadingService` | Counter-backed global loading signal (see below). |
 | `ModalService` | Wrapper over `MatDialog` + `MatSnackBar`. Typed helpers: `openDialog`, `openErrorDialog`, `openWarningDialog`, `openConfirmationDialog`, `openComponentDialog<T>`, `openSnackBar`. |
@@ -360,14 +360,14 @@ Two distinct loading concepts now coexist deliberately:
 
 | Guard | Type | Logic |
 |-------|------|-------|
-| `adminGuard` | Functional | `CognitoService.getUser()?.isAdmin === true`; otherwise `router.navigate(['/not-authorized'])` and return `false`. |
+| `adminGuard` | Functional | `KeycloakService.getUser()?.isAdmin === true`; otherwise `router.navigate(['/not-authorized'])` and return `false`. |
 
 #### Interceptors (functional)
 
 | Interceptor | Purpose |
 |-------------|---------|
 | `errorInterceptor` | `loadingSvc.requestStarted()` on entry, `requestFinished()` in `finalize`. Maps 400 / 403 / 422 / 500 / other to `ModalService` dialogs. |
-| `cognitoTokenInterceptor` | Adds `Authorization: Bearer <token>`. On 403, refreshes the Cognito token once and retries. Refresh de-duplication state lives in a `providedIn: 'root'` `TokenRefreshState` service (`inProgress` + `refreshed$` Subject) rather than interceptor instance fields. Short-circuits entirely when `cognitoService.initialized === false`. |
+| `authTokenInterceptor` | Adds `Authorization: Bearer <access token>`. On 403, refreshes the session once and retries. Refresh de-duplication state lives in a `providedIn: 'root'` `TokenRefreshState` service (`inProgress` + `refreshed$` Subject) rather than interceptor instance fields. Short-circuits entirely when `keycloakService.initialized === false`, and for requests to the realm's origin. |
 
 #### Directives
 
@@ -445,7 +445,7 @@ The generated services `inject(Configuration, { optional: true })`, so this sati
 |---------|--------|
 | `AnalyticsDashboardService` | Analytics aggregation endpoints |
 | `AttachmentService` | Attachment CRUD + file-content download |
-| `AuthService` | Cognito config endpoint |
+| `AuthService` | Keycloak config endpoint (`authControllerGetKeycloakConfig`) |
 | `DistrictService` | District reference data |
 | `ExternalService` | External system integrations |
 | `ForestClientService` | Forest client lookup |
@@ -473,13 +473,13 @@ The generated services `inject(Configuration, { optional: true })`, so this sati
 | `ProjectPlanCodeEnum` / `ProjectPlanCodeFilterEnum` | FSP / Woodlot / All |
 | `ResponseCodeEnum` | Comment response classification |
 | `SpatialObjectCodeEnum` | `CutBlock`, `RoadSection`, `Wtra` |
-| `AwsCognitoConfig` (+ `AwsCognitoOauthConfig`, `AwsCognitoLogoutConfig`) | Cognito + federated-logout configuration from the API |
+| `KeycloakConfig` | `enabled`, plus optional `issuerUri` and `clientId` — the realm and client the API validates |
 
 ### 6.2 Utility Library (`libs/utility/src`)
 
 Hand-written shared code. Not to be confused with the generated client. Note that the package also contains NestJS-side code (`utility.module.ts`, `utility.service.ts`) used only by `api/`.
 
-**`security/user.ts` — `User` class.** Holds `userName`, `displayName`, `isMinistry`, `isForestClient`, `isAdmin`, `clientIds`. Methods: `isAuthorizedForAdminSite()`, `isAuthorizedForClientId(clientId)`; factories `convertAwsCognitoDecodedTokenToUser(token)` (current path — reads `cognito:groups` from the **access** token and `custom:idp_username` / `custom:idp_display_name` from the **ID** token), `convertJwtToUser(jwt)` (legacy Keycloak), `convertJsonToUser(json)`.
+**`security/user.ts` — `User` class.** Holds `userName`, `displayName`, `isMinistry`, `isForestClient`, `isAdmin`, `clientIds`. Methods: `isAuthorizedForAdminSite()`, `isAuthorizedForClientId(clientId)`; factories `convertKeycloakClaimsToUser(claims)` (reads everything from the Keycloak **access** token: `idir_username` / `bceid_username` with an upper-cased GUID fallback, `display_name`, and roles) and `convertJsonToUser(json)` (fake user, security disabled). Role extraction and FAM scoped-role parsing live beside it in `security/fam-roles.ts`.
 
 **`services/config.service.ts`** — `retrieveApiBasePath()` (free function) and `ConfigService`. On `localhost`, the API base is `http://localhost:3333`; otherwise it reads `fom_api_base_url` from `localStorage`. `getEnvironmentDisplay()` returns `undefined` for prod / empty, driving the header environment badge. `getAttachmentUrl(id)` builds attachment download URLs.
 
@@ -507,92 +507,95 @@ readonly currentSelected: Signal<string | null> = this._featureSelected.asReadon
 Browser
   │
   ▼
-provideAppInitializer → CognitoService.init()
+provideAppInitializer → KeycloakService.init()
   │
   ├─ isLogoutLanding()  → pathname ends with '/logout' → loggedOut = true,
-  │                        initialized = false, return null
+  │                        initialized = false, return
   │                        (no config fetch, no login redirect)
   │
-  ├─ loadRemoteConfig() → GET <apiBase>/api/awsCognitoConfig  (memoised promise)
+  ├─ loadRemoteConfig() → GET <apiBase>/api/keycloakConfig  (memoised promise)
   │     └─ If config.enabled = false → getFakeUser() [local dev only], initialized = true
   │
-  ├─ stage OpenID config (authority = Cognito user-pool issuer) and checkAuth()
-  │     └─ authenticated → ID and access payloads from the OIDC client
-  │           ├─ sign-in callback → measure the PC clock's offset from the tokens' iat
-  │           ├─ exp passed (on Cognito's clock) → forceRefreshSession(),
-  │           │     or a fresh hosted UI sign-in if Cognito will not refresh
+  ├─ stage OpenID config and checkAuth()
+  │     authority   = config.issuerUri (realm issuer; endpoints discovered from it)
+  │     clientId    = config.clientId
+  │     redirectUrl = window.location.origin + '/admin/search'
+  │     postLogoutRedirectUri = window.location.origin + '/admin/logout'
+  │     └─ authenticated → session from the tokens checkAuth restored (no forced refresh)
+  │           ├─ sign-in callback → measure the PC clock's offset from the access token's iat
+  │           ├─ access token expired (on the realm's clock) → forceRefreshSession();
+  │           │     on failure reauthenticate() (logoffLocal + authorize)
   │           └─ initialized = true
   │
-  └─ not authenticated → authorize() [Cognito hosted UI, IDIR / BCeID]
+  └─ not authenticated → authorize() [Keycloak login, IDIR / BCeID Business]
 ```
 
-**Token times never use the PC clock as-is.** A PC clock an hour off (old time zone data after BC stopped changing clocks in November 2026, or a US Pacific zone) made every fresh ID token look issued an hour away or already expired, so `checkAuth()` came back signed out and `init()` sent the browser to the hosted UI again, in an endless loop. `disableIdTokenValidation` turns off the OIDC client's ID token checks, whose `iat` and `exp` checks use the PC clock and have no setting for an hour of skew. The API verifies both tokens' signature, issuer, client and expiry with the server's clock on every request. `init()`'s own `exp` check subtracts the offset measured at sign-in or refresh (`fom_admin_clock_offset_ms` in localStorage). The OIDC client's access token expiry is already relative to when the PC received the token.
+The issuer and client id come from the API, so the SPA always signs in against the realm and client the API validates. Redirect URIs are derived from the page origin, so one image serves PR previews, TEST and PROD; both must be registered on the CSS integration. No `kc_idp_hint` is sent: FOM serves IDIR (ministry) and BCeID Business (forest clients) users, so Keycloak shows its provider choice. Tokens are kept in `localStorage` (`DefaultLocalStorageService`) so a login survives a new tab.
 
-There is **no `canActivate` for authentication anywhere in the route table.** Authentication is enforced by two things working together: `init()` above (which redirects to the hosted UI when there is no session) and `HeaderComponent.ngOnInit`, which routes an unauthenticated or unauthorized user to `/not-authorized` (skipping the redirect when already on `/not-authorized`, matched on `pathname` so a stray query string cannot defeat the check, and when `cognitoService.loggedOut`). `HeaderComponent.ngOnInit` also force-routes an admin-role-only user straight to `/analytics-dashboard`. Anything that changes either one changes the app's authentication behaviour globally.
+**Token times never use the PC clock as-is.** A PC clock an hour off (old time zone data after BC stopped changing clocks in November 2026, or a US Pacific zone) made every fresh ID token look issued an hour away or already expired, so `checkAuth()` came back signed out and `init()` sent the browser to the login again, in an endless loop (#1240). `disableIdTokenValidation` turns off the OIDC client's ID token checks, whose `iat` and `exp` checks use the PC clock and have no setting for an hour of skew. The API verifies the access token's signature, issuer, client (`azp`) and expiry with the server's clock on every request. `init()`'s own `exp` check subtracts the offset measured at sign-in or refresh (`fom_admin_clock_offset_ms` in localStorage). The OIDC client's access token expiry is already relative to when the PC received the token.
 
-### Logout: the federated chain
+There is **no `canActivate` for authentication anywhere in the route table.** Authentication is enforced by two things working together: `init()` above (which redirects to the Keycloak login when there is no session) and `HeaderComponent.ngOnInit`, which routes an unauthenticated or unauthorized user to `/not-authorized` (skipping the redirect when already on `/not-authorized`, matched on `pathname` so a stray query string cannot defeat the check, and when `keycloakService.loggedOut`). `HeaderComponent.ngOnInit` also force-routes an admin-role-only user straight to `/analytics-dashboard`. Anything that changes either one changes the app's authentication behaviour globally.
 
-Cognito's hosted `/logout` does **not** propagate to an upstream OIDC identity provider. Signing out of Cognito alone leaves the Keycloak (loginproxy) and Siteminder (IDIR / BCeID) sessions intact, and the next visit silently signs the user straight back in. A real logout has to end all three.
+### Logout: the Siteminder → Keycloak chain
 
-So the app builds the whole chain itself and hands the browser to it in one full-page navigation, with **Cognito firing last**:
+Ending the Keycloak session alone is not enough. BCeID Business sign-in goes through Siteminder, which keeps its own session after Keycloak's ends, so the next "Log in" walks straight back in without a password prompt. The SSO team's documented fix is to chain through Siteminder's `logoff.cgi` first; it is harmless for IDIR (`retnow=1` returns at once).
+
+So the app builds the chain itself and hands the browser to it in one full-page navigation:
 
 ```
 1. app        window.location.assign(<siteminder>)
-2. Siteminder https://logon*.gov.bc.ca/clp-cgi/logoff.cgi
+2. Siteminder https://logon7.gov.bc.ca/clp-cgi/logoff.cgi        (prod realm)
+              https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi    (dev / test realms)
                 ?retnow=1&returl=<urlencode(step 3)>
-3. Keycloak   https://<loginproxy>/auth/realms/standard/protocol/openid-connect/logout
-                ?client_id=<idir | bceidbusiness keycloak client>
-                &post_logout_redirect_uri=<urlencode(step 4)>
-4. Cognito    https://<cognito-domain>/logout
-                ?client_id=<FOM app client id>
-                &logout_uri=<urlencode(https://<host>/admin/logout)>
-5. app        https://<host>/admin/logout   ← the only URL Cognito must allow-list
+3. Keycloak   <issuerUri>/protocol/openid-connect/logout
+                ?client_id=<FOM CSS client id>
+                &post_logout_redirect_uri=https://<host>/admin/logout
+                &id_token_hint=<id token>
+4. app        https://<host>/admin/logout   ← registered on the CSS integration
 ```
 
-**Why Cognito last.** It makes Keycloak's `post_logout_redirect_uri` the *Cognito* logout URL — one stable, app-agnostic value — so FOM's own URL only ever needs registering as a Cognito sign-out URL, which FAM manages per app client. The app URL never has to go on the shared FAM Keycloak client. The browser still carries the Cognito session cookie when the chain reaches step 4, so that hop clears it server-side and returns home in a single pass.
+The Siteminder host is derived from the issuer: `loginproxy.gov.bc.ca` (the production realm) selects `logon7`, anything else `logontest7`. No logout endpoint or client id is configured separately.
 
 Three things that are easy to get wrong:
 
 - **Encode each nested URL exactly once**, where it is embedded in the enclosing query string. Miss it and `logoff.cgi` parses the inner `?…&…` as its own parameters, silently dropping the next hop's redirect target. The symptom is Siteminder or Keycloak landing on a default page instead of continuing.
-- **The Keycloak client id depends on the IdP the user signed in with**, read from `custom:idp_name` on the ID token. FAM registers one client for IDIR and one for BCeID Business; sending the wrong one leaves that IdP's session alive. Matching is by **substring, case-insensitively** (`keycloakClientIdFor`), so it holds whether the claim carries the bare IdP name (`idir`) or the Cognito provider name (`DEV-IDIR` / `TEST-IDIR` / `PROD-IDIR`).
-- **`OidcSecurityService.logoff()` must not run on this path.** It redirects to Cognito first, and Cognito's `/logout` does not accept OIDC end-session parameters. `logout()` calls `logoffLocal()` to drop the local session, then navigates the chain. The Cognito-only fallback navigates to `buildCognitoLogoutUrl()` (`client_id` + `logout_uri`).
-
-`appReturnUrl` is taken from `awsCognitoConfig.oauth.redirectSignOut` rather than a locally built `origin + '/admin/logout'`, so the chain's final hop and the Cognito-only fallback cannot land on different URLs.
+- **Read the ID token before clearing the local session.** `id_token_hint` is what lets Keycloak attribute the logout to a session; without it the realm session survives. `logout()` builds the chain URL first, then calls `logoffLocal()`.
+- **`OidcSecurityService.logoff()` must not run on this path.** It goes straight to Keycloak's end-session and skips Siteminder. `logout()` calls `logoffLocal()` to drop the local session, then navigates the chain.
 
 | Piece | Where |
 |---|---|
-| Chain builder (pure, unit-tested) | `admin/src/core/utils/logout-chain.ts` |
-| Caller, token clearing, IdP lookup | `CognitoService.logout()` |
+| Chain builder (pure, unit-tested) | `admin/src/core/utils/logout-chain.ts` (`buildLogoutChainUrl`, `siteminderLogoffUrl`, `buildKeycloakLogoutUrl`) |
+| Caller, ID-token read, token clearing | `KeycloakService.logout()` |
 | Landing page (eager route, no session needed) | `admin/src/app/logout/`, served at `/admin/logout` |
-| Loop-breaker on the landing | `CognitoService.isLogoutLanding()`, `HeaderComponent.ngOnInit` |
-| Endpoints and client ids | `logout` block of `GET /api/awsCognitoConfig`, from the `aws-cognito-env.json` ConfigMap |
+| Loop-breaker on the landing | `KeycloakService.isLogoutLanding()`, `HeaderComponent.ngOnInit` |
+| Issuer and client id | `GET /api/keycloakConfig` |
 
-`buildFederatedLogoutUrl()` returns `null` when the IdP is unknown or any config value is missing; the caller then navigates to `buildCognitoLogoutUrl()`. That is a Cognito-only logout — degraded, but far better than navigating to a malformed URL. It is also what happens in local development, where the chain is normally unconfigured, and on the `refreshToken()` failure path, where the session is already gone and the IdP can no longer be read.
+`buildLogoutChainUrl()` returns `null` when the issuer, client id or landing URL is missing; the caller then clears the local session and navigates straight to `/admin/logout` rather than to a malformed URL.
 
 ### Authorization Model
 
-Roles come from `cognito:groups` on the **access** token:
+Roles are read from the **access** token — `client_roles`, falling back to `resource_access.<azp>.roles` — with FAM `FAM:` sidecar entries dropped (`fam-roles.ts`):
 
-| Cognito group | User flag | Access |
+| FAM role | User flag | Access |
 |---|---|---|
 | `FOM_REVIEWER` | `isMinistry = true` | All admin site routes |
-| `FOM_SUBMITTER_<clientId>` | `isForestClient = true`, `clientIds` populated | Admin site routes scoped to their forest client |
+| `FOM_SUBMITTER_FOREST_CLIENT-<clientNumber>` | `isForestClient = true`, `clientNumber` added to `clientIds` | Admin site routes scoped to their forest client |
 | `FOM_ADMIN` | `isAdmin = true` | Analytics Dashboard (`adminGuard`); routed there directly if it is the only role |
+
+Scoped role names follow FAM's grammar (`<CODE>_FOREST_CLIENT-<value>`, `_DISTRICT-`, `_REGION-`, chainable) and are parsed right-to-left by `parseRole()`. The same `User.convertKeycloakClaimsToUser()` runs in the API, which re-derives the user from the verified token; the SPA's copy drives UI only.
 
 `adminGuard` checks `user.isAdmin`. For forest-client–scoped data access, authorization is enforced at the API level; the frontend uses `user.isAuthorizedForClientId()` for conditional UI rendering (`SearchComponent.canEditFOM` / `canViewSubmission` / `canAccessComments`).
 
-> `User.convertJwtToUser()` maps a second, **legacy Keycloak** role vocabulary (`fom_ministry`, `fom_forest_client_<id>`). That factory is retained on the `User` class but is not reached by the live Cognito flow.
-
 ### Token Management
 
-`cognitoTokenInterceptor` adds `Authorization: Bearer <token>` to every request. On a 403:
+`authTokenInterceptor` adds `Authorization: Bearer <access token>` to every request. The token is read from the OIDC client on each request (`KeycloakService.getBearerToken()`), so a background silent renew is picked up without waiting for a 403. With security disabled the bearer is the fake user serialized as JSON. On a 403:
 
 1. If `TokenRefreshState.inProgress` is already `true`, the request subscribes to `refreshed$` and waits — so a 403 storm triggers exactly one refresh.
-2. Otherwise it sets `inProgress = true`, calls `CognitoService.updateToken()`, then emits on `refreshed$`.
+2. Otherwise it sets `inProgress = true`, calls `KeycloakService.updateToken()`, then emits on `refreshed$`. `inProgress` is reset in `finalize`, on failure too.
 3. The refreshed token is re-attached to the original request and the request is retried once.
-4. If the refresh itself fails, the **original 403** is rethrown (not the refresh error).
+4. If the refresh itself fails, the **original 403** is rethrown (not the refresh error), and `updateToken()` starts a fresh sign-in (`reauthenticate()`).
 
-The interceptor short-circuits when `cognitoService.initialized` is false, which is what keeps it safe on the logout landing: `init()` early-returns there, so `awsCognitoConfig` is never populated and `addAuthHeader` — which dereferences it — is never reached. It also passes through requests to the Cognito hosted-UI domain and `cognito-idp.<region>.amazonaws.com`: the OIDC client shares this `HttpClient`, and those calls must not carry the API bearer.
+The interceptor short-circuits when `keycloakService.initialized` is false, which is what keeps it safe on the logout landing: `init()` early-returns there, so `keycloakConfig` is never populated. It also passes through any request to the realm's origin (`isOidcProviderRequest`): the OIDC client shares this `HttpClient` for discovery, keys and token refresh, and those calls must not carry the API bearer.
 
 ---
 
@@ -656,8 +659,8 @@ Signals dedupe by reference; `BehaviorSubject` does not. Mutate-and-re-emit work
 |-----|---------|------------|-----------|
 | both | `StateService` | `codeTables`, `isReady$` | `AppComponent`, all feature components |
 | both | `LoadingService` | in-flight request count → `loading` signal | HTTP interceptor (writer); templates/components (readers) |
-| admin | `TokenRefreshState` | `inProgress`, `refreshed$` | `cognitoTokenInterceptor` |
-| admin | `CognitoService` | `awsCognitoConfig`, decoded tokens, `initialized`, `loggedOut` | guard, interceptor, header, feature components |
+| admin | `TokenRefreshState` | `inProgress`, `refreshed$` | `authTokenInterceptor` |
+| admin | `KeycloakService` | `keycloakConfig`, session (tokens + access-token claims), `initialized`, `loggedOut` | guard, interceptor, header, feature components |
 | public | `FOMFiltersService` | `Map<string, IFilter\|IMultiFilter>` | `FindPanelComponent`, `ProjectsComponent` |
 | public | `MapLayersService` | base layer + overlay set | all four map components |
 | public | `UrlService` | query params + fragment | `ProjectsComponent`, panels, `MarkerPopupComponent` |
@@ -805,7 +808,7 @@ Also used by `UploadBoxComponent`.
 ```
 Component → API Service (generated) → HttpClient
   → errorInterceptor        (LoadingService.requestStarted; maps errors → dialogs)
-  → cognitoTokenInterceptor (add Bearer token; refresh + retry on 403)
+  → authTokenInterceptor    (add Bearer token; refresh + retry on 403)
   → HTTP / API
 ```
 
@@ -992,7 +995,7 @@ COPY admin/package.json ./admin/
 RUN npm ci --ignore-scripts
 ```
 
-Caddy serves the SPA with HTML5 `pushState` (`handle_path /admin/*  { try_files {path} {path}/ {file} /index.html }`), zstd/gzip encoding, `Cache-Control max-age=300`, and a full `Content-Security-Policy` allow-listing `*.gov.bc.ca`, `*.auth.ca-central-1.amazoncognito.com`, `cognito-idp.ca-central-1.amazonaws.com`, and the ArcGIS / `maps.gov.bc.ca` tile hosts.
+Caddy serves the SPA with HTML5 `pushState` (`handle_path /admin/*  { try_files {path} {path}/ {file} /index.html }`), zstd/gzip encoding, `Cache-Control max-age=300`, and a full `Content-Security-Policy` allow-listing `*.gov.bc.ca` (which covers the Keycloak realm and Siteminder) and the ArcGIS / `maps.gov.bc.ca` tile hosts.
 
 ### CI/CD (`.github/workflows/`)
 
@@ -1030,7 +1033,7 @@ This is the counterpart to `provideZonelessChangeDetection()` and is **required*
 | public | 17 | 22 |
 | libs/utility | — | 2 (`user.spec.ts`, `utility.service.spec.ts`) |
 
-Notable test targets beyond components: `logout-chain.spec.ts` (the pure chain builder), `cognito-token-interceptor.spec.ts`, `http-error.interceptor.spec.ts` (both apps), `fom.resolvers.spec.ts`, `app.routes.spec.ts` (public — asserts the functional redirects), `leaflet-host.spec.ts`, `filter.spec.ts`, `fomFilters.service.spec.ts`, `loading.service.spec.ts` (both apps), `form-control.directive.spec.ts`. `admin/src/app/spec/helpers.ts` holds shared TestBed helpers.
+Notable test targets beyond components: `logout-chain.spec.ts` (the pure chain builder), `auth-token-interceptor.spec.ts`, `keycloak.service.spec.ts`, `http-error.interceptor.spec.ts` (both apps), `fom.resolvers.spec.ts`, `app.routes.spec.ts` (public — asserts the functional redirects), `leaflet-host.spec.ts`, `filter.spec.ts`, `fomFilters.service.spec.ts`, `loading.service.spec.ts` (both apps), `form-control.directive.spec.ts`. `admin/src/app/spec/helpers.ts` holds shared TestBed helpers.
 
 ### Running tests
 
@@ -1074,8 +1077,8 @@ The client is generated from the NestJS OpenAPI spec, guaranteeing type safety a
 ### ADR-8: Runtime configuration
 API base URL and environment label come from `localStorage`, populated by a ConfigMap-mounted `env.js`. One image, many environments.
 
-### ADR-9: Federated logout chain owned by the frontend
-See §7. Building the Siteminder → Keycloak → Cognito chain in the app (rather than relying on the OIDC client's server logoff) is what makes a real logout possible while keeping only *one* FOM URL on the FAM-managed allow-list. The pure builder is isolated in `logout-chain.ts` and unit-tested; the caller degrades to a Cognito-only sign-out when config is incomplete.
+### ADR-9: Logout chain owned by the frontend
+See §7. Building the Siteminder → Keycloak chain in the app (rather than relying on the OIDC client's `logoff()`) is what ends the Siteminder session BCeID Business users keep after Keycloak's ends. The pure builder is isolated in `logout-chain.ts` and unit-tested; the caller clears the local session and goes straight to `/admin/logout` when config is incomplete.
 
 ### ADR-10: Signal Forms adopted incrementally
 `@angular/forms/signals` is used for two new/rewritten components while the established RxWeb decorator pattern stays in place for the four large admin forms. *Rationale:* the RxWeb models encode substantial conditional validation and are typed against generated DTOs; a wholesale rewrite carries more risk than value today. *Consequence:* three form technologies coexist — pick by the table in §10, not by preference.
@@ -1263,9 +1266,9 @@ Each of these is a bug that has actually occurred in this codebase and is guarde
 | Two Leaflet maps sharing `id="map"` | Double-init froze filtering. Use `.map-host` + `initMap()`'s guard. |
 | Sizing a Leaflet map with `setTimeout` | Use `observeMapSize()`; where no resize occurs (splash-modal close), use `afterNextRender`. |
 | Building the `markerClusterGroup` in `ngOnInit` | `ngOnChanges` → `drawMap` runs first and throws, aborting change detection. Build it in the constructor. |
-| Calling `OidcSecurityService.logoff()` on the logout path | It redirects to Cognito first and pre-empts the federated chain. Use `logoffLocal()`, then the chain. |
+| Calling `OidcSecurityService.logoff()` on the logout path | It goes straight to Keycloak's end-session and skips Siteminder, so a BCeID session survives. Use `logoffLocal()`, then the chain. |
 | Double- or zero-encoding a nested logout URL | `logoff.cgi` swallows the next hop. Encode exactly once, at the point of embedding. |
-| Dereferencing `awsCognitoConfig` on the logout landing | `init()` early-returns there, so it is `undefined`. Use `?.` — see `HeaderComponent.navigateToLogout`. |
+| Dereferencing `keycloakConfig` on the logout landing | `init()` early-returns there, so it is `undefined`. Use `?.` — see `HeaderComponent.navigateToLogout`. |
 | Writing view state from an async callback into a plain field | Zoneless: the view never learns. Make it a `signal`. |
 | `maxlength` attribute on a Signal Forms `[formField]` | Forbidden by the directive. Use the `maxLength` validator + a counter. |
 | Relying on a Signal Forms validator while the field is `disabled` | Validators do not run. Back the guard with a plain length `computed` (`detailsOverLimit`). |
@@ -1342,7 +1345,7 @@ Re-verify this blueprint when any of the following change, since each invalidate
 - **`main.ts` provider array** → §3, §11 (interceptor order), ADR-1/ADR-7.
 - **Route table** → §4, §18.
 - **`libs/client/typescript-ng` regeneration** → §6.1 (service/model inventory), and check whether `Configuration` is still injected `{ optional: true }`.
-- **Cognito / FAM configuration or the logout chain** → §7, ADR-9.
+- **Keycloak / FAM configuration or the logout chain** → §7, ADR-9.
 - **A new state service, or a store changing between signal and `BehaviorSubject`** → §8.
 - **A new map component** → §12, §18.
 - **Workspace, Docker, or OpenShift install topology** → §15, ADR-6.
