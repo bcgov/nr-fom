@@ -6,21 +6,23 @@ import { createHash, generateKeyPairSync, sign } from 'node:crypto';
  *
  * BC stayed on UTC-7 after November 2026, so a PC with old time zone data (or
  * set to US Pacific) shows the right local time but is an hour ahead in UTC.
- * Its fresh Cognito tokens looked issued an hour ago and already expired, so
- * the OIDC client reported "signed out" after every callback and the app sent
- * the browser back to the hosted UI, cycling /admin/search?code=...&state=...
+ * Its fresh tokens looked issued an hour ago and already expired, so the OIDC
+ * client reported "signed out" after every callback and the app sent the
+ * browser back to the login, cycling /admin/search?code=...&state=... (#1240)
  *
  * This drives the real sign-in path in the browser: the app redirects to a
- * mocked hosted UI, which redirects back with a code; the code is exchanged at
- * a mocked token endpoint for RS256-signed tokens stamped with the test
- * runner's (server) clock. The browser's clock is moved with page.clock.
+ * mocked Keycloak realm, which redirects back with a code; the code is
+ * exchanged at a mocked token endpoint for RS256-signed tokens stamped with the
+ * test runner's (server) clock. The browser's clock is moved with page.clock.
+ *
+ * The mock realm lives under gov.bc.ca because the admin CSP's connect-src only
+ * allows that domain, as it does for the real loginproxy.gov.bc.ca.
  */
 
-const REGION = 'ca-central-1';
-const POOL_ID = `${REGION}_E2Eskew`;
-const CLIENT_ID = 'e2e-skew-client-id';
-const DOMAIN = `fom-e2e-skew.auth.${REGION}.amazoncognito.com`;
-const ISSUER = `https://cognito-idp.${REGION}.amazonaws.com/${POOL_ID}`;
+const REALM_HOST = 'e2e-skew.loginproxy.gov.bc.ca';
+const ISSUER = `https://${REALM_HOST}/auth/realms/standard`;
+const OIDC = `${ISSUER}/protocol/openid-connect`;
+const CLIENT_ID = 'fom-e2e-skew-client';
 const DISPLAY_NAME = 'E2E Skew Tester';
 const KID = 'e2e-skew-kid';
 const HOUR_MS = 3600 * 1000;
@@ -37,30 +39,25 @@ function signedJwt(payload: Record<string, unknown>): string {
   return `${input}.${sign('RSA-SHA256', Buffer.from(input), privateKey).toString('base64url')}`;
 }
 
-/** Tokens as Cognito issues them, on the server's (test runner's) clock. */
-function cognitoTokens(nonce: string) {
+/** Tokens as the realm issues them, on the server's (test runner's) clock. */
+function realmTokens(nonce: string) {
   const now = Math.floor(Date.now() / 1000);
-  const common = { sub: 'e2e-skew-sub', iss: ISSUER, iat: now, auth_time: now };
+  const common = { sub: 'e2e-skew-sub', iss: ISSUER, iat: now, auth_time: now, azp: CLIENT_ID };
   return {
-    id_token: signedJwt({
-      ...common,
-      exp: now + 3600,
-      aud: CLIENT_ID,
-      nonce,
-      token_use: 'id',
-      'custom:idp_name': 'bceidbusiness',
-      'custom:idp_username': 'E2ESKEW',
-      'custom:idp_display_name': DISPLAY_NAME,
-    }),
+    id_token: signedJwt({ ...common, exp: now + 300, aud: CLIENT_ID, nonce, typ: 'ID' }),
+    // BC Gov SSO puts profile claims and roles on the access token.
     access_token: signedJwt({
       ...common,
       exp: now + 300,
-      client_id: CLIENT_ID,
-      token_use: 'access',
-      'cognito:groups': ['FOM_REVIEWER'],
+      typ: 'Bearer',
+      identity_provider: 'azureidir',
+      idir_username: 'E2ESKEW',
+      display_name: DISPLAY_NAME,
+      client_roles: ['FOM_REVIEWER'],
     }),
     refresh_token: 'e2e-skew-refresh-token',
     expires_in: 300,
+    refresh_expires_in: 1800,
     token_type: 'Bearer',
   };
 }
@@ -72,49 +69,36 @@ interface SignInMocks {
 }
 
 /** The callback must land on the admin under test, which holds the OIDC state and PKCE verifier. */
-async function mockCognito(page: Page, baseURL: string): Promise<SignInMocks> {
+async function mockRealm(page: Page, baseURL: string): Promise<SignInMocks> {
   const redirectSignIn = new URL('/admin/search', baseURL).toString();
   const mocks: SignInMocks = { authorizeCalls: 0, codeExchanges: 0, refreshes: 0 };
   let nonce = '';
   let codeChallenge = '';
 
   await page.route(/\/api\//, (route) => route.fulfill({ json: [] }));
-  await page.route(/\/api\/awsCognitoConfig/, (route) =>
-    route.fulfill({
-      json: {
-        enabled: true,
-        aws_cognito_region: REGION,
-        aws_user_pools_id: POOL_ID,
-        aws_user_pools_web_client_id: CLIENT_ID,
-        oauth: {
-          domain: DOMAIN,
-          scope: ['openid'],
-          redirectSignIn,
-          redirectSignOut: new URL('/admin/logout', baseURL).toString(),
-          responseType: 'code',
-        },
-        logout: {},
-      },
-    })
+  await page.route(/\/api\/keycloakConfig/, (route) =>
+    route.fulfill({ json: { enabled: true, issuerUri: ISSUER, clientId: CLIENT_ID } })
   );
-  await page.route(`${ISSUER}/.well-known/openid-configuration`, (route) =>
-    route.fulfill({
-      json: {
-        issuer: ISSUER,
-        authorization_endpoint: `https://${DOMAIN}/oauth2/authorize`,
-        token_endpoint: `https://${DOMAIN}/oauth2/token`,
-        userinfo_endpoint: `https://${DOMAIN}/oauth2/userInfo`,
-        end_session_endpoint: `https://${DOMAIN}/logout`,
-        jwks_uri: `${ISSUER}/.well-known/jwks.json`,
-      },
-    })
-  );
-  await page.route(`${ISSUER}/.well-known/jwks.json`, (route) => route.fulfill({ json: { keys: [JWK] } }));
 
-  await page.route(`https://${DOMAIN}/**`, async (route) => {
+  await page.route(`https://${REALM_HOST}/**`, async (route) => {
     const url = new URL(route.request().url());
-    if (url.pathname === '/oauth2/authorize') {
-      // The hosted UI with a live IdP session: straight back with a code.
+    if (url.pathname.endsWith('/.well-known/openid-configuration')) {
+      return route.fulfill({
+        json: {
+          issuer: ISSUER,
+          authorization_endpoint: `${OIDC}/auth`,
+          token_endpoint: `${OIDC}/token`,
+          userinfo_endpoint: `${OIDC}/userinfo`,
+          end_session_endpoint: `${OIDC}/logout`,
+          jwks_uri: `${OIDC}/certs`,
+        },
+      });
+    }
+    if (url.href.startsWith(`${OIDC}/certs`)) {
+      return route.fulfill({ json: { keys: [JWK] } });
+    }
+    if (url.href.startsWith(`${OIDC}/auth`)) {
+      // The realm with a live SSO session: straight back with a code.
       mocks.authorizeCalls++;
       nonce = url.searchParams.get('nonce') ?? '';
       codeChallenge = url.searchParams.get('code_challenge') ?? '';
@@ -123,20 +107,20 @@ async function mockCognito(page: Page, baseURL: string): Promise<SignInMocks> {
       back.searchParams.set('state', url.searchParams.get('state') ?? '');
       return route.fulfill({ status: 302, headers: { location: back.toString() } });
     }
-    if (url.pathname === '/oauth2/token') {
+    if (url.href.startsWith(`${OIDC}/token`)) {
       const form = new URLSearchParams(route.request().postData() ?? '');
       if (form.get('grant_type') === 'refresh_token') {
         mocks.refreshes++;
-        return route.fulfill({ json: cognitoTokens(nonce) });
+        return route.fulfill({ json: realmTokens(nonce) });
       }
       mocks.codeExchanges++;
       const verifier = form.get('code_verifier') ?? '';
       if (createHash('sha256').update(verifier).digest('base64url') !== codeChallenge) {
         return route.fulfill({ status: 400, json: { error: 'invalid_grant' } });
       }
-      return route.fulfill({ json: cognitoTokens(nonce) });
+      return route.fulfill({ json: realmTokens(nonce) });
     }
-    return route.fulfill({ contentType: 'text/html', body: '<html><body>Mock hosted UI</body></html>' });
+    return route.fulfill({ contentType: 'text/html', body: '<html><body>Mock realm sign-in</body></html>' });
   });
 
   return mocks;
@@ -153,7 +137,7 @@ test.describe('Admin - sign-in with the PC clock off by an hour', () => {
     test(`signs in once and stays signed in with the clock ${label}`, async ({ page, baseURL }) => {
       if (!baseURL) throw new Error('The admin project must set baseURL.');
       await page.clock.install({ time: Date.now() + skewMs });
-      const mocks = await mockCognito(page, baseURL);
+      const mocks = await mockRealm(page, baseURL);
 
       await page.goto('/admin/search');
       await expect(userName(page)).toContainText(DISPLAY_NAME, { timeout: 15000 });

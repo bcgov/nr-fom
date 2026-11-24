@@ -17,7 +17,7 @@ import { HttpClient, HttpHeaders, HttpParams,
 import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
-import { AwsCognitoConfig } from '../model/models';
+import { KeycloakConfig } from '../model/models';
 
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
@@ -88,10 +88,10 @@ export class AuthService {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public authControllerGetAwsCognitoConfig(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<AwsCognitoConfig>;
-    public authControllerGetAwsCognitoConfig(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<AwsCognitoConfig>>;
-    public authControllerGetAwsCognitoConfig(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<AwsCognitoConfig>>;
-    public authControllerGetAwsCognitoConfig(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
+    public authControllerGetKeycloakConfig(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<KeycloakConfig>;
+    public authControllerGetKeycloakConfig(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpResponse<KeycloakConfig>>;
+    public authControllerGetKeycloakConfig(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json'}): Observable<HttpEvent<KeycloakConfig>>;
+    public authControllerGetKeycloakConfig(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json'}): Observable<any> {
 
         let headers = this.defaultHeaders;
 
@@ -113,7 +113,7 @@ export class AuthService {
             responseType = 'text';
         }
 
-        return this.httpClient.get<AwsCognitoConfig>(`${this.configuration.basePath}/api/awsCognitoConfig`,
+        return this.httpClient.get<KeycloakConfig>(`${this.configuration.basePath}/api/keycloakConfig`,
             {
                 responseType: <any>responseType,
                 withCredentials: this.configuration.withCredentials,

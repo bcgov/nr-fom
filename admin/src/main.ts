@@ -13,8 +13,8 @@ import { AbstractSecurityStorage, DefaultLocalStorageService, provideAuth, StsCo
 import { AppRoutes } from 'app/app.routes';
 import { AppComponent } from './app/app.component';
 import { errorInterceptor } from './core/interceptors/http-error.interceptor';
-import { CognitoService, StagedOidcConfigLoader } from './core/services/cognito.service';
-import { cognitoTokenInterceptor } from './core/utils/cognito-token-interceptor';
+import { KeycloakService, StagedOidcConfigLoader } from './core/services/keycloak.service';
+import { authTokenInterceptor } from './core/utils/auth-token-interceptor';
 
 const apiConfig = new Configuration({
   basePath: retrieveApiBasePath()
@@ -34,7 +34,7 @@ const coreProviders = [
     // Order is critical - the token interceptor must run after the error interceptor
     // (it is last in the array, so it sees the response first and can refresh+retry a
     // 403 before the error interceptor would surface a "Forbidden" dialog).
-    provideHttpClient(withInterceptors([errorInterceptor, cognitoTokenInterceptor])),
+    provideHttpClient(withInterceptors([errorInterceptor, authTokenInterceptor])),
     // Generated API client config — functional provider replacing ApiModule.forRoot()
     { provide: Configuration, useValue: apiConfig },
     importProvidersFrom(
@@ -51,7 +51,7 @@ const coreProviders = [
     }),
     // localStorage so a login survives a new tab. The library default is sessionStorage.
     { provide: AbstractSecurityStorage, useClass: DefaultLocalStorageService },
-    provideAppInitializer(() => inject(CognitoService).init()),
+    provideAppInitializer(() => inject(KeycloakService).init()),
 ]
 
 bootstrapApplication(AppComponent, {

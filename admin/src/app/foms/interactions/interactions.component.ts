@@ -1,4 +1,4 @@
-import { CognitoService } from "@admin-core/services/cognito.service";
+import { KeycloakService } from "@admin-core/services/keycloak.service";
 import { LoadingService } from '@admin-core/services/loading.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { DatePipe } from '@angular/common';
@@ -35,7 +35,7 @@ export const ERROR_DIALOG = {
 })
 export class InteractionsComponent implements OnInit {
   private interactionSvc = inject(InteractionService);
-  private cognitoService = inject(CognitoService);
+  private keycloakService = inject(KeycloakService);
   private modalSvc = inject(ModalService);
   private injector = inject(Injector);
   loadingSvc = inject(LoadingService);
@@ -48,7 +48,7 @@ export class InteractionsComponent implements OnInit {
   readonly project = input.required<ProjectResponse>();
   projectId: number;
   readonly selectedItem = signal<InteractionResponse | null>(null);
-  // Populated from the authenticated Cognito session in the constructor.
+  // Populated from the authenticated SSO session in the constructor.
   private user!: User;
 
   // Engagement list. reload() after a save/delete refetches it; the in-flight state for
@@ -62,7 +62,7 @@ export class InteractionsComponent implements OnInit {
 
   constructor()
   {
-    const user = this.cognitoService.getUser();
+    const user = this.keycloakService.getUser();
     if (user) {
       this.user = user;
     }

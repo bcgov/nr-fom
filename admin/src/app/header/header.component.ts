@@ -1,4 +1,4 @@
-import { CognitoService } from "@admin-core/services/cognito.service";
+import { KeycloakService } from "@admin-core/services/keycloak.service";
 
 import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -14,7 +14,7 @@ import { ConfigService } from '@utility/services/config.service';
 export class HeaderComponent implements OnInit {
   private configService = inject(ConfigService);
   router = inject(Router);
-  private cognitoService = inject(CognitoService);
+  private keycloakService = inject(KeycloakService);
 
   isNavMenuOpen = false;
   environmentDisplay: string | undefined;
@@ -24,7 +24,7 @@ export class HeaderComponent implements OnInit {
     const configService = this.configService;
 
     this.environmentDisplay = configService.getEnvironmentDisplay();
-    this.user = this.cognitoService.getUser();
+    this.user = this.keycloakService.getUser();
   }
 
   isAdminRoleOnly(): boolean {
@@ -36,7 +36,7 @@ export class HeaderComponent implements OnInit {
     if (!this.user || !this.user.isAuthorizedForAdminSite()) {
       // If on not-authorized page, or if just logged out, don't redirect to not-authorized page as would cause an infinite loop.
       // Matched on pathname so a stray query string cannot defeat the check.
-      if (window.location.pathname.indexOf('/not-authorized') == -1 && !this.cognitoService.loggedOut) {
+      if (window.location.pathname.indexOf('/not-authorized') == -1 && !this.keycloakService.loggedOut) {
         this.router.navigate(['/not-authorized']);
       }
     }
@@ -51,14 +51,14 @@ export class HeaderComponent implements OnInit {
 
   async navigateToLogout() {
     // Optional chaining matters: on the logout landing, init() early-returns and
-    // awsCognitoConfig is left undefined.
-    if (!this.cognitoService.awsCognitoConfig?.enabled) {
+    // keycloakConfig is left undefined.
+    if (!this.keycloakService.keycloakConfig?.enabled) {
         // Security disabled (local dev). Kept a full-page navigation so
-        // CognitoService.init() re-runs and picks up the logged-out landing.
+        // KeycloakService.init() re-runs and picks up the logged-out landing.
         window.location.href = window.location.origin + '/admin/logout';
         return;
     }
-    await this.cognitoService.logout();
+    await this.keycloakService.logout();
   }
 
   toggleNav() {

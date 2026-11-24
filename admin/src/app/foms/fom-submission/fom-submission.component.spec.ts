@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { FomSubmissionComponent } from './fom-submission.component';
-import { CognitoService } from '@admin-core/services/cognito.service';
+import { KeycloakService } from '@admin-core/services/keycloak.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -31,7 +31,7 @@ describe('FomSubmissionComponent', () => {
         { provide: ProjectService, useValue: { projectControllerFindOne: jest.fn().mockReturnValue(of({})) } },
         { provide: SubmissionService, useValue: { submissionControllerFindSubmissionDetailForCurrentSubmissionType: jest.fn().mockReturnValue(of({})) } },
         { provide: ModalService, useValue: { openErrorDialog: jest.fn(), openConfirmationDialog: jest.fn(), openSnackBar: jest.fn() } },
-        { provide: CognitoService, useValue: { getUser: jest.fn().mockReturnValue({ isAuthorizedForClientId: jest.fn() }) } },
+        { provide: KeycloakService, useValue: { getUser: jest.fn().mockReturnValue({ isAuthorizedForClientId: jest.fn() }) } },
         { provide: MatSnackBar, useValue: { open: jest.fn(), dismiss: jest.fn() } },
       ],
     })

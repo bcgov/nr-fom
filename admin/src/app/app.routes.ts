@@ -15,7 +15,7 @@ export const AppRoutes: Routes = [
   },
   {
     // Landing at the end of the federated logout chain, and the URL registered as
-    // this app's Cognito sign-out URL. Eager on purpose.
+    // this app's post-logout redirect URI. Eager on purpose.
     path: 'logout',
     component: LogoutComponent
   },

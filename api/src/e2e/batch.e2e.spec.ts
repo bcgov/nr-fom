@@ -31,6 +31,14 @@ const DB_CONNECTION_ENV = ['DB_HOST', 'DB_NAME', 'DB_USERNAME', 'DB_PASSWORD'];
 
 const template = readFileSync(resolve(API_DIR, 'openshift.deploy.yml'), 'utf8');
 
+// Required template parameters with deliberately no default (the workflow must
+// pass them), given test values here. The batch never calls the realm: the
+// JWKS client fetches keys only when a request's token is verified.
+const REQUIRED_PARAMETER_TEST_VALUES: Record<string, string> = {
+  KEYCLOAK_ISSUER_URI: 'https://test.loginproxy.gov.bc.ca/auth/realms/standard',
+  KEYCLOAK_CLIENT_ID: 'batch-boot-test-client',
+};
+
 /** Template parameter defaults (`parameters:` items with a `value:`). */
 function templateParameters(): Map<string, string> {
   const section = template.substring(template.indexOf('\nparameters:'), template.indexOf('\nobjects:'));
@@ -118,7 +126,7 @@ function resolveParameters(value: string, params: Map<string, string>, envName: 
 
 /** The env the CronJob container gets, with test values for secrets and the DB connection. */
 function batchEnv(entries: TemplateEnv[]): NodeJS.ProcessEnv {
-  const params = templateParameters();
+  const params = new Map([...Object.entries(REQUIRED_PARAMETER_TEST_VALUES), ...templateParameters()]);
   const env: NodeJS.ProcessEnv = {};
   for (const entry of entries) {
     if (DB_CONNECTION_ENV.includes(entry.name)) {
@@ -234,11 +242,10 @@ const SEEDS: Seed[] = [
   { name: `${SEED_PREFIX} closes tomorrow`, state: WorkflowStateEnum.COMMENT_OPEN, openDate: '2026-10-08', closedDate: BC_TOMORROW },
 ];
 
-// Startup notices for services this test runs without (object storage, SMTP, Cognito).
+// Startup notices for services this test runs without (object storage, SMTP).
 const EXPECTED_STARTUP_CONSOLE = [
   'Object storage credentials not provided.',
   'SMTP_SERVER is not set; emails will not be sent.',
-  'jwksUri',
 ];
 
 describe('batchDateBasedWorkflowStateChange with a fixed clock', () => {

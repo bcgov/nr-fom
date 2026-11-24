@@ -1,111 +1,74 @@
 /**
- * Builds the BC Gov federated logout chain, with Cognito firing LAST:
+ * Builds the BC Gov SSO sign-out chain:
  *
- *   app -> Siteminder logoff.cgi -> Keycloak end-session -> Cognito /logout -> app
+ *   app -> Siteminder logoff.cgi -> Keycloak end-session -> app (/admin/logout)
  *
- * Why this order, rather than the OIDC client's server logoff, which hits Cognito first: putting
- * Cognito last means Keycloak's `post_logout_redirect_uri` is the *Cognito* /logout
- * URL - one stable, app-agnostic value - so this app's own URL only ever has to be
- * registered as a Cognito sign-out URL, never on the shared FAM-managed Keycloak
- * client. The browser still carries the Cognito session cookie when the chain reaches
- * Cognito, so that final hop clears it and returns to the app in one pass.
+ * Why Siteminder first: FOM signs in BCeID Business users as well as IDIR, and
+ * BCeID goes through Siteminder, which keeps its own session after Keycloak's
+ * ends - the next "Log in" would walk straight back in without a password
+ * prompt. The SSO team's documented fix is to chain through Siteminder's
+ * logoff.cgi (sso-docs: "SiteMinder - Chained Logout"). It is harmless for IDIR:
+ * `retnow=1` returns at once.
+ *
+ * `id_token_hint` must be read off the stored session BEFORE the local tokens are
+ * cleared; without it Keycloak cannot attribute the logout to a session and the
+ * realm session survives.
  *
  * Each nested URL is encoded exactly ONCE, where it is embedded in the enclosing
- * query string. Not twice, not zero times: without it `logoff.cgi` parses the inner
- * `?...&...` as its own query params and silently drops the next hop's redirect
- * target.
+ * query string, so the Keycloak URL's own ?/& survive Siteminder's parsing.
  */
 
-/** Everything the chain needs, flattened out of the served AwsCognitoConfig. */
-export interface FederatedLogoutConfig {
-  /** Siteminder logoff.cgi base, without query string. */
-  siteminderLogoutUrl: string;
-  /** Keycloak end-session endpoint, without query string. */
-  keycloakLogoutUrl: string;
-  keycloakClientIdIdir: string;
-  keycloakClientIdBceidBusiness: string;
-  /** (awsCognitoConfig.oauth.domain). */
-  cognitoDomain: string;
-  /** This app's Cognito app-client id. */
-  cognitoClientId: string;
-  /** Absolute URL the user lands on when fully logged out; must be an allow-listed Cognito sign-out URL. */
-  appReturnUrl: string;
+export interface LogoutChainConfig {
+  /** Realm issuer, e.g. https://test.loginproxy.gov.bc.ca/auth/realms/standard. */
+  issuerUri: string;
+  /** FOM's CSS integration client id. */
+  clientId: string;
+  /** Absolute URL to land on when fully signed out; registered on the CSS integration. */
+  postLogoutRedirectUri: string;
+  /** The session's ID token; omitted only when the session is already gone. */
+  idToken?: string;
 }
 
 /**
- * FAM registers one Keycloak client per IdP, and the end-session call must carry the
- * one matching the IdP the user signed in with - sending the wrong id leaves that
- * IdP's session alive.
- *
- * Matching is by substring rather than equality so it holds whether `custom:idp_name`
- * carries the bare IdP name (`idir`, which is what FAM maps today) or the Cognito
- * provider name (`DEV-IDIR` / `TEST-IDIR` / `PROD-IDIR`).
- *
- * Returns null for an unknown or absent IdP - the caller then falls back to a plain
- * Cognito sign-out rather than guessing a client id.
+ * Siteminder's logoff endpoint for the realm in use: the production one for the
+ * production realm, the test one for dev and test.
  */
-const keycloakClientIdFor = (
-  config: FederatedLogoutConfig,
-  idpProvider?: string
-): string | null => {
-  const idp = idpProvider?.toLowerCase() ?? '';
-  if (idp.includes('bceidbusiness')) {
-    return config.keycloakClientIdBceidBusiness || null;
+export function siteminderLogoffUrl(issuerUri: string): string {
+  let host = '';
+  try {
+    host = new URL(issuerUri).host;
+  } catch {
+    /* not a URL - treat as non-production */
   }
-  if (idp.includes('idir')) {
-    return config.keycloakClientIdIdir || null;
-  }
-  return null;
-};
+  return host === 'loginproxy.gov.bc.ca'
+    ? 'https://logon7.gov.bc.ca/clp-cgi/logoff.cgi'
+    : 'https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi';
+}
 
-/**
- * Cognito's /logout expects `logout_uri`, not the OIDC end-session parameters
- * `logoff()` would send. The federated chain embeds this URL as its last hop,
- * and the caller uses it alone when the chain cannot be built.
- */
-export function buildCognitoLogoutUrl(config: FederatedLogoutConfig): string | null {
-  if (!config.cognitoDomain || !config.cognitoClientId || !config.appReturnUrl) {
-    return null;
+/** Keycloak's end-session URL. The path is fixed by Keycloak for every realm. */
+export function buildKeycloakLogoutUrl(config: LogoutChainConfig): string {
+  const url = new URL(`${config.issuerUri.replace(/\/+$/, '')}/protocol/openid-connect/logout`);
+  url.searchParams.set('client_id', config.clientId);
+  url.searchParams.set('post_logout_redirect_uri', config.postLogoutRedirectUri);
+  if (config.idToken) {
+    url.searchParams.set('id_token_hint', config.idToken);
   }
-  return (
-    `https://${config.cognitoDomain}/logout` +
-    `?client_id=${encodeURIComponent(config.cognitoClientId)}` +
-    `&logout_uri=${encodeURIComponent(config.appReturnUrl)}`
-  );
+  return url.toString();
 }
 
 /**
- * @returns the chain URL to navigate to, or null when the IdP is unknown or any
- *   required config value is missing. Callers must treat null as "not configured"
- *   and fall back to buildCognitoLogoutUrl(), a Cognito-only sign-out - far
- *   better than navigating to a malformed URL.
+ * @returns the chain URL to navigate to, or null when issuer, client id or
+ *   landing URL is missing - callers then clear the local session and go to the
+ *   landing page rather than navigate to a malformed URL.
  */
-export function buildFederatedLogoutUrl(
-  config: FederatedLogoutConfig,
-  idpProvider?: string
-): string | null {
-  const keycloakClientId = keycloakClientIdFor(config, idpProvider);
-  const cognitoLogout = buildCognitoLogoutUrl(config);
-  if (
-    !config.siteminderLogoutUrl ||
-    !config.keycloakLogoutUrl ||
-    !keycloakClientId ||
-    !cognitoLogout
-  ) {
+export function buildLogoutChainUrl(config: LogoutChainConfig): string | null {
+  if (!config.issuerUri || !config.clientId || !config.postLogoutRedirectUri) {
     return null;
   }
-
-  // Innermost: Cognito clears its own session cookie, then returns to the app.
-
-  // Keycloak clears its session, then returns to the Cognito logout URL. That Cognito
-  // URL is the only value needing registration on the shared FAM Keycloak client's
-  // post-logout allow-list - never this app's URL.
-  const keycloakLogout =
-    `${config.keycloakLogoutUrl}` +
-    `?client_id=${encodeURIComponent(keycloakClientId)}` +
-    `&post_logout_redirect_uri=${encodeURIComponent(cognitoLogout)}`;
-
-  // Outermost: Siteminder logs off the IDIR / BCeID session. retnow=1 skips its
-  // interstitial page.
-  return `${config.siteminderLogoutUrl}?retnow=1&returl=${encodeURIComponent(keycloakLogout)}`;
+  try {
+    const keycloakLogout = buildKeycloakLogoutUrl(config);
+    return `${siteminderLogoffUrl(config.issuerUri)}?retnow=1&returl=${encodeURIComponent(keycloakLogout)}`;
+  } catch {
+    return null;
+  }
 }

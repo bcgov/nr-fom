@@ -58,42 +58,15 @@ parameters:
     description: Number of replicas
     required: false
     value: "3"
-  - name: AWS_COGNITO_DOMAIN
-    description: FAM Authentication Cognito domain
-    value: "lza-prod-fam-user-pool-domain"
+  # BC Gov SSO (Keycloak). The API validates tokens against these and serves
+  # them to the admin SPA at /api/keycloakConfig.
+  - name: KEYCLOAK_ISSUER_URI
+    description: Realm issuer, e.g. https://test.loginproxy.gov.bc.ca/auth/realms/standard
     required: true
-  - name: AWS_COGNITO_REGION
-    description: FAM Authentication Cognito region
-    value: "ca-central-1"
-    required: true
-  - name: AWS_USER_POOLS_ID
-    description: FAM Authentication Cognito user pools ID
-    value: "ca-central-1_UpeAqsYt4"
-    required: true
-  - name: AWS_USER_POOLS_WEB_CLIENT_ID
-    description: FAM Authentication Cognito user pools client ID
-    value: "1iai0av52nvnjn7olurbi8unl0"
-    required: true
-  # Federated logout chain, Cognito firing LAST:
-  #   app -> Siteminder logoff.cgi -> Keycloak end-session -> Cognito /logout -> app
-  - name: LOGOUT_SITEMINDER_URL
-    description: Siteminder logoff.cgi base, without query string
-    value: "https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi"
-    required: true
-  - name: LOGOUT_KEYCLOAK_URL
-    description: Keycloak 'standard' realm end-session endpoint, without query string
-    value: "https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout"
-    required: true
-  # FAM has exactly two Keycloak clients, one per IdP, shared by the dev, test and prod
-  # realms alike - so these are NOT overridden per environment and are not threaded
-  # through the workflows. Both values are correct in PROD as written.
-  - name: LOGOUT_KEYCLOAK_CLIENT_ID_IDIR
-    description: Cognito's client id in Keycloak for the IDIR identity provider
-    value: "fsa-cognito-idir-dev-4088"
-    required: true
-  - name: LOGOUT_KEYCLOAK_CLIENT_ID_BCEIDBUSINESS
-    description: Cognito's client id in Keycloak for the BCeID Business identity provider
-    value: "fsa-cognito-b-ce-id-business-dev-4090"
+  # Checked as every token's `azp`. Required on purpose: a blank value would
+  # accept any token the shared realm signs, for any client.
+  - name: KEYCLOAK_CLIENT_ID
+    description: FOM's CSS integration client id (public client, no secret)
     required: true
   - name: BATCH_CLIENT_RFSH_API_TKN_OP_SECRET_NAME
     description: OP secret name for CLIENT API Token
@@ -103,34 +76,6 @@ parameters:
     from: "[a-zA-Z0-9]{32}"
     generate: expression
 objects:
-  - apiVersion: v1
-    kind: ConfigMap
-    data:
-      aws-cognito-env.json: |-
-        {
-          "enabled": true,
-          "aws_cognito_domain": "${AWS_COGNITO_DOMAIN}",
-          "aws_cognito_region": "${AWS_COGNITO_REGION}",
-          "aws_user_pools_id": "${AWS_USER_POOLS_ID}",
-          "aws_user_pools_web_client_id": "${AWS_USER_POOLS_WEB_CLIENT_ID}",
-          "aws_mandatory_sign_in": "enable",
-          "oauth": {
-            "domain": "${AWS_COGNITO_DOMAIN}.auth.ca-central-1.amazoncognito.com",
-            "scope": ["openid"],
-            "redirectSignIn": "https://${URL}/admin/search",
-            "redirectSignOut": "https://${URL}/admin/logout",
-            "responseType": "code"
-          },
-          "logout": {
-            "siteminderUrl": "${LOGOUT_SITEMINDER_URL}",
-            "keycloakUrl": "${LOGOUT_KEYCLOAK_URL}",
-            "keycloakClientIdIdir": "${LOGOUT_KEYCLOAK_CLIENT_ID_IDIR}",
-            "keycloakClientIdBceidBusiness": "${LOGOUT_KEYCLOAK_CLIENT_ID_BCEIDBUSINESS}"
-          },
-          "federationTarget": "COGNITO_USER_POOLS"
-        }
-    metadata:
-      name: ${NAME}-${ZONE}-${COMPONENT}
   - apiVersion: apps/v1
     kind: Deployment
     metadata:
@@ -198,6 +143,10 @@ objects:
                   value: "${PORT}"
                 - name: SECURITY_ENABLED
                   value: "true"
+                - name: KEYCLOAK_ISSUER_URI
+                  value: ${KEYCLOAK_ISSUER_URI}
+                - name: KEYCLOAK_CLIENT_ID
+                  value: ${KEYCLOAK_CLIENT_ID}
                 - name: SMTP_SERVER
                   value: ${SMTP_SERVER}
                 - name: OBJECT_STORAGE_ACCESS_ID
@@ -271,14 +220,6 @@ objects:
                 initialDelaySeconds: 15
                 periodSeconds: 30
                 timeoutSeconds: 5
-              volumeMounts:
-                - mountPath: /app/dist/api/src/assets/aws-cognito-env.json
-                  subPath: aws-cognito-env.json
-                  name: aws-cognito-env-config
-          volumes:
-            - name: aws-cognito-env-config
-              configMap:
-                name: ${NAME}-${ZONE}-${COMPONENT}
   - apiVersion: v1
     kind: Service
     metadata:
@@ -384,6 +325,12 @@ objects:
                         secretKeyRef:
                           key: data-encryption-key
                           name: ${NAME}-${ZONE}-${COMPONENT}
+                    # Required: the batch boots the full AppModule, and AuthService refuses
+                    # to start without both while SECURITY_ENABLED is (by default) true.
+                    - name: KEYCLOAK_ISSUER_URI
+                      value: ${KEYCLOAK_ISSUER_URI}
+                    - name: KEYCLOAK_CLIENT_ID
+                      value: ${KEYCLOAK_CLIENT_ID}
                   resources:
                     requests:
                       cpu: ${CPU_REQUEST}
@@ -459,6 +406,12 @@ objects:
                         secretKeyRef:
                           key: data-encryption-key
                           name: ${NAME}-${ZONE}-${COMPONENT}
+                    # Required: the batch boots the full AppModule, and AuthService refuses
+                    # to start without both while SECURITY_ENABLED is (by default) true.
+                    - name: KEYCLOAK_ISSUER_URI
+                      value: ${KEYCLOAK_ISSUER_URI}
+                    - name: KEYCLOAK_CLIENT_ID
+                      value: ${KEYCLOAK_CLIENT_ID}
                     - name: CLIENT_API_BASE_URL
                       valueFrom:
                         secretKeyRef:

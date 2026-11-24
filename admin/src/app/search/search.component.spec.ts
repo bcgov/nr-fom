@@ -5,7 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { ProjectService } from '@api-client';
-import { CognitoService } from '@admin-core/services/cognito.service';
+import { KeycloakService } from '@admin-core/services/keycloak.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
 import { SearchComponent } from './search.component';
@@ -45,7 +45,7 @@ describe('SearchComponent', () => {
         { provide: Router, useValue: { createUrlTree: jest.fn().mockReturnValue({ toString: () => '' }) } },
         { provide: Location, useValue: { go: jest.fn() } },
         { provide: ProjectService, useValue: { projectControllerFind: find } },
-        { provide: CognitoService, useValue: { getUser: () => ({ isMinistry: true, isAuthorizedForClientId: () => true }) } },
+        { provide: KeycloakService, useValue: { getUser: () => ({ isMinistry: true, isAuthorizedForClientId: () => true }) } },
         { provide: ModalService, useValue: { openSnackBar } },
         { provide: StateService, useValue: { getCodeTable: () => [] } },
         { provide: MatSnackBar, useValue: { open: snackBarOpen } },

@@ -54,13 +54,10 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/.deploy.yml
     with:
-      aws_user_pools_web_client_id: 2t6hr174gbtg206ufgvajrlv0g
       batch_client_rfsh_api_tkn_op_secret_name: fom-demo-client-app-api
       db_testdata: true
       environment: test
       email_notify: Heartwood@gov.bc.ca  # TEST environment, set to team inbox.
-      logout_siteminder_url: https://logontest7.gov.bc.ca/clp-cgi/logoff.cgi
-      logout_keycloak_url: https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/logout
       tag: ${{ github.sha }}
       target: test
 

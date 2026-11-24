@@ -1,6 +1,6 @@
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSvc';
-import { CognitoService } from '@admin-core/services/cognito.service';
+import { KeycloakService } from '@admin-core/services/keycloak.service';
 import { LoadingService } from '@admin-core/services/loading.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { StateService } from '@admin-core/services/state.service';
@@ -106,7 +106,7 @@ describe('FomAddEditComponent', () => {
         { provide: AttachmentUploadService, useValue: { attachmentCreateUpdate: jest.fn() } },
         { provide: StateService, useValue: { getCodeTable: () => [{ id: 3, name: 'A District' }] } },
         { provide: LoadingService, useValue: { loading: signal(false) } },
-        { provide: CognitoService, useValue: { getUser: () => ({ isMinistry: true, isForestClient: false, isAuthorizedForClientId: () => true }) } },
+        { provide: KeycloakService, useValue: { getUser: () => ({ isMinistry: true, isForestClient: false, isAuthorizedForClientId: () => true }) } },
         { provide: ModalService, useValue: { openWarningDialog: jest.fn(), openConfirmationDialog: jest.fn(), openSnackBar: jest.fn() } },
         { provide: MatSnackBar, useValue: { open: jest.fn(), dismiss: jest.fn() } },
       ],

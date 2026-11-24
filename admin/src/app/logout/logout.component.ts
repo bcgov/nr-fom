@@ -11,7 +11,7 @@ import { Component } from "@angular/core";
 })
 export class LogoutComponent {
   /**
-  * Use a full browser navigation instead of the Angular Router. CognitoService.init()
+  * Use a full browser navigation instead of the Angular Router. KeycloakService.init()
   * runs only once when the page loads and skips this logout route. Reloading /admin
   * is therefore necessary to run the initializer again and start a fresh login.
    */
