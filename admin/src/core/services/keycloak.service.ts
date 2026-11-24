@@ -20,6 +20,8 @@ export interface KeycloakSession {
 const SIGN_IN_PATH = '/admin/search';
 /** Route the realm returns to after sign-out; registered on the CSS integration. */
 const LOGOUT_PATH = '/admin/logout';
+/** Key under which angular-auth-oidc-client persists its config and tokens in localStorage. */
+const OIDC_CONFIG_ID = 'fom-admin';
 
 /**
  * Holds the OpenID config until KeycloakService has fetched /api/keycloakConfig.
@@ -92,6 +94,9 @@ export class KeycloakService {
     }
     const openId = this.toOpenIdConfiguration(this.keycloakConfig);
     console.log("Using OIDC authority " + openId.authority);
+    if (openId.authority) {
+      KeycloakService.clearStaleStorage(openId.authority);
+    }
     this.stagedOidc.config = openId;
     // Read before checkAuth(), which strips ?code=&state= from the address bar.
     const isSignInCallback = new URLSearchParams(window.location.search).has("code");
@@ -162,6 +167,33 @@ export class KeycloakService {
   private static readStoredClockOffset(): number {
     const stored = Number(window.localStorage.getItem(KeycloakService.CLOCK_OFFSET_KEY));
     return Number.isFinite(stored) ? stored : 0;
+  }
+
+  /**
+   * Drop persisted OIDC state when its cached discovery issuer does not match
+   * the configured authority (e.g. Cognito state left under the shared configId
+   * after moving to Keycloak, or a cached dev realm after switching zones).
+   * Without this, angular-auth-oidc-client merges the cached endpoints over the
+   * fresh discovery document and fails with "Issuer mismatch".
+   */
+  private static clearStaleStorage(expectedAuthority: string): void {
+    const raw = window.localStorage.getItem(OIDC_CONFIG_ID);
+    if (!raw) {
+      return;
+    }
+    let storedIssuer: string | undefined;
+    try {
+      const parsed = JSON.parse(raw) as { authWellKnownEndPoints?: { issuer?: unknown } } | null;
+      if (typeof parsed?.authWellKnownEndPoints?.issuer === "string") {
+        storedIssuer = parsed.authWellKnownEndPoints.issuer.trim().replace(/\/+$/, "");
+      }
+    } catch {
+      // Corrupt JSON falls through and is cleared below.
+    }
+    if (storedIssuer !== expectedAuthority) {
+      window.localStorage.removeItem(OIDC_CONFIG_ID);
+      window.localStorage.removeItem(KeycloakService.CLOCK_OFFSET_KEY);
+    }
   }
 
   /**
@@ -303,13 +335,13 @@ export class KeycloakService {
    * image serves PR previews, TEST and PROD.
    */
   private toOpenIdConfiguration(config: KeycloakConfig): OpenIdConfiguration {
-    const authority = config.issuerUri?.replace(/\/+$/, '');
+    const authority = config.issuerUri?.trim().replace(/\/+$/, '');
     const clientId = config.clientId;
     if (!authority || !clientId) {
       throw new Error("Keycloak OIDC config is incomplete.");
     }
     return {
-      configId: "fom-admin",
+      configId: OIDC_CONFIG_ID,
       authority,
       clientId,
       redirectUrl: window.location.origin + SIGN_IN_PATH,

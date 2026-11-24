@@ -152,6 +152,26 @@ test.describe('Admin - signed-in session across hard reload (#1206)', () => {
     expect(mocks.navigations.filter(isLogout)).toEqual([]);
   });
 
+  test('a stale Cognito session in localStorage is cleared and redirects to Keycloak without issuer mismatch', async ({ page }) => {
+    const staleCognito = {
+      authWellKnownEndPoints: {
+        issuer: 'https://cognito-idp.ca-central-1.amazonaws.com/ca-central-1_UpeAqsYt4',
+        authorizationEndpoint: 'https://example.auth.ca-central-1.amazoncognito.com/oauth2/authorize',
+        tokenEndpoint: 'https://example.auth.ca-central-1.amazoncognito.com/oauth2/token',
+      },
+      authzData: 'stale-cognito-token',
+    };
+    const errors: string[] = [];
+    page.on('pageerror', (err) => errors.push(err.message));
+    const mocks = await mockAuthAndApi(page, staleCognito, false);
+
+    await page.goto('/admin/search');
+
+    await expect(page).toHaveURL((url) => isRealmSignIn(url.href), { timeout: 15000 });
+    expect(errors).toEqual([]);
+    expect(mocks.navigations.filter(isLogout)).toEqual([]);
+  });
+
   test('a fully expired session goes to sign-in, not logout', async ({ page }) => {
     const expired = seededSession(Math.floor(Date.now() / 1000) - 3600);
     const mocks = await mockAuthAndApi(page, expired, false);

@@ -52,6 +52,7 @@ describe('KeycloakService', () => {
 
   afterEach(() => {
     window.history.pushState({}, '', '/');
+    window.localStorage.removeItem('fom-admin');
     window.localStorage.removeItem(KeycloakService.CLOCK_OFFSET_KEY);
     jest.restoreAllMocks();
   });
@@ -279,6 +280,44 @@ describe('KeycloakService', () => {
 
       await expect(service.init()).rejects.toThrow('discovery failed');
       expect(oidc.authorize).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['Cognito issuer', JSON.stringify({ authWellKnownEndPoints: { issuer: 'https://cognito-idp.ca-central-1.amazonaws.com/ca-central-1_UpeAqsYt4' } })],
+      ['different realm issuer', JSON.stringify({ authWellKnownEndPoints: { issuer: 'https://dev.loginproxy.gov.bc.ca/auth/realms/standard' } })],
+      ['missing discovery issuer', JSON.stringify({ authzData: 'old-token' })],
+      ['corrupt JSON', '{not-json'],
+    ])('clears stale OIDC localStorage before checkAuth when cached state has %s', async (_label, cached) => {
+      window.localStorage.setItem('fom-admin', cached);
+      window.localStorage.setItem(KeycloakService.CLOCK_OFFSET_KEY, '3600000');
+      mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
+      oidc.checkAuth.mockImplementation(() => {
+        expect(window.localStorage.getItem('fom-admin')).toBeNull();
+        expect(window.localStorage.getItem(KeycloakService.CLOCK_OFFSET_KEY)).toBeNull();
+        return of({ isAuthenticated: true, idToken: 'id', accessToken: 'access' });
+      });
+      oidc.getPayloadFromAccessToken.mockReturnValue(of({ exp: nowSec() + 300 }));
+
+      await service.init();
+
+      expect(oidc.checkAuth).toHaveBeenCalledTimes(1);
+    });
+
+    it('preserves OIDC localStorage when cached discovery issuer matches authority', async () => {
+      const cached = JSON.stringify({ authWellKnownEndPoints: { issuer: `${ISSUER}/` }, authzData: 'token-1' });
+      window.localStorage.setItem('fom-admin', cached);
+      window.localStorage.setItem(KeycloakService.CLOCK_OFFSET_KEY, '500');
+      mockHttpClient.get.mockReturnValue(of(ENABLED_CONFIG));
+      oidc.checkAuth.mockImplementation(() => {
+        expect(window.localStorage.getItem('fom-admin')).toBe(cached);
+        expect(window.localStorage.getItem(KeycloakService.CLOCK_OFFSET_KEY)).toBe('500');
+        return of({ isAuthenticated: true, idToken: 'id', accessToken: 'access' });
+      });
+      oidc.getPayloadFromAccessToken.mockReturnValue(of({ exp: nowSec() + 300 }));
+
+      await service.init();
+
+      expect(oidc.checkAuth).toHaveBeenCalledTimes(1);
     });
   });
 
