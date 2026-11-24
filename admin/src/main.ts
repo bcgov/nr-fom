@@ -7,7 +7,6 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { PreloadAllModules, provideRouter, withComponentInputBinding, withInMemoryScrolling, withPreloading } from '@angular/router';
 import { Configuration } from '@api-client';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
 import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
 import { retrieveApiBasePath } from '@utility/services/config.service';
 import { AbstractSecurityStorage, DefaultLocalStorageService, provideAuth, StsConfigLoader } from 'angular-auth-oidc-client';
@@ -40,7 +39,6 @@ const coreProviders = [
     { provide: Configuration, useValue: apiConfig },
     importProvidersFrom(
         NgbModule,
-        RxReactiveFormsModule,
         MatDialogModule,
         MatSnackBarModule
     ),

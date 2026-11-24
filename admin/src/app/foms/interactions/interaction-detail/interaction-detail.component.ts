@@ -1,10 +1,9 @@
 import { MAX_FILEUPLOAD_SIZE } from '@admin-core/utils/constants';
 import { Component, Input, inject, signal } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AttachmentResponse, AttachmentService, InteractionResponse } from '@api-client';
-import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { ConfigService } from '@utility/services/config.service';
-import { InteractionDetailForm, InteractionRequest } from './interaction-detail.form';
+import { InteractionDetailForm } from './interaction-detail.form';
 
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AttachmentResolverSvc } from '@admin-core/services/AttachmentResolverSvc';
@@ -27,7 +26,6 @@ import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
     exportAs: 'interactionForm'
 })
 export class InteractionDetailComponent {
-  private formBuilder = inject(RxFormBuilder);
   private configSvc = inject(ConfigService);
   attachmentSvc = inject(AttachmentService);
   attachmentResolverSvc = inject(AttachmentResolverSvc);
@@ -42,7 +40,7 @@ export class InteractionDetailComponent {
   @Input()
   minDate: Date;
 
-  interactionFormGroup: IFormGroup<InteractionRequest>;
+  interactionFormGroup: FormGroup;
   
   file: File | null = null; // only 1 attachment for Interaction.
   maxFileSize: number = MAX_FILEUPLOAD_SIZE.DOCUMENT;
@@ -60,8 +58,8 @@ export class InteractionDetailComponent {
 
   @Input() set selectedInteraction(interaction: InteractionResponse) {
     this.interaction.set(interaction);
-    const interactionForm = new InteractionDetailForm(interaction)
-    this.interactionFormGroup = this.formBuilder.formGroup(interactionForm)as IFormGroup<InteractionRequest>;
+    const interactionForm = new InteractionDetailForm(interaction);
+    this.interactionFormGroup = interactionForm.toFormGroup();
     if (!this.editMode) {
       this.interactionFormGroup.disable();
     }

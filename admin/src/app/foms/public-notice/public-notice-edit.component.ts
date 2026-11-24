@@ -1,17 +1,17 @@
 import { KeycloakService } from "@admin-core/services/keycloak.service";
 import { ModalService } from '@admin-core/services/modal.service';
 import { LoadingService } from '@admin-core/services/loading.service';
+import { getControlErrorMessage } from '@admin-core/utils/form-validators';
 import { DEFAULT_ISO_DATE_FORMAT } from "@admin-core/utils/constants";
 import { DatePipe } from "@angular/common";
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   ProjectResponse, PublicNoticeCreateRequest, PublicNoticeResponse,
   PublicNoticeService, PublicNoticeUpdateRequest, WorkflowStateEnum
 } from '@api-client';
-import { IFormGroup, RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { User } from "@utility/security/user";
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import { provideIsoDateAdapter } from '@utility/dates/iso-date.adapter';
@@ -32,7 +32,6 @@ import { PublicNoticeForm } from './public-notice.form';
 })
 export class PublicNoticeEditComponent {
   private router = inject(Router);
-  private formBuilder = inject(RxFormBuilder);
   loadingSvc = inject(LoadingService);
   private keycloakService = inject(KeycloakService);
   private modalSvc = inject(ModalService);
@@ -50,7 +49,7 @@ export class PublicNoticeEditComponent {
   readonly projectId = computed(() => Number(this.appId()));
   isNewForm: boolean;
   publicNoticeResponse: PublicNoticeResponse | null;
-  publicNoticeFormGroup: IFormGroup<PublicNoticeForm>;
+  publicNoticeFormGroup: FormGroup;
   addressLimit: number = 500;
   businessHoursLimit: number = 100;
   maxPostDate: Date;
@@ -68,7 +67,7 @@ export class PublicNoticeEditComponent {
   });
 
   /**
-   * Flips once the @rxweb form group has been built from the fetched notice. The form group itself stays
+   * Flips once the form group has been built from the fetched notice. The form group itself stays
    * a plain field — it is built once and never replaced — so this signal is what tells the template that
    * the form is ready to render.
    */
@@ -105,7 +104,7 @@ export class PublicNoticeEditComponent {
     this.processBeforeFormGroupInitialized()
 
     const publicNoticeForm = new PublicNoticeForm(this.publicNoticeResponse ?? undefined);
-    this.publicNoticeFormGroup = this.formBuilder.formGroup(publicNoticeForm) as IFormGroup<PublicNoticeForm>;
+    this.publicNoticeFormGroup = publicNoticeForm.toFormGroup();
     this.onSameAsReviewIndToggled();
     if (!this.editMode()) {
       this.publicNoticeFormGroup.disable();
@@ -215,12 +214,7 @@ export class PublicNoticeEditComponent {
   }
 
   getErrorMessage(controlName: string, messageKey: string | null = null): string | null {
-    const errors = this.publicNoticeFormGroup.get(controlName)?.errors;
-    if (errors != null && messageKey !== null) {
-      const { [messageKey]: messages } = errors;
-      if (messages) return messages.message;
-    }
-    return null;
+    return getControlErrorMessage(this.publicNoticeFormGroup, controlName, messageKey);
   }
 
   fieldTouchedOrDirty(controlName: string): boolean {

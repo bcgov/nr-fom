@@ -24,14 +24,14 @@ import {
   ProjectResponse,
   ProjectService, WorkflowStateEnum
 } from '@api-client';
-import { RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
+import { getControlErrorMessage } from '@admin-core/utils/form-validators';
 import { User } from "@utility/security/user";
 import { FomAddEditForm } from './fom-add-edit.form';
 
 import { UploadBoxComponent } from '@admin-core/components/file-upload-box/file-upload-box.component';
 import { AppFormControlDirective } from '@admin-core/directives/form-control.directive';
 import { ICodeTable } from '@admin-core/models/code-tables';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import { provideIsoDateAdapter, YearDateDirective } from '@utility/dates/iso-date.adapter';
 
@@ -57,7 +57,6 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   private projectSvc = inject(ProjectService);
   attachmentResolverSvc = inject(AttachmentResolverSvc);
   private attachmentUploadSvc = inject(AttachmentUploadService);
-  private formBuilder = inject(RxFormBuilder);
   stateSvc = inject(StateService);
   loadingSvc = inject(LoadingService);
   private modalSvc = inject(ModalService);
@@ -68,7 +67,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
   readonly projectPlanCodeEnum = ProjectPlanCodeEnum;
   readonly DEFAULT_ISO_DATE_FORMAT = DEFAULT_ISO_DATE_FORMAT;
-  fg: RxFormGroup;
+  fg: FormGroup;
   /**
    * Flips once the form group has been built from the loaded FOM. `fg` itself stays a plain field —
    * it is built once and never replaced — so this signal is what tells the template the form, and the
@@ -146,7 +145,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // allow synchronous navigation if everything is OK
-    if (!this.fg.dirty && !this.fg.isModified) {
+    if (!this.fg.dirty) {
       return true;
     }
 
@@ -196,7 +195,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       }
       const form = new FomAddEditForm(data);
-      this.fg = <RxFormGroup>this.formBuilder.formGroup(form);
+      this.fg = form.toFormGroup();
       this.initializeFormFields(this.fg, this.user, this.originalProjectResponse);
       if(data.description) {
         this.descriptionValue = data.description;
@@ -332,7 +331,9 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
 
   changeDistrictId(e: Event) {
     const value = (e.target as HTMLSelectElement).value;
-    this.fg.get('district')?.setValue(parseInt(value));
+    const districtCtrl = this.fg.get('district');
+    districtCtrl?.setValue(parseInt(value));
+    districtCtrl?.markAsDirty();
     this.districtIdSelect = parseInt(value);
   }
 
@@ -349,12 +350,8 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
     forestClientField.setValue(forestClientField.value);
     this.forestClientSelect = parseInt(forestClientField.value.id);
 
-    // 'TIMBER SALES MANAGER' name field is required (to be validated) based on forestClient name
-    // conditionally. Due to it's validation is annotation-based in fom-add-edit.form.ts
-    // (using @rxweb/reactive-form-validators), when forestClient is changed, bctsMgrName does not get
-    // rerenderred (no ngIf, ngFor etc on this field).
-    // Just trigger the dynamic form field (with enable()) is probably easier than using 'ChangeDetectorRef'.
-    this.fg.get('bctsMgrName')?.enable();
+    // 'TIMBER SALES MANAGER' name field is conditionally required based on forestClient name.
+    this.fg.get('bctsMgrName')?.updateValueAndValidity();
   }
 
   isHolderBctsManger() {
@@ -487,7 +484,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Additional setup for form control.
    */
-  private initializeFormFields(fg: RxFormGroup, user: User, project: ProjectResponse) {
+  private initializeFormFields(fg: FormGroup, user: User, project: ProjectResponse) {
     const workflowStateCode = project?.workflowState.code;
 
     // Converting commentingOpenDate date to 'yyyy-MM-dd'
@@ -515,12 +512,7 @@ export class FomAddEditComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getErrorMessage(controlName: string, messageKey: string | null = null): string | null {
-    const errors = this.fg.controls[controlName]?.errors;
-    if (errors != null && messageKey !== null) {
-      const { [messageKey]: messages } = errors;
-      if (messages) return messages.message;
-    }
-    return null;
+    return getControlErrorMessage(this.fg, controlName, messageKey);
   }
 
   fieldTouchedOrDirty(controlName: string): boolean {

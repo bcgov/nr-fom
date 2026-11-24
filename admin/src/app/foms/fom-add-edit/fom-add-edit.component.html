@@ -20,7 +20,7 @@
               type="button"
               title="Create FOM"
               (click)="submit()"
-              [disabled]="!fg.isModified"
+              [disabled]="!fg.dirty"
               >{{ isLoading ? "Submitting" : "Submit" }}
               <em class="spinner rotating" [hidden]="!loadingSvc.loading()"></em>
             </button>

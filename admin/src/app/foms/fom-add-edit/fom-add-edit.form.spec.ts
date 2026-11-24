@@ -1,35 +1,14 @@
-import { TestBed } from '@angular/core/testing';
+import { FormGroup } from '@angular/forms';
 import { ProjectPlanCodeEnum } from '@api-client';
-import { ReactiveFormConfig, RxFormBuilder, RxFormGroup } from '@rxweb/reactive-form-validators';
 import { FomAddEditForm } from './fom-add-edit.form';
 
 describe('FomAddEditForm', () => {
-  let formBuilder: RxFormBuilder;
-
-  beforeAll(() => {
-    ReactiveFormConfig.set({
-      validationMessage: {
-        required: 'This field is required.',
-        minLength: 'Minimum length not met.',
-        numeric: 'Must be a number.',
-        pattern: 'Invalid format.'
-      }
-    });
-  });
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [RxFormBuilder]
-    });
-    formBuilder = TestBed.inject(RxFormBuilder);
-  });
-
-  function createFormGroup(initial?: Partial<FomAddEditForm>): RxFormGroup {
+  function createFormGroup(initial?: Partial<FomAddEditForm>): FormGroup {
     const formModel = new FomAddEditForm();
     if (initial) {
       Object.assign(formModel, initial);
     }
-    return formBuilder.formGroup(formModel) as RxFormGroup;
+    return formModel.toFormGroup();
   }
 
   describe('Core field validations', () => {
@@ -117,6 +96,16 @@ describe('FomAddEditForm', () => {
       expect(model.opStartDate.getFullYear()).toBe(2026);
       expect(model.opEndDate).toBeDefined();
       expect(model.opEndDate.getFullYear()).toBe(2029);
+    });
+
+    it('rejects opEndDate earlier than opStartDate across different years', () => {
+      const form = createFormGroup();
+      form.controls['opStartDate'].setValue(new Date(2027, 0, 1));
+      form.controls['opEndDate'].setValue(new Date(2026, 0, 1));
+      expect(form.controls['opEndDate'].hasError('minDate')).toBe(true);
+
+      form.controls['opEndDate'].setValue(new Date(2027, 0, 1));
+      expect(form.controls['opEndDate'].hasError('minDate')).toBe(false);
     });
   });
 });

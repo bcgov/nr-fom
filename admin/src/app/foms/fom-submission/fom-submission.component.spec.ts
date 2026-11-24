@@ -6,7 +6,6 @@ import { KeycloakService } from '@admin-core/services/keycloak.service';
 import { ModalService } from '@admin-core/services/modal.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { ProjectService, SubmissionService } from '@api-client';
 import { of } from 'rxjs';
 
@@ -88,8 +87,7 @@ describe('FomSubmissionComponent', () => {
     expect(component.spatialSubmission()).toEqual(spatial);
     // The `@if (fg())` gate MUST be a signal so the load triggers zoneless CD and renders the form.
     // (A blank page resulted when it was a plain field: signals read only inside a collapsed @if have
-    //  no consumer to schedule CD.) NOTE: rendering itself can't be asserted here — the fake
-    //  RxFormBuilder can't back a real [formGroup]; the render path is covered by manual/e2e checks.
+    //  no consumer to schedule CD.)
     expect(component.fg()).toBeTruthy();
   });
 });

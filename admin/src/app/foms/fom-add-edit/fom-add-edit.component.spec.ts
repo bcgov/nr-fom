@@ -7,12 +7,10 @@ import { StateService } from '@admin-core/services/state.service';
 import { AttachmentUploadService } from '@admin-core/utils/attachmentUploadService';
 import { Component, input, output, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormControl, FormGroup } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, Router } from '@angular/router';
 import { ForestClientService, ProjectService } from '@api-client';
-import { RxFormBuilder } from '@rxweb/reactive-form-validators';
 import { of } from 'rxjs';
 import { FomAddEditComponent } from './fom-add-edit.component';
 
@@ -24,25 +22,6 @@ class StubUploadBoxComponent {
   readonly attachmentType = input<unknown>();
   readonly title = input<string>();
   readonly fileEmit = output<File | null>();
-}
-
-// The template binds every control below, so the builder must return a group containing all of them.
-function buildFormGroup() {
-  return new FormGroup({
-    name: new FormControl(null),
-    description: new FormControl(null),
-    commentingOpenDate: new FormControl(null),
-    commentingClosedDate: new FormControl(null),
-    opStartDate: new FormControl(null),
-    opEndDate: new FormControl(null),
-    projectPlanCode: new FormControl('FSP'),
-    fspId: new FormControl(null),
-    woodlotLicenseNumber: new FormControl(null),
-    bctsMgrName: new FormControl(null),
-    forestClient: new FormControl(null),
-    district: new FormControl(null),
-    workflowState: new FormControl(null),
-  });
 }
 
 describe('FomAddEditComponent', () => {
@@ -130,7 +109,6 @@ describe('FomAddEditComponent', () => {
         { provide: KeycloakService, useValue: { getUser: () => ({ isMinistry: true, isForestClient: false, isAuthorizedForClientId: () => true }) } },
         { provide: ModalService, useValue: { openWarningDialog: jest.fn(), openConfirmationDialog: jest.fn(), openSnackBar: jest.fn() } },
         { provide: MatSnackBar, useValue: { open: jest.fn(), dismiss: jest.fn() } },
-        { provide: RxFormBuilder, useValue: { formGroup: jest.fn().mockImplementation(buildFormGroup) } },
       ],
     })
       .overrideComponent(FomAddEditComponent, {
@@ -262,7 +240,14 @@ describe('FomAddEditComponent', () => {
 
       component.selectOperationYear('opStartDate', januaryFirst, picker as never);
       component.selectOperationYear('opEndDate', januaryFirst, picker as never);
-      component.fg.get('forestClient')?.setValue({ id: 1 });
+      component.fg.patchValue({
+        name: 'Valid FOM Name',
+        description: 'Valid description',
+        district: 3,
+        fspId: 1055,
+        forestClient: { id: 1, name: 'Client One' },
+      });
+      component.districtIdSelect = 3;
       fixture.detectChanges();
 
       expect(component.fg.get('opStartDate')?.hasError('matDatepickerMin')).toBe(false);
@@ -292,9 +277,17 @@ describe('FomAddEditComponent', () => {
         id: 7,
         district: { id: 3 },
         workflowState: { code: 'INITIAL' },
-        forestClient: { id: 'c1' },
+        forestClient: { id: 'c1', name: 'Client One' },
       } as any;
-      component.fg.get('description')?.setValue('Updated description');
+      component.fg.patchValue({
+        name: 'Valid FOM Name',
+        description: 'Updated description',
+        district: 3,
+        fspId: 1055,
+        forestClient: { id: 1, name: 'Client One' },
+        opStartDate: new Date(2026, 0, 1),
+        opEndDate: new Date(2027, 0, 1),
+      });
 
       await component.saveApplication();
 

@@ -1,53 +1,54 @@
+import { FormControl, FormGroup } from '@angular/forms';
+import { minLengthMsg, requiredMsg } from '@admin-core/utils/form-validators';
 import { InteractionResponse } from '@api-client';
-import { minLength, prop, required } from "@rxweb/reactive-form-validators";
 import { DateTime } from 'luxon';
 import * as R from 'remeda';
 
 const UPDATE_FIELDS = ['stakeholder', 'communicationDate', 'communicationDetails'] as const;
 
-export class InteractionDetailForm implements Pick<InteractionRequest, typeof UPDATE_FIELDS[number]> {
-  @prop()
-  stakeholder: string = '';
-
-  /* 
+export class InteractionDetailForm implements Pick<InteractionRequest, (typeof UPDATE_FIELDS)[number]> {
+  stakeholder = '';
+  /*
   FORM field for binding to the datePicker, the value will later be converted to 'communicationDate'
   in the body when saving interaction to the backend.
   */
-  @required()
-  @prop()
-  communicationDatePickerDate: Date | null;
-
-  @required()
-  @minLength({value: 1})
-  @prop()
-  communicationDetails: string = '';
-
-  @prop()
+  communicationDatePickerDate: Date | null = null;
+  communicationDetails = '';
   filename: string | null = null;
-
-  @prop()
-  fileContent: any = null;
-
-  communicationDate: string = '';
+  fileContent: File | null = null;
+  communicationDate = '';
 
   constructor(interaction: InteractionResponse) {
     if (interaction) {
       Object.assign(this, R.pick(interaction, UPDATE_FIELDS));
-      const cmDate = DateTime.fromISO(this.communicationDate) // convert for datePicker
-      this.communicationDatePickerDate = cmDate.isValid? cmDate.toJSDate() : null
+      const cmDate = DateTime.fromISO(this.communicationDate); // convert for datePicker
+      this.communicationDatePickerDate = cmDate.isValid ? cmDate.toJSDate() : null;
     }
   }
 
+  toFormGroup(): FormGroup {
+    return new FormGroup({
+      stakeholder: new FormControl(this.stakeholder ?? ''),
+      communicationDatePickerDate: new FormControl(this.communicationDatePickerDate ?? null, [
+        requiredMsg(),
+      ]),
+      communicationDetails: new FormControl(this.communicationDetails ?? '', [
+        requiredMsg(),
+        minLengthMsg(1),
+      ]),
+      filename: new FormControl(this.filename ?? null),
+      fileContent: new FormControl(this.fileContent ?? null),
+    });
+  }
 }
 
-export interface InteractionRequest { 
+export interface InteractionRequest {
   projectId: number;
   stakeholder: string;
   communicationDate: string;
   communicationDatePickerDate: Date;
   communicationDetails: string;
   revisionCount: number;
-
   filename: string;
   fileContent: any;
 }

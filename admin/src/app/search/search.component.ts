@@ -9,7 +9,6 @@ import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/s
 import { ActivatedRoute, ParamMap, Params, Router, RouterLink } from '@angular/router';
 import { ProjectPlanCodeEnum, ProjectResponse, ProjectService, WorkflowStateEnum } from "@api-client";
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap';
-import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
 import { DigitsOnlyDirective } from "@admin-core/directives/digits-only.directive";
 import { User } from "@utility/security/user";
 import { isNullish } from 'remeda';
@@ -27,7 +26,6 @@ interface FindArgs {
 @Component({
     imports: [
     FormsModule,
-    RxReactiveFormsModule,
     DigitsOnlyDirective,
     NgbDropdown,
     NgbDropdownToggle,
