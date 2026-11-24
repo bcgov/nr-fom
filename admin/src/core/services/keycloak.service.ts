@@ -17,9 +17,9 @@ export interface KeycloakSession {
 }
 
 /** Route the realm returns to after sign-in; registered on the CSS integration. */
-export const SIGN_IN_PATH = '/admin/search';
+const SIGN_IN_PATH = '/admin/search';
 /** Route the realm returns to after sign-out; registered on the CSS integration. */
-export const LOGOUT_PATH = '/admin/logout';
+const LOGOUT_PATH = '/admin/logout';
 
 /**
  * Holds the OpenID config until KeycloakService has fetched /api/keycloakConfig.

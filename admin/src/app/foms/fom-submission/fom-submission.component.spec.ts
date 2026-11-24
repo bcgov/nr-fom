@@ -32,7 +32,6 @@ describe('FomSubmissionComponent', () => {
         { provide: SubmissionService, useValue: { submissionControllerFindSubmissionDetailForCurrentSubmissionType: jest.fn().mockReturnValue(of({})) } },
         { provide: ModalService, useValue: { openErrorDialog: jest.fn(), openConfirmationDialog: jest.fn(), openSnackBar: jest.fn() } },
         { provide: KeycloakService, useValue: { getUser: jest.fn().mockReturnValue({ isAuthorizedForClientId: jest.fn() }) } },
-        { provide: RxFormBuilder, useValue: { formGroup: jest.fn().mockReturnValue({ get: jest.fn().mockReturnValue({ setValue: jest.fn() }), value: {} }) } },
         { provide: MatSnackBar, useValue: { open: jest.fn(), dismiss: jest.fn() } },
       ],
     })
