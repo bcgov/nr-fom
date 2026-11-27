@@ -93,7 +93,7 @@ jobs:
 
       - name: OpenShift Init
         id: openshift-init
-        uses: bcgov/actions-openshift/deployer@47805d2fc4e919382757c1fbeb68d39313abe64f # v0.11.0
+        uses: bcgov/actions-openshift/deployer@b2757e12d08b7d3bf2c5df7cd58b4cdaf6b3ea71 # v0.11.1
         with:
           oc_namespace: ${{ vars.OC_NAMESPACE }}
           oc_server: ${{ vars.OC_SERVER }}
@@ -126,7 +126,7 @@ jobs:
           - name: public
             overwrite: true
     steps:
-      - uses: bcgov/actions-openshift/deployer@47805d2fc4e919382757c1fbeb68d39313abe64f # v0.11.0
+      - uses: bcgov/actions-openshift/deployer@b2757e12d08b7d3bf2c5df7cd58b4cdaf6b3ea71 # v0.11.1
         with:
           file: ${{ matrix.name }}/openshift.deploy.yml
           oc_namespace: ${{ vars.OC_NAMESPACE }}
@@ -158,7 +158,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Notify Owners on Failure
-        uses: bcgov/actions/workflow-notifier@acc058abf85bb183dad21b839a92a40a4ff47af3 # v0.14.0
+        uses: bcgov/actions/workflow-notifier@0ed2b82c50ba113304b3b879e1dc7b9ea087d0fe # v0.15.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "Deployment Failure: FOM (${{ inputs.target }})"
