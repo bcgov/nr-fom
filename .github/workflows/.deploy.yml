@@ -158,7 +158,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Notify Owners on Failure
-        uses: bcgov/actions/workflow-notifier@0ed2b82c50ba113304b3b879e1dc7b9ea087d0fe # v0.15.0
+        uses: bcgov/actions/workflow-notifier@a25c5f02d20139f29c17c3ceaa41c314ffe92ec9 # v0.16.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "Deployment Failure: FOM (${{ inputs.target }})"
